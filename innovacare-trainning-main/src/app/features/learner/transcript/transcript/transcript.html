@@ -1,0 +1,193 @@
+<!-- transcript.html (Relias-like, matches your CSS + TS signals) -->
+<div class="twrap">
+  <!-- LEFT FILTERS -->
+  <aside class="filters" [class.closed]="!filtersOpen()">
+    <div class="filters-head">
+      <div class="filters-title">Filters</div>
+      <button class="btn ghost sm" type="button" (click)="toggleFilters()">Close</button>
+    </div>
+
+    <!-- Completed accordion -->
+    <section class="acc">
+      <button class="acc-head" type="button" (click)="accCompleted.set(!accCompleted())">
+        <span>Completed Date</span>
+        <span class="muted">{{ accCompleted() ? '—' : '+' }}</span>
+      </button>
+
+      <div class="acc-body" *ngIf="accCompleted()">
+        <div>
+          <div class="lbl">From</div>
+          <input class="inp" type="date" [value]="fCompletedFrom()" (change)="fCompletedFrom.set($any($event.target).value)" />
+        </div>
+
+        <div>
+          <div class="lbl">To</div>
+          <input class="inp" type="date" [value]="fCompletedTo()" (change)="fCompletedTo.set($any($event.target).value)" />
+        </div>
+
+        <div class="hint">
+          Tip: use date range to narrow down your transcript.
+        </div>
+      </div>
+    </section>
+
+    <!-- Due accordion -->
+    <section class="acc">
+      <button class="acc-head" type="button" (click)="accDue.set(!accDue())">
+        <span>Due Date (optional)</span>
+        <span class="muted">{{ accDue() ? '—' : '+' }}</span>
+      </button>
+
+      <div class="acc-body" *ngIf="accDue()">
+        <div>
+          <div class="lbl">From</div>
+          <input class="inp" type="date" [value]="fDueFrom()" (change)="fDueFrom.set($any($event.target).value)" />
+        </div>
+
+        <div>
+          <div class="lbl">To</div>
+          <input class="inp" type="date" [value]="fDueTo()" (change)="fDueTo.set($any($event.target).value)" />
+        </div>
+
+        <div class="hint">
+          Due date is optional and depends on assignment configuration.
+        </div>
+      </div>
+    </section>
+
+    <!-- Actions -->
+    <section class="acc">
+      <div class="acc-body">
+        <button class="btn ghost" type="button" (click)="resetFilters()">Reset filters</button>
+      </div>
+    </section>
+  </aside>
+
+  <!-- RIGHT MAIN -->
+  <main class="main">
+    <!-- top bar -->
+    <div class="bar">
+      <div class="bar-left">
+        <button class="linkbtn" type="button" (click)="toggleFilters()">
+          <span class="ic">☰</span>
+          TRANSCRIPT
+        </button>
+
+        <div class="meta">
+          Showing <strong>{{ displayedCount() }}</strong> of <strong>{{ totalCount() }}</strong>
+        </div>
+      </div>
+
+      <div class="bar-right">
+        <div class="search">
+          <span class="mag">🔎</span>
+          <input
+            type="search"
+            placeholder="Search courses or grades…"
+            [value]="search()"
+            (input)="search.set(($any($event.target).value || '').toString())"
+          />
+        </div>
+
+        <button class="btn ghost" type="button" (click)="toggleColumns()">Columns</button>
+      </div>
+    </div>
+
+    <!-- columns card -->
+    <div class="card columns" *ngIf="columnsOpen()">
+      <div class="columns-title">Select Columns</div>
+
+      <label class="ck">
+        <input type="checkbox" [checked]="colTitle()" (change)="colTitle.set($any($event.target).checked)" />
+        Title
+      </label>
+
+      <label class="ck">
+        <input type="checkbox" [checked]="colHours()" (change)="colHours.set($any($event.target).checked)" />
+        Hours
+      </label>
+
+      <label class="ck">
+        <input type="checkbox" [checked]="colGrade()" (change)="colGrade.set($any($event.target).checked)" />
+        Grade
+      </label>
+
+      <label class="ck">
+        <input type="checkbox" [checked]="colCompleted()" (change)="colCompleted.set($any($event.target).checked)" />
+        Completed
+      </label>
+
+      <label class="ck">
+        <input type="checkbox" [checked]="colDue()" (change)="colDue.set($any($event.target).checked)" />
+        Due
+      </label>
+
+      <label class="ck">
+        <input type="checkbox" [checked]="colAction()" (change)="colAction.set($any($event.target).checked)" />
+        Action
+      </label>
+    </div>
+
+    <!-- table -->
+    <section class="card tablecard">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th *ngIf="colTitle()">Course</th>
+            <th *ngIf="colHours()">Hours</th>
+            <th *ngIf="colGrade()">Grade</th>
+            <th *ngIf="colCompleted()">Completed</th>
+            <th *ngIf="colDue()">Due</th>
+            <th *ngIf="colAction()">Certificate</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let r of view()">
+            <!-- Title -->
+            <td *ngIf="colTitle()" class="title">
+              <span class="tlink" (click)="getCertificate(r)">{{ r.title }}</span>
+              <div class="hint">Course ID: <code>{{ r.courseId }}</code></div>
+            </td>
+
+            <!-- Hours -->
+            <td *ngIf="colHours()">{{ r.hours }}</td>
+
+            <!-- Grade -->
+            <td *ngIf="colGrade()">
+              <span
+                class="grade"
+                [class.grade-ok]="(r.scoreNum ?? 100) >= 80"
+                [class.grade-warn]="(r.scoreNum ?? 100) < 80"
+              >
+                {{ r.grade }}
+              </span>
+            </td>
+
+            <!-- Completed -->
+            <td *ngIf="colCompleted()">{{ r.completedDate }}</td>
+
+            <!-- Due -->
+            <td *ngIf="colDue()">{{ r.dueDate }}</td>
+
+            <!-- Action -->
+            <td *ngIf="colAction()">
+              <button class="action" type="button" (click)="getCertificate(r)">
+                Get Certificate
+              </button>
+            </td>
+          </tr>
+
+          <tr *ngIf="view().length === 0">
+            <td
+              class="empty"
+              [attr.colspan]="(colTitle()?1:0)+(colHours()?1:0)+(colGrade()?1:0)+(colCompleted()?1:0)+(colDue()?1:0)+(colAction()?1:0)"
+            >
+              No completed courses match your filters.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</div>

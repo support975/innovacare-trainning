@@ -1,0 +1,142 @@
+   <!-- CONTENT -->
+   <main class="content">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-art"></div>
+      <div class="hero-text">
+        <h1>Welcome back, {{ managerName() }}</h1>
+        <p class="muted">Assign trainings, track completion, and review results.</p>
+      </div>
+      <div class="hero-help card">
+        <h3>Quick links</h3>
+        <ul>
+
+          <button class="btn outline" (click)="onCreateNotification()">Create Notification</button>
+          <button class="btn outline" (click)="onCreateAssign()">Create Assignment</button>
+          <button class="btn outline" (click)="onCreateCourse()">Add a Course</button>
+          <button class="btn outline" (click)="onCreateReport()">Open Reports</button>
+          <button class="btn outline" (click)="onCreateWounds()">Add Wounds</button>
+          <button class="btn outline" (click)="onCreatePolicy()">Create Policy</button>
+          <button class="btn outline" (click)="onPolicyReport()">Open Policy Report</button>
+
+        </ul>
+      </div>
+    </section>
+
+    <!-- KPIs -->
+    <section class="kpis">
+      <div class="card kpi">
+        <div class="kpi-title">Completion (last 30 days)</div>
+        <div class="kpi-number primary">{{ kpi().completion30 }}</div>
+      </div>
+      <div class="card kpi">
+        <div class="kpi-title">Overdue</div>
+        <div class="kpi-number warn">{{ kpi().overdue }}</div>
+      </div>
+      <div class="card kpi">
+        <div class="kpi-title">Average Score</div>
+        <div class="kpi-number success">{{ kpi().avgScore }}%</div>
+      </div>
+
+      <div class="note info" *ngIf="notice" (click)="clearNotice()">
+        {{ notice }} (click to dismiss)
+      </div>
+      
+      <section class="panel" *ngIf="overdueAlerts().length">
+        <div class="section-head">
+          <h2>Overdue Alerts</h2>
+          <span class="muted">Top {{ overdueAlerts().length }}</span>
+        </div>
+        <div class="card">
+          <table class="table">
+            <thead>
+            <tr>
+              <th>Learner</th><th>Email</th><th>Course</th><th>Due</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let o of overdueAlerts()">
+              <td>{{ o.user }}</td>
+              <td>{{ o.email || '—' }}</td>
+              <td>{{ o.course }}</td>
+              <td><span class="badge badge-warn">{{ o.due }}</span></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      
+      <div class="card actions">
+        <div class="card-title">Actions</div>
+        <div class="actions-row">
+          <button class="btn" (click)="onAddCourse()">Add Course</button>
+          <button class="btn outline" (click)="onAssignTraining()">Assign Training</button>
+          <button class="btn ghost" (click)="onExportCSV()">Export CSV</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Open Assignments -->
+    <section class="panel">
+      <div class="section-head">
+        <h2>Open Assignments</h2>
+        <a routerLink="/manager/assign" class="muted">View all</a>
+      </div>
+      <div class="card">
+        <table class="table">
+          <thead>
+          <tr>
+            <th>ID</th><th>Course</th><th>Audience</th><th>Due</th><th>Status</th><th></th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let a of openAssignments()">
+            <td>{{ a.id }}</td>
+            <td>{{ a.course }}</td>
+            <td>{{ a.audience }}</td>
+            <td>{{ a.due }}</td>
+            <td><span class="badge" [class.badge-warn]="a.status==='Closed'">{{ a.status }}</span></td>
+            <td>
+              <button class="btn outline" type="button" (click)="openAssignment(a.id)">
+                Open
+              </button>
+            </td>            
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Recent Results -->
+    <section class="panel">
+      <div class="section-head">
+        <h2>Recent Results</h2>
+        <a routerLink="/manager/reports" class="muted">Open reports</a>
+      </div>
+      <div class="card">
+        <table class="table">
+          <thead>
+          <tr>
+            <th>Learner</th><th>Course</th><th>Score</th><th>Date</th><th></th>
+          </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of recentResults()">
+              <td>
+                {{ r.userName }}
+                <div class="muted" style="font-size:.85rem" *ngIf="r.userEmail">{{ r.userEmail }}</div>
+              </td>
+              <td>{{ r.course }}</td>
+              <td><span class="score" [class.low]="r.score < 80">{{ r.score }}%</span></td>
+              <td>{{ r.date }}</td>
+              <td>
+                <button class="btn outline" type="button" (click)="openResultDetails(r.uid)">
+                  Details
+                </button>
+              </td>
+            </tr>            
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>

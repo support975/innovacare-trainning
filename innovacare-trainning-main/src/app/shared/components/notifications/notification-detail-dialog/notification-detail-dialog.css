@@ -1,0 +1,243 @@
+:host {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  display: none; /* controlled by [open] */
+  align-items: center;
+  justify-content: center;
+
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+:host(.open) {
+  display: flex;
+}
+
+/* ---------- Backdrop ---------- */
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.55); /* slate-950 overlay */
+  backdrop-filter: blur(2px);
+}
+
+/* ---------- Dialog card ---------- */
+.dialog {
+  position: relative;
+  width: min(560px, calc(100vw - 24px));
+  max-height: calc(100vh - 24px);
+
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+
+  box-shadow:
+    0 22px 40px rgba(2, 6, 23, 0.18),
+    0 10px 18px rgba(2, 6, 23, 0.12);
+
+  overflow: hidden;
+  transform: translateY(4px);
+  animation: pop 140ms ease-out;
+}
+
+@keyframes pop {
+  from { opacity: 0; transform: translateY(10px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(4px) scale(1); }
+}
+
+/* ---------- Header ---------- */
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 14px 16px;
+
+  background: rgba(15, 23, 42, 0.03);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.10);
+}
+
+.title-wrap {
+  display: grid;
+  gap: 6px;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.sub {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+
+  font-size: 12px;
+  color: rgba(15, 23, 42, 0.65);
+}
+
+/* ---------- Pills ---------- */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 3px 10px;
+  border-radius: 999px;
+
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  background: rgba(15, 23, 42, 0.03);
+}
+
+.pill.info {
+  border-color: rgba(59, 130, 246, 0.22);
+  background: rgba(59, 130, 246, 0.08);
+  color: #1d4ed8;
+}
+
+.pill.warning {
+  border-color: rgba(245, 158, 11, 0.28);
+  background: rgba(245, 158, 11, 0.10);
+  color: #b45309;
+}
+
+.pill.critical {
+  border-color: rgba(239, 68, 68, 0.28);
+  background: rgba(239, 68, 68, 0.10);
+  color: #b91c1c;
+}
+
+/* ---------- Close button ---------- */
+.icon-btn {
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: #ffffff;
+  color: #0f172a;
+
+  width: 36px;
+  height: 36px;
+
+  border-radius: 12px;
+  cursor: pointer;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  transition: box-shadow 120ms ease, transform 120ms ease, border-color 120ms ease;
+}
+
+.icon-btn:hover {
+  border-color: rgba(15, 23, 42, 0.22);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.10);
+}
+
+.icon-btn:active {
+  transform: translateY(1px);
+}
+
+.icon-btn:focus-visible {
+  outline: 3px solid rgba(59, 130, 246, 0.30);
+  outline-offset: 2px;
+}
+
+/* ---------- Body ---------- */
+.body {
+  padding: 14px 16px;
+  overflow: auto;
+  max-height: calc(100vh - 200px);
+}
+
+.message {
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(15, 23, 42, 0.86);
+  white-space: pre-wrap;
+}
+
+/* ---------- Link area ---------- */
+.link {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+
+  border: 1px dashed rgba(15, 23, 42, 0.18);
+  background: rgba(15, 23, 42, 0.02);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.link-code {
+  font-size: 12px;
+  color: rgba(15, 23, 42, 0.72);
+  word-break: break-all;
+}
+
+.link-btn {
+  border: none;
+  background: rgba(37, 99, 235, 0.10);
+  color: #1d4ed8;
+  font-weight: 800;
+
+  padding: 8px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.link-btn:hover {
+  background: rgba(37, 99, 235, 0.16);
+}
+
+.link-btn:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.28);
+  outline-offset: 2px;
+}
+
+/* ---------- Footer ---------- */
+.footer {
+  padding: 12px 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  border-top: 1px solid rgba(15, 23, 42, 0.10);
+  background: rgba(15, 23, 42, 0.02);
+}
+
+.primary {
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: #0f172a;
+  color: #ffffff;
+
+  padding: 10px 12px;
+  border-radius: 12px;
+
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.primary:hover {
+  filter: brightness(1.05);
+}
+
+.primary:focus-visible {
+  outline: 3px solid rgba(59, 130, 246, 0.30);
+  outline-offset: 2px;
+}
+.dialog {
+  margin: 12px;            /* respirations */
+  align-self: center;      /* force au centre */
+  justify-self: center;    /* au cas où */
+}

@@ -1,0 +1,136 @@
+<div class="exam-page" style="max-width: 900px; margin: 24px auto; padding: 12px;">
+    <h1 style="margin:0 0 12px;">
+      {{ examMeta()?.title || 'Exam' }}
+    </h1>
+    <div class="muted" style="color:#666; margin-bottom:16px;">
+      Pass mark: {{ examMeta()?.passPct ?? 80 }}%
+    </div>
+  
+    <!-- notices -->
+    <p *ngIf="notice()" style="color:crimson; margin: 8px 0;">{{ notice() }}</p>
+  
+    <!-- BEFORE SUBMIT: render questions -->
+    <div *ngIf="!result(); else showResults">
+      <form (submit)="submit(); $event.preventDefault()">
+        <div
+          *ngFor="let q of questions(); index as i"
+          class="question"
+          style="margin:16px 0; padding:12px; border:1px solid #eee; border-radius:8px;"
+        >
+          <div class="q-head" style="font-weight:600; margin-bottom:8px;">
+            <span class="q-num">{{ i + 1 }}.</span>
+            <span class="q-prompt">{{ q.prompt }}</span>
+            <span
+              *ngIf="q.mode === 'multi'"
+              class="muted"
+              style="font-weight:400; color:#777; margin-left:6px;"
+            >
+              (Select all that apply)
+            </span>
+          </div>
+  
+          <div class="q-options" style="display:flex; flex-direction:column; gap:8px;">
+            <label
+              *ngFor="let opt of q.options"
+              class="opt"
+              style="display:flex; align-items:flex-start; gap:8px; cursor:pointer;"
+            >
+              <input
+                [type]="q.mode === 'single' ? 'radio' : 'checkbox'"
+                [name]="'q_' + q.id"
+                [value]="opt.id"
+                [checked]="answers.get(q.id)?.has(opt.id) || false"
+                (change)="toggleOption(q.id, opt.id, q.mode)"
+                style="margin-top:3px"
+              />
+              <span>{{ opt.text }}</span>
+            </label>
+          </div>
+        </div>
+  
+        <div style="margin-top:16px; display:flex; gap:8px;">
+          <button
+            type="submit"
+            class="btn"
+            [disabled]="busy()"
+            style="padding:10px 14px; border-radius:8px;"
+          >
+            {{ busy() ? 'Submitting…' : 'Submit' }}
+          </button>
+          <a
+            class="btn"
+            [routerLink]="['/learner/courses', courseId]"
+            style="padding:10px 14px; border-radius:8px; text-decoration:none; border:1px solid #ddd;"
+          >
+            Back to course
+          </a>
+        </div>
+      </form>
+    </div>
+  
+    <!-- AFTER SUBMIT: render results -->
+    <ng-template #showResults>
+      <div class="results" style="margin-top:12px;">
+        <h2 style="margin:0 0 8px;">Results</h2>
+        <p style="margin:0 0 12px;">
+          Score:
+          <strong>{{ result()?.percent }}%</strong>
+          ({{ result()?.correct }}/{{ result()?.total }}) —
+          <span
+            [style.color]="result()?.passed ? '#0a7f2e' : '#a30000'"
+            [style.fontWeight]="'700'"
+          >
+            {{ result()?.passed ? 'PASS' : 'FAIL' }}
+          </span>
+          <span class="muted" style="color:#666;">
+            (Pass ≥ {{ examMeta()?.passPct ?? 80 }}%)
+          </span>
+        </p>
+  
+        <div
+          *ngFor="let d of result()?.details"
+          class="detail"
+          style="border:1px solid #eee; border-radius:8px; padding:12px; margin:10px 0;"
+        >
+          <div class="prompt" style="font-weight:600; margin-bottom:6px;">
+            <span class="q-num">{{ d.order }}.</span>
+            <span>{{ d.prompt }}</span>
+            <span
+              class="badge"
+              [style.background]="d.isCorrect ? '#e8f6ee' : '#fdeaea'"
+              [style.color]="d.isCorrect ? '#0a7f2e' : '#a30000'"
+              style="margin-left:8px; padding:2px 8px; border-radius:999px; font-weight:700; font-size:12px;"
+            >
+              {{ d.isCorrect ? 'Correct' : 'Incorrect' }}
+            </span>
+          </div>
+  
+          <div class="resp" style="display:grid; gap:4px;">
+            <div><strong>Your answer:</strong> {{ d.your.join(', ') || '—' }}</div>
+            <div><strong>Correct:</strong> {{ d.correct.join(', ') }}</div>
+            <div *ngIf="d.explanation" class="explain" style="color:#444;">
+              <em>{{ d.explanation }}</em>
+            </div>
+          </div>
+        </div>
+  
+        <div style="margin-top:16px; display:flex; gap:8px;">
+          <a
+            class="btn"
+            routerLink="/learner/library"
+            style="padding:10px 14px; border-radius:8px; text-decoration:none; border:1px solid #ddd;"
+          >
+            Back to library
+          </a>
+          <a
+            class="btn"
+            routerLink="/learner/assignments"
+            style="padding:10px 14px; border-radius:8px; text-decoration:none; border:1px solid #ddd;"
+          >
+            Back to course
+          </a>
+        </div>
+      </div>
+    </ng-template>
+  </div>
+  

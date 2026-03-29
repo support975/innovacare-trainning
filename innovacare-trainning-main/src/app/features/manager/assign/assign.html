@@ -1,0 +1,38 @@
+<section class="card">
+    <h2>Assign courses</h2>
+
+    <div class="grid">
+      <div>
+        <h3>Users</h3>
+        <input type="search" placeholder="Search users"
+          [ngModel]="uQuery()" (ngModelChange)="uQuery.set($event)" />
+        <div class="list">
+          <label *ngFor="let u of filteredUsers()">
+            <input type="checkbox" [checked]="selectedUsers().has(u.id)" (change)="toggleUser(u.id, $event.target.checked)" />
+            {{ u.displayName || u.email || u.id }} <span class="muted">({{ u.role || 'n/a' }})</span>
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <h3>Courses</h3>
+        <input type="search" placeholder="Search courses"
+          [ngModel]="cQuery()" (ngModelChange)="cQuery.set($event)" />
+        <div class="list">
+          <label *ngFor="let c of filteredCourses()">
+            <input type="checkbox" [checked]="selectedCourses().has(c.id)" (change)="toggleCourse(c.id, $event.target.checked)" />
+            {{ c.title || c.id }} <span class="muted">({{ c.kind || 'Course' }})</span>
+            <span *ngIf="c.active===false" class="muted">• inactive</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" [disabled]="busy() || selectedUsers().size===0 || selectedCourses().size===0"
+              (click)="assign()">
+        {{ busy() ? 'Assigning…' : 'Assign selected' }}
+      </button>
+      <span *ngIf="notice()" [class.error]="error()">{{ notice() }}</span>
+    </div>
+  </section>

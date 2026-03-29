@@ -1,0 +1,54 @@
+.notif-menu {
+  width: 3480px;
+  max-width: 92vw;
+}
+
+.menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+}
+
+.menu-header .title {
+  font-weight: 600;
+}
+
+.menu-footer {
+  padding: 10px 12px;
+}
+
+.muted {
+  opacity: 0.7;
+  font-size: 12px;
+}
+
+.empty {
+  padding: 16px 14px;
+}
+
+.empty-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.empty-sub {
+  opacity: 0.75;
+  font-size: 13px;
+}
+
+.row-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sev {
+  width: 8px;
+  height: 8px;
+  border-radius: 99px;
+  background: #2e7d32; /* info (green-ish) */
+  flex: none;
+}
+.sev.warning { background: #f9a825; }
+.sev.critical { background: #c62828; }

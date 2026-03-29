@@ -1,0 +1,130 @@
+<div class="card">
+  <div class="hdr">
+    <div>
+      <div class="title">Manager • Send Notification</div>
+      <div class="sub">Creates an internal alert visible in the learner notification bell.</div>
+    </div>
+    <span class="pill">{{ audienceType() }}</span>
+  </div>
+
+  <div class="grid">
+    <div class="field">
+      <label>Title</label>
+      <input [ngModel]="title()" (ngModelChange)="title.set($event)" placeholder="Short title" />
+    </div>
+
+    <div class="field">
+      <label>Severity</label>
+      <select [ngModel]="severity()" (ngModelChange)="severity.set($event)">
+        <option value="info">info</option>
+        <option value="warning">warning</option>
+        <option value="critical">critical</option>
+      </select>
+    </div>
+
+    <div class="field full">
+      <label>Body</label>
+      <textarea rows="3" [ngModel]="body()" (ngModelChange)="body.set($event)" placeholder="Message..."></textarea>
+    </div>
+
+    <div class="field full">
+      <label>Link (optional)</label>
+      <input
+        [ngModel]="link()"
+        (ngModelChange)="link.set($event)"
+        placeholder="/learner/courses/xyz or /learner/profile"
+      />
+    </div>
+
+    <div class="field">
+      <label>Audience</label>
+      <select [ngModel]="audienceType()" (ngModelChange)="audienceType.set($event)">
+        <option value="role">Role</option>
+        <option value="all">All users</option>
+        <option value="user">Single user</option>
+      </select>
+    </div>
+
+    <div class="field" *ngIf="audienceType() === 'role'">
+      <label>Role</label>
+      <select [ngModel]="audienceRole()" (ngModelChange)="audienceRole.set($event)">
+        <option value="learner">learner</option>
+        <option value="nurse">nurse</option>
+        <option value="staff">staff</option>
+        <option value="admin">admin</option>
+        <option value="manager">manager</option>
+      </select>
+    </div>
+
+    <!-- Single user picker -->
+    <div class="field full" *ngIf="audienceType() === 'user'">
+      <label>Select user</label>
+
+      <div class="userbox">
+        <div class="row">
+          <input
+            class="search"
+            [ngModel]="uQuery()"
+            (ngModelChange)="uQuery.set($event)"
+            placeholder="Search by name, email, or uid..."
+            [disabled]="!!selectedUser()"
+          />
+          <button type="button" class="btn-light" (click)="clearUser()" *ngIf="selectedUser()">
+            Clear
+          </button>
+        </div>
+
+        <div class="picked" *ngIf="selectedUser() as u">
+          <div class="avatar">{{ (u.displayName || u.email || u.id).slice(0,1).toUpperCase() }}</div>
+          <div class="meta">
+            <div class="name">{{ u.displayName || "No name" }}</div>
+            <div class="small">
+              <span>{{ u.email || "No email" }}</span>
+              <span class="dot">•</span>
+              <span>{{ u.role || "no role" }}</span>
+              <span class="dot">•</span>
+              <span class="mono">{{ u.id }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="list" *ngIf="!selectedUser()">
+          <button type="button" class="item" *ngFor="let u of filteredUsers()" (click)="pickUser(u)">
+            <div class="avatar">{{ (u.displayName || u.email || u.id).slice(0,1).toUpperCase() }}</div>
+            <div class="meta">
+              <div class="name">{{ u.displayName || "No name" }}</div>
+              <div class="small">
+                <span>{{ u.email || "No email" }}</span>
+                <span class="dot">•</span>
+                <span>{{ u.role || "no role" }}</span>
+              </div>
+              <div class="mono">{{ u.id }}</div>
+            </div>
+          </button>
+
+          <div class="hint" *ngIf="filteredUsers().length === 0">
+            No users found. Try another search term.
+          </div>
+        </div>
+
+        <!-- optional: show uid field (keeps manual fallback) -->
+        <div class="field uidline">
+          <label>UID (auto-filled)</label>
+          <input
+            [ngModel]="audienceUid()"
+            (ngModelChange)="audienceUid.set($event)"
+            placeholder="UID"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button type="button" class="btn" (click)="send()" [disabled]="busy()">
+      {{ busy() ? "Sending..." : "Send" }}
+    </button>
+
+    <span class="msg" [class.err]="isError()" *ngIf="notice()">{{ notice() }}</span>
+  </div>
+</div>

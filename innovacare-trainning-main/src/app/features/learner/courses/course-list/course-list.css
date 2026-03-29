@@ -1,0 +1,16 @@
+/* src/app/features/courses/list/courses-list.css */
+:root{ --line:#e6e8ef; --card:#fff; --muted:#6b7280; --primary:#0f3d5e }
+.list-wrap{display:block}
+.head{display:flex;gap:12px;align-items:center;margin:6px 0 12px}
+.head h2{margin:0;font-size:1.1rem}
+.search{margin-left:auto;border:1px solid var(--line);border-radius:10px;padding:.55rem .8rem;min-width:260px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;transition:.15s ease box-shadow}
+.card:hover{box-shadow:0 10px 18px rgba(0,0,0,.06)}
+.row1{display:flex;justify-content:space-between;color:var(--muted);font-size:.85rem}
+.title{margin:.35rem 0 .25rem;font-size:1rem}
+.desc{margin:.25rem 0 .5rem;color:var(--muted);font-size:.9rem}
+.meta{display:flex;gap:10px;color:var(--muted);font-size:.85rem}
+.btn{margin-top:.6rem;border:1px solid var(--line);padding:.5rem .8rem;border-radius:8px;background:#fff}
+.btn.primary{background:var(--primary);color:#fff;border:none}
+.empty{color:var(--muted);text-align:center;margin-top:16px}

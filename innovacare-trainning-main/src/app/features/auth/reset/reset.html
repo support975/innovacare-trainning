@@ -1,0 +1,21 @@
+<div class="auth">
+    <div class="card">
+      <h1>Reset password</h1>
+      <p class="muted">Enter your account email. We’ll send a reset link.</p>
+  
+      <form [formGroup]="form" (ngSubmit)="submit()" class="form">
+        <label class="label">Email</label>
+        <input class="input" type="email" formControlName="email" placeholder="you@clinic.com" />
+        <small class="help" *ngIf="form.controls.email.invalid && form.controls.email.touched">
+          Valid email required
+        </small>
+  
+        <button class="btn" type="submit" [disabled]="loading()">Send reset link</button>
+        <a routerLink="/login" class="btn outline" style="margin-left:8px">Back to sign in</a>
+      </form>
+  
+      <p class="ok" *ngIf="success()">{{ success() }}</p>
+      <p class="error" *ngIf="error()">{{ error() }}</p>
+    </div>
+  </div>
+  

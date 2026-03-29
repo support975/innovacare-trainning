@@ -1,0 +1,109 @@
+<!-- src/app/features/learner/woundLabrary/wound-labrary-details/wound-labrary-details.component.html -->
+
+<div class="container" *ngIf="loading; else content">
+    <div class="loader">
+      <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+    </div>
+  </div>
+  
+  <ng-template #content>
+    <!-- Narrow wound into local variable `w` so the template compiler knows it's defined -->
+    <div class="container" *ngIf="wound as w; else notfound">
+      <button mat-button (click)="back()">
+        <mat-icon>arrow_back</mat-icon> Back
+      </button>
+  
+      <mat-card class="header-card">
+        <div class="header-left">
+          <h1>{{ w.name }}</h1>
+  
+          <div class="meta" *ngIf="(w.tags && w.tags.length) || w.category">
+            <div class="tags" *ngIf="w.tags?.length">
+              <span class="tag" *ngFor="let t of w.tags">{{ t }}</span>
+            </div>
+            <div class="category" *ngIf="w.category">Category: {{ w.category }}</div>
+          </div>
+  
+          <p class="short" *ngIf="w.shortDescription">{{ w.shortDescription }}</p>
+        </div>
+  
+        <!-- Gallery: only shown if images array exists and has length -->
+        <div class="gallery" *ngIf="w.images && w.images.length; else noimg">
+          <img
+  class="main"
+  [src]="(w.images && w.images.length && selected >= 0 && selected < w.images.length) ? w.images[selected] : placeholder"
+  (error)="onImgError($event)"
+  alt="Wound image"
+  loading="lazy"
+  decoding="async"  (error)="onImgError($event)" alt="Wound image" loading="lazy" decoding="async"
+/>
+  
+          <div class="thumbs">
+            <img
+            *ngFor="let u of (w.images || []); let i = index"
+            [src]="u"
+            [class.active]="i === selected"
+            (click)="selectThumbnail(i)"
+            (error)="onImgError($event)"
+            alt="Wound thumbnail"
+            loading="lazy"
+            decoding="async"
+          />
+          </div>
+        </div>
+  
+        <ng-template #noimg>
+          <div class="noimg">No images</div>
+        </ng-template>
+      </mat-card>
+  
+      <div class="two-col">
+        <mat-card>
+          <h3>Full description</h3>
+          <p *ngIf="w.fullDescription; else nodesc">{{ w.fullDescription }}</p>
+          <ng-template #nodesc><p class="muted">No detailed description available.</p></ng-template>
+  
+          <h3 *ngIf="w.characteristics?.length">Characteristics</h3>
+          <ul *ngIf="w.characteristics?.length">
+            <li *ngFor="let c of w.characteristics">{{ c }}</li>
+          </ul>
+        </mat-card>
+  
+        <mat-card>
+          <h3>Treatment options</h3>
+          <mat-list *ngIf="w.treatmentOptions?.length; else notreat">
+            <mat-list-item *ngFor="let t of w.treatmentOptions">
+              <div matLine><strong>{{ t.title }}</strong></div>
+              <div matLine class="muted">{{ t.description }}</div>
+            </mat-list-item>
+          </mat-list>
+          <ng-template #notreat><p class="muted">No treatment options listed.</p></ng-template>
+  
+          <h3>Dressing options</h3>
+          <mat-list *ngIf="w.dressingOptions?.length; else nodress">
+            <mat-list-item *ngFor="let d of w.dressingOptions">
+              <div matLine><strong>{{ d.type }}</strong></div>
+              <div matLine class="muted">{{ d.description }}</div>
+            </mat-list-item>
+          </mat-list>
+          <ng-template #nodress><p class="muted">No dressing options listed.</p></ng-template>
+  
+          <h3 *ngIf="w.patientEducation">Patient education</h3>
+          <p *ngIf="w.patientEducation?.shortHandout">{{ w.patientEducation?.shortHandout }}</p>
+  
+          <h3 *ngIf="w.references?.length">References</h3>
+          <ul *ngIf="w.references?.length">
+            <li *ngFor="let r of (w.references || [])">{{ r.title }} <span class="muted">({{ r.source }})</span></li>
+          </ul>
+        </mat-card>
+      </div>
+    </div>
+  </ng-template>
+  
+  <ng-template #notfound>
+    <div class="container">
+      <p>Wound type not found.</p>
+      <button mat-button (click)="back()">Back</button>
+    </div>
+  </ng-template>
+  

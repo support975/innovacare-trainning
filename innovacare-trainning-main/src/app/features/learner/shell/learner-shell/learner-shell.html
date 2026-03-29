@@ -1,0 +1,58 @@
+<div class="shell"
+     [class.side-hidden]="!sidebarOpen()">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <button class="menu-toggle"
+            (click)="toggleSidebar()"
+            [attr.aria-expanded]="sidebarOpen()"
+            aria-label="Toggle menu">☰</button>
+
+    <div class="brand"><strong>INNOVACARE-TRAINING</strong></div>
+
+    <div class="top-actions">
+      <span class="role">Learner</span>
+      <div class="avatar" title="Profile"></div>
+      <app-notification-bell-plain></app-notification-bell-plain>
+      <button class="btn logout" (click)="logout()">Logout</button>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar"
+         [class.open]="sidebarOpen()"
+         [attr.aria-hidden]="!sidebarOpen()">
+    <nav class="menu" aria-label="Primary">
+      <div class="menu-group">
+        <div class="menu-title">Overview</div>
+
+        <a *ngFor="let l of links"
+           [routerLink]="l.path"
+           routerLinkActive="active"
+           class="menu-item"
+           (click)="onNavClick()">{{ l.label }}</a>
+      </div>
+
+      <div class="menu-group">
+        <div class="menu-title">Resources</div>
+
+        <a *ngFor="let r of resources"
+           [routerLink]="r.path"
+           routerLinkActive="active"
+           class="menu-item"
+           (click)="onNavClick()">{{ r.label }}</a>
+           <app-notification-bell-plain></app-notification-bell-plain>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- BACKDROP (mobile only; hidden via CSS on desktop) -->
+  <div class="backdrop"
+       *ngIf="sidebarOpen()"
+       (click)="closeSidebar()"></div>
+
+  <!-- MAIN CONTENT -->
+  <main class="content" role="main">
+    <router-outlet></router-outlet>
+  </main>
+</div>

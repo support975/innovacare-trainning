@@ -1,0 +1,154 @@
+<div class="page">
+    <div class="head">
+      <div>
+        <h1>User Profile</h1>
+        <p class="muted">Manage your contact information and professional licenses.</p>
+      </div>
+  
+      <div class="tabs">
+        <button class="tab" [class.active]="tab()==='profile'" (click)="setTab('profile')">Profile</button>
+        <button class="tab" [class.active]="tab()==='licenses'" (click)="setTab('licenses')">My Licenses & Certifications</button>
+      </div>
+    </div>
+  
+    <div class="notice" *ngIf="notice()">{{ notice() }}</div>
+  
+    <!-- PROFILE -->
+    <section class="card" *ngIf="tab()==='profile'">
+      <div class="row">
+        <div class="avatar">
+          <img *ngIf="profileForm.controls.profileImage.value" [src]="profileForm.controls.profileImage.value" alt="Profile" />
+          <div class="ph" *ngIf="!profileForm.controls.profileImage.value"></div>
+        </div>
+  
+        <div class="grow">
+          <div class="grid2">
+            <div class="field">
+              <label>Display Name *</label>
+              <input [formControl]="profileForm.controls.displayName" />
+            </div>
+  
+            <div class="field">
+              <label>Email</label>
+              <input type="email" [formControl]="profileForm.controls.email" />
+            </div>
+  
+            <div class="field">
+              <label>Phone</label>
+              <input [formControl]="profileForm.controls.phone" />
+            </div>
+  
+            <div class="field">
+              <label>Address</label>
+              <input [formControl]="profileForm.controls.address" />
+            </div>
+  
+            <div class="field full">
+              <label>Profile Image URL</label>
+              <input [formControl]="profileForm.controls.profileImage" placeholder="https://..." />
+            </div>
+          </div>
+  
+          <div class="meta">
+            <div><span>Role</span> <strong>{{ user()?.role || '—' }}</strong></div>
+            <div><span>Title</span> <strong>{{ user()?.title || '—' }}</strong></div>
+            <div><span>Department</span> <strong>{{ user()?.department || '—' }}</strong></div>
+            <div><span>Status</span> <strong>{{ user()?.status || '—' }}</strong></div>
+          </div>
+  
+          <div class="actions">
+            <button class="btn primary" type="button" (click)="saveProfile()" [disabled]="busy()">Save</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  
+    <!-- LICENSES -->
+    <section class="card" *ngIf="tab()==='licenses'">
+      <div class="row-between">
+        <div class="card-title">My Licenses and Certifications</div>
+        <button class="btn outline" type="button" (click)="newLicense()">+ Add My License or Certification</button>
+      </div>
+  
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>State/Province</th>
+              <th>Type</th>
+              <th>Number</th>
+              <th>Renewal</th>
+              <th>Renewal Period</th>
+              <th>Hours</th>
+              <th>Reminder</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of licensesView()">
+              <td>{{ r.state }}</td>
+              <td>{{ r.type }}</td>
+              <td>{{ r.number }}</td>
+              <td>{{ fmtRenewal(r.renewalDate) }}</td>
+              <td>{{ (r.renewalPeriodMonths ?? 0) }} month(s)</td>
+              <td>{{ r.hours ?? 0 }}</td>
+              <td>{{ r.reminderWeeks ?? 0 }} weeks</td>
+              <td class="right">
+                <button class="btn tiny outline" type="button" (click)="editLicense(r)">Edit</button>
+                <button class="btn tiny danger" type="button" (click)="deleteLicense(r.id!)">Delete</button>
+              </td>
+            </tr>
+            <tr *ngIf="licensesView().length===0">
+              <td colspan="8" class="muted">No licenses added yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+  
+      <div class="divider"></div>
+  
+      <div class="card-title">Add / Edit</div>
+      <div class="grid2">
+        <div class="field">
+          <label>State/Province *</label>
+          <input [formControl]="licenseForm.controls.state" />
+        </div>
+  
+        <div class="field">
+          <label>Type *</label>
+          <input [formControl]="licenseForm.controls.type" />
+        </div>
+  
+        <div class="field">
+          <label>Number *</label>
+          <input [formControl]="licenseForm.controls.number" />
+        </div>
+  
+        <div class="field">
+          <label>Renewal Date</label>
+          <input type="date" [formControl]="licenseForm.controls.renewalDate" />
+        </div>
+  
+        <div class="field">
+          <label>Renewal Period (months)</label>
+          <input type="number" min="0" [formControl]="licenseForm.controls.renewalPeriodMonths" />
+        </div>
+  
+        <div class="field">
+          <label>Hours</label>
+          <input type="number" min="0" [formControl]="licenseForm.controls.hours" />
+        </div>
+  
+        <div class="field">
+          <label>Reminder (weeks)</label>
+          <input type="number" min="0" [formControl]="licenseForm.controls.reminderWeeks" />
+        </div>
+      </div>
+  
+      <div class="actions">
+        <button class="btn primary" type="button" (click)="saveLicense()" [disabled]="busy()">Save License</button>
+        <button class="btn ghost" type="button" (click)="newLicense()" [disabled]="busy()">Clear</button>
+      </div>
+    </section>
+  </div>
+  

@@ -1,0 +1,277 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- Helpers ----------
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Read role from users/{uid}
+    function userRole(uid) {
+      return exists(/databases/$(database)/documents/users/$(uid))
+        ? get(/databases/$(database)/documents/users/$(uid)).data.role
+        : "";
+    }
+
+    // Admin via allow-list OR users/{uid}.role == "admin"
+    function isAdmin() {
+      return isSignedIn() && (
+        (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.active == true)
+        ||
+        (userRole(request.auth.uid) == "admin")
+      );
+    }
+
+    function isClinician() {
+      return isSignedIn() && (userRole(request.auth.uid) in ["nurse","lpn","np","caregiver"]);
+    }
+
+    // Is current user the assignee of a given task object?
+    function isAssignedTo(task) {
+      return isSignedIn() && task.assignedTo == request.auth.uid;
+    }
+
+    // Allow only forward, safe status moves for clinicians
+    // new -> assigned -> in_progress -> done|cancelled
+    function statusTransitionOk(old, neu) {
+      return
+        (old == "new"         && neu in ["new","assigned"]) ||
+        (old == "assigned"    && neu in ["assigned","in_progress","cancelled"]) ||
+        (old == "in_progress" && neu in ["in_progress","done","cancelled"]) ||
+        (old == "done"        && neu == "done") ||
+        (old == "cancelled"   && neu == "cancelled");
+    }
+
+    // ---------- Admin allow-list doc ----------
+    match /admins/{uid} {
+      allow read, write: if false; // managed server-side/console only
+    }
+
+    // ---------- USERS ----------
+    match /users/{uid} {
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+
+      // User may edit own profile but cannot self-escalate role/active
+      allow write: if isAdmin()
+        || (
+          isSignedIn() && request.auth.uid == uid
+          && (!exists(/databases/$(database)/documents/users/$(uid))
+              || (request.resource.data.role == resource.data.role
+                  && request.resource.data.active == resource.data.active))
+        );
+    }
+
+    // ---------- SERVICES (public read; admin write) ----------
+    match /services/{id} {
+      allow read: if true;
+      allow write: if isAdmin()
+        && request.resource.data.keys().hasOnly(
+            ['title','slug','active','blurb','bullets','category','image','duration','order']
+           )
+        && (request.resource.data.title is string)
+        && (request.resource.data.slug is string)
+        && (request.resource.data.active is bool);
+    }
+
+    // ---------- CONTACTS (public create; admin read/update) ----------
+    match /contacts/{doc} {
+      allow create: if request.auth == null
+        && request.time < timestamp.date(2099,1,1)
+        && request.resource.data.keys().hasOnly(
+             ['name','email','phone','reason','message','createdAt','status','userAgent','page']
+           )
+        && request.resource.data.status == 'new'
+        && request.resource.data.createdAt == request.time;
+      allow read, update: if isAdmin();
+      allow delete: if false;
+    }
+
+   // ---------- BOOKINGS (public create; admin read/update) ----------
+match /bookings/{doc} {
+  // Allow any visitor (signed-in or not) to create a booking
+  allow create: if
+      (request.auth == null || request.auth != null)
+      && request.time < timestamp.date(2099,1,1)
+      // If you enable App Check, uncomment next line:
+      // && request.appcheck.token != null
+      // Only allow the exact schema your client sends
+      && request.resource.data.keys().hasOnly([
+           'serviceSlug','serviceTitle',
+           'patient','preference','contact',
+           'status','createdAt','userAgent'
+         ])
+      // Validate nested shapes
+      && request.resource.data.patient.keys().hasOnly([
+           'firstName','lastName','dob','woundType','notes'
+         ])
+      && request.resource.data.preference.keys().hasOnly([
+           'mode','preferredDate','preferredTime','address'
+         ])
+      && request.resource.data.contact.keys().hasOnly([
+           'name','phone','email','refSource'
+         ])
+      // Initial status & createdAt must be "now"
+      && request.resource.data.status == 'pending'
+      && request.resource.data.createdAt == request.time;
+
+  // Only admins can read/update bookings
+  allow read, update: if isAdmin();
+
+  // No deletes from clients
+  allow delete: if false;
+}
+
+
+
+    // ---------- REFERRALS (public create; admin read/update) ----------
+    match /patientReferal/{doc} {
+      allow create: if request.auth == null
+        && request.time < timestamp.date(2099,1,1)
+        && request.resource.data.keys().hasOnly([
+             'serviceSlug','serviceTitle',
+             'refType','refName','refOrg','refRole','refEmail','refPhone',
+             'patientName','patientDob','patientArea',
+             'diagnosis','urgency','notes',
+             'contactPref','consent',
+             'createdAt','status','page','userAgent'
+           ])
+        && request.resource.data.status == 'new'
+        && request.resource.data.createdAt == request.time;
+      allow read, update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // ---------- TASKS & subcollections ----------
+    // Task schema (canonical fields)
+    // { createdAt, createdBy, source, patient, service, scheduledAt, status, assignedTo, notes, lastUpdatedAt }
+    match /tasks/{taskId} {
+
+      // Admin can read; clinician can read IF assigned
+      allow read: if isAdmin() || (isClinician() && isAssignedTo(resource.data));
+
+      // Admin creates tasks with strict schema
+      allow create: if isAdmin()
+        && request.resource.data.keys().hasOnly([
+             'createdAt','createdBy','source','patient','service',
+             'scheduledAt','status','assignedTo','notes','lastUpdatedAt'
+           ])
+        && (request.resource.data.status in ['new','assigned','in_progress','done','cancelled']);
+
+      // Updates
+      // - Admin: any update
+      // - Clinician (assignee): can START (-> in_progress), progress, or mark DONE/CANCELLED.
+      //   Immutable fields must stay identical.
+      //   lastUpdatedAt must move forward.
+      allow update: if isAdmin()
+        || (
+          isClinician()
+          && isAssignedTo(resource.data)
+
+          // Immutable fields unchanged by clinician
+          && request.resource.data.assignedTo == resource.data.assignedTo
+          && request.resource.data.source     == resource.data.source
+          && request.resource.data.patient    == resource.data.patient
+          && request.resource.data.services    == resource.data.services
+          && request.resource.data.createdBy  == resource.data.createdBy
+          && request.resource.data.createdAt  == resource.data.createdAt
+
+          // Only these fields may exist in clinician updates
+          && request.resource.data.keys().hasOnly([
+               'createdAt','createdBy','source','patient','service',
+               'scheduledAt','status','assignedTo','notes','lastUpdatedAt'
+             ])
+
+          // Allowed status values + only forward transitions
+          && (request.resource.data.status in ['assigned','in_progress','done','cancelled'])
+          && statusTransitionOk(resource.data.status, request.resource.data.status)
+
+          // Force a forward-moving timestamp on update
+          && (request.resource.data.lastUpdatedAt > resource.data.lastUpdatedAt)
+        );
+
+      allow delete: if isAdmin();
+
+      // ---- NOTES subcollection ----
+      // Schema: { createdAt, authorUid, text, followUpAt? }
+      match /notes/{noteId} {
+        // Admin OR assigned clinician can read notes
+        allow read: if isAdmin()
+          || (isClinician()
+              && isAssignedTo(get(/databases/$(database)/documents/tasks/$(taskId)).data));
+
+        // Create: admin or assigned clinician; author must be current user
+        allow create: if isAdmin()
+          || (
+            isClinician()
+            && isAssignedTo(get(/databases/$(database)/documents/tasks/$(taskId)).data)
+            && request.resource.data.keys().hasOnly(['createdAt','authorUid','text','followUpAt'])
+            && request.resource.data.authorUid == request.auth.uid
+          );
+
+        // Update: admin or original author clinician; createdAt/authorUid immutable
+        allow update: if isAdmin()
+          || (
+            isClinician()
+            && isAssignedTo(get(/databases/$(database)/documents/tasks/$(taskId)).data)
+            && (request.auth.uid == resource.data.authorUid)
+            && request.resource.data.keys().hasOnly(['createdAt','authorUid','text','followUpAt'])
+            && request.resource.data.authorUid == resource.data.authorUid
+            && request.resource.data.createdAt == resource.data.createdAt
+          );
+
+        // Delete: admin or original author clinician
+        allow delete: if isAdmin()
+          || (
+            isClinician()
+            && (request.auth.uid == resource.data.authorUid)
+            && isAssignedTo(get(/databases/$(database)/documents/tasks/$(taskId)).data)
+          );
+      }
+
+      // ---- VISITS (optional) ----
+      match /visits/{visitId} {
+        allow read: if isAdmin()
+          || (isClinician()
+              && isAssignedTo(get(/databases/$(database)/documents/tasks/$(taskId)).data));
+
+        allow create: if isAdmin()
+          || (
+            isClinician()
+            && isAssignedTo(get(/databases/$(database)/documents/tasks/$(taskId)).data)
+            && request.resource.data.keys().hasOnly(
+                 ['createdAt','nurseUid','start','end','notes','outcome','vitals']
+               )
+            && request.resource.data.nurseUid == request.auth.uid
+          );
+
+        allow update: if isAdmin()
+          || (isClinician() && resource.data.nurseUid == request.auth.uid);
+
+        allow delete: if isAdmin();
+      }
+
+      // ---- MESSAGES (optional) ----
+      match /messages/{msgId} {
+        allow read: if isAdmin()
+          || (isClinician()
+              && isAssignedTo(get(/databases/$(database)/documents/tasks/$(taskId)).data));
+        allow create: if isAdmin()
+          || (
+            isClinician()
+            && isAssignedTo(get(/databases/$(database)/documents/tasks/$(taskId)).data)
+            && request.resource.data.keys().hasOnly(['createdAt','authorUid','text'])
+            && request.resource.data.authorUid == request.auth.uid
+          );
+        allow update, delete: if isAdmin()
+          || (isSignedIn() && request.auth.uid == resource.data.authorUid);
+      }
+    }
+
+    // Admin-only collection for in-app pings, etc.
+    match /adminNotifications/{id} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

@@ -1,0 +1,26 @@
+<div class="auth">
+    <div class="card">
+      <h1>Sign in</h1>
+      <p class="muted">INNOVACARE-TRAINING</p>
+  
+      <form [formGroup]="form" (ngSubmit)="submit()" class="form">
+        <label class="label">Email</label>
+        <input class="input" type="email" formControlName="email" placeholder="you@clinic.com" />
+        <small class="help" *ngIf="form.controls.email.invalid && form.controls.email.touched">Valid email required</small>
+  
+        <label class="label">Password</label>
+        <input class="input" type="password" formControlName="password" placeholder="••••••••" />
+        <small class="help" *ngIf="form.controls.password.invalid && form.controls.password.touched">Min 6 characters</small>
+  
+        <button class="btn" type="submit" [disabled]="loading()">Sign in</button>
+        <button class="btn outline" type="button" (click)="google()" [disabled]="loading()">Sign in with Google</button>
+      </form>
+  
+      <p class="error" *ngIf="error()">{{ error() }}</p>
+  
+      <p class="muted" style="margin-top:12px">
+        Forgot password? <a routerLink="/reset">Reset</a>
+      </p>
+    </div>
+  </div>
+  

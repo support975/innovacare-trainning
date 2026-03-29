@@ -1,0 +1,129 @@
+<!-- CONTENT ONLY (no topbar, no sidebar) -->
+<main class="content">
+  <!-- Welcome / Hero -->
+  <section class="ld-hero card">
+    <div class="ld-hero-art"></div>
+    <div class="ld-hero-text">
+      <h1>Welcome, {{ displayName() }}</h1>
+      <p class="muted">Your learning hub for mandatory training and CE credits.</p>
+      <div class="ld-hero-cta">
+        <a routerLink="/learner/library" class="btn">Browse Courses</a>
+        <a routerLink="/learner/assignments" class="btn outline">My Assignments</a>
+      </div>
+    </div>
+
+    <div class="ld-hero-help card">
+      <h3>Quick links</h3>
+      <ul>
+        <li><a routerLink="/learner/transcript">Transcript & certificates</a></li>
+        <li><a routerLink="/learner/certifications">Licenses & CE credits</a></li>
+        <a routerLink="/learner/policies">Policies</a>
+        <li><a routerLink="/help">Get support</a></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- KPIs -->
+  <section class="ld-kpis">
+    <div class="card kpi">
+      <div class="kpi-title">Stay on track</div>
+      <p class="muted">Complete assignments before the due date to keep your record perfect.</p>
+      <a routerLink="/learner/assignments" class="btn">Go to Assignments</a>
+    </div>
+
+    <div class="card kpi stat warning">
+      <div class="kpi-number kpi-overdue">{{ due().overdue }}</div>
+      <div class="kpi-label">Overdue</div>
+    </div>
+
+    <div class="card kpi stat">
+      <div class="kpi-number kpi-7">{{ due().in7 }}</div>
+      <div class="kpi-label">Due in 7 days</div>
+    </div>
+
+    <div class="card kpi stat">
+      <div class="kpi-number kpi-30">{{ due().in30 }}</div>
+      <div class="kpi-label">Due in 30 days</div>
+    </div>
+
+    <div class="card kpi stat">
+      <div class="kpi-number kpi-90">{{ due().in90 }}</div>
+      <div class="kpi-label">Due in 90 days</div>
+    </div>
+  </section>
+
+  <!-- My Assignments -->
+  <section class="ld-section">
+    <div class="ld-section-head">
+      <h2>My Assignments</h2>
+      <a routerLink="/learner/assignments" class="btn outline">View all</a>
+    </div>
+
+    <div class="ld-cards" *ngIf="rows().length; else emptyState">
+      <article class="ld-course" *ngFor="let row of rows()">
+        <div class="ld-course-head">
+          <span class="pill"
+                [class.pill-green]="row.enr.status==='completed'"
+                [class.pill-amber]="row.enr.status==='started'"
+                [class.pill-slate]="row.enr.status==='assigned'">
+            {{ row.enr.status | titlecase }}
+          </span>
+
+          <span class="due" [class.overdue]="dueLabel(row.enr,row.course)==='Overdue'">
+            {{ dueLabel(row.enr, row.course) }}
+          </span>
+        </div>
+
+        <h3 class="ld-course-title">{{ row.course.title || '(Untitled course)' }}</h3>
+
+        <div class="ld-course-meta">
+          <span class="badge">{{ row.course.kind || 'Course' }}</span>
+          <span class="dot"></span>
+          <span class="muted">{{ row.course.durationMin || 0 }} min</span>
+        </div>
+
+        <div class="ld-course-actions">
+          <a [routerLink]="['/learner/courses', row.course.id || row.enr.courseId]" class="btn">Open</a>
+          <a [routerLink]="['/learner/courses', row.course.id || row.enr.courseId]" class="btn outline">Details</a>
+        </div>
+      </article>
+    </div>
+
+    <ng-template #emptyState>
+      <div class="card empty">
+        <h3>No assignments yet</h3>
+        <p class="muted">When a course is assigned, it will appear here.</p>
+        <a routerLink="/learner/library" class="btn">Explore Library</a>
+      </div>
+    </ng-template>
+  </section>
+
+  <!-- Recent Activity -->
+  <section class="ld-section">
+    <div class="ld-section-head">
+      <h2>Recent Activity</h2>
+    </div>
+
+    <div class="card">
+      <div class="ld-recent-list" *ngIf="recent().length; else noRecent">
+        <div class="ld-recent-row" *ngFor="let item of recent()">
+          <div class="left">
+            <div class="course-title">{{ item.title }}</div>
+            <div class="course-meta">
+              <span class="badge">{{ item.type }}</span>
+              <span class="dot"></span>
+              <span>{{ item.duration }}</span>
+            </div>
+          </div>
+          <div class="right">
+            <span class="muted">{{ item.date }}</span>
+            <a [routerLink]="item.link" class="btn outline">Open</a>
+          </div>
+        </div>
+      </div>
+      <ng-template #noRecent>
+        <p class="muted" style="margin: 6px 0;">No recent activity yet.</p>
+      </ng-template>
+    </div>
+  </section>
+</main>

@@ -1,0 +1,192 @@
+<!-- course-player.html (KEEP PREVIEW + ADD INTERACTIVE QUIZ) — COPY/PASTE -->
+<div class="player container"
+     [class.sidebar-collapsed]="!sidebarOpen">
+
+  <!-- Top bar -->
+  <div class="crumbs">
+    <div class="crumbs-left">
+      <button class="btn soft" type="button" (click)="backToCourse()">‹ Back to course</button>
+    </div>
+
+    <div class="crumbs-right">
+      <button class="btn soft icon"
+              type="button"
+              (click)="toggleSidebar()"
+              aria-controls="lessonSidebar"
+              [attr.aria-expanded]="sidebarOpen">
+        ☰ Lessons
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile backdrop (click to close sidebar) -->
+  <div class="backdrop"
+       *ngIf="sidebarOpen"
+       (click)="sidebarOpen = false"
+       aria-hidden="true">
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <h1 class="title">{{ course().title || 'Course' }}</h1>
+    <div class="muted">
+      <span *ngIf="course().subtitle">{{ course().subtitle }}</span>
+      <span *ngIf="course().durationMin"> · {{ course().durationMin }} min</span>
+      <span *ngIf="course().lang"> · {{ course().lang }}</span>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <section class="content grid">
+    <!-- Lessons list (Sidebar) -->
+    <aside id="lessonSidebar"
+           class="list card"
+           [class.closed]="!sidebarOpen">
+
+      <div class="list-head">
+        <strong>Lessons</strong>
+        <span class="muted">({{ lessons().length }})</span>
+
+        <button class="btn soft icon list-close"
+                type="button"
+                (click)="sidebarOpen = false"
+                aria-label="Close lessons list">
+          ✕
+        </button>
+      </div>
+
+      <div class="lesson-item"
+           *ngFor="let l of lessons(); let i = index"
+           [class.active]="i === activeIndex"
+           (click)="setActive(i); sidebarOpen = false">
+
+        <div class="row-title">
+          <span class="title">{{ l.title }}</span>
+          <span class="chip" *ngIf="l.estMin">{{ l.estMin }} min</span>
+        </div>
+
+        <div class="row-sub muted">{{ l.sectionTitle }}</div>
+
+        <div class="row-right">
+          <span class="badge" [class.badge-done]="completedSet().has(l.id)">
+            {{ completedSet().has(l.id) ? 'Done' : 'Pending' }}
+          </span>
+        </div>
+      </div>
+
+      <p class="muted" *ngIf="!lessons().length">No lessons/sections configured.</p>
+    </aside>
+
+    <!-- Viewer -->
+    <article class="viewer card" *ngIf="current() as cur">
+      <div class="viewer-head">
+        <h2 class="viewer-title">{{ cur.title }}</h2>
+        <div class="viewer-meta muted">
+          {{ cur.sectionTitle }}
+          <span class="dot"> · </span>
+          Lesson {{ cur.index + 1 }} / {{ lessons().length }}
+        </div>
+      </div>
+
+      <!-- ✅ WRAPPER: ensures learner renders like manager preview -->
+      <div class="viewer-body">
+        <div class="course-html" role="document" aria-label="Lesson content">
+
+          <ng-container *ngFor="let b of cur.blocks; let bi = index">
+
+            <!-- ✅ NON-QUIZ: keep EXACT preview rendering -->
+            <div class="block"
+                 *ngIf="b.type !== 'quiz'"
+                 [innerHTML]="blockHtml(b)">
+            </div>
+
+            <!-- ✅ QUIZ: interactive UI -->
+            <div class="block quiz-ui" *ngIf="b.type === 'quiz'">
+              <div class="quiz card">
+                <div class="quiz-q">{{ b.question || 'Section Review' }}</div>
+
+                <!-- SINGLE -->
+                <div class="quiz-choices" *ngIf="(b.mode || 'single') === 'single'">
+                  <label class="quiz-choice" *ngFor="let ch of (b.choices || [])">
+                    <input
+                      type="radio"
+                      [name]="'q_' + cur.id + '_' + bi"
+                      [checked]="isSelected(cur.id, bi, ch.id)"
+                      (change)="selectSingle(cur.id, bi, ch.id)"
+                      [disabled]="isQuizLocked(cur.id, bi)"
+                    />
+                    <span>{{ ch.text }}</span>
+                  </label>
+                </div>
+
+                <!-- MULTI -->
+                <div class="quiz-choices" *ngIf="(b.mode || 'single') === 'multi'">
+                  <label class="quiz-choice" *ngFor="let ch of (b.choices || [])">
+                    <input
+                      type="checkbox"
+                      [checked]="isSelected(cur.id, bi, ch.id)"
+                      (change)="toggleMulti(cur.id, bi, ch.id)"
+                      [disabled]="isQuizLocked(cur.id, bi)"
+                    />
+                    <span>{{ ch.text }}</span>
+                  </label>
+                </div>
+
+                <div class="quiz-actions">
+                  <button class="btn primary"
+                          type="button"
+                          (click)="submitQuiz(cur.id, bi, b)"
+                          [disabled]="isQuizLocked(cur.id, bi)">
+                    Submit
+                  </button>
+
+                  <span class="quiz-result ok" *ngIf="quizStatus(cur.id, bi) === 'passed'">Passed</span>
+                  <span class="quiz-result bad" *ngIf="quizStatus(cur.id, bi) === 'failed'">Try again</span>
+                </div>
+
+                <p class="muted quiz-hint" *ngIf="quizStatus(cur.id, bi) !== 'passed'">
+                  Select your answer then submit.
+                </p>
+              </div>
+            </div>
+
+          </ng-container>
+
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="viewer-actions">
+        <button class="btn primary"
+                type="button"
+                (click)="completeLesson(cur.id)"
+                [disabled]="completedSet().has(cur.id) || busyId === cur.id">
+          {{ completedSet().has(cur.id) ? 'Completed' : (busyId === cur.id ? 'Saving…' : 'Mark complete') }}
+        </button>
+
+        <button class="btn soft"
+                type="button"
+                (click)="next(cur.index)"
+                [disabled]="cur.index === lessons().length - 1">
+          Next →
+        </button>
+
+        <button class="btn danger"
+                type="button"
+                *ngIf="isLastLesson(cur.index)"
+                (click)="endCourse()">
+          End course
+        </button>
+      </div>
+
+      <p class="note info" *ngIf="notice">{{ notice }}</p>
+      <div class="viewer-footer" aria-hidden="true"></div>
+    </article>
+
+    <!-- Empty state if no current lesson -->
+    <article class="viewer card" *ngIf="!current()">
+      <h2 class="viewer-title">No lesson selected</h2>
+      <p class="muted">Please select a lesson from the lessons list.</p>
+    </article>
+  </section>
+</div>

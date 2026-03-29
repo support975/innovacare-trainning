@@ -1,0 +1,250 @@
+/* ===============================
+   Exam Page – Professional Theme
+   =============================== */
+
+   :root {
+    --page-bg: #f6f8fb;
+    --card: #ffffff;
+    --ink: #0f172a;
+    --muted: #677286;
+    --border: #e6e9ef;
+    --brand: #234a84;      /* primary blue */
+    --brand-600: #1c3c6a;
+    --ok: #12844d;
+    --ok-ink: #064e3b;
+    --ok-bg: #e8f6ee;
+    --bad: #b91c1c;
+    --bad-ink: #7f1d1d;
+    --bad-bg: #fdeaea;
+    --warning: #f59e0b;
+    --radius: 14px;
+    --shadow-sm: 0 6px 18px rgba(3,10,26,.06);
+    --shadow: 0 14px 34px rgba(3,10,26,.10);
+  }
+  
+  /* Page container */
+  .exam-page {
+    background: var(--page-bg);
+    color: var(--ink);
+    padding: 28px 18px !important;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  
+  /* Titles & metadata */
+  .exam-page h1 {
+    font: 800 1.6rem/1.2 system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial;
+    margin: 0 0 6px !important;
+  }
+  .exam-page .muted {
+    color: var(--muted) !important;
+    font-size: 0.95rem;
+  }
+  
+  /* Notices */
+  .exam-page p[ng-reflect-ng-if],
+  .exam-page p[style*="crimson"],
+  .exam-page .notice {
+    background: #fff1f2;
+    color: #9f1239 !important;
+    border: 1px solid #ffe4e6;
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin: 12px 0;
+  }
+  
+  /* Question card */
+  .question {
+    background: var(--card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+    padding: 16px 16px 14px !important;
+    box-shadow: var(--shadow-sm);
+    transition: border-color .2s ease, box-shadow .2s ease, transform .03s ease;
+  }
+  .question:hover {
+    border-color: #d7dce6 !important;
+    box-shadow: 0 10px 26px rgba(3,10,26,.08);
+  }
+  .q-head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-weight: 700 !important;
+    margin-bottom: 10px !important;
+  }
+  .q-num {
+    color: var(--brand);
+  }
+  
+  /* Options layout */
+  .q-options {
+    display: grid !important;
+    gap: 10px !important;
+  }
+  
+  /* Custom radio/checkbox */
+  .opt {
+    display: grid !important;
+    grid-template-columns: 20px 1fr;
+    gap: 10px !important;
+    align-items: start;
+    padding: 10px 12px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease;
+  }
+  .opt:hover {
+    background: #f7f9fc;
+    border-color: #edf1f7;
+  }
+  .opt input {
+    appearance: none;
+    margin: 2px 0 0 0 !important;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #c9d2e1;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: #fff;
+    outline: none;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  /* checkbox for multi mode will be turned square via attribute selector */
+  .opt input[type="checkbox"] { border-radius: 6px; }
+  .opt input:focus-visible {
+    box-shadow: 0 0 0 4px rgba(35,74,132,.15);
+    border-color: var(--brand);
+  }
+  .opt input:checked {
+    border-color: var(--brand);
+  }
+  .opt input[type="radio"]:checked::after {
+    content: "";
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--brand);
+  }
+  .opt input[type="checkbox"]:checked::after {
+    content: "";
+    width: 10px; height: 10px; border-radius: 3px;
+    background: var(--brand);
+  }
+  
+  /* Buttons */
+  .btn {
+    --bg: var(--brand);
+    --bg-hover: var(--brand-600);
+    background: var(--bg);
+    color: #fff !important;
+    border: 0;
+    border-radius: 10px !important;
+    padding: 10px 16px !important;
+    font-weight: 800;
+    letter-spacing: .02em;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 6px 14px rgba(35, 74, 132, .22);
+    transition: transform .05s ease, background .15s ease, box-shadow .2s ease, opacity .2s ease;
+  }
+  .btn:hover { background: var(--bg-hover); }
+  .btn:active { transform: translateY(1px); }
+  .btn[disabled],
+  .btn[aria-disabled="true"] {
+    background: #ccd3df !important;
+    color: #fff !important;
+    box-shadow: none;
+    cursor: not-allowed;
+    opacity: .85;
+  }
+  /* Outline-style links disguised as buttons */
+  a.btn {
+    background: #f7f9fc;
+    color: var(--brand) !important;
+    border: 1px solid #dbe3ef !important;
+    box-shadow: none;
+  }
+  a.btn:hover { background: #eef3fb; }
+  
+  /* Results area */
+  .results {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  .results h2 {
+    margin: 0 0 6px !important;
+    font-size: 1.25rem;
+  }
+  .results .detail {
+    background: #fcfdff;
+    border: 1px solid var(--border) !important;
+    border-radius: 12px !important;
+    box-shadow: var(--shadow-sm);
+  }
+  .detail .prompt {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .detail .badge {
+    padding: 2px 10px !important;
+    border-radius: 999px !important;
+    font-weight: 800 !important;
+  }
+  .detail .badge[style*="#e8f6ee"],
+  .detail .badge[style*="e8f6ee"] {
+    background: var(--ok-bg) !important;
+    color: var(--ok-ink) !important;
+  }
+  .detail .badge[style*="#fdeaea"],
+  .detail .badge[style*="fdeaea"] {
+    background: var(--bad-bg) !important;
+    color: var(--bad-ink) !important;
+  }
+  .detail .resp {
+    display: grid !important;
+    gap: 4px !important;
+  }
+  
+  /* Layout helpers for action rows */
+  form > div:last-child,
+  .results > div:last-child {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 10px !important;
+    margin-top: 16px !important;
+  }
+  
+  /* Focus visibility for keyboard users */
+  .btn:focus-visible,
+  a.btn:focus-visible,
+  .opt:focus-within {
+    outline: 3px solid rgba(35,74,132,.25);
+    outline-offset: 2px;
+  }
+  
+  /* Print-friendly tweaks (for downloaded/printed results) */
+  @media print {
+    .exam-page {
+      background: #fff;
+      box-shadow: none;
+      border: 0;
+      padding: 0 !important;
+    }
+    .btn { display: none !important; }
+  }
+  
+  /* Responsive */
+  @media (max-width: 720px) {
+    .exam-page { padding: 20px 14px !important; }
+    .question { padding: 14px !important; }
+    .results { padding: 14px !important; }
+  }
+  

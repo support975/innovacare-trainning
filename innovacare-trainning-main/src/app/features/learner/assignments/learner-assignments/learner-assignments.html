@@ -1,0 +1,71 @@
+<!-- SORT SELECT -->
+<div class="sort">
+  <label>Sort by</label>
+  <select [ngModel]="sortBy()" (ngModelChange)="setSort($event)">
+    <option value="due">Due date</option>
+    <option value="az">A–Z</option>
+    <option value="course">Course name</option>
+  </select>
+
+  <button class="btn tiny outline" (click)="toggleSortDirection()">
+    {{ sortAsc() ? '▲' : '▼' }}
+  </button>
+</div>
+
+<!-- SEARCH -->
+<div class="search">
+  <input
+    type="search"
+    placeholder="Search assignments"
+    [ngModel]="query()"
+    (ngModelChange)="onQueryChange($event)"
+  />
+</div>
+
+<!-- LIST -->
+<article class="assignment card" *ngFor="let a of view()">
+  <div class="bar"></div>
+
+  <div class="body">
+    <div class="title">{{ a.courseName }}</div>
+    <div class="meta">
+      <span class="icon">📘</span><span>{{ a.kind }}</span>
+      <span class="dot"></span>
+      <span>{{ formatDuration(a.durationMin) }}</span>
+    </div>
+  </div>
+
+  <div class="side">
+    <div class="due" [class.overdue]="isOverdue(a)">{{ labelDue(a) }}</div>
+
+    <div class="actions">
+      <!-- Navigate to your course detail (adjust route to your app) -->
+      <a class="btn primary" [routerLink]="['/learner/courses', a.id]">
+        {{ a.status==='in-progress' ? 'Resume' : (a.status==='completed' ? 'Review' : 'Start') }}
+      </a>
+
+      <div class="dropdown" (mouseleave)="closeMenu()">
+        <button class="btn outline" (click)="toggleMenu(a.id)">
+          Add to calendar ▾
+        </button>
+      
+        <div class="menu" *ngIf="openMenuId() === a.id">
+          <a
+            class="menu-item"
+            [href]="getGoogleCalUrl(a)"
+            target="_blank"
+            rel="noopener"
+            (click)="closeMenu()"
+          >
+            Google Calendar
+          </a>
+          <button class="menu-item" type="button" (click)="downloadIcs(a)">
+            Download .ics (Outlook/Apple)
+          </button>
+        </div>
+      </div>      
+    </div>
+
+    <a class="more muted" [routerLink]="['/learner/library', a.id]">VIEW MORE ▾</a>
+  </div>
+</article>

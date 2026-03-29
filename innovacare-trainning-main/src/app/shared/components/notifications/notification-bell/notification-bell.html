@@ -1,0 +1,53 @@
+<button
+  mat-icon-button
+  [matMenuTriggerFor]="menu"
+  matTooltip="Notifications"
+  aria-label="Notifications"
+>
+  <mat-icon
+    [matBadge]="unreadCount()"
+    [matBadgeHidden]="unreadCount() === 0"
+    matBadgeOverlap="false"
+  >
+    notifications
+  </mat-icon>
+</button>
+
+<mat-menu #menu="matMenu" yPosition="below" xPosition="before" class="notif-menu">
+  <div class="menu-header">
+    <div class="title">Notifications</div>
+    <button mat-button type="button" (click)="markAllRead()" [disabled]="notifs().length === 0">
+      Mark all read
+    </button>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <ng-container *ngIf="notifs().length > 0; else emptyState">
+    <mat-nav-list>
+      <a
+        mat-list-item
+        *ngFor="let n of notifs()"
+        (click)="openNotif(n)"
+      >
+        <div matListItemTitle class="row-title">
+          <span class="sev" [class.warning]="n.severity==='warning'" [class.critical]="n.severity==='critical'"></span>
+          {{ n.title }}
+        </div>
+        <div matListItemLine class="row-body">{{ n.body }}</div>
+      </a>
+    </mat-nav-list>
+
+    <mat-divider></mat-divider>
+    <div class="menu-footer">
+      <span class="muted">Showing last 50</span>
+    </div>
+  </ng-container>
+
+  <ng-template #emptyState>
+    <div class="empty">
+      <div class="empty-title">No notifications</div>
+      <div class="empty-sub">You are all caught up.</div>
+    </div>
+  </ng-template>
+</mat-menu>

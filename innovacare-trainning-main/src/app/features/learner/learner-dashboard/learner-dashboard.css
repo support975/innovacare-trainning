@@ -1,0 +1,102 @@
+:root{
+  --border:#e5e7eb; --shadow:0 10px 25px rgba(16,24,40,.06);
+  --primary:#3949ab; --muted:#475467; --danger:#b42318; --danger-bg:#fef3f2;
+}
+
+/* keep your existing .content padding from the shell; add only what we need */
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:16px}
+
+/* Hero */
+.ld-hero{position:relative;overflow:hidden;display:grid;grid-template-columns:1fr 360px;gap:16px}
+.ld-hero-art{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(1200px 300px at -10% -50%,#c7d2fe 20%,transparent 60%),
+             radial-gradient(900px 300px at 120% 10%,#99f6e4 20%,transparent 60%),
+             radial-gradient(900px 300px at 50% 120%,#fde68a 15%,transparent 60%);opacity:.35}
+.ld-hero-text{position:relative}
+.ld-hero-text h1{margin:0 0 6px;font-size:28px;color:#123;text-shadow:0 2px 0 rgba(255,255,255,.4)}
+.ld-hero-text .muted{color:var(--muted)}
+.ld-hero-cta{margin-top:12px;display:flex;gap:8px}
+.ld-hero-help{position:relative;align-self:start}
+.ld-hero-help h3{margin:0 0 8px}
+.ld-hero-help ul{margin:0;padding-left:18px}
+.ld-hero-help li{margin:6px 0}
+
+/* KPIs */
+.ld-kpis{display:grid;gap:16px;grid-template-columns:1.6fr 1fr 1fr 1fr 1fr;margin-top:16px}
+.kpi-title{font-weight:700;margin-bottom:6px}
+.kpi.stat{display:grid;place-items:center;text-align:center}
+.kpi-number{font-size:36px;font-weight:800;line-height:1;margin-bottom:6px}
+.kpi-overdue{color:var(--danger)}
+.warning{background:#fff7f7;border-color:#fde2e2}
+
+/* Sections */
+.ld-section{margin-top:20px}
+.ld-section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.ld-section-head h2{margin:0;font-size:20px}
+
+/* Course cards */
+.ld-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.ld-course{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
+.ld-course-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.pill{padding:2px 8px;border-radius:999px;font-size:12px;border:1px solid var(--border)}
+.pill-slate{background:#eef2ff}.pill-amber{background:#fff7ed}.pill-green{background:#ecfdf5}
+.due{font-size:12px;color:#344054}
+.due.overdue{color:var(--danger);background:var(--danger-bg);padding:2px 8px;border-radius:999px;border:1px solid #fecaca}
+.ld-course-title{margin:4px 0 6px;font-size:16px;font-weight:800;color:#111827}
+.ld-course-meta{display:flex;gap:8px;align-items:center;color:#475467;font-size:13px}
+.badge{background:#eef2ff;color:var(--primary);border:1px solid #e0e7ff;border-radius:999px;padding:2px 8px;font-size:12px}
+.dot{width:4px;height:4px;border-radius:999px;background:#cbd5e1;display:inline-block}
+.ld-course-actions{display:flex;gap:8px;margin-top:12px}
+
+/* Recent */
+.ld-recent-list{display:grid;gap:10px}
+.ld-recent-row{display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px dashed #eef2f7}
+.ld-recent-row:last-child{border-bottom:none}
+.left .course-title{font-weight:700;margin-bottom:2px}
+.left .course-meta{display:flex;gap:8px;align-items:center;color:#475467;font-size:14px}
+.right{display:flex;gap:10px;align-items:center}
+
+/* Empty state */
+.empty{text-align:center}
+.empty h3{margin:4px 0 4px}
+.empty .btn{margin-top:8px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:12px;
+  border:1px solid transparent;background:var(--primary);color:#fff;font-weight:600;text-decoration:none;cursor:pointer}
+.btn:hover{filter:brightness(.95)}
+.btn.outline{background:transparent;color:var(--primary);border-color:var(--primary)}
+
+/* Responsive */
+@media (max-width:1200px){
+  .ld-cards{grid-template-columns:repeat(2,1fr)}
+  .ld-kpis{grid-template-columns:1fr 1fr 1fr 1fr}
+}
+@media (max-width:1024px){
+  .ld-kpis{grid-template-columns:1fr 1fr}
+  .ld-hero{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  .ld-cards{grid-template-columns:1fr}
+}
+/* --- Ghosty background --- */
+:root {
+  /* light ghost white */
+  --bg: #9494f5; /* ghostwhite */
+}
+
+/* If your shell uses the .content area, softly tint it too */
+.content {
+  background:
+    radial-gradient(600px 200px at 10% -10%, rgba(136, 154, 232, 0.25), transparent 60%),
+    radial-gradient(500px 180px at 90% 0%, rgba(73, 118, 109, 0.18), transparent 60%),
+    radial-gradient(700px 240px at 50% 120%, rgba(225, 200, 102, 0.16), transparent 65%),
+    #f2f2fa; /* ghostwhite fallback */
+  background-attachment: fixed;
+}
+
+/* Keep cards crisp on top of the ghosty canvas */
+.card {
+  background: #e9fffc;
+}
+

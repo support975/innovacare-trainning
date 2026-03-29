@@ -1,0 +1,175 @@
+/* Layout for filters (sort + search) */
+.sort,
+.search {
+  display: inline-flex;
+  align-items: center;
+  margin: 0.5rem 1rem 1rem 0;
+  gap: 0.5rem;
+}
+
+.sort label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.sort select,
+.search input {
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  min-width: 160px;
+}
+
+.search input {
+  width: 220px;
+}
+
+/* Tiny button for sort direction */
+.btn.tiny {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  line-height: 1;
+  border-radius: 4px;
+}
+
+/* Assignment card */
+.assignment.card {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid #e3e3e3;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease;
+}
+
+.assignment.card:hover {
+  transform: translateY(-2px);
+}
+
+.assignment .bar {
+  width: 6px;
+  background: linear-gradient(to bottom, #4e8cff, #1e4ed8);
+}
+
+.assignment .body {
+  flex: 1;
+  padding: 1rem;
+}
+
+.assignment .title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.assignment .meta {
+  font-size: 0.85rem;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.assignment .meta .icon {
+  font-size: 1rem;
+}
+
+.assignment .meta .dot::before {
+  content: "•";
+  margin: 0 0.25rem;
+  color: #aaa;
+}
+
+/* Right side actions */
+.assignment .side {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  min-width: 200px;
+}
+
+.assignment .due {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #444;
+}
+
+.assignment .due.overdue {
+  color: #d9534f;
+  font-weight: 600;
+}
+
+.assignment .actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.assignment .btn {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s ease;
+}
+
+.assignment .btn.primary {
+  background: #1e4ed8;
+  color: #fff;
+}
+
+.assignment .btn.outline {
+  border: 1px solid #ccc;
+  background: #fff;
+}
+
+.assignment .btn.ghost {
+  background: transparent;
+  color: #444;
+}
+
+.assignment .more {
+  font-size: 0.8rem;
+  text-decoration: none;
+  margin-top: 0.3rem;
+}
+
+.assignment .more:hover {
+  text-decoration: underline;
+}
+
+/* Dropdown placeholder */
+/* learner-assignments.css */
+.dropdown { position: relative; display: block; }
+.dropdown .menu {
+  position: absolute; right: 0; top: 110%;
+  background: #fff; border: 1px solid #e6e6e6; border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  min-width: 220px; padding: 6px; z-index: 10;
+}
+.menu-item {
+  display: block; width: 100%; text-align: left;
+  background: none; border: none; padding: 10px 12px; cursor: pointer;
+  text-decoration: none; color: inherit; border-radius: 6px;
+}
+.menu-item:hover { background: #f5f5f5; }
+
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .assignment.card {
+    flex-direction: column;
+  }
+  .assignment .side {
+    align-items: flex-start;
+    min-width: auto;
+    width: 100%;
+  }
+}
+
+

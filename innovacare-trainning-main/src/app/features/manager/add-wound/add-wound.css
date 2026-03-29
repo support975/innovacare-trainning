@@ -1,0 +1,20 @@
+/* src/app/admin/add-wound/add-wound.component.scss */
+.add-wound-card {
+    max-width: 1000px;
+    margin: 16px auto;
+    padding: 20px;
+    border-radius: 8px;
+    background: white;
+  
+    .section { margin-top: 16px; padding: 12px; }
+    .full { width: 100%; }
+    .row { display:flex; gap:12px; }
+    .row mat-form-field { flex: 1; }
+    .file-row { display:flex; align-items:center; gap:12px; margin-top:12px; }
+    .file-label { display:inline-block; padding:8px 12px; background:#eee; border-radius:4px; cursor:pointer; input { display:none; } }
+    .selected { font-size: 0.9rem; color:#444; }
+    .treatment { margin-bottom: 12px; }
+    .steps, .products { margin: 8px 0; }
+    .actions { margin-top:18px; display:flex; align-items:center; gap:12px; }
+  }
+  

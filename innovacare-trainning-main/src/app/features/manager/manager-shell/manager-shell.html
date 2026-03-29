@@ -1,0 +1,45 @@
+<div class="shell">
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <button class="menu-toggle" (click)="toggleSidebar()" aria-label="Open menu">☰</button>
+    <div class="brand"><strong>INNOVACARE-TRAINING</strong></div>
+    <div class="top-actions">
+      <span class="role">Manager</span>
+      <div class="avatar" title="Profile"></div>
+      <app-notification-bell-plain></app-notification-bell-plain>
+      <button class="btn logout" (click)="logout()">Logout</button>
+    </div>
+  </header>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" [class.open]="sidebarOpen()">
+    <nav class="menu">
+      <div class="menu-group">
+        <div class="menu-title">Overview</div>
+        <a *ngFor="let i of nav()"
+           [routerLink]="i.path"
+           routerLinkActive="active"
+           class="menu-item"
+           (click)="closeSidebar()">{{ i.label }}</a>
+      </div>
+
+      <div class="menu-group">
+        <div class="menu-title">Resources</div>
+        <a *ngFor="let r of resources()"
+           [routerLink]="r.path"
+           routerLinkActive="active"
+           class="menu-item"
+           (click)="closeSidebar()">{{ r.label }}</a>
+           
+      </div>
+    </nav>
+  </aside>
+
+  <!-- BACKDROP -->
+  <div class="backdrop" *ngIf="sidebarOpen()" (click)="closeSidebar()"></div>
+
+  <!-- MAIN CONTENT -->
+  <main class="content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

@@ -1,0 +1,132 @@
+<!-- src/app/features/learner/rewards/rewards/rewards.html -->
+<div class="page">
+  <header class="head">
+    <div class="left">
+      <h1>Rewards</h1>
+      <div class="sub muted">Certificates, badges, earned hours, and points.</div>
+    </div>
+
+    <div class="right card summary">
+      <div class="kpi">
+        <div class="kpi-label">Total points</div>
+        <div class="kpi-value">{{ wallet().totalPoints || 0 }}</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Items</div>
+        <div class="kpi-value">{{ totalShown() }} / {{ totalAll() }}</div>
+      </div>
+    </div>
+  </header>
+
+  <section class="filters card">
+    <div class="grid">
+      <div class="field">
+        <label>Search</label>
+        <input
+          type="search"
+          [value]="search()"
+          (input)="search.set(($any($event.target).value || '').toString())"
+          placeholder="Course, honor, certificate #..."
+        />
+      </div>
+
+      <div class="field">
+        <label>Type</label>
+        <select [value]="typeFilter()" (change)="typeFilter.set($any($event.target).value)">
+          <option value="all">All</option>
+          <option value="certificate">Certificate</option>
+          <option value="badge">Badge</option>
+          <option value="credit_hours">Hours</option>
+          <option value="points">Points</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>From</label>
+        <input type="date" [value]="fromDate()" (change)="fromDate.set($any($event.target).value)" />
+      </div>
+
+      <div class="field">
+        <label>To</label>
+        <input type="date" [value]="toDate()" (change)="toDate.set($any($event.target).value)" />
+      </div>
+
+      <div class="actions">
+        <button class="btn outline" type="button" (click)="reset()">Reset</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Course</th>
+          <th>Title</th>
+          <th class="right">Score</th>
+          <th>Honor</th>
+          <th class="right">Hours</th>
+          <th class="right">Points</th>
+          <th class="right">Action</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let r of view()">
+          <td class="muted">{{ fmtDate(r.issuedAtMs) }}</td>
+
+          <td>
+            <span class="pill" [class.pill-cert]="r.type==='certificate'"
+                              [class.pill-badge]="r.type==='badge'"
+                              [class.pill-hours]="r.type==='credit_hours'"
+                              [class.pill-points]="r.type==='points'">
+              {{ labelType(r.type) }}
+            </span>
+          </td>
+
+          <td>
+            <div class="main">{{ r.courseTitle }}</div>
+            <div class="muted small" *ngIf="r.certificateNo"># {{ r.certificateNo }}</div>
+          </td>
+
+          <td class="muted">{{ r.title || '—' }}</td>
+
+          <td class="right">
+            <span *ngIf="r.score !== undefined; else dash">{{ r.score }}%</span>
+            <ng-template #dash>—</ng-template>
+          </td>
+
+          <td class="muted">{{ r.honor || '—' }}</td>
+
+          <td class="right">
+            <span *ngIf="r.hours !== undefined; else dash2">{{ r.hours }} {{ r.creditUnit || 'hrs' }}</span>
+            <ng-template #dash2>—</ng-template>
+          </td>
+
+          <td class="right">
+            <span *ngIf="r.points !== undefined; else dash3">{{ r.points }}</span>
+            <ng-template #dash3>—</ng-template>
+          </td>
+
+          <td class="right">
+            <button
+              *ngIf="r.type==='certificate' || r.certificateId"
+              class="btn tiny"
+              type="button"
+              (click)="openCertificate(r)"
+            >
+              Download certificate
+            </button>
+            <span *ngIf="!(r.type==='certificate' || r.certificateId)" class="muted">—</span>
+          </td>
+        </tr>
+
+        <tr *ngIf="view().length === 0">
+          <td colspan="9" class="empty muted">No rewards found for the selected filters.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</div>

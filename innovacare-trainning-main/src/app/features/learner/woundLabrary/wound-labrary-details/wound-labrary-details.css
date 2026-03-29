@@ -1,0 +1,269 @@
+/* src/app/features/learner/woundLabrary/wound-labrary-details/wound-labrary-details.component.css */
+
+/* Fluid container that can truly go full-width on big screens */
+.container {
+  width: 100%;
+  /* keep minimal side padding; remove max-width cap to allow full screen */
+  padding: 16px clamp(12px, 3vw, 32px);
+  margin: 0 auto;
+}
+
+.loader { display:flex; justify-content:center; padding:40px 0; }
+
+/* Header card becomes a responsive grid (text + gallery) */
+.header-card {
+  display: grid;
+  gap: clamp(12px, 2vw, 24px);
+  padding: clamp(12px, 2vw, 20px);
+  align-items: start;
+  /* 1col on small, then 2col; text grows more than gallery on desktops */
+  grid-template-columns: 1fr;
+  background: var(--mat-card-background, #fff);
+}
+
+/* Left text area */
+.header-left { min-width: 0; } /* prevent overflow */
+.meta { margin: 8px 0; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.tags { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+.tag {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background: #eef2ff;
+  color: #23319b;
+  font-size: 0.85rem;
+  border: 1px solid rgba(35,49,155,0.08);
+}
+
+.category { font-size: 0.95rem; color: #444; }
+
+/* Gallery: fluid, adapts height with viewport */
+.gallery {
+  width: 100%;
+  max-width: 720px;             /* big but bounded on huge screens */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-inline: auto;          /* center on narrow screens */
+}
+
+.gallery .main {
+  width: 100%;
+  /* responsive height: small on phones, tall on desktops */
+  height: clamp(220px, 45vh, 560px);
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  /* crisp edges on high DPI */
+  image-rendering: auto;
+}
+
+.thumbs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  row-gap: 10px;
+  max-width: 100%;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.thumbs img {
+  height: 64px;
+  width: auto;
+  cursor: pointer;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  flex: 0 0 auto; /* keep size in horizontal scroll */
+}
+
+.thumbs img.active { border-color: #3f51b5; }
+
+/* When no image, keep same footprint and scale with screen */
+.noimg {
+  width: 100%;
+  height: clamp(220px, 40vh, 520px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  color: #888;
+  border-radius: 10px;
+  border: 1px dashed #ddd;
+}
+
+/* Content below: two columns that adapt */
+.two-col {
+  display: grid;
+  gap: clamp(12px, 2vw, 20px);
+  margin-top: 16px;
+  grid-template-columns: 1fr;
+}
+
+/* Typography helpers */
+.muted { color: #666; font-size: 0.95rem; }
+
+/* --- Prevent grid children from overflowing on wide screens --- */
+.header-card > .header-left,
+.header-card > .gallery,
+.two-col > mat-card {
+  min-width: 0;           /* allow columns to shrink instead of overflowing */
+}
+
+/* Ensure cards don't clip their own content */
+.two-col > mat-card,
+.header-card {
+  overflow: visible;      /* Material cards can default to hidden; we want content visible */
+}
+
+/* Stronger wrapping for long lines/bullets on the right column */
+.two-col > mat-card * {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+/* Give the right column a bit more breathing room on very large screens */
+@media (min-width: 1280px) {
+  .two-col {
+    grid-template-columns: minmax(0, 1.2fr) minmax(420px, 0.9fr);
+  }
+}
+@media (min-width: 1600px) {
+  .two-col {
+    grid-template-columns: minmax(0, 1.3fr) minmax(520px, 1fr);
+  }
+}
+
+/* Keep the big image immersive but avoid it pushing content awkwardly */
+.gallery .main {
+  height: clamp(260px, 42vh, 720px); /* slight tweak: a bit less tall than before */
+}
+
+
+/* --- General safety: allow grid children to shrink/wrap --- */
+.header-card > .header-left,
+.header-card > .gallery,
+.two-col > mat-card { min-width: 0; }
+
+/* --- Mobile-first fixes --- */
+@media (max-width: 600px) {
+  /* Container padding and full width */
+  .container {
+    padding: 12px 10px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* Header becomes a single column */
+  .header-card {
+    display: grid;
+    grid-template-columns: 1fr;
+    padding: 12px;
+    gap: 12px;
+  }
+
+  /* Gallery: full width, sensible height */
+  .gallery {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    align-items: stretch;
+  }
+  .gallery .main {
+    width: 100%;
+    height: clamp(200px, 52vw, 320px); /* scales with screen */
+    object-fit: cover;                 /* fill without distortion */
+    border-radius: 8px;
+  }
+
+  /* Thumbs: horizontal scroll + wrap when needed */
+  .thumbs {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 2px 0 6px;
+  }
+  .thumbs img {
+    height: 48px;
+    flex: 0 0 auto;
+  }
+
+  /* No-image placeholder matches main image size */
+  .noimg {
+    width: 100%;
+    height: clamp(200px, 52vw, 320px);
+    border-radius: 8px;
+  }
+
+  /* Content below: single column */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  /* Long lines/words shouldn’t blow out the layout */
+  .two-col > mat-card,
+  .two-col > mat-card * {
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  /* Buttons & text spacing */
+  .header-left h1 { font-size: 1.25rem; line-height: 1.2; }
+  .tag { font-size: 0.8rem; padding: 3px 7px; }
+}
+
+/* Small tablets: stack, but give a taller image */
+@media (min-width: 601px) and (max-width: 960px) {
+  .header-card { grid-template-columns: 1fr; }
+  .gallery .main { height: clamp(240px, 40vw, 420px); }
+  .two-col { grid-template-columns: 1fr; }
+}
+
+/* Desktop refinements (keep from previous fix) */
+@media (min-width: 960px) {
+  .header-card { grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr); }
+  .two-col     { grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.8fr); }
+}
+
+
+/* --- Breakpoints --- */
+
+/* ≥ 960px: two columns in header and content */
+@media (min-width: 960px) {
+  .header-card {
+    grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  }
+
+  .two-col {
+    grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  }
+}
+
+/* ≥ 1280px: make gallery larger and let layout breathe */
+@media (min-width: 1280px) {
+  .gallery { max-width: 880px; }
+  .gallery .main { height: clamp(360px, 48vh, 680px); }
+}
+
+/* ≥ 1600px: go truly "full screen" feel: larger image and wider columns */
+@media (min-width: 1600px) {
+  .header-card {
+    grid-template-columns: minmax(0, 1.5fr) minmax(520px, 1fr);
+  }
+  .two-col {
+    grid-template-columns: minmax(0, 1.4fr) minmax(480px, 1fr);
+  }
+  .gallery { max-width: 1080px; }
+  .gallery .main { height: clamp(420px, 52vh, 820px); }
+}
+
+/* ≤ 960px: stack layout, images auto-fit width */
+@media (max-width: 960px) {
+  .header-card { grid-template-columns: 1fr; }
+  .gallery, .noimg { width: 100%; }
+}

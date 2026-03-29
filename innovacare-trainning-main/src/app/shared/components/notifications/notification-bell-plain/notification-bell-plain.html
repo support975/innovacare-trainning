@@ -1,0 +1,40 @@
+<button type="button" class="bell-btn" (click)="toggle()" aria-label="Notifications">
+  <span class="bell-icon">🔔</span>
+  <span class="badge" *ngIf="unreadCount() > 0">{{ unreadCount() }}</span>
+</button>
+
+<div class="panel" *ngIf="open()">
+  <div class="panel-header">
+    <div>
+      <div class="panel-title">Notifications</div>
+      <div class="panel-sub">{{ unreadCount() }} unread</div>
+    </div>
+  </div>
+
+  <div class="list">
+    <button
+      type="button"
+      class="row"
+      *ngFor="let n of unread()"
+      (click)="openDetail(n, detailDlg)"
+    >
+      <div class="t">{{ n.title || 'Notification' }}</div>
+      <div class="b">{{ n.body || '' }}</div>
+      <div class="meta">
+        <span class="pill" [class.info]="n.severity==='info'"
+                         [class.warning]="n.severity==='warning'"
+                         [class.critical]="n.severity==='critical'">
+          {{ n.severity || 'info' }}
+        </span>
+      </div>
+    </button>
+
+    <div class="empty" *ngIf="unread().length === 0">No notifications</div>
+  </div>
+
+  <div class="panel-footer">
+    <button type="button" class="link-btn" (click)="toggle()">Close</button>
+  </div>
+</div>
+
+<app-notification-detail-dialog #detailDlg></app-notification-detail-dialog>

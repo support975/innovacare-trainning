@@ -1,0 +1,40 @@
+<div class="backdrop" (click)="close()"></div>
+
+<div class="dialog" role="dialog" aria-modal="true" aria-label="Notification details">
+  <div class="header">
+    <div class="title-wrap">
+      <div class="title">{{ n()?.title || 'Notification' }}</div>
+
+      <div class="sub">
+        <span
+          class="pill"
+          [class.info]="n()?.severity==='info'"
+          [class.warning]="n()?.severity==='warning'"
+          [class.critical]="n()?.severity==='critical'">
+          {{ n()?.severity || 'info' }}
+        </span>
+
+        <span *ngIf="n()?.createdAt as ts">• {{ ts | date:'medium' }}</span>
+      </div>
+    </div>
+
+    <button type="button" class="icon-btn" (click)="close()" aria-label="Close">
+      ✕
+    </button>
+  </div>
+
+  <div class="body">
+    <div class="message">{{ n()?.body || '' }}</div>
+
+    <div class="link" *ngIf="n()?.data?.link as link">
+      <div class="link-code">{{ link }}</div>
+      <button type="button" class="link-btn" (click)="openLink(link)">Open</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    <button type="button" class="primary" (click)="markReadAndClose()">
+      Mark read
+    </button>
+  </div>
+</div>

@@ -1,0 +1,63 @@
+<div class="page">
+    <div class="top">
+      <div class="left">
+        <h1>Certificate</h1>
+        <p class="muted">Print, download, or email your certificate after passing the exam.</p>
+      </div>
+  
+      <div class="actions">
+        <button class="btn outline" type="button" (click)="print()" [disabled]="busy()">Print</button>
+        <button class="btn" type="button" (click)="downloadPdf()" [disabled]="busy()">Download PDF</button>
+        <button class="btn ghost" type="button" (click)="sendEmail()" [disabled]="busy()">Send by Email</button>
+        <a class="btn outline" [routerLink]="['/learner/assignments']">Back to Assignments</a>
+      </div>
+    </div>
+  
+    <div class="notice" *ngIf="notice()">{{ notice() }}</div>
+  
+    <!-- CERTIFICATE AREA -->
+    <section class="paper-wrap">
+      <div #certArea class="paper" role="document" aria-label="Certificate of completion">
+        <!-- Watermark -->
+        <div class="watermark" aria-hidden="true">INNOVACARE TRAINING</div>
+  
+        <!-- Brand -->
+        <div class="brand">
+          <div class="logo">INNOVACARE</div>
+          <div class="sub">Training</div>
+        </div>
+  
+        <div class="title">Certificate of Completion</div>
+        <div class="line"></div>
+  
+        <div class="presented">This certificate is proudly presented to</div>
+  
+        <div class="name">{{ userName() }}</div>
+        <div class="email" *ngIf="userEmail()">{{ userEmail() }}</div>
+  
+        <div class="for">for successfully completing</div>
+        <div class="course">{{ courseTitle() }}</div>
+  
+        <div class="honor">
+          <span class="pill">Honor: {{ honor() }}</span>
+          <span class="pill" *ngIf="percent() > 0">Score: {{ percent() }}%</span>
+          <span class="pill">Completed: {{ completedAt() }}</span>
+        </div>
+  
+        <!-- Footer (NOT centered like the rest) -->
+        <div class="footer">
+          <div class="meta">
+            <div><strong>Certificate #</strong> {{ certificateNo() }}</div>
+            <div><strong>Issued</strong> {{ issuedOn() }}</div>
+          </div>
+  
+          <div class="sign">
+            <div class="sig-line"></div>
+            <div class="sig-name">Innovacare Training</div>
+            <div class="sig-role">Education &amp; Compliance</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  

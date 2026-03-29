@@ -1,0 +1,20 @@
+.auth { min-height: calc(100dvh - 120px); display: grid; place-items: center; padding: 24px; }
+.card {
+  width: 100%; max-width: 420px; background: #fff;
+  border: 1px solid var(--border, #e5e7eb); border-radius: 14px;
+  box-shadow: var(--shadow, 0 10px 25px rgba(16,24,40,.06)); padding: 24px;
+}
+h1 { margin: 0 0 6px; color: var(--primary, #3949ab); }
+.form { display: grid; gap: 10px; margin-top: 14px; }
+.input { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border, #e5e7eb); background: #fff; }
+.label { font-size: 12px; color: #667085; }
+.help { font-size: 12px; color: #98a2b3; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 10px 14px; border-radius: 12px; border: 1px solid transparent;
+  background: var(--primary, #3949ab); color: #fff; font-weight: 600; cursor: pointer;
+}
+.btn.outline { background: transparent; color: var(--primary, #3949ab); border-color: var(--primary, #3949ab); }
+.btn[disabled] { opacity: .6; cursor: not-allowed; }
+.ok { color: #047857; margin-top: 8px; }
+.error { color: #e11d48; margin-top: 8px; }

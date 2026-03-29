@@ -1,0 +1,40 @@
+{
+  "courseId": "compliance-ethics-101",
+  "course": {
+    "title": "Compliance & Ethics Fundamentals",
+    "subtitle": "Workplace conduct, integrity, and safety",
+    "description": "Core principles of ethics, anti-bribery, data privacy, conflicts of interest, and speak-up culture.",
+    "lang": "EN",
+    "durationMin": 45,
+    "ceCredit": 1,
+    "active": true,
+    "tags": ["compliance","ethics","privacy","safety"],
+    "imageUrl": "https://example.com/course-banner.jpg",
+    "kind": "Course",
+    "url": "https://sites.google.com/your-domain/compliance-ethics"
+  },
+  "examId": "final-exam",
+  "exam": {
+    "title": "Compliance & Ethics — Final Exam",
+    "available": true,
+    "pointsPerQuestion": 10,
+    "passPct": 80
+  },
+  "questions": [
+    {
+      "id": "q1",
+      "order": 1,
+      "mode": "single",
+      "prompt": "You suspect a coworker is falsifying expense reports. What is the best first step?",
+      "options": [
+        {"id":"a","text":"Confront them publicly at the next team meeting"},
+        {"id":"b","text":"Report the concern via the company hotline or to Compliance"},
+        {"id":"c","text":"Ignore it; it’s not your responsibility"},
+        {"id":"d","text":"Post about it on social media"}
+      ],
+      "explanation": "Use official speak-up channels: hotline or Compliance.",
+      "answer": ["b"]
+    }
+    
+  ]
+}

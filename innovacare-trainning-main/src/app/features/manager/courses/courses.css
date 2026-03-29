@@ -1,0 +1,466 @@
+/* =========================================================
+   courses.css — Manager Courses (Create/Edit)
+   - Responsive editor-grid (editor left, preview right)
+   - Drag handle styling (CDK)
+   - Preview box scrollable, clean, NO overflow (images/tables/code)
+   ========================================================= */
+
+/* ---------------------------
+   Local tokens (fallbacks)
+---------------------------- */
+:host {
+    display: block;
+  }
+  
+  :root {
+    --c-surface: var(--surface, #ffffff);
+    --c-bg: var(--bg, #f7f8fa);
+    --c-text: var(--text, #101828);
+    --c-muted: var(--text-muted, #667085);
+    --c-border: var(--border, #e5e7eb);
+    --c-primary: var(--primary-600, #3949ab);
+    --c-shadow: var(--shadow, 0 10px 25px rgba(16, 24, 40, 0.06));
+    --c-radius: var(--radius, 14px);
+  }
+  
+  /* ---------------------------
+     Page layout helpers
+  ---------------------------- */
+  .form.card {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--c-radius);
+    box-shadow: var(--c-shadow);
+  }
+  
+  .list {
+    margin-top: 18px;
+  }
+  
+  .list .item {
+    margin-bottom: 12px;
+  }
+  
+  /* ---------------------------
+     Basic form spacing
+  ---------------------------- */
+  .form h2 {
+    margin: 0 0 12px;
+  }
+  
+  .row {
+    margin-bottom: 14px;
+  }
+  
+  .row label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--c-text);
+  }
+  
+  .row input,
+  .row textarea,
+  .row select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--c-border);
+    background: #fff;
+    outline: none;
+  }
+  
+  .row textarea {
+    resize: vertical;
+    min-height: 90px;
+  }
+  
+  .row.grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(4, minmax(160px, 1fr));
+    align-items: end;
+  }
+  
+  .row .check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 22px;
+  }
+  
+  .err {
+    margin-top: 6px;
+    color: #b42318;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  
+  /* Responsive top grid */
+  @media (max-width: 1100px) {
+    .row.grid {
+      grid-template-columns: repeat(2, minmax(180px, 1fr));
+    }
+  }
+  @media (max-width: 520px) {
+    .row.grid {
+      grid-template-columns: 1fr;
+    }
+    .row .check {
+      padding-top: 0;
+    }
+  }
+  
+  /* ---------------------------
+     Sections / Lessons / Blocks containers
+  ---------------------------- */
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 18px 0 10px;
+  }
+  
+  .section {
+    border: 1px solid var(--c-border);
+    background: #fff;
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .section-bar,
+  .lesson-bar,
+  .block-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .section-bar {
+    margin-bottom: 10px;
+  }
+  
+  .lessons {
+    border-top: 1px dashed var(--c-border);
+    padding-top: 12px;
+    margin-top: 12px;
+  }
+  
+  .lesson-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  
+  .lesson {
+    border: 1px solid var(--c-border);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+    background: #fafbff;
+  }
+  
+  .blocks {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--c-border);
+  }
+  
+  .block-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .block {
+    border: 1px solid var(--c-border);
+    border-radius: 12px;
+    padding: 10px;
+    background: #fff;
+    margin-bottom: 10px;
+  }
+  
+  .block-bar select {
+    min-width: 150px;
+  }
+  
+  /* Better wrapping for action rows */
+  .add-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+  
+  /* ---------------------------
+     Buttons (minimal; aligns with your global btn)
+  ---------------------------- */
+  .btn.tiny {
+    padding: 6px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    line-height: 1;
+  }
+  
+  .btn.ghost {
+    background: transparent;
+    border: 1px solid var(--c-border);
+    color: var(--c-text);
+  }
+  
+  .btn.outline {
+    background: transparent;
+    border: 1px solid var(--c-primary);
+    color: var(--c-primary);
+  }
+  
+  /* ---------------------------
+     Drag & Drop styling (CDK)
+  ---------------------------- */
+  .drag-handle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    border: 1px solid var(--c-border);
+    background: #fff;
+    color: var(--c-muted);
+    cursor: grab;
+    user-select: none;
+    flex: 0 0 auto;
+  }
+  
+  .drag-handle:hover {
+    border-color: rgba(57, 73, 171, 0.35);
+    color: var(--c-primary);
+    box-shadow: 0 6px 14px rgba(16, 24, 40, 0.08);
+  }
+  
+  .drag-handle:active {
+    cursor: grabbing;
+  }
+  
+  /* CDK drag visual feedback */
+  .cdk-drag-preview {
+    box-shadow: 0 16px 38px rgba(16, 24, 40, 0.18);
+    border-radius: 12px;
+    border: 1px solid rgba(57, 73, 171, 0.25);
+    background: #fff;
+  }
+  
+  .cdk-drag-placeholder {
+    opacity: 0.25;
+    border: 2px dashed rgba(57, 73, 171, 0.35);
+    border-radius: 12px;
+    background: rgba(57, 73, 171, 0.06);
+  }
+  
+  .cdk-drop-list-dragging .block,
+  .cdk-drop-list-dragging .lesson,
+  .cdk-drop-list-dragging .section {
+    transition: transform 120ms ease;
+  }
+  
+  /* ---------------------------
+     Editor + Preview (responsive)
+     - desktop: 2 columns
+     - mobile: stacked
+  ---------------------------- */
+  .block-body {
+    margin-top: 10px;
+  }
+  
+  .editor-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: 1.25fr 1fr;
+    align-items: start;
+  }
+  
+  /* Stack on smaller screens */
+  @media (max-width: 980px) {
+    .editor-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .editor .label,
+  .editor label {
+    font-size: 12px;
+    color: var(--c-muted);
+    font-weight: 700;
+    margin-bottom: 6px;
+    display: block;
+  }
+  
+  /* Make textareas comfortable */
+  .editor textarea {
+    min-height: 160px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  
+  /* Preview panel */
+  .preview {
+    border: 1px solid var(--c-border);
+    border-radius: 12px;
+    background: #ffffff;
+    overflow: hidden;
+  }
+  
+  .preview-title {
+    font-weight: 800;
+    font-size: 12px;
+    color: var(--c-muted);
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--c-border);
+    background: #f8fafc;
+  }
+  
+  .preview-box {
+    padding: 12px;
+    max-height: 340px;   /* scrollable */
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    color: var(--c-text);
+    background: #fff;
+  }
+  
+  /* Make preview content readable */
+  .preview-box h1, .preview-box h2, .preview-box h3 {
+    margin: 10px 0 6px;
+    line-height: 1.25;
+  }
+  .preview-box p {
+    margin: 8px 0;
+  }
+  .preview-box ul, .preview-box ol {
+    margin: 8px 0 8px 18px;
+  }
+  .preview-box li {
+    margin: 4px 0;
+  }
+  
+  /* ---------------------------
+     CRITICAL: prevent overflow in preview (Cloudinary images, tables, etc.)
+  ---------------------------- */
+  .preview-box * {
+    max-width: 100%;
+  }
+  
+  .preview-box img,
+  .preview-box video,
+  .preview-box iframe {
+    display: block;
+    max-width: 100% !important;
+    height: auto !important;
+    border-radius: 10px;
+  }
+  
+  /* If your course HTML uses fixed widths inline, override */
+  .preview-box img[width],
+  .preview-box iframe[width],
+  .preview-box video[width] {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+  }
+  
+  /* Tables: keep inside preview via horizontal scroll */
+  .preview-box table {
+    width: 100%;
+    border-collapse: collapse;
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    border: 1px solid var(--c-border);
+    border-radius: 10px;
+  }
+  .preview-box th,
+  .preview-box td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--c-border);
+    text-align: left;
+  }
+  
+  /* Code blocks / pre: wrap safely */
+  .preview-box pre,
+  .preview-box code {
+    max-width: 100%;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .preview-box pre {
+    background: #0b1220;
+    color: #e5e7eb;
+    padding: 10px 12px;
+    border-radius: 10px;
+    overflow: auto;
+  }
+  
+  /* Long links: wrap */
+  .preview-box a {
+    word-break: break-word;
+  }
+  
+  /* ---------------------------
+     Choices list (quiz) formatting
+  ---------------------------- */
+  .choices {
+    display: grid;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  
+  .choice {
+    display: grid;
+    gap: 8px;
+    padding: 10px;
+    border: 1px solid var(--c-border);
+    border-radius: 12px;
+    background: #fff;
+  }
+  
+  .chk {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    color: var(--c-text);
+    font-weight: 600;
+    font-size: 12px;
+  }
+  
+  /* ---------------------------
+     Minor utilities (if not in global)
+  ---------------------------- */
+  .w-full { width: 100%; }
+  .w-2\/3 { width: 66.666%; }
+  .w-1\/6 { width: 16.666%; }
+  
+  @media (max-width: 720px) {
+    .section-bar,
+    .lesson-bar,
+    .block-bar {
+      flex-wrap: wrap;
+      align-items: stretch;
+    }
+  
+    .block-bar select {
+      width: 100%;
+    }
+  
+    .w-2\/3,
+    .w-1\/6 {
+      width: 100%;
+    }
+  }
+  

@@ -1,0 +1,29 @@
+<section class="toolbar">
+    <input type="search" placeholder="Search courses"
+           [ngModel]="query()" (ngModelChange)="query.set($event)" />
+    <div class="filters">
+      <button class="chip" [class.active]="lang()==='all'" (click)="lang.set('all')">All</button>
+      <button class="chip" [class.active]="lang()==='en'"  (click)="lang.set('en')">EN</button>
+      <button class="chip" [class.active]="lang()==='fr'"  (click)="lang.set('fr')">FR</button>
+      <button class="chip" [class.active]="lang()==='es'"  (click)="lang.set('es')">ES</button>
+    </div>
+  </section>
+  
+  <section class="grid">
+    <article class="card" *ngFor="let c of (view() | slice:0:showCount()); trackBy: trackById">
+      <div class="kind">{{ c.kind }}</div>
+      <h3 class="title">{{ c.title }}</h3>
+      <div class="meta">
+        <span>⏱️ {{ c.durationMin }} min</span>
+        <span>•</span>
+        <span>{{ c.lang | uppercase }}</span>
+      </div>
+
+      <p class="desc">{{ c.description || 'No description' }}</p>
+     <div class="toolbar" *ngIf="showCount() < view().length">
+  <button class="btn soft" (click)="showCount.set(showCount() + 5)">Load more</button>
+</div>
+      <button class="btn primary" (click)="open(c)">Start overview</button>
+    </article>
+  </section>
+  
