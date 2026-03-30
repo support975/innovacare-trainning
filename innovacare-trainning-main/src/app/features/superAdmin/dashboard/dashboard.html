@@ -1,0 +1,65 @@
+<section class="page">
+  <div class="page-head">
+    <h1>Super Admin Dashboard</h1>
+    <p>Manage platform-wide setup, organizations, users, billing, and audit controls.</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value">{{ stats().organizations }}</div>
+      <div class="stat-label">Organizations</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ stats().users }}</div>
+      <div class="stat-label">Users</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ stats().activeOrganizations }}</div>
+      <div class="stat-label">Active Organizations</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ stats().activeUsers }}</div>
+      <div class="stat-label">Active Users</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ stats().billingActive }}</div>
+      <div class="stat-label">Billing Active</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">{{ stats().criticalLogs }}</div>
+      <div class="stat-label">Critical Logs</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <section class="card">
+      <h2>Platform overview</h2>
+      <p>Use this area to monitor global platform health, tenant onboarding, and course distribution.</p>
+    </section>
+
+    <section class="card">
+      <h2>Quick actions</h2>
+      <ul>
+        <li> <a href="/super-admin/Organizations">Create organization</a></li>
+        <li>Assign courses to organization</li>
+        <li>Review billing status</li>
+        <li>Check audit logs</li>
+      </ul>
+    </section>
+
+     <div class="cards">
+    <article class="card" *ngFor="let c of cards">
+      <div class="label">{{ c.label }}</div>
+      <div class="value">{{ c.value }}</div>
+    </article>
+  </div>
+
+  <div class="panel">
+    <h2>System Overview</h2>
+    <p>This area will host global KPIs, recent activity, alerts, and platform health.</p>
+  </div>
+  </div>
+
+  
+</section>
+

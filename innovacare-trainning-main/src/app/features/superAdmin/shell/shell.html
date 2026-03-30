@@ -1,0 +1,38 @@
+<div class="shell" [class.side-hidden]="!sidebarOpen()">
+  <header class="topbar">
+    <button
+      class="menu-toggle"
+      type="button"
+      (click)="toggleSidebar()"
+      [attr.aria-expanded]="sidebarOpen()"
+      aria-label="Toggle menu">
+      ☰
+    </button>
+
+    <div class="brand">
+      <strong>INNOVACARE SUPER ADMIN</strong>
+    </div>
+
+    <div class="top-actions">
+      <span class="role">Super Admin</span>
+      <button class="btn logout" type="button" (click)="logout()">Logout</button>
+    </div>
+  </header>
+
+  <aside class="sidebar" [class.open]="sidebarOpen()">
+    <nav class="menu">
+      <a
+        *ngFor="let item of nav"
+        [routerLink]="item.path"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: item.path === '/super-admin' }"
+        class="menu-item">
+        {{ item.label }}
+      </a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

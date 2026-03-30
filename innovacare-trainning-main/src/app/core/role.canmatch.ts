@@ -1,23 +1,29 @@
-// src/app/core/role.canmatch.ts
 import { inject } from '@angular/core';
-import { CanMatchFn, Router } from '@angular/router';
+import { CanMatchFn, Router, UrlTree } from '@angular/router';
 import { combineLatest, filter, map, take } from 'rxjs';
 import { AuthService } from './auth';
+import { AppRole, defaultRouteForRole } from './role-redirect';
 
-export function roleCanMatch(roles: Array<'manager' | 'admin' | 'learner'>): CanMatchFn {
+export function roleCanMatch(
+  roles: AppRole[]
+): CanMatchFn {
   return () => {
     const auth = inject(AuthService);
     const router = inject(Router);
 
     return combineLatest([auth.ready$, auth.profile$]).pipe(
-      filter(([ready]) => ready), // attendre onAuthStateChanged
+      filter(([ready]) => ready),
       take(1),
-      map(([_, p]) => {
-        if (p && roles.includes(p.role)) return true;
+      map(([_, p]): boolean | UrlTree => {
+        if (!p) {
+          return router.createUrlTree(['/login']);
+        }
 
-        // si pas autorisé, rediriger
-        router.navigateByUrl('/login');
-        return false;
+        if (roles.includes(p.role as AppRole)) {
+          return true;
+        }
+
+        return router.createUrlTree([defaultRouteForRole(p.role as AppRole)]);
       })
     );
   };

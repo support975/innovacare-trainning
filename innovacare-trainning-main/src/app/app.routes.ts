@@ -1,13 +1,16 @@
 import { Routes } from '@angular/router';
-import { CourseReturnComponent } from './features/learner/course-return/course-return';
+import { roleCanMatch } from './core/role.canmatch';
+
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
 
-  { path: 'login',
+  {
+    path: 'login',
     loadComponent: () =>
       import('./features/auth/login/login').then(m => m.LoginComponent)
   },
+
   {
     path: 'learner/courses/:courseId/exam/:examId',
     loadComponent: () =>
@@ -15,24 +18,32 @@ export const routes: Routes = [
         .then(m => m.ExamRunnerComponent),
   },
 
-  { path: 'reset',
+  {
+    path: 'reset',
     loadComponent: () =>
       import('./features/auth/reset/reset').then(m => m.ResetComponent)
   },
 
-  // LEARNER → lazy-load a Routes array (NOT a single component)
-  { path: 'learner',
+  {
+    path: 'learner',
+    canMatch: [roleCanMatch(['learner'])],
     loadChildren: () =>
       import('./features/learner/learner.routes').then(m => m.learnerRoutes)
   },
-  
-  { path: 'manager',
+
+  {
+    path: 'manager',
+    canMatch: [roleCanMatch(['admin', 'manager'])],
     loadChildren: () =>
       import('./features/manager/manager.routes').then(m => m.ManagerRoutingModule)
   },
-  
-  
 
+  {
+    path: 'super-admin',
+    canMatch: [roleCanMatch(['super_admin'])],
+    loadChildren: () =>
+      import('./features/superAdmin/super-admin.routes').then(m => m.SUPER_ADMIN_ROUTES)
+  },
 
   { path: '**', redirectTo: 'login' }
 ];

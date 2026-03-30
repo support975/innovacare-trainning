@@ -29,14 +29,17 @@
         <option value="ES">ES</option>
       </select>
     </div>
+
     <div>
       <label>Duration (min)</label>
       <input type="number" formControlName="durationMin" />
     </div>
+
     <div>
       <label>CE Credit</label>
       <input type="number" formControlName="ceCredit" />
     </div>
+
     <div>
       <label>Kind</label>
       <select formControlName="kind">
@@ -45,8 +48,44 @@
         <option value="Module">Module</option>
       </select>
     </div>
+
     <div class="check">
       <label><input type="checkbox" formControlName="active" /> Active</label>
+    </div>
+  </div>
+
+  <div class="row grid">
+    <div>
+      <label>Course Type</label>
+      <select formControlName="type">
+        <option value="Health">Health</option>
+        <option value="It">IT</option>
+        <option value="Hr">HR</option>
+        <option value="safety">Safety</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Lecturer</label>
+      <input formControlName="lecturer" placeholder="Instructor / lecturer" />
+    </div>
+
+    <div>
+      <label>Canonical URL</label>
+      <input formControlName="url" placeholder="https://…" />
+    </div>
+
+    <div>
+      <label>Passing Score (%)</label>
+      <input type="number" formControlName="passingScore" />
+    </div>
+
+    <div class="check">
+      <label><input type="checkbox" formControlName="lockedSequence" /> Locked sequence</label>
+    </div>
+
+    <div class="check">
+      <label><input type="checkbox" formControlName="isPublic" /> Public course</label>
     </div>
   </div>
 
@@ -60,6 +99,35 @@
     <input formControlName="tagsText" placeholder="ethics, nursing, safety" />
   </div>
 
+  <div class="row">
+    <label>Disclosures (comma separated)</label>
+    <input formControlName="disclosuresText" placeholder="none, conflict of interest" />
+  </div>
+
+  <div class="row">
+    <label>Target audience (comma separated)</label>
+    <input formControlName="targetAudienceText" placeholder="RN, LPN, CNA, NP" />
+  </div>
+
+  <div class="row">
+    <label>Prerequisites (comma separated)</label>
+    <input formControlName="prerequisitesText" placeholder="HIPAA, basic wound care" />
+  </div>
+
+  <div class="row">
+    <label>Requirements (comma separated)</label>
+    <input formControlName="requirementsText" placeholder="Internet, computer, speakers" />
+  </div>
+
+  <div class="row">
+    <label>Accommodations</label>
+    <textarea
+      formControlName="accomodations"
+      rows="3"
+      placeholder="Accessibility / accommodations information"
+    ></textarea>
+  </div>
+
   <!-- Sections (Drag & Drop) -->
   <div class="row">
     <div class="section-head">
@@ -68,11 +136,12 @@
     </div>
 
     <div cdkDropList (cdkDropListDropped)="dropSections($event)">
-      <div class="section"
-           *ngFor="let s of sectionsFA.controls; let si = index"
-           [formGroup]="s"
-           cdkDrag>
-
+      <div
+        class="section"
+        *ngFor="let s of sectionsFA.controls; let si = index"
+        [formGroup]="s"
+        cdkDrag
+      >
         <div class="section-bar">
           <span class="drag-handle" cdkDragHandle title="Drag to reorder">⠿</span>
           <input class="w-full" formControlName="title" placeholder="Section title" />
@@ -86,11 +155,12 @@
             <button type="button" class="btn tiny outline" (click)="addLesson(si)">+ Add lesson</button>
           </div>
 
-          <div class="lesson"
-               *ngFor="let l of lessonsFA(si).controls; let li = index"
-               [formGroup]="l"
-               cdkDrag>
-
+          <div
+            class="lesson"
+            *ngFor="let l of lessonsFA(si).controls; let li = index"
+            [formGroup]="l"
+            cdkDrag
+          >
             <div class="lesson-bar">
               <span class="drag-handle" cdkDragHandle title="Drag to reorder">⠿</span>
               <input class="w-2/3" formControlName="title" placeholder="Lesson title" />
@@ -107,16 +177,18 @@
                   <button type="button" class="btn tiny outline" (click)="addBlock(si, li, 'text')">+ Text</button>
                   <button type="button" class="btn tiny outline" (click)="addBlock(si, li, 'image')">+ Image</button>
                   <button type="button" class="btn tiny outline" (click)="addBlock(si, li, 'audio')">+ Audio</button>
+                  <button type="button" class="btn tiny outline" (click)="addBlock(si, li, 'video')">+ Video</button>
                   <button type="button" class="btn tiny outline" (click)="addBlock(si, li, 'callout')">+ Callout</button>
                   <button type="button" class="btn tiny outline" (click)="addBlock(si, li, 'quiz')">+ Quiz</button>
                 </div>
               </div>
 
-              <div class="block"
-                   *ngFor="let b of blocksFA(si, li).controls; let bi = index"
-                   [formGroup]="b"
-                   cdkDrag>
-
+              <div
+                class="block"
+                *ngFor="let b of blocksFA(si, li).controls; let bi = index"
+                [formGroup]="b"
+                cdkDrag
+              >
                 <div class="block-bar">
                   <span class="drag-handle" cdkDragHandle title="Drag to reorder">⠿</span>
 
@@ -125,6 +197,7 @@
                     <option value="text">Text</option>
                     <option value="image">Image</option>
                     <option value="audio">Audio</option>
+                    <option value="video">Video</option>
                     <option value="callout">Callout</option>
                     <option value="quiz">Quiz</option>
                   </select>
@@ -182,8 +255,30 @@
 
                 <!-- Audio -->
                 <div *ngIf="b.value.type === 'audio'" class="block-body">
-                  <input formControlName="url" placeholder="Audio URL" />
-                  <textarea rows="3" formControlName="transcript" placeholder="Transcript"></textarea>
+                  <div class="editor-grid">
+                    <div class="editor">
+                      <input formControlName="url" placeholder="Audio URL" />
+                      <textarea rows="3" formControlName="transcript" placeholder="Transcript"></textarea>
+                    </div>
+                    <div class="preview">
+                      <div class="preview-title">Preview</div>
+                      <div class="preview-box" [innerHTML]="previewFor(b)"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Video -->
+                <div *ngIf="b.value.type === 'video'" class="block-body">
+                  <div class="editor-grid">
+                    <div class="editor">
+                      <input formControlName="url" placeholder="Video URL (YouTube, Vimeo, MP4…)" />
+                      <textarea rows="3" formControlName="transcript" placeholder="Transcript / notes"></textarea>
+                    </div>
+                    <div class="preview">
+                      <div class="preview-title">Preview</div>
+                      <div class="preview-box" [innerHTML]="previewFor(b)"></div>
+                    </div>
+                  </div>
                 </div>
 
                 <!-- Callout -->
@@ -213,19 +308,32 @@
                       <select formControlName="mode">
                         <option value="single">Single</option>
                         <option value="multi">Multi</option>
+                        <option value="caseStudy">Case Study</option>
                       </select>
 
                       <input formControlName="question" placeholder="Question" />
 
                       <div class="choices">
-                        <div class="choice"
-                             *ngFor="let c of b.controls.choices.controls; let ci = index"
-                             [formGroup]="c">
+                        <div
+                          class="choice"
+                          *ngFor="let c of b.controls.choices.controls; let ci = index"
+                          [formGroup]="c"
+                        >
                           <input class="w-full" formControlName="text" placeholder="Choice text" />
-                          <label class="chk"><input type="checkbox" formControlName="correct" /> Correct</label>
-                          <button type="button" class="btn tiny ghost" (click)="removeChoice(si, li, bi, ci)">Remove</button>
+                          <label class="chk">
+                            <input type="checkbox" formControlName="correct" /> Correct
+                          </label>
+                          <button
+                            type="button"
+                            class="btn tiny ghost"
+                            (click)="removeChoice(si, li, bi, ci)"
+                          >
+                            Remove
+                          </button>
                         </div>
-                        <button type="button" class="btn tiny outline" (click)="addChoice(si, li, bi)">+ Add choice</button>
+                        <button type="button" class="btn tiny outline" (click)="addChoice(si, li, bi)">
+                          + Add choice
+                        </button>
                       </div>
                     </div>
                     <div class="preview">
@@ -260,24 +368,35 @@
 <!-- Existing courses -->
 <section class="list">
   <h3>Courses</h3>
+
   <div class="card item" *ngFor="let c of courses(); trackBy: trackById">
     <div class="title">{{ c.title }}</div>
+
     <div class="meta">
       <span>{{ c.lang }}</span>
       <span>• {{ c.durationMin }} min</span>
       <span>• {{ c.active ? 'Active' : 'Inactive' }}</span>
       <span>• {{ c.kind }}</span>
+      <span>• {{ c.type }}</span>
     </div>
+
     <div class="desc">{{ c.description }}</div>
-    <div class="muted" *ngIf="c.tags && c.tags.length">Tags: {{ c.tags }}</div>
+
+    <div class="muted" *ngIf="c.lecturer">Lecturer: {{ c.lecturer }}</div>
+    <div class="muted" *ngIf="c.tags && c.tags.length">Tags: {{ c.tags.join(', ') }}</div>
     <div class="muted" *ngIf="c.sections && c.sections.length">Sections: {{ c.sections.length }}</div>
+    <div class="muted" *ngIf="c.passingScore">Passing score: {{ c.passingScore }}%</div>
+    <div class="muted" *ngIf="c.lockedSequence">Locked sequence enabled</div>
 
     <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
       <button class="btn outline" type="button" (click)="editCourse(c)">Edit Course</button>
 
-      <button class="btn outline" type="button"
-              [disabled]="duplicatingId === c.id"
-              (click)="duplicateCourse(c)">
+      <button
+        class="btn outline"
+        type="button"
+        [disabled]="duplicatingId === c.id"
+        (click)="duplicateCourse(c)"
+      >
         {{ duplicatingId === c.id ? 'Duplicating…' : 'Duplicate Course' }}
       </button>
 

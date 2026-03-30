@@ -9,6 +9,11 @@ import { EnrollmentService } from '../../../../shared/services/enrollement';
 
 /** ---- Models ---- */
 export type Lang = 'EN' | 'FR' | 'ES';
+export type OrgType = 'health' | 'IT' | 'school';
+
+export interface HealthMeta {
+  healthCareType: 'SNF' | 'HomeHealth' | 'Hospice' | 'Hospital' | 'PrivatePractice' | 'PHCP';
+}
 
 export interface Course {
   id?: string;
@@ -18,11 +23,49 @@ export interface Course {
   description: string;
   lang: Lang;
   durationMin: number;
+  ceCredit?: number;
   active: boolean;
   kind: 'Course' | 'Text' | 'Module';
+  type: 'It' | 'Health' | 'Hr' | 'safety';
+
   tags?: string[];
-  url?: string;        // external provider URL (optional)
+  url?: string;
   imageUrl?: string;
+
+  lecturer: string;
+  disclosures: string[];
+  targetAudience: string[];
+  prerequisites: string[];
+  requirements: string[];
+  accomodations: string;
+
+  orgId?: string | null;
+  orgType?: OrgType;
+  healthMeta?: HealthMeta;
+
+  releaseAt?: any;
+  publishedAt?: any;
+  isPublic?: boolean;
+  passingScore: number;
+  lockedSequence: boolean;
+  exipirationDate?: any;
+  confirmAt?: any;
+  confirmBy?: string;
+  confirmMessage?: string;
+
+  sections?: Array<{
+    id: string;
+    title: string;
+    order: number;
+    estMin?: number;
+    lessons: Array<{
+      id: string;
+      title: string;
+      estMin?: number;
+      order: number;
+      blocks: Array<any>;
+    }>;
+  }>;
 }
 
 export interface Certification {
@@ -53,17 +96,16 @@ export class CourseDetail {
   private afs = inject(Firestore);
   private enrollSvc = inject(EnrollmentService);
   private auth = inject(Auth);
-  private uid$ = authState(this.auth).pipe(map(u => u?.uid ?? null));
+  private uid$ = authState(this.auth).pipe(map((u) => u?.uid ?? null));
 
   notice = '';
   busy = false;
 
-  // Course id from route
   readonly courseId: string = this.route.snapshot.paramMap.get('id') ?? '';
 
   enrollment = toSignal(
     this.uid$.pipe(
-      switchMap(uid =>
+      switchMap((uid) =>
         uid
           ? docData(doc(this.afs, `users/${uid}/enrollments/${this.courseId}`), { idField: 'id' })
           : of(null)
@@ -83,11 +125,23 @@ export class CourseDetail {
         description: '',
         lang: 'EN',
         durationMin: 0,
+        ceCredit: 0,
         active: true,
         kind: 'Course',
+        type: 'Health',
         tags: [],
         url: '',
         imageUrl: '',
+        lecturer: '',
+        disclosures: [],
+        targetAudience: [],
+        prerequisites: [],
+        requirements: [],
+        accomodations: '',
+        passingScore: 80,
+        lockedSequence: false,
+        isPublic: false,
+        sections: [],
       },
     }
   );
@@ -106,21 +160,75 @@ export class CourseDetail {
     { initialValue: [] }
   );
 
-  /** Determine if a course URL is a true external provider link */
   isExternalCourseUrl(u?: string | null): boolean {
     const raw = (u || '').trim();
     if (!raw) return false;
     try {
       const parsed = new URL(raw, window.location.origin);
-      // External only if absolute http(s) and not same-origin
       return /^https?:$/.test(parsed.protocol) && parsed.origin !== window.location.origin;
     } catch {
-      // Invalid or relative => treat as internal (use local player)
       return false;
     }
   }
 
-  /** ---- Actions ---- */
+  formatDate(v: any): string {
+    if (!v) return '—';
+
+    try {
+      if (typeof v?.toDate === 'function') {
+        return v.toDate().toLocaleDateString();
+      }
+      const d = new Date(v);
+      return isNaN(d.getTime()) ? '—' : d.toLocaleDateString();
+    } catch {
+      return '—';
+    }
+  }
+
+  totalSections(): number {
+    return Array.isArray(this.course().sections) ? this.course().sections!.length : 0;
+  }
+
+  totalLessons(): number {
+    const sections = this.course().sections ?? [];
+    return sections.reduce((sum, s) => sum + (Array.isArray(s.lessons) ? s.lessons.length : 0), 0);
+  }
+
+  totalBlocks(): number {
+    const sections = this.course().sections ?? [];
+    return sections.reduce(
+      (sum, s) =>
+        sum +
+        (s.lessons ?? []).reduce(
+          (lessonSum, l) => lessonSum + (Array.isArray(l.blocks) ? l.blocks.length : 0),
+          0
+        ),
+      0
+    );
+  }
+
+  hasAudienceData(): boolean {
+    const c = this.course();
+    return !!(
+      c.targetAudience?.length ||
+      c.prerequisites?.length ||
+      c.requirements?.length ||
+      c.accomodations
+    );
+  }
+
+  hasPublicationData(): boolean {
+    const c = this.course();
+    return !!(
+      c.releaseAt ||
+      c.publishedAt ||
+      c.exipirationDate ||
+      c.confirmAt ||
+      c.confirmBy ||
+      c.confirmMessage
+    );
+  }
+
   async startCourse(): Promise<void> {
     this.notice = '';
 
@@ -144,13 +252,13 @@ export class CourseDetail {
       return;
     }
 
-    // Best-effort mark as started (idempotent)
-    try { await this.enrollSvc.tryMarkStarted(user.uid, this.courseId); } catch {}
+    try {
+      await this.enrollSvc.tryMarkStarted(user.uid, this.courseId);
+    } catch {}
 
     const base = (this.course().url || '').trim();
 
     if (this.isExternalCourseUrl(base)) {
-      // External provider flow with return URL back to app
       const ticketId = await this.enrollSvc.issueLaunchTicket(user.uid, this.courseId);
       const origin = window.location.origin;
       const returnPath = this.router
@@ -167,7 +275,6 @@ export class CourseDetail {
       return;
     }
 
-    // No (valid) external URL => open local CoursePlayer
     this.router.navigate(['/learner/courses', this.courseId, 'view']);
   }
 

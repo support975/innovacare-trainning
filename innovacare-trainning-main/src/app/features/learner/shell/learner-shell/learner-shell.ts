@@ -1,51 +1,63 @@
-import { Component, inject, signal } from '@angular/core';
-import { ManagerRoutingModule } from "../../../manager/manager.routes";
+import { Component, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
 import { NotificationBellPlainComponent } from '../../../../shared/components/notifications/notification-bell-plain/notification-bell-plain';
 
-
-
 @Component({
   selector: 'app-learner-shell',
-  imports: [ManagerRoutingModule, CommonModule, RouterModule, NotificationBellPlainComponent],
+  imports: [CommonModule, RouterModule, NotificationBellPlainComponent],
   templateUrl: './learner-shell.html',
   styleUrl: './learner-shell.css'
 })
-export class LearnerShell {
+export class LearnerShell implements OnDestroy {
   private router = inject(Router);
+  private mq = window.matchMedia('(max-width: 860px)');
 
-  // signals
-  sidebarOpen = signal(false);
-  isMobile = signal(window.matchMedia('(max-width: 768px)').matches);
+  isMobile = signal(this.mq.matches);
+  sidebarOpen = signal(!this.mq.matches); // open by default on desktop, closed on mobile
+
+  private mediaHandler = (e: MediaQueryListEvent) => {
+    this.isMobile.set(e.matches);
+
+    // keep UX natural on breakpoint change
+    if (e.matches) {
+      this.sidebarOpen.set(false); // mobile => drawer closed by default
+    } else {
+      this.sidebarOpen.set(true); // desktop => sidebar visible by default
+    }
+  };
 
   constructor() {
-    // Auto-close on route change for small screens
     this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe(() => {
         if (this.isMobile()) this.closeSidebar();
       });
 
-    // Update mobile flag on viewport change
-    const mq = window.matchMedia('(max-width: 768px)');
-    const handler = (e: MediaQueryListEvent) => this.isMobile.set(e.matches);
-    mq.addEventListener('change', handler);
+    this.mq.addEventListener('change', this.mediaHandler);
   }
 
-  // called by the hamburger
-  toggleSidebar() { this.sidebarOpen.update(v => !v); }
+  ngOnDestroy(): void {
+    this.mq.removeEventListener('change', this.mediaHandler);
+  }
 
-  // called by backdrop and programmatically
-  closeSidebar() { this.sidebarOpen.set(false); }
+  toggleSidebar() {
+    this.sidebarOpen.update(v => !v);
+  }
 
-  // called by menu links in the template
+  closeSidebar() {
+    this.sidebarOpen.set(false);
+  }
+
+  openSidebar() {
+    this.sidebarOpen.set(true);
+  }
+
   onNavClick() {
     if (this.isMobile()) this.closeSidebar();
   }
 
-  // data
   links = [
     { path: '/learner', label: 'Dashboard' },
     { path: '/learner/assignments', label: 'Assignments' },
@@ -61,9 +73,7 @@ export class LearnerShell {
     { path: '/learner/rewards', label: 'Rewards' }
   ];
 
-  // ✅ Add Router injection here
   logout() {
-    // TODO: Replace with your Firebase/AuthService logout
     console.log('Logging out...');
     this.router.navigate(['/login']);
   }

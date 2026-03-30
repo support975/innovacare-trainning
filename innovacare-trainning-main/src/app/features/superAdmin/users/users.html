@@ -1,0 +1,57 @@
+<section class="page">
+  <div class="page-head">
+    <h1>Users</h1>
+    <p>Manage roles, account state, and basic user administration.</p>
+  </div>
+
+  <div class="panel">
+    <div class="filters">
+      <input [ngModel]="search()" (ngModelChange)="search.set($event)" placeholder="Search user by email / name / uid" />
+      <select [ngModel]="roleFilter()" (ngModelChange)="roleFilter.set($event)">
+        <option value="">All roles</option>
+        <option value="super_admin">Super Admin</option>
+        <option value="admin">Admin</option>
+        <option value="manager">Manager</option>
+        <option value="learner">Learner</option>
+        <option value="guest">Guest</option>
+      </select>
+      <button class="btn" (click)="refresh()">Apply</button>
+    </div>
+
+    <p class="notice" *ngIf="notice()">{{ notice() }}</p>
+  </div>
+
+  <div class="panel">
+    <div class="table">
+      <div class="thead">
+        <div>Email</div>
+        <div>Name</div>
+        <div>Role</div>
+        <div>Status</div>
+        <div>Actions</div>
+      </div>
+
+      <div class="tbody">
+        <div class="tr" *ngFor="let u of users()">
+          <div>{{ u.email }}</div>
+          <div>{{ u.displayName || '—' }}</div>
+          <div>{{ u.role }}</div>
+          <div>{{ u.active ? 'Active' : 'Disabled' }}</div>
+          <div class="actions-cell">
+            <select #roleSel [ngModel]="u.role">
+              <option value="super_admin">Super Admin</option>
+              <option value="admin">Admin</option>
+              <option value="manager">Manager</option>
+              <option value="learner">Learner</option>
+              <option value="guest">Guest</option>
+            </select>
+            <button class="btn" (click)="changeRole(u.uid, roleSel.value)">Save role</button>
+            <button class="btn" (click)="toggleActive(u.uid, !!u.active)">
+              {{ u.active ? 'Disable' : 'Enable' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

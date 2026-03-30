@@ -1,82 +1,85 @@
 import { Injectable, inject } from '@angular/core';
-import {
-  Auth,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
-  signOut,
-  sendPasswordResetEmail,
-} from '@angular/fire/auth';
-import { Firestore, doc, getDoc } from '@angular/fire/firestore';
-import { BehaviorSubject } from 'rxjs';
-import { UserProfile } from '../shared/models/training.models';
+import { Auth, authState, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, sendPasswordResetEmail } from '@angular/fire/auth';
+import { Firestore, doc, docData } from '@angular/fire/firestore';
+import { BehaviorSubject, Subscription } from 'rxjs';
+
+export type AppRole = 'super_admin' | 'manager' | 'admin' | 'learner' | 'guest';
+
+export interface AppProfile {
+  uid: string;
+  email?: string;
+  role: AppRole;
+  orgId?: string | null;
+  active?: boolean;
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private auth = inject(Auth);
-  private db = inject(Firestore);
+  private afs = inject(Firestore);
 
-  private _profile$ = new BehaviorSubject<UserProfile | null>(null);
-  profile$ = this._profile$.asObservable();
+  private readySubject = new BehaviorSubject<boolean>(false);
+  ready$ = this.readySubject.asObservable();
 
-  private _ready$ = new BehaviorSubject<boolean>(false);
-  ready$ = this._ready$.asObservable();
+  private profileSubject = new BehaviorSubject<AppProfile | null>(null);
+  profile$ = this.profileSubject.asObservable();
+
+  private authSub?: Subscription;
+  private profileSub?: Subscription;
 
   constructor() {
-    onAuthStateChanged(this.auth, async (u) => {
-      if (!u) {
-        this._profile$.next(null);
-        this._ready$.next(true);
+    this.authSub = authState(this.auth).subscribe((user) => {
+      // reset immediately on any auth change
+      this.readySubject.next(false);
+      this.profileSubject.next(null);
+
+      // stop previous profile listener
+      this.profileSub?.unsubscribe();
+      this.profileSub = undefined;
+
+      if (!user) {
+        this.readySubject.next(true);
         return;
       }
 
-      let role: UserProfile['role'] = 'learner';
-      let displayName = u.displayName ?? undefined;
-
-      try {
-        const snap = await getDoc(doc(this.db, 'users', u.uid));
-        const data: any = snap.exists() ? snap.data() : null;
-
-        // Accept role either at root OR under meta.role
-        role = (data?.role ?? data?.meta?.role ?? 'learner') as UserProfile['role'];
-
-        // Prefer Firestore displayName if present
-        displayName = (data?.displayName ?? displayName) as any;
-      } catch {
-        // keep fallback
-      }
-
-      this._profile$.next({
-        uid: u.uid,
-        role,
-        email: u.email ?? undefined,
-        displayName,
+      const ref = doc(this.afs, `users/${user.uid}`);
+      this.profileSub = docData(ref, { idField: 'uid' }).subscribe({
+        next: (profile: any) => {
+          this.profileSubject.next(profile ? profile as AppProfile : null);
+          this.readySubject.next(true);
+        },
+        error: () => {
+          this.profileSubject.next(null);
+          this.readySubject.next(true);
+        }
       });
-
-      this._ready$.next(true);
     });
   }
 
-  // -----------------------
-  // Auth actions
-  // -----------------------
-
-  loginWithEmail(email: string, password: string) {
+  async loginWithEmail(email: string, password: string) {
     return signInWithEmailAndPassword(this.auth, email, password);
   }
 
-  loginWithGoogle() {
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
-    return signInWithPopup(this.auth, provider);
+  async loginWithGoogle() {
+    return signInWithPopup(this.auth, new GoogleAuthProvider());
   }
 
-  logout() {
-    return signOut(this.auth);
+  async logout() {
+    // reset local state first
+    this.readySubject.next(false);
+    this.profileSubject.next(null);
+    this.profileSub?.unsubscribe();
+    this.profileSub = undefined;
+
+    await signOut(this.auth);
+
+    // authState(null) will set ready=true
   }
 
-  resetPassword(email: string) {
+  get currentUid(): string | null {
+    return this.auth.currentUser?.uid ?? null;
+  }
+   resetPassword(email: string) {
     return sendPasswordResetEmail(this.auth, email);
   }
 }

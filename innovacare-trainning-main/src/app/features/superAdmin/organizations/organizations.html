@@ -1,0 +1,88 @@
+<section class="page">
+  <div class="page-head">
+    <h1>Organizations</h1>
+    <p>Manage tenant organizations, owner users, filters, and pagination.</p>
+  </div>
+
+  <div class="panel form-panel">
+    <h2>Create organization + owner</h2>
+
+    <div class="form-grid">
+      <input [(ngModel)]="newOrg.name" placeholder="Organization name" />
+      <input [(ngModel)]="newOrg.orgId" placeholder="Organization ID" />
+      <select [(ngModel)]="newOrg.type">
+        <option value="health">Health</option>
+        <option value="IT">IT</option>
+        <option value="school">School</option>
+      </select>
+      <select [(ngModel)]="newOrg.plan">
+        <option value="free">Free</option>
+        <option value="pro">Pro</option>
+        <option value="enterprise">Enterprise</option>
+      </select>
+
+      <input [(ngModel)]="newOrg.ownerUid" placeholder="Owner UID" />
+      <input [(ngModel)]="newOrg.ownerEmail" placeholder="Owner email" />
+      <input [(ngModel)]="newOrg.ownerDisplayName" placeholder="Owner display name" />
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" (click)="createWithOwner()" [disabled]="loading()">
+        {{ loading() ? 'Creating…' : 'Create organization' }}
+      </button>
+    </div>
+
+    <p class="notice" *ngIf="notice()">{{ notice() }}</p>
+  </div>
+
+  <div class="panel">
+    <h2>Search & filters</h2>
+
+    <div class="filters">
+      <input [ngModel]="search()" (ngModelChange)="search.set($event)" placeholder="Search name / email / id" />
+      <select [ngModel]="typeFilter()" (ngModelChange)="typeFilter.set($event)">
+        <option value="all">All types</option>
+        <option value="health">Health</option>
+        <option value="IT">IT</option>
+        <option value="school">School</option>
+      </select>
+      <select [ngModel]="planFilter()" (ngModelChange)="planFilter.set($event)">
+        <option value="all">All plans</option>
+        <option value="free">Free</option>
+        <option value="pro">Pro</option>
+        <option value="enterprise">Enterprise</option>
+      </select>
+      <button class="btn" (click)="applyFilters()">Apply</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Organizations ({{ result().total }})</h2>
+
+    <div class="table">
+      <div class="thead">
+        <div>ID</div>
+        <div>Name</div>
+        <div>Type</div>
+        <div>Plan</div>
+        <div>Owner</div>
+      </div>
+
+      <div class="tbody">
+        <div class="tr" *ngFor="let org of result().items">
+          <div>{{ org.id }}</div>
+          <div>{{ org.name }}</div>
+          <div>{{ org.type }}</div>
+          <div>{{ org.plan }}</div>
+          <div>{{ org.ownerEmail || '—' }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pager">
+      <button class="btn" (click)="prevPage()" [disabled]="page() <= 1">Previous</button>
+      <span>Page {{ page() }}</span>
+      <button class="btn" (click)="nextPage()" [disabled]="result().items.length < pageSize">Next</button>
+    </div>
+  </div>
+</section>

@@ -1,12 +1,20 @@
-export type Role = 'admin'|'manager'|'learner';
+export type Role = 'super_admin' | 'admin' | 'manager' | 'learner' | 'guest';
 
 export interface UserProfile {
   uid: string;
-  role: Role;
+  role: 'super_admin'|'admin'|'manager'|'learner'|'guest';
+
+  orgId?: string | null;     // 🔥 clé
+  orgType?: 'health'|'IT'|'school';
+  
+
   site?: 'Perry'|'Kathleen'|'WarnerRobins';
   license?: 'RN'|'LPN'|'CNA';
+
   displayName?: string;
   email?: string;
+
+  plan?: 'free'|'premium';   // pour B2C
 }
 
 export interface Course {
@@ -17,6 +25,9 @@ export interface Course {
   durationMins: number;
   tags: string[];
   level: 'Beginner'|'Intermediate'|'Advanced';
+  orgId?: string | null;   // 🔥
+  orgType?: 'health'|'IT'|'school';
+  isPublic?: boolean;      // 🔥 B2C vs B2B
   passingScore: number;      // e.g. 80
   lockedSequence: boolean;   // require module order
   published: boolean;
@@ -29,6 +40,10 @@ export type ModuleType = 'lesson'|'quiz'|'practical';
 
 export interface CourseModule {
   id: string;
+  orgId?: string | null;   // 🔥
+  orgType?: 'health'|'IT'|'school';
+  courseId: string;
+  title: string;
   order: number;
   type: ModuleType;
   content?: {
@@ -48,7 +63,7 @@ export interface Exam {
   randomize?: boolean;
 }
 
-export type QuestionType = 'mcq'|'truefalse';
+export type QuestionType = 'mcq'|'truefalse' | 'caseStudy'  ;
 
 export interface QuestionOption {
   id: string;
@@ -69,7 +84,12 @@ export interface Question {
 export interface Assignment {
   id: string;
   courseId: string;
+  title: string;
+  description?: string;
+  assignedTo: string;
   assignedBy: string;
+  orgId?: string | null;   // 🔥
+  orgType?: 'health'|'IT'|'school';
   targets: { role?: string; site?: string; userIds?: string[] };
   dueDate?: number;
   createdAt: number;
@@ -81,6 +101,10 @@ export interface Enrollment {
   uid: string;
   courseId: string;
   assignmentId?: string;
+  sequence: number;
+  unlockedIndex: number;
+  orgId?: string | null;   // 🔥
+  orgType?: 'health'|'IT'|'school';
   progressPct: number;
   status: 'assigned'|'in_progress'|'completed'|'failed';
   score?: number;
@@ -90,6 +114,8 @@ export interface Enrollment {
 
 export interface Attempt {
   id: string;
+  orgId?: string | null;   // 🔥
+  orgType?: 'health'|'IT'|'school';
   uid: string;
   examId: string;
   courseId: string;
@@ -102,6 +128,8 @@ export interface Attempt {
 
 export interface Certificate {
   id: string;
+  orgId?: string | null;   // 🔥
+  orgType?: 'health'|'IT'|'school';
   uid: string;
   courseId: string;
   examId: string;

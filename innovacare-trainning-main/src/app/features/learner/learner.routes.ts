@@ -22,7 +22,7 @@ export const learnerRoutes: Routes = [
   {
     path: '',
     component: LearnerShell,
-    canMatch: [authCanMatch, roleCanMatch(['learner', 'manager', 'admin'])],
+    canMatch: [authCanMatch, roleCanMatch(['learner'])],
     children: [
       { path: '', component: LearnerDashboardComponent },
       { path: 'assignments', component: LearnerAssignments },
