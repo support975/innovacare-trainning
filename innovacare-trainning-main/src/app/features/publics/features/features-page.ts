@@ -1,23 +1,10 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  HostListener,
-  OnDestroy,
-  QueryList,
-  ViewChildren,
-  inject,
-} from '@angular/core';
+import { Component, ElementRef, HostListener, inject, QueryList, ViewChildren } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatDialog } from '@angular/material/dialog';
 import { DemoRequestDialog } from '../demo-request-dialog/demo-request-dialog';
-import { FormsModule } from '@angular/forms';
-import '@angular/compiler';
-import { RouterModule } from '@angular/router';
-
-
 
 interface HeroHighlight {
   icon: string;
@@ -73,15 +60,40 @@ interface FaqItem {
   open?: boolean;
 }
 
+interface FeatureHeroStat {
+  value: string;
+  label: string;
+}
+
+interface CoreFeature {
+  icon: string;
+  title: string;
+  description: string;
+  bullets: string[];
+}
+
+interface WorkflowStep {
+  title: string;
+  text: string;
+}
+
+interface AudienceBlock {
+  title: string;
+  icon: string;
+  intro: string;
+  bullets: string[];
+}
+
 @Component({
-  selector: 'app-training-landing',
+  selector: 'app-features-page',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatDialogModule, MatIconModule, FormsModule,RouterModule],
-  templateUrl: './training-landing.html',
-  styleUrls: ['./training-landing.css'],
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatChipsModule],
+  templateUrl: './features-page.html',
+  styleUrls: ['./features-page.css'],
 })
-export class TrainingLandingComponent implements AfterViewInit, OnDestroy {
-  @ViewChildren('revealRef') revealElements!: QueryList<ElementRef<HTMLElement>>;
+export class FeaturesPage {
+
+   @ViewChildren('revealRef') revealElements!: QueryList<ElementRef<HTMLElement>>;
 
   private readonly dialog = inject(MatDialog);
 
@@ -92,8 +104,7 @@ export class TrainingLandingComponent implements AfterViewInit, OnDestroy {
 
   private revealObserver?: IntersectionObserver;
   private testimonialInterval?: ReturnType<typeof setInterval>;
-
-  readonly heroHighlights: HeroHighlight[] = [
+readonly heroHighlights: HeroHighlight[] = [
     { icon: '✓', label: 'Onboarding structuré' },
     { icon: '✓', label: 'Conformité et traçabilité' },
     { icon: '✓', label: 'Suivi de progression' },
@@ -415,4 +426,119 @@ export class TrainingLandingComponent implements AfterViewInit, OnDestroy {
     // Redirige vers la page de connexion
     window.location.href = '/login';
   }
+
+
+
+  readonly heroStats: FeatureHeroStat[] = [
+    { value: '8+', label: 'Modules clés' },
+    { value: '100%', label: 'Traçabilité' },
+    { value: '24/7', label: 'Accès apprenant' },
+  ];
+
+  readonly coreFeatures: CoreFeature[] = [
+    {
+      icon: 'assignment_turned_in',
+      title: 'Assignation intelligente des cours',
+      description: 'Attribuez des formations par rôle, équipe, organisation ou parcours métier.',
+      bullets: [
+        'Assignation par poste ou département',
+        'Parcours obligatoires et optionnels',
+        'Vue claire des formations attribuées',
+      ],
+    },
+    {
+      icon: 'monitoring',
+      title: 'Suivi des apprenants',
+      description: 'Visualisez la progression, les retards, les complétions et les écarts de conformité.',
+      bullets: [
+        'Statuts en temps réel',
+        'Relances des apprenants en retard',
+        'Meilleure visibilité manager',
+      ],
+    },
+   {
+      icon: 'quiz',
+      title: 'Quiz, évaluations et validation',
+      description: 'Renforcez l’acquisition des connaissances avec des évaluations structurées.',
+      bullets: [
+        'Quiz de validation',
+        'Seuil de réussite configurable',
+        'Résultats documentés',
+      ],
+    },
+    {
+      icon: 'workspace_premium',
+      title: 'Certificats et dossiers de preuve',
+      description: 'Conservez une preuve claire des parcours terminés et des certificats générés.',
+      bullets: [
+        'Historique des certificats',
+        'Archivage des validations',
+        'Préparation conformité simplifiée',
+      ],
+    },
+    {
+      icon: 'library_books',
+      title: 'Bibliothèque documentaire',
+      description: 'Centralisez politiques, procédures, supports pédagogiques et documents de référence.',
+      bullets: [
+        'Documents organisés par catégorie',
+        'Accès simplifié pour les équipes',
+        'Meilleure cohérence documentaire',
+      ],
+    },
+    {
+      icon: 'admin_panel_settings',
+      title: 'Gestion des rôles et supervision',
+      description: 'Offrez une expérience adaptée aux admins, managers et apprenants.',
+      bullets: [
+        'Accès selon les responsabilités',
+        'Pilotage manager / admin',
+        'Structure multi-organisation',
+      ],
+    },
+  ];
+
+  readonly workflow: WorkflowStep[] = [
+    {
+      title: 'Créer vos contenus',
+      text: 'Organisez vos cours, politiques, modules et ressources dans une bibliothèque claire.',
+    },
+    {
+      title: 'Attribuer les parcours',
+      text: 'Déployez la bonne formation aux bonnes équipes, au bon moment.',
+    },
+    {
+      title: 'Suivre les progrès',
+      text: 'Contrôlez les complétions, les retards et les besoins de relance.',
+    },
+    {
+      title: 'Documenter les résultats',
+      text: 'Conservez un historique lisible des validations, quiz et certificats.',
+    },
+  ];
+
+  readonly audiences: AudienceBlock[] = [
+    {
+      title: 'Pour les organisations',
+      icon: 'business',
+      intro: 'Standardisez la formation et améliorez la visibilité de votre structure.',
+      bullets: [
+        'Réduire le suivi manuel',
+        'Structurer l’onboarding',
+        'Améliorer la conformité',
+        'Mieux piloter les parcours',
+      ],
+    },
+    {
+      title: 'Pour les apprenants',
+      icon: 'person',
+      intro: 'Accédez aux cours assignés, suivez la progression et réussissez les évaluations.',
+      bullets: [
+        'Interface plus intuitive',
+        'Progression lisible',
+        'Accès rapide aux ressources',
+        'Certificats retrouvés facilement',
+      ],
+    },
+  ];
 }

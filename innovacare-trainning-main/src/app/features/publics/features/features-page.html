@@ -1,0 +1,127 @@
+<header class="landing-header" [class.scrolled]="headerScrolled">
+  <div class="container header-inner">
+    <a class="brand" href="#top" (click)="closeMobileMenu()">
+      <span>Innovacare</span>
+      <strong>Training</strong>
+    </a>
+
+    <button class="menu-toggle" type="button" (click)="toggleMobileMenu()" aria-label="Ouvrir le menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <nav class="nav" [class.open]="mobileMenuOpen">
+      <a href="#fonctionnalites" routerLink="/fonctionnalites" (click)="closeMobileMenu()">Fonctionnalités</a>
+      <a href="#categories" routerLink="/categories" (click)="closeMobileMenu()">Catégories</a>
+      <a href="#comment-ca-marche" routerLink="/comment-ca-marche" (click)="closeMobileMenu()">Decouvre</a>
+      <a href="#temoignages" routerLink="/temoignages" (click)="closeMobileMenu()">Témoignages</a>
+      <a href="#faq" routerLink="/faq" (click)="closeMobileMenu()">FAQ</a>
+      <button class="nav-cta mobile-only" type="button" (click)="openDemoDialog(); closeMobileMenu()">
+        Demander une démo
+      </button>
+    </nav>
+
+    <button class="nav-cta desktop-only" type="button" (click)="openDemoDialog()">
+      Demo
+    </button>
+    <button class="nav-cta desktop-only" type="button" (click)="login()">
+      connexion
+    </button>
+    <button class="nav-cta desktop-only" type="button"  routerLink="/pricing">Pricing</button>
+  </div>
+</header>
+<section class="features-page">
+  <div class="hero">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow">Fonctionnalités Innovacare Training</span>
+        <h1>Tout ce qu’il faut pour piloter la formation en santé avec rigueur</h1>
+        <p>
+          Innovacare Training centralise l’assignation des cours, le suivi des apprenants,
+          les évaluations, les certificats et la documentation pour offrir une expérience plus claire,
+          plus moderne et plus traçable.
+        </p>
+
+        <div class="hero-actions">
+          <a mat-flat-button color="primary" href="/">Retour accueil</a>
+          <a mat-stroked-button href="#modules">Explorer les modules</a>
+        </div>
+      </div>
+
+      <div class="hero-panel">
+        <div class="hero-panel__card" *ngFor="let stat of heroStats">
+          <strong>{{ stat.value }}</strong>
+          <span>{{ stat.label }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container section" id="modules">
+    <div class="section-head">
+      <span class="eyebrow">Modules clés</span>
+      <h2>Des briques fonctionnelles conçues pour les organisations de santé</h2>
+      <p>Chaque fonctionnalité renforce la standardisation, la visibilité et la préparation de vos équipes.</p>
+    </div>
+
+    <div class="feature-grid">
+      <article class="feature-card" *ngFor="let item of coreFeatures">
+        <div class="feature-card__icon">
+          <mat-icon>{{ item.icon }}</mat-icon>
+        </div>
+        <h3>{{ item.title }}</h3>
+        <p>{{ item.description }}</p>
+
+        <ul>
+          <li *ngFor="let bullet of item.bullets">
+            <mat-icon>check_circle</mat-icon>
+            <span>{{ bullet }}</span>
+          </li>
+        </ul>
+      </article>
+    </div>
+  </div>
+
+  <div class="workflow-band">
+    <div class="container section">
+      <div class="section-head centered light">
+        <span class="eyebrow light-badge">Workflow</span>
+        <h2>Une logique simple, du contenu jusqu’à la preuve</h2>
+      </div>
+
+      <div class="workflow-grid">
+        <article class="workflow-card" *ngFor="let step of workflow; let i = index">
+          <div class="workflow-card__index">0{{ i + 1 }}</div>
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.text }}</p>
+        </article>
+      </div>
+    </div>
+  </div>
+
+  <div class="container section">
+    <div class="section-head">
+      <span class="eyebrow">Par rôle</span>
+      <h2>Une plateforme utile pour les managers comme pour les apprenants</h2>
+    </div>
+
+    <div class="audience-grid">
+      <article class="audience-card" *ngFor="let audience of audiences">
+        <div class="audience-card__top">
+          <div class="audience-card__icon">
+            <mat-icon>{{ audience.icon }}</mat-icon>
+          </div>
+          <div>
+            <h3>{{ audience.title }}</h3>
+            <p>{{ audience.intro }}</p>
+          </div>
+        </div>
+
+        <mat-chip-set>
+          <mat-chip *ngFor="let bullet of audience.bullets">{{ bullet }}</mat-chip>
+        </mat-chip-set>
+      </article>
+    </div>
+  </div>
+</section>

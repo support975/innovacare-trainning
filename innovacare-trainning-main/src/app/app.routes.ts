@@ -52,6 +52,20 @@ export const routes: Routes = [
         (m) => m.TrainingLandingComponent
       ),
   },
+   {
+    path: 'fonctionnalites',
+    loadComponent: () =>
+      import('./features/publics/features/features-page').then(
+        (m) => m.FeaturesPage
+      ),
+  },
+   {
+    path: 'pricing',
+    loadComponent: () =>
+      import('./features/publics/pricing/pricing-page').then(
+        (m) => m.PricingPage
+      ),
+  },
 
   { path: '**', redirectTo: '/home' }
 ];

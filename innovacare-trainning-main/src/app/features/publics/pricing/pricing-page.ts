@@ -1,23 +1,10 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  HostListener,
-  OnDestroy,
-  QueryList,
-  ViewChildren,
-  inject,
-} from '@angular/core';
+import { Component, ElementRef, HostListener, inject, QueryList, ViewChildren } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatDialog } from '@angular/material/dialog';
 import { DemoRequestDialog } from '../demo-request-dialog/demo-request-dialog';
-import { FormsModule } from '@angular/forms';
-import '@angular/compiler';
-import { RouterModule } from '@angular/router';
-
-
 
 interface HeroHighlight {
   icon: string;
@@ -73,15 +60,35 @@ interface FaqItem {
   open?: boolean;
 }
 
+interface PricingTier {
+  name: string;
+  badge?: string;
+  price: string;
+  period: string;
+  description: string;
+  cta: string;
+  featured?: boolean;
+  features: string[];
+}
+
+interface ComparisonRow {
+  label: string;
+  starter: string;
+  growth: string;
+  enterprise: string;
+}
+
 @Component({
-  selector: 'app-training-landing',
+  selector: 'app-pricing-page',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatDialogModule, MatIconModule, FormsModule,RouterModule],
-  templateUrl: './training-landing.html',
-  styleUrls: ['./training-landing.css'],
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatChipsModule],
+  templateUrl: './pricing-page.html',
+  styleUrls: ['./pricing-page.css'],
 })
-export class TrainingLandingComponent implements AfterViewInit, OnDestroy {
-  @ViewChildren('revealRef') revealElements!: QueryList<ElementRef<HTMLElement>>;
+export class PricingPage {
+  yearly = true;
+  
+   @ViewChildren('revealRef') revealElements!: QueryList<ElementRef<HTMLElement>>;
 
   private readonly dialog = inject(MatDialog);
 
@@ -414,5 +421,105 @@ export class TrainingLandingComponent implements AfterViewInit, OnDestroy {
   login(): void {
     // Redirige vers la page de connexion
     window.location.href = '/login';
+  }
+
+  readonly tiers: PricingTier[] = [
+    {
+      name: 'Starter',
+      badge: 'Pour petites équipes',
+      price: '$49',
+      period: '/mois',
+      description: 'Idéal pour démarrer avec un onboarding structuré et une bibliothèque de formation simple.',
+      cta: 'Commencer',
+      features: [
+        'Jusqu’à 25 apprenants',
+        'Assignation des cours',
+        'Suivi des complétions',
+        'Quiz et évaluations de base',
+        'Bibliothèque documentaire',
+      ],
+    },
+    {
+      name: 'Growth',
+      badge: 'Le plus populaire',
+      price: '$129',
+      period: '/mois',
+      description: 'Pour les organisations qui veulent plus de visibilité managériale, de conformité et de standardisation.',
+      cta: 'Réserver une démo',
+      featured: true,
+      features: [
+        'Jusqu’à 100 apprenants',
+        'Tous les outils Starter',
+        'Certificats et dossiers de preuve',
+        'Vue manager avancée',
+        'Relances et suivi renforcé',
+        'Parcours par rôle / équipe',
+      ],
+    },
+    {
+      name: 'Enterprise',
+      badge: 'Multi-organisation',
+      price: 'Custom',
+      period: '',
+      description: 'Pour les structures multi-sites ou les réseaux qui ont besoin de gouvernance, personnalisation et volume.',
+      cta: 'Parler à l’équipe',
+      features: [
+        'Utilisateurs illimités ou volume élevé',
+        'Multi-organisation',
+        'Accompagnement personnalisé',
+        'Configuration avancée',
+        'Support prioritaire',
+        'Déploiement à l’échelle',
+      ],
+    },
+  ];
+
+  readonly comparisonRows: ComparisonRow[] = [
+    {
+      label: 'Apprenants inclus',
+      starter: '25',
+      growth: '100',
+      enterprise: 'Sur mesure',
+    },
+    {
+      label: 'Assignation des cours',
+      starter: 'Oui',
+      growth: 'Oui',
+      enterprise: 'Oui',
+    },
+    {
+      label: 'Quiz et évaluations',
+      starter: 'Essentiel',
+      growth: 'Avancé',
+      enterprise: 'Avancé',
+    },
+    {
+      label: 'Certificats',
+      starter: '—',
+      growth: 'Oui',
+      enterprise: 'Oui',
+    },
+    {
+      label: 'Vue manager',
+      starter: 'Basique',
+      growth: 'Avancée',
+      enterprise: 'Complète',
+    },
+    {
+      label: 'Multi-organisation',
+      starter: '—',
+      growth: 'Option',
+      enterprise: 'Oui',
+    },
+    {
+      label: 'Support',
+      starter: 'Standard',
+      growth: 'Prioritaire',
+      enterprise: 'Dédié',
+    },
+  ];
+
+  toggleBilling(): void {
+    this.yearly = !this.yearly;
   }
 }

@@ -1,0 +1,141 @@
+<header class="landing-header" [class.scrolled]="headerScrolled">
+  <div class="container header-inner">
+    <a class="brand" href="#top" (click)="closeMobileMenu()">
+      <span>Innovacare</span>
+      <strong>Training</strong>
+    </a>
+
+    <button class="menu-toggle" type="button" (click)="toggleMobileMenu()" aria-label="Ouvrir le menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <nav class="nav" [class.open]="mobileMenuOpen">
+      <a href="#fonctionnalites" routerLink="././fonctionnalites" (click)="closeMobileMenu()">Fonctionnalités</a>
+      <a href="#categories" routerLink="/categories" (click)="closeMobileMenu()">Catégories</a>
+      <a href="#comment-ca-marche" routerLink="/comment-ca-marche" (click)="closeMobileMenu()">Decouvre</a>
+      <a href="#temoignages" routerLink="/temoignages" (click)="closeMobileMenu()">Témoignages</a>
+      <a href="#faq" routerLink="/faq" (click)="closeMobileMenu()">FAQ</a>
+      <button class="nav-cta mobile-only" type="button" (click)="openDemoDialog(); closeMobileMenu()">
+        Demander une démo
+      </button>
+    </nav>
+
+    <button class="nav-cta desktop-only" type="button" (click)="openDemoDialog()">
+      Demo
+    </button>
+    <button class="nav-cta desktop-only" type="button" (click)="login()">
+      connexion
+    </button>
+    <button class="nav-cta desktop-only" type="button"  routerLink="pricing">Pricing</button>
+  </div>
+</header>
+<section class="pricing-page">
+  <div class="hero">
+    <div class="container hero-inner">
+      <span class="eyebrow">Pricing Innovacare Training</span>
+      <h1>Des tarifs pensés pour la croissance de vos équipes</h1>
+      <p>
+        Choisissez une formule adaptée à votre taille, votre niveau d’exigence et votre besoin de visibilité sur la formation.
+      </p>
+
+      <div class="billing-toggle">
+        <span [class.active]="!yearly">Mensuel</span>
+        <button type="button" class="switch" (click)="toggleBilling()" [class.yearly]="yearly" aria-label="Changer le mode de facturation">
+          <span></span>
+        </button>
+        <span [class.active]="yearly">Annuel <small>-15%</small></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="container section">
+    <div class="pricing-grid">
+      <article class="pricing-card" *ngFor="let tier of tiers" [class.featured]="tier.featured">
+        <div class="pricing-card__top">
+          <mat-chip *ngIf="tier.badge">{{ tier.badge }}</mat-chip>
+          <h2>{{ tier.name }}</h2>
+          <div class="price-line">
+            <strong>{{ tier.price }}</strong>
+            <span>{{ tier.period }}</span>
+          </div>
+          <p>{{ tier.description }}</p>
+        </div>
+
+        <button mat-flat-button color="primary" *ngIf="tier.featured">{{ tier.cta }}</button>
+        <button mat-stroked-button *ngIf="!tier.featured">{{ tier.cta }}</button>
+
+        <ul>
+          <li *ngFor="let item of tier.features">
+            <mat-icon>check_circle</mat-icon>
+            <span>{{ item }}</span>
+          </li>
+        </ul>
+      </article>
+    </div>
+  </div>
+
+  <div class="comparison-band">
+    <div class="container section">
+      <div class="section-head light">
+        <span class="eyebrow light-badge">Comparaison</span>
+        <h2>Comparez les plans rapidement</h2>
+      </div>
+
+      <div class="comparison-table-wrapper">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Fonctionnalité</th>
+              <th>Starter</th>
+              <th>Growth</th>
+              <th>Enterprise</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of comparisonRows">
+              <td>{{ row.label }}</td>
+              <td>{{ row.starter }}</td>
+              <td>{{ row.growth }}</td>
+              <td>{{ row.enterprise }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="container section faq-like">
+    <div class="section-head">
+      <span class="eyebrow">Ce qui est inclus</span>
+      <h2>Chaque plan est construit pour la clarté et la traçabilité</h2>
+      <p>
+        Quel que soit le niveau choisi, Innovacare Training reste orienté onboarding structuré, suivi des apprenants et documentation des résultats.
+      </p>
+    </div>
+
+    <div class="included-grid">
+      <article class="included-card">
+        <mat-icon>assignment</mat-icon>
+        <h3>Parcours structurés</h3>
+        <p>Créez des expériences cohérentes pour l’intégration et la montée en compétence.</p>
+      </article>
+      <article class="included-card">
+        <mat-icon>fact_check</mat-icon>
+        <h3>Traçabilité</h3>
+        <p>Conservez un historique clair des validations, quiz et complétions.</p>
+      </article>
+      <article class="included-card">
+        <mat-icon>visibility</mat-icon>
+        <h3>Visibilité manager</h3>
+        <p>Repérez rapidement les retards, les écarts et les besoins de relance.</p>
+      </article>
+      <article class="included-card">
+        <mat-icon>menu_book</mat-icon>
+        <h3>Bibliothèque pédagogique</h3>
+        <p>Centralisez politiques, procédures et contenus dans un espace organisé.</p>
+      </article>
+    </div>
+  </div>
+</section>
