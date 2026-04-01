@@ -75,6 +75,6 @@ export class LearnerShell implements OnDestroy {
 
   logout() {
     console.log('Logging out...');
-    this.router.navigate(['/login']);
+    this.router.navigate(['/home']);
   }
 }

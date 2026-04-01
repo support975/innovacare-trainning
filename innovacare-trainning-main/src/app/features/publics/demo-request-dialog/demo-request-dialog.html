@@ -1,0 +1,63 @@
+<div class="dialog-shell">
+  <button mat-icon-button class="close-btn" type="button" (click)="close()" aria-label="Fermer">
+    <mat-icon>close</mat-icon>
+  </button>
+
+  <div class="dialog-header">
+    <span class="dialog-badge">Demander une démo</span>
+    <h2>Voyons comment Innovacare Training peut s’adapter à votre structure</h2>
+    <p>Remplissez ce formulaire et votre lead sera enregistré dans Firestore.</p>
+  </div>
+
+  <form class="dialog-form" [formGroup]="form" (ngSubmit)="submit()">
+    <div class="grid two-cols">
+      <mat-form-field appearance="outline">
+        <mat-label>Nom complet</mat-label>
+        <input matInput formControlName="fullName" />
+        <mat-error *ngIf="hasError('fullName', 'required')">Le nom est requis.</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Email professionnel</mat-label>
+        <input matInput type="email" formControlName="workEmail" />
+        <mat-error *ngIf="hasError('workEmail', 'required')">L’email est requis.</mat-error>
+        <mat-error *ngIf="hasError('workEmail', 'email')">Email invalide.</mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="grid two-cols">
+      <mat-form-field appearance="outline">
+        <mat-label>Téléphone</mat-label>
+        <input matInput formControlName="phone" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Organisation</mat-label>
+        <input matInput formControlName="organizationName" />
+        <mat-error *ngIf="hasError('organizationName', 'required')">Champ requis.</mat-error>
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Type d’organisation</mat-label>
+      <mat-select formControlName="organizationType">
+        <mat-option *ngFor="let type of organizationTypes" [value]="type">{{ type }}</mat-option>
+      </mat-select>
+      <mat-error *ngIf="hasError('organizationType', 'required')">Champ requis.</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Message</mat-label>
+      <textarea matInput rows="5" formControlName="message"></textarea>
+      <mat-error *ngIf="hasError('message', 'required')">Le message est requis.</mat-error>
+    </mat-form-field>
+
+    <div class="dialog-actions">
+      <button mat-stroked-button type="button" (click)="close()" [disabled]="loading()">Annuler</button>
+      <button mat-flat-button color="primary" type="submit" [disabled]="loading()">
+        <mat-spinner *ngIf="loading()" diameter="18"></mat-spinner>
+        <span *ngIf="!loading()">Envoyer la demande</span>
+      </button>
+    </div>
+  </form>
+</div>

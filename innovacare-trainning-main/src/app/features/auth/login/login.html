@@ -1,26 +1,97 @@
-<div class="auth">
-    <div class="card">
-      <h1>Sign in</h1>
-      <p class="muted">INNOVACARE-TRAINING</p>
-  
-      <form [formGroup]="form" (ngSubmit)="submit()" class="form">
-        <label class="label">Email</label>
-        <input class="input" type="email" formControlName="email" placeholder="you@clinic.com" />
-        <small class="help" *ngIf="form.controls.email.invalid && form.controls.email.touched">Valid email required</small>
-  
-        <label class="label">Password</label>
-        <input class="input" type="password" formControlName="password" placeholder="••••••••" />
-        <small class="help" *ngIf="form.controls.password.invalid && form.controls.password.touched">Min 6 characters</small>
-  
-        <button class="btn" type="submit" [disabled]="loading()">Sign in</button>
-        <button class="btn outline" type="button" (click)="google()" [disabled]="loading()">Sign in with Google</button>
-      </form>
-  
-      <p class="error" *ngIf="error()">{{ error() }}</p>
-  
-      <p class="muted" style="margin-top:12px">
-        Forgot password? <a routerLink="/reset">Reset</a>
-      </p>
+<div class="auth-container">
+    <div class="auth-wrapper">
+      <div class="card auth-card">
+        <div class="card-header">
+          <div class="logo-section" style="text-align: center;">
+            <h1 class="title">Welcome Back</h1>
+            <p class="subtitle">INNOVACARE TRAINING PLATFORM</p>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <form [formGroup]="form" (ngSubmit)="submit()" class="form">
+            <!-- Email Field -->
+            <div class="form-group">
+              <label class="label">Email Address</label>
+              <div class="input-wrapper">
+                <span class="input-icon">✉️</span>
+                <input 
+                  class="input" 
+                  type="email" 
+                  formControlName="email" 
+                  placeholder="you@clinic.com"
+                  autocomplete="email"
+                />
+              </div>
+              <small class="help error-text" *ngIf="form.controls.email.invalid && form.controls.email.touched">
+                ⚠️ Valid email address required
+              </small>
+            </div>
+
+            <!-- Password Field -->
+            <div class="form-group">
+              <label class="label">Password</label>
+              <div class="input-wrapper">
+                <span class="input-icon">🔒</span>
+                <input 
+                  class="input" 
+                  type="password" 
+                  formControlName="password" 
+                  placeholder="••••••••"
+                  autocomplete="current-password"
+                />
+              </div>
+              <small class="help error-text" *ngIf="form.controls.password.invalid && form.controls.password.touched">
+                ⚠️ Minimum 6 characters required
+              </small>
+            </div>
+
+            <!-- Error Message -->
+            <div class="error-alert" *ngIf="error()">
+              <span class="error-icon">❌</span>
+              <p class="error">{{ error() }}</p>
+            </div>
+
+            <!-- Sign In Button -->
+            <button 
+              class="btn btn-primary" 
+              type="submit" 
+              [disabled]="loading()"
+              [class.loading]="loading()">
+              <span *ngIf="!loading()">Sign In</span>
+              <span *ngIf="loading()">Signing in...</span>
+            </button>
+
+            <!-- Divider -->
+            <div class="divider">
+              <span>or</span>
+            </div>
+
+            <!-- Google Sign In Button -->
+            <button 
+              class="btn btn-google" 
+              type="button" 
+              (click)="google()" 
+              [disabled]="loading()">
+              <span class="google-icon">🔐</span>
+              Sign in with Google
+            </button>
+          </form>
+
+          <!-- Forgot Password & Back to Home -->
+          <div class="footer-links">
+            <p class="forgot-password">
+              Forgot your password? <a routerLink="/reset" class="link">Reset it here</a>
+            </p>
+            <button 
+              routerLink="/" 
+              class="btn btn-link" 
+              type="button">
+              ← Back to Home
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   

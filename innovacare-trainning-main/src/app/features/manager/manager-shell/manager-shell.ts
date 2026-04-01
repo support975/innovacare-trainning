@@ -41,6 +41,6 @@ export class ManagerShell {
 
   logout() {
     // TODO: hook to Firebase/AuthService
-    this.router.navigate(['/login']);
+    this.router.navigate(['/home']);
   }
 }

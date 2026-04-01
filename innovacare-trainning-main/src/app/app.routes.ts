@@ -3,7 +3,7 @@ import { roleCanMatch } from './core/role.canmatch';
 
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'login' },
+  { path: '', pathMatch: 'full', redirectTo: '/home' },
 
   {
     path: 'login',
@@ -42,8 +42,16 @@ export const routes: Routes = [
     path: 'super-admin',
     canMatch: [roleCanMatch(['super_admin'])],
     loadChildren: () =>
-      import('./features/superAdmin/super-admin.routes').then(m => m.SUPER_ADMIN_ROUTES)
+        import('./features/superAdmin/super-admin.routes').then(m => m.SUPER_ADMIN_ROUTES)
+    },
+
+  {
+    path: 'home',
+    loadComponent: () =>
+      import('./features/publics/training-landing/training-landing').then(
+        (m) => m.TrainingLandingComponent
+      ),
   },
 
-  { path: '**', redirectTo: 'login' }
+  { path: '**', redirectTo: '/home' }
 ];
