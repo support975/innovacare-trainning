@@ -45,6 +45,10 @@
       </mat-select>
       <mat-error *ngIf="hasError('organizationType', 'required')">Champ requis.</mat-error>
     </mat-form-field>
+    <mat-form-field appearance="outline">
+  <mat-label>Plan sélectionné</mat-label>
+  <input matInput formControlName="selectedPlan" readonly />
+</mat-form-field>
 
     <mat-form-field appearance="outline">
       <mat-label>Message</mat-label>

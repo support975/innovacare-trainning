@@ -8,7 +8,9 @@ export interface DemoRequestPayload {
   phone: string;
   organizationName: string;
   organizationType: string;
+  selectedPlan: string;
   message: string;
+  source?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -24,7 +26,7 @@ export class DemoRequestService {
     const ref = collection(this.firestore, 'demoRequests');
     return addDoc(ref, {
       ...payload,
-      source: 'landing-page',
+      source: payload.source ?? 'landing-page',
       status: 'new',
       createdAt: serverTimestamp(),
     }).then(() => {});

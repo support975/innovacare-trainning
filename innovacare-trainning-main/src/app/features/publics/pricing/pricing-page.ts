@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DemoRequestDialog } from '../demo-request-dialog/demo-request-dialog';
 
 interface HeroHighlight {
@@ -81,7 +81,7 @@ interface ComparisonRow {
 @Component({
   selector: 'app-pricing-page',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatChipsModule],
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatChipsModule, MatDialogModule],
   templateUrl: './pricing-page.html',
   styleUrls: ['./pricing-page.css'],
 })
@@ -521,5 +521,19 @@ export class PricingPage {
 
   toggleBilling(): void {
     this.yearly = !this.yearly;
+  }
+
+   openDemoDialogPlan(plan?: string): void {
+    this.dialog.open(DemoRequestDialog, {
+      width: '100%',
+      maxWidth: '720px',
+      autoFocus: false,
+      panelClass: 'demo-request-dialog-panel',
+      backdropClass: 'demo-request-dialog-backdrop',
+      data: {
+        source: 'pricing-page',
+        selectedPlan: plan ?? null,
+      },
+    });
   }
 }

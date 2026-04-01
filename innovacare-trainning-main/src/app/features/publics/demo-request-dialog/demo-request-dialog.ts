@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -11,6 +11,10 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DemoRequestService } from '../demo-request';
 
+interface DemoDialogData {
+  source?: string;
+  selectedPlan?: string | null;
+}
 
 @Component({
   selector: 'app-demo-request-dialog',
@@ -35,6 +39,7 @@ export class DemoRequestDialog {
   private readonly dialogRef = inject(MatDialogRef<DemoRequestDialog>);
   private readonly demoRequestService = inject(DemoRequestService);
   private readonly snackBar = inject(MatSnackBar);
+    readonly data = inject<DemoDialogData>(MAT_DIALOG_DATA, { optional: true }) ?? {};
 
   readonly loading = signal(false);
 
@@ -54,9 +59,15 @@ export class DemoRequestDialog {
     phone: [''],
     organizationName: ['', Validators.required],
     organizationType: ['', Validators.required],
-    message: ['', [Validators.required, Validators.minLength(12)]],
+    selectedPlan: [this.data.selectedPlan ?? ''],
+    message: [
+      this.data.selectedPlan
+        ? `Bonjour, je souhaite une démo pour le plan ${this.data.selectedPlan}.`
+        : '',
+      [Validators.required, Validators.minLength(12)],
+    ],
   });
-
+  
   close(): void {
     this.dialogRef.close();
   }

@@ -52,28 +52,44 @@
 
   <div class="container section">
     <div class="pricing-grid">
-      <article class="pricing-card" *ngFor="let tier of tiers" [class.featured]="tier.featured">
-        <div class="pricing-card__top">
-          <mat-chip *ngIf="tier.badge">{{ tier.badge }}</mat-chip>
-          <h2>{{ tier.name }}</h2>
-          <div class="price-line">
-            <strong>{{ tier.price }}</strong>
-            <span>{{ tier.period }}</span>
-          </div>
-          <p>{{ tier.description }}</p>
-        </div>
-
-        <button mat-flat-button color="primary" *ngIf="tier.featured">{{ tier.cta }}</button>
-        <button mat-stroked-button *ngIf="!tier.featured">{{ tier.cta }}</button>
-
-        <ul>
-          <li *ngFor="let item of tier.features">
-            <mat-icon>check_circle</mat-icon>
-            <span>{{ item }}</span>
-          </li>
-        </ul>
-      </article>
+  <article class="pricing-card" *ngFor="let tier of tiers" [class.featured]="tier.featured">
+    <div class="pricing-card__top">
+      <mat-chip *ngIf="tier.badge">{{ tier.badge }}</mat-chip>
+      <h2>{{ tier.name }}</h2>
+      <div class="price-line">
+        <strong>{{ tier.price }}</strong>
+        <span>{{ tier.period }}</span>
+      </div>
+      <p>{{ tier.description }}</p>
     </div>
+
+    <button
+      mat-flat-button
+      color="primary"
+      type="button"
+      *ngIf="tier.featured"
+      (click)="openDemoDialogPlan(tier.name)"
+    >
+      {{ tier.cta }}
+    </button>
+
+    <button
+      mat-stroked-button
+      type="button"
+      *ngIf="!tier.featured"
+      (click)="openDemoDialogPlan(tier.name)"
+    >
+      {{ tier.cta }}
+    </button>
+
+    <ul>
+      <li *ngFor="let item of tier.features">
+        <mat-icon>check_circle</mat-icon>
+        <span>{{ item }}</span>
+      </li>
+    </ul>
+  </article>
+</div>
   </div>
 
   <div class="comparison-band">
@@ -139,3 +155,7 @@
     </div>
   </div>
 </section>
+
+<button mat-flat-button color="primary" type="button" (click)="openDemoDialogPlan('Growth')">
+  Réserver une démo
+</button>
