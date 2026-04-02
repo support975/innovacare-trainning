@@ -1,11 +1,21 @@
-import { Component, ElementRef, HostListener, inject, QueryList, ViewChildren } from '@angular/core';
+import { Component, computed, ElementRef, HostListener, inject, QueryList, signal, ViewChildren } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { CourseCatalogService } from '../catalogue-page';
+import { Course } from '../../../data/models';
+import { MatDialog } from '@angular/material/dialog';
 import { DemoRequestDialog } from '../demo-request-dialog/demo-request-dialog';
-import { RouterModule } from '@angular/router';
+
 
 interface HeroHighlight {
   icon: string;
@@ -61,34 +71,28 @@ interface FaqItem {
   open?: boolean;
 }
 
-interface PricingTier {
-  name: string;
-  badge?: string;
-  price: string;
-  period: string;
-  description: string;
-  cta: string;
-  featured?: boolean;
-  features: string[];
-}
-
-interface ComparisonRow {
-  label: string;
-  starter: string;
-  growth: string;
-  enterprise: string;
-}
 
 @Component({
-  selector: 'app-pricing-page',
+  selector: 'app-course-catalog-page',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatChipsModule, MatDialogModule, RouterModule],
-  templateUrl: './pricing-page.html',
-  styleUrls: ['./pricing-page.css'],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    MatButtonModule,
+    MatIconModule,
+    MatChipsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatSnackBarModule,
+    RouterModule,
+  ],
+  templateUrl: './catalogue-page.html',
+  styleUrl: './catalogue-page.css',
 })
-export class PricingPage {
-  yearly = true;
-  
+export class CataloguePage  {
+
    @ViewChildren('revealRef') revealElements!: QueryList<ElementRef<HTMLElement>>;
 
   private readonly dialog = inject(MatDialog);
@@ -423,118 +427,208 @@ export class PricingPage {
     // Redirige vers la page de connexion
     window.location.href = '/login';
   }
+  private readonly courseService = inject(CourseCatalogService);
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly router = inject(Router);
 
-  readonly tiers: PricingTier[] = [
-    {
-      name: 'Starter',
-      badge: 'Pour petites équipes',
-      price: '$49',
-      period: '/mois',
-      description: 'Idéal pour démarrer avec un onboarding structuré et une bibliothèque de formation simple.',
-      cta: 'Commencer',
-      features: [
-        'Jusqu’à 25 apprenants',
-        'Assignation des cours',
-        'Suivi des complétions',
-        'Quiz et évaluations de base',
-        'Bibliothèque documentaire',
-      ],
-    },
-    {
-      name: 'Growth',
-      badge: 'Le plus populaire',
-      price: '$129',
-      period: '/mois',
-      description: 'Pour les organisations qui veulent plus de visibilité managériale, de conformité et de standardisation.',
-      cta: 'Réserver une démo',
-      featured: true,
-      features: [
-        'Jusqu’à 100 apprenants',
-        'Tous les outils Starter',
-        'Certificats et dossiers de preuve',
-        'Vue manager avancée',
-        'Relances et suivi renforcé',
-        'Parcours par rôle / équipe',
-      ],
-    },
-    {
-      name: 'Enterprise',
-      badge: 'Multi-organisation',
-      price: 'Custom',
-      period: '',
-      description: 'Pour les structures multi-sites ou les réseaux qui ont besoin de gouvernance, personnalisation et volume.',
-      cta: 'Parler à l’équipe',
-      features: [
-        'Utilisateurs illimités ou volume élevé',
-        'Multi-organisation',
-        'Accompagnement personnalisé',
-        'Configuration avancée',
-        'Support prioritaire',
-        'Déploiement à l’échelle',
-      ],
-    },
-  ];
+  readonly loading = signal(true);
+  readonly courses = signal<Course[]>([]);
 
-  readonly comparisonRows: ComparisonRow[] = [
-    {
-      label: 'Apprenants inclus',
-      starter: '25',
-      growth: '100',
-      enterprise: 'Sur mesure',
-    },
-    {
-      label: 'Assignation des cours',
-      starter: 'Oui',
-      growth: 'Oui',
-      enterprise: 'Oui',
-    },
-    {
-      label: 'Quiz et évaluations',
-      starter: 'Essentiel',
-      growth: 'Avancé',
-      enterprise: 'Avancé',
-    },
-    {
-      label: 'Certificats',
-      starter: '—',
-      growth: 'Oui',
-      enterprise: 'Oui',
-    },
-    {
-      label: 'Vue manager',
-      starter: 'Basique',
-      growth: 'Avancée',
-      enterprise: 'Complète',
-    },
-    {
-      label: 'Multi-organisation',
-      starter: '—',
-      growth: 'Option',
-      enterprise: 'Oui',
-    },
-    {
-      label: 'Support',
-      starter: 'Standard',
-      growth: 'Prioritaire',
-      enterprise: 'Dédié',
-    },
-  ];
+  readonly searchTerm = signal('');
+  readonly selectedType = signal<'all' | 'It' | 'Health' | 'Hr' | 'safety'>('all');
+  readonly selectedKind = signal<'all' | 'Course' | 'Text' | 'Module'>('all');
+  readonly selectedLang = signal<'all' | 'EN' | 'FR' | 'ES'>('all');
+  readonly selectedAudience = signal('all');
+  readonly selectedCareSetting = signal('all');
+  readonly sortBy = signal<'featured' | 'title' | 'duration' | 'ceCredit'>('featured');
 
-  toggleBilling(): void {
-    this.yearly = !this.yearly;
+  readonly availableAudiences = computed(() => {
+    const values = new Set<string>();
+    this.courses().forEach((course) => {
+      (course.targetAudience ?? []).forEach((item) => values.add(item));
+    });
+    return ['all', ...Array.from(values).sort((a, b) => a.localeCompare(b))];
+  });
+
+  readonly availableCareSettings = computed(() => {
+    const values = new Set<string>();
+    this.courses().forEach((course) => {
+      (course.healthMeta?.careSetting ?? []).forEach((item) => values.add(item));
+    });
+    return ['all', ...Array.from(values).sort((a, b) => a.localeCompare(b))];
+  });
+
+  readonly featuredCourses = computed(() =>
+    this.courses().filter((course) => course.active !== false && !!course.imageUrl).slice(0, 4)
+  );
+
+  readonly filteredCourses = computed(() => {
+    let items = [...this.courses()].filter((course) => course.active !== false);
+
+    const search = this.searchTerm().trim().toLowerCase();
+    const selectedType = this.selectedType();
+    const selectedKind = this.selectedKind();
+    const selectedLang = this.selectedLang();
+    const selectedAudience = this.selectedAudience();
+    const selectedCareSetting = this.selectedCareSetting();
+    const sortBy = this.sortBy();
+
+    if (search) {
+      items = items.filter((course) => {
+        const haystack = [
+          course.title,
+          course.subtitle ?? '',
+          course.description,
+          course.lecturer,
+          course.level,
+          ...(course.tags ?? []),
+          ...(course.targetAudience ?? []),
+          ...(course.prerequisites ?? []),
+          ...(course.healthMeta?.clinicalTopics ?? []),
+          ...(course.healthMeta?.careSetting ?? []),
+        ]
+          .join(' ')
+          .toLowerCase();
+
+        return haystack.includes(search);
+      });
+    }
+
+    if (selectedType !== 'all') {
+      items = items.filter((course) => course.type === selectedType);
+    }
+
+    if (selectedKind !== 'all') {
+      items = items.filter((course) => course.kind === selectedKind);
+    }
+
+    if (selectedLang !== 'all') {
+      items = items.filter((course) => course.lang === selectedLang);
+    }
+
+    if (selectedAudience !== 'all') {
+      items = items.filter((course) =>
+        (course.targetAudience ?? []).includes(selectedAudience)
+      );
+    }
+
+    if (selectedCareSetting !== 'all') {
+      items = items.filter((course) =>
+        (course.healthMeta?.careSetting ?? []).includes(selectedCareSetting)
+      );
+    }
+
+    switch (sortBy) {
+      case 'title':
+        items.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'duration':
+        items.sort((a, b) => a.durationMin - b.durationMin);
+        break;
+      case 'ceCredit':
+        items.sort((a, b) => (b.ceCredit ?? 0) - (a.ceCredit ?? 0));
+        break;
+      default:
+        items.sort((a, b) => Number(Boolean(b.imageUrl)) - Number(Boolean(a.imageUrl)));
+        break;
+    }
+
+    return items;
+  });
+
+  constructor() {
+    this.courseService
+      .getPublicActiveCourses()
+      .pipe(takeUntilDestroyed())
+      .subscribe({
+        next: (courses) => {
+          console.log('Courses loaded:', courses);
+          this.courses.set(courses);
+          this.loading.set(false);
+        },
+        error: (error) => {
+          console.error('Erreur chargement catalogue', error);
+          this.loading.set(false);
+          this.snackBar.open(
+            'Impossible de charger le catalogue pour le moment.',
+            'Fermer',
+            { duration: 6000 }
+          );
+        },
+      });
   }
 
-   openDemoDialogPlan(plan?: string): void {
-    this.dialog.open(DemoRequestDialog, {
-      width: '100%',
-      maxWidth: '720px',
-      autoFocus: false,
-      panelClass: 'demo-request-dialog-panel',
-      backdropClass: 'demo-request-dialog-backdrop',
-      data: {
-        source: 'pricing-page',
-        selectedPlan: plan ?? null,
+  setSearchTerm(value: string): void {
+    this.searchTerm.set(value);
+  }
+
+  setType(value: 'all' | 'It' | 'Health' | 'Hr' | 'safety'): void {
+    this.selectedType.set(value);
+  }
+
+  setKind(value: 'all' | 'Course' | 'Text' | 'Module'): void {
+    this.selectedKind.set(value);
+  }
+
+  setLang(value: 'all' | 'EN' | 'FR' | 'ES'): void {
+    this.selectedLang.set(value);
+  }
+
+  setAudience(value: string): void {
+    this.selectedAudience.set(value);
+  }
+
+  setCareSetting(value: string): void {
+    this.selectedCareSetting.set(value);
+  }
+
+  setSort(value: 'featured' | 'title' | 'duration' | 'ceCredit'): void {
+    this.sortBy.set(value);
+  }
+
+  clearFilters(): void {
+    this.searchTerm.set('');
+    this.selectedType.set('all');
+    this.selectedKind.set('all');
+    this.selectedLang.set('all');
+    this.selectedAudience.set('all');
+    this.selectedCareSetting.set('all');
+    this.sortBy.set('featured');
+  }
+
+  openCourse(courseId?: string): void {
+    if (!courseId) return;
+    this.router.navigate(['/catalogue', courseId]);
+  }
+
+  addToPathway(course: Course): void {
+    if (!course.id) return;
+
+    this.courseService.addToPathway({
+      courseId: course.id,
+      courseTitle: course.title,
+      source: 'catalog-page',
+    }).pipe(takeUntilDestroyed()).subscribe({
+      next: () => {
+        this.snackBar.open(`"${course.title}" ajouté au parcours.`, 'Fermer', {
+          duration: 4000,
+        });
+      },
+      error: (error) => {
+        console.error('Erreur addToPathway', error);
+        this.snackBar.open(
+          'Impossible d’ajouter ce cours au parcours.',
+          'Fermer',
+          { duration: 5000 }
+        );
       },
     });
+  }
+
+  totalLessonCount(course: Course): number {
+    return (course.sections ?? []).reduce(
+      (sum, section) => sum + (section.lessons?.length ?? 0),
+      0
+    );
   }
 }

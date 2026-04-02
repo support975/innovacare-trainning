@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDialog } from '@angular/material/dialog';
 import { DemoRequestDialog } from '../demo-request-dialog/demo-request-dialog';
+import { RouterModule } from '@angular/router';
 
 interface HeroHighlight {
   icon: string;
@@ -87,7 +88,7 @@ interface AudienceBlock {
 @Component({
   selector: 'app-features-page',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatChipsModule],
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatChipsModule, RouterModule],
   templateUrl: './features-page.html',
   styleUrls: ['./features-page.css'],
 })

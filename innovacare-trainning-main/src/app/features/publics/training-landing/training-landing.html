@@ -12,11 +12,11 @@
     </button>
 
     <nav class="nav" [class.open]="mobileMenuOpen">
-      <a href="#fonctionnalites" routerLink="/fonctionnalites" (click)="closeMobileMenu()">Fonctionnalités</a>
-      <a href="#categories" routerLink="/categories" (click)="closeMobileMenu()">Catégories</a>
-      <a href="#comment-ca-marche" routerLink="/comment-ca-marche" (click)="closeMobileMenu()">Decouvre</a>
-      <a href="#temoignages" routerLink="/temoignages" (click)="closeMobileMenu()">Témoignages</a>
-      <a href="#faq" routerLink="/faq" (click)="closeMobileMenu()">FAQ</a>
+      <a  routerLink="/fonctionnalites" (click)="closeMobileMenu()">Fonctionnalités</a>
+      <a  routerLink="/categories" (click)="closeMobileMenu()">Catégories</a>
+      <a  routerLink="/catalogue" (click)="closeMobileMenu()">Cours</a>
+      <a  routerLink="/temoignages" (click)="closeMobileMenu()">Témoignages</a>
+      <a  routerLink="/faq" (click)="closeMobileMenu()">FAQ</a>
       <button class="nav-cta mobile-only" type="button" (click)="openDemoDialog(); closeMobileMenu()">
         Demander une démo
       </button>
@@ -26,7 +26,7 @@
       Demo
     </button>
     <button class="nav-cta desktop-only" type="button" (click)="login()">
-      connexion
+      Connexion
     </button>
     <button class="nav-cta desktop-only" type="button"  routerLink="/pricing">Pricing</button>
   </div>

@@ -66,6 +66,20 @@ export const routes: Routes = [
         (m) => m.PricingPage
       ),
   },
+  {
+    path: 'catalogue',
+    loadComponent: () =>
+      import('./features/publics/catalogue-page/catalogue-page').then(
+        (m) => m.CataloguePage 
+      ),
+  },
+   {
+    path: 'catalogue/:id',
+    loadComponent: () =>
+      import('./features/publics/course-detail-page/course-detail-page').then(
+        (m) => m.CourseDetailPage
+      ),
+  },
 
   { path: '**', redirectTo: '/home' }
 ];

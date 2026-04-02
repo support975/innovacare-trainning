@@ -1,0 +1,254 @@
+<header class="landing-header" [class.scrolled]="headerScrolled">
+  <div class="container header-inner">
+    <a class="brand" href="#top" (click)="closeMobileMenu()">
+      <span>Innovacare</span>
+      <strong>Training</strong>
+    </a>
+
+    <button class="menu-toggle" type="button" (click)="toggleMobileMenu()" aria-label="Ouvrir le menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <nav class="nav" [class.open]="mobileMenuOpen">
+      <a  routerLink="/fonctionnalites" (click)="closeMobileMenu()">Fonctionnalités</a>
+      <a  routerLink="/categories" (click)="closeMobileMenu()">Catégories</a>
+      <a  routerLink="/catalogue" (click)="closeMobileMenu()">Cours</a>
+      <a  routerLink="/temoignages" (click)="closeMobileMenu()">Témoignages</a>
+      <a  routerLink="/faq" (click)="closeMobileMenu()">FAQ</a>
+      <button class="nav-cta mobile-only" type="button" (click)="openDemoDialog(); closeMobileMenu()">
+        Demander une démo
+      </button>
+    </nav>
+
+    <button class="nav-cta desktop-only" type="button" (click)="openDemoDialog()">
+      Demander une démo
+    </button>
+    <button class="nav-cta desktop-only" type="button" (click)="login()">
+      Connexion
+    </button>
+    <button class="nav-cta desktop-only" type="button"  routerLink="/pricing">Pricing</button>
+  </div>
+</header>
+
+
+<section class="catalog-page">
+  <div class="catalog-hero">
+    <div class="container catalog-hero__grid">
+      <div class="catalog-hero__copy">
+        <span class="eyebrow" aria-label="section">Catalogue de cours</span>
+        <h1>Explorez une bibliothèque de formation professionnelle pensée pour la santé</h1>
+        <p class="hero-description">
+          Accédez à un catalogue complet et filtrez les cours par type, domaine, langue, audience et contexte de soins pour trouver la formation idéale.
+        </p>
+
+        <div class="catalog-hero__stats" role="region" aria-label="Statistiques du catalogue">
+          <article class="stat-card">
+            <strong class="stat-value">{{ courses().length }}</strong>
+            <span class="stat-label">Cours publics actifs</span>
+          </article>
+          <article class="stat-card">
+            <strong class="stat-value">{{ featuredCourses().length }}</strong>
+            <span class="stat-label">Formations en vedette</span>
+          </article>
+          <article class="stat-card">
+            <strong class="stat-value">{{ availableAudiences().length - 1 }}</strong>
+            <span class="stat-label">Audiences ciblées</span>
+          </article>
+        </div>
+      </div>
+
+      <div class="catalog-hero__panel">
+        <div class="hero-panel-card">
+          <div class="hero-panel-card__top">
+            <mat-icon aria-hidden="true">library_books</mat-icon>
+            <span class="panel-title">Catalogue structuré</span>
+          </div>
+          <h3>Trouvez rapidement la formation adaptée à votre équipe</h3>
+          <p>
+            Formations en santé, ressources humaines, sécurité, informatique, onboarding, conformité, modules cliniques, ressources documentaires et cours complets.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container section">
+    <div class="filter-shell">
+      <div class="filter-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Recherche</mat-label>
+          <input
+            matInput
+            [ngModel]="searchTerm()"
+            (ngModelChange)="setSearchTerm($event)"
+            placeholder="Titre, tag, audience, lecturer, topic..."
+          />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Type</mat-label>
+          <mat-select [ngModel]="selectedType()" (ngModelChange)="setType($event)">
+            <mat-option value="all">Tous les types</mat-option>
+            <mat-option value="Health">Health</mat-option>
+            <mat-option value="Hr">Hr</mat-option>
+            <mat-option value="safety">Safety</mat-option>
+            <mat-option value="It">IT</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Kind</mat-label>
+          <mat-select [ngModel]="selectedKind()" (ngModelChange)="setKind($event)">
+            <mat-option value="all">Tous les kinds</mat-option>
+            <mat-option value="Course">Course</mat-option>
+            <mat-option value="Text">Text</mat-option>
+            <mat-option value="Module">Module</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Langue</mat-label>
+          <mat-select [ngModel]="selectedLang()" (ngModelChange)="setLang($event)">
+            <mat-option value="all">Toutes les langues</mat-option>
+            <mat-option value="EN">EN</mat-option>
+            <mat-option value="FR">FR</mat-option>
+            <mat-option value="ES">ES</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Audience</mat-label>
+          <mat-select [ngModel]="selectedAudience()" (ngModelChange)="setAudience($event)">
+            <mat-option *ngFor="let item of availableAudiences()" [value]="item">
+              {{ item === 'all' ? 'Toutes les audiences' : item }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Care setting</mat-label>
+          <mat-select [ngModel]="selectedCareSetting()" (ngModelChange)="setCareSetting($event)">
+            <mat-option *ngFor="let item of availableCareSettings()" [value]="item">
+              {{ item === 'all' ? 'Tous les settings' : item }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="filter-actions">
+        <mat-form-field appearance="outline">
+          <mat-label>Trier par</mat-label>
+          <mat-select [ngModel]="sortBy()" (ngModelChange)="setSort($event)">
+            <mat-option value="featured">Visuels d’abord</mat-option>
+            <mat-option value="title">Titre A-Z</mat-option>
+            <mat-option value="duration">Durée croissante</mat-option>
+            <mat-option value="ceCredit">CE credit décroissant</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <button mat-stroked-button type="button" (click)="clearFilters()">
+          Réinitialiser
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container section section--compact" *ngIf="featuredCourses().length">
+    <div class="section-head">
+      <span class="eyebrow">Cours en vedette</span>
+      <h2>Les modules les plus visibles</h2>
+    </div>
+
+    <div class="featured-grid">
+      <article class="featured-course-card" *ngFor="let course of featuredCourses()">
+        <div class="featured-course-card__image-wrap">
+          <img
+            class="featured-course-card__image"
+            [src]="course.imageUrl || 'https://via.placeholder.com/1200x800?text=Innovacare+Training'"
+            [alt]="course.title"
+          />
+          <div class="featured-course-card__badge">{{ course.type }}</div>
+        </div>
+
+        <div class="featured-course-card__body">
+          <h3>{{ course.title }}</h3>
+          <p>{{ course.subtitle || course.description }}</p>
+
+          <div class="course-info-grid">
+            <span><mat-icon>category</mat-icon>{{ course.type }}</span>
+            <span><mat-icon>translate</mat-icon>{{ course.lang }}</span>
+            <span><mat-icon>schedule</mat-icon>{{ course.durationMin }} min</span>
+            <span><mat-icon>movie</mat-icon>{{ course.kind }}</span>
+            <span><mat-icon>checklist</mat-icon>{{ totalLessonCount(course) }} lessons</span>
+            <span><mat-icon>workspace_premium</mat-icon>{{ course.passingScore }}% pass</span>
+          </div>
+
+          <mat-chip-set>
+            <mat-chip *ngFor="let tag of course.tags || []">{{ tag }}</mat-chip>
+          </mat-chip-set>
+
+          <button mat-flat-button color="primary" type="button" (click)="openCourse(course.id)">
+            Voir le cours
+          </button>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <div class="container section">
+    <div class="catalog-header-row">
+      <div>
+        <span class="eyebrow">Résultats</span>
+        <h2>{{ filteredCourses().length }} cours trouvés</h2>
+      </div>
+    </div>
+
+    <div class="course-list" *ngIf="!loading(); else loadingTpl">
+      <article class="course-list-card" *ngFor="let course of filteredCourses()">
+        <div class="course-list-card__thumb">
+          <img
+            [src]="course.imageUrl || 'https://via.placeholder.com/1200x800?text=Innovacare+Training'"
+            [alt]="course.title"
+          />
+        </div>
+
+        <div class="course-list-card__main">
+          <div class="course-list-card__header">
+            <div>
+              <h3>{{ course.title }}</h3>
+              <p>{{ course.subtitle || course.description }}</p>
+            </div>
+          </div>
+
+          <div class="course-info-grid">
+            <span><mat-icon>category</mat-icon>{{ course.type }}</span>
+            <span><mat-icon>translate</mat-icon>{{ course.lang }}</span>
+            <span><mat-icon>schedule</mat-icon>{{ course.durationMin }} min</span>
+            <span><mat-icon>movie</mat-icon>{{ course.kind }}</span>
+            <span><mat-icon>checklist</mat-icon>{{ totalLessonCount(course) }} lessons</span>
+            <span><mat-icon>workspace_premium</mat-icon>{{ course.passingScore }}% pass</span>
+          </div>
+
+          <mat-chip-set>
+            <mat-chip *ngFor="let tag of course.tags || []">{{ tag }}</mat-chip>
+          </mat-chip-set>
+        </div>
+
+        <div class="course-list-card__actions">
+          <button mat-flat-button color="primary" type="button" (click)="openCourse(course.id)">
+            Voir le cours
+          </button>
+          <button mat-stroked-button type="button" (click)="addToPathway(course)">
+            Ajouter au parcours
+          </button>
+        </div>
+      </article>
+    </div>
+
+    <ng-template #loadingTpl>
+      <p>Chargement du catalogue...</p>
+    </ng-template>
+  </div>
+</section>

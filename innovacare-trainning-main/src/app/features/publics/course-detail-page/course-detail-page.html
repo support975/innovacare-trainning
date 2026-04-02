@@ -1,0 +1,242 @@
+<section class="course-detail-page" *ngIf="!loading(); else loadingTpl">
+  <div class="container" *ngIf="course() as course; else notFoundTpl">
+    <!-- Hero Section -->
+    <div class="detail-hero">
+      <div class="detail-hero__background">
+        <img
+          class="hero-image"
+          [src]="course.imageUrl || 'https://via.placeholder.com/1200x800?text=Innovacare+Training'"
+          [alt]="course.title"
+        />
+        <div class="hero-overlay"></div>
+      </div>
+
+      <div class="hero-content">
+        <div class="detail-hero__copy">
+          <a routerLink="/catalogue" class="back-link">
+            <mat-icon>arrow_back</mat-icon>
+            <span>Retour au catalogue</span>
+          </a>
+
+          <div class="course-meta-top">
+            <span class="badge badge-type">{{ course.type }}</span>
+            <span class="badge badge-lang">{{ course.lang }}</span>
+          </div>
+
+          <h1 class="course-title">{{ course.title }}</h1>
+
+          <div class="detail-meta">
+            <div class="meta-item">
+              <mat-icon>person</mat-icon>
+              <span>{{ course.lecturer }}</span>
+            </div>
+            <div class="meta-item">
+              <mat-icon>schedule</mat-icon>
+           
+            </div>
+            <div class="meta-item">
+              <mat-icon>play_circle</mat-icon>
+              <span>{{ course.kind }}</span>
+            </div>
+            <div class="meta-item">
+              <mat-icon>trending_up</mat-icon>
+              <span>{{ course.passingScore }}% requis</span>
+            </div>
+            <div class="meta-item">
+              <mat-icon>layers</mat-icon>
+              <span>{{ totalLessons() }} leçons</span>
+            </div>
+          </div>
+
+          <div class="detail-actions">
+            <button mat-flat-button color="primary" type="button" class="btn-primary">
+              <mat-icon>play_arrow</mat-icon>
+              Commencer le cours
+            </button>
+            <button mat-stroked-button type="button" (click)="addToPathway()" class="btn-secondary">
+              <mat-icon>bookmark_border</mat-icon>
+              Ajouter au parcours
+            </button>
+          </div>
+        </div>
+
+        <aside class="detail-summary-card">
+          <div class="summary-header">
+            <div class="cert-info">
+              <mat-icon class="cert-icon">school</mat-icon>
+              <div>
+                <strong class="ce-credit">{{ course.ceCredit || 0 }}</strong>
+                <span class="ce-label">Crédits CE</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="summary-divider"></div>
+
+          <div class="summary-section">
+            <h3>Audience cible</h3>
+            <ul class="audience-list">
+              <li *ngFor="let item of course.targetAudience" class="audience-item">
+                <mat-icon>check_circle_outline</mat-icon>
+                <span>{{ item }}</span>
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="course-content">
+      <div class="content-main">
+        <!-- Prerequisites & Requirements -->
+        <article class="detail-card prerequisites-section">
+          <div class="card-header">
+            <h2>
+              <mat-icon>checklist</mat-icon>
+              Prérequis et conditions
+            </h2>
+          </div>
+
+          <div class="card-content">
+            <div class="requirement-group" *ngIf="course.prerequisites?.length">
+              <h3>Prérequis</h3>
+              <ul class="requirement-list">
+                <li *ngFor="let item of course.prerequisites" class="requirement-item">
+                  <mat-icon>done</mat-icon>
+                  <span>{{ item }}</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="requirement-group" *ngIf="course.requirements?.length">
+              <h3>Conditions requises</h3>
+              <ul class="requirement-list">
+                <li *ngFor="let item of course.requirements" class="requirement-item">
+                  <mat-icon>done</mat-icon>
+                  <span>{{ item }}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- Course Curriculum -->
+        <article class="detail-card curriculum-section">
+          <div class="card-header">
+            <h2>
+              <mat-icon>menu_book</mat-icon>
+              Plan du cours
+            </h2>
+            <span class="lesson-count">{{ totalLessons() }} leçons</span>
+          </div>
+
+          <div class="card-content">
+            <div class="section-list">
+              <div class="section-item" *ngFor="let section of course.sections; let i = index">
+                <div class="section-header">
+                  <div class="section-number">{{ i + 1 }}</div>
+                  <div class="section-info">
+                    <h3>{{ section.title }}</h3>
+                    <p class="section-lessons" *ngIf="section.lessons?.length">
+                      {{ section.lessons?.length }} leçons
+                    </p>
+                  </div>
+                </div>
+
+                <p class="section-description" *ngIf="section['description']">{{ section['description'] }}</p>
+
+                <div class="lesson-list" *ngIf="section.lessons?.length">
+                  <div class="lesson-item" *ngFor="let lesson of section.lessons">
+                    <div class="lesson-indicator">
+                      <mat-icon>video_library</mat-icon>
+                    </div>
+                    <div class="lesson-content">
+                      <strong>{{ lesson.title }}</strong>
+                      <span class="lesson-meta">{{ lesson.blocks?.length || 0 }} blocs</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Disclosures -->
+        <article class="detail-card disclosures-section" *ngIf="course.disclosures?.length">
+          <div class="card-header">
+            <h2>
+              <mat-icon>info</mat-icon>
+              Divulgations
+            </h2>
+          </div>
+
+          <div class="card-content">
+            <ul class="disclosure-list">
+              <li *ngFor="let item of course.disclosures" class="disclosure-item">
+                <mat-icon>info_outline</mat-icon>
+                <span>{{ item }}</span>
+              </li>
+            </ul>
+          </div>
+        </article>
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="content-sidebar">
+        <!-- Tags Section -->
+        <article class="detail-card tags-section" *ngIf="course.tags?.length">
+          <div class="card-header">
+            <h3>
+              <mat-icon>local_offer</mat-icon>
+              Tags
+            </h3>
+          </div>
+          <div class="card-content">
+            <mat-chip-set class="tags-container">
+              <mat-chip *ngFor="let tag of course.tags" class="tag-chip">
+                {{ tag }}
+              </mat-chip>
+            </mat-chip-set>
+          </div>
+        </article>
+
+        <!-- Quick Stats -->
+        <article class="detail-card stats-section">
+          <div class="card-header">
+            <h3>
+              <mat-icon>assessment</mat-icon>
+              Aperçu
+            </h3>
+          </div>
+          <div class="card-stats">
+            <div class="stat-item">
+              <span class="stat-value">{{ totalLessons() }}</span>
+              <span class="stat-label">Leçons</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">{{ course.durationMin }}</span>
+              <span class="stat-label">Minutes</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">{{ course.passingScore }}%</span>
+              <span class="stat-label">Passage requis</span>
+            </div>
+          </div>
+        </article>
+      </aside>
+    </div>
+  </div>
+
+  <ng-template #notFoundTpl>
+    <div class="container">
+      <p>Cours introuvable.</p>
+    </div>
+  </ng-template>
+</section>
+
+<ng-template #loadingTpl>
+  <div class="container">
+    <p>Chargement du cours...</p>
+  </div>
+</ng-template>

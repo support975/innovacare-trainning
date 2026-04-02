@@ -55,10 +55,12 @@ export interface Course {
   confirmBy?:string;
   confirmMessage?:string;
   type: 'It' |'Health' | 'Hr' | 'safety'
+  level: 'Beginner' | 'Intermediate' | 'Advanced';
   
 }
 
 export interface Section {
+  [x: string]: any;
   id: string;                   // stable key (slug/uuid)
   title: string;                // e.g. “Ethics Training”
   lessons: Lesson[];
@@ -68,7 +70,7 @@ export interface Lesson {
   id: string;                   // stable key
   title: string;                // e.g. “Ethical Concepts”
   estMin?: number;
-  blocks: Block[];              // renderable content blocks
+  blocks: Block[];             // renderable content blocks
 }
 
 
@@ -105,6 +107,12 @@ export interface ExamOption {
   text: string;
   correct: boolean;
   explanation?: string; // affichée après correction
+}
+
+export interface HealthMeta {
+  specialty?: string;
+  careSetting?: string[];
+  clinicalTopics?: string[];
 }
 
 export interface ExamQuestion {
@@ -490,6 +498,8 @@ export interface AppNotification {
   data?: { courseId?: string; link?: string; [k: string]: any };
   actor?: { uid?: string; name?: string };
 }
+
+
 
 
 

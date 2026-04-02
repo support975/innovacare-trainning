@@ -104,6 +104,7 @@ export class Courses {
     }),
     lockedSequence: this.fb.control<boolean>(false),
     isPublic: this.fb.control<boolean>(false),
+    level: this.fb.control<'Beginner' | 'Intermediate' | 'Advanced'>('Beginner'),
 
     tagsText: this.fb.control<string>(''),
     disclosuresText: this.fb.control<string>(''),
@@ -590,6 +591,7 @@ export class Courses {
         imageUrl: src.imageUrl ?? '',
         kind: src.kind ?? 'Course',
         url: src.url ?? '',
+        level: src.level ?? 'Beginner',
         type: src.type ?? 'Health',
         lecturer: src.lecturer ?? '',
         disclosures: Array.isArray(src.disclosures) ? [...src.disclosures] : [],
@@ -720,6 +722,8 @@ export class Courses {
       imageUrl: this.form.value.imageUrl || '',
       kind: this.form.value.kind!,
       url: this.form.value.url || '',
+      level: this.form.value.level || 'Beginner',
+      type: this.form.value.type!,
 
       lecturer: this.form.value.lecturer || '',
       disclosures: this.csvToArray(this.form.value.disclosuresText),
@@ -729,7 +733,6 @@ export class Courses {
       accomodations: this.form.value.accomodations || '',
       passingScore: Number(this.form.value.passingScore ?? 80),
       lockedSequence: !!this.form.value.lockedSequence,
-      type: this.form.value.type!,
       isPublic: !!this.form.value.isPublic,
 
       sections: this.sectionsFA.controls.map<Section>((s, si) => ({
