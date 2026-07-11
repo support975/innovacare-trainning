@@ -1,6 +1,6 @@
 <button type="button" class="bell-btn" (click)="toggle()" aria-label="Notifications">
   <span class="bell-icon">🔔</span>
-  <span class="badge" *ngIf="unreadCount() > 0">{{ unreadCount() }}</span>
+  <span class="badge" *ngIf="unreadCount() > 0">{{ unreadCount() > 9 ? '9+' : unreadCount() }}</span>
 </button>
 
 <div class="panel" *ngIf="open()">
@@ -9,6 +9,7 @@
       <div class="panel-title">Notifications</div>
       <div class="panel-sub">{{ unreadCount() }} unread</div>
     </div>
+    <a routerLink="/learner/notifications" class="view-all" (click)="toggle()">View All</a>
   </div>
 
   <div class="list">
@@ -16,25 +17,32 @@
       type="button"
       class="row"
       *ngFor="let n of unread()"
-      (click)="openDetail(n, detailDlg)"
+      [class.unread]="!n.read"
+      (click)="navigateTo(n.actionUrl)"
     >
-      <div class="t">{{ n.title || 'Notification' }}</div>
-      <div class="b">{{ n.body || '' }}</div>
-      <div class="meta">
-        <span class="pill" [class.info]="n.severity==='info'"
-                         [class.warning]="n.severity==='warning'"
-                         [class.critical]="n.severity==='critical'">
-          {{ n.severity || 'info' }}
-        </span>
+      <div class="icon">{{ n.icon }}</div>
+      <div class="content">
+        <div class="title">{{ n.title }}</div>
+        <div class="message">{{ n.message }}</div>
       </div>
+      <button
+        type="button"
+        class="mark-read"
+        *ngIf="!n.read"
+        (click)="openDetail(n.id); $event.stopPropagation()"
+        title="Mark as read"
+      >
+        ✓
+      </button>
     </button>
 
-    <div class="empty" *ngIf="unread().length === 0">No notifications</div>
+    <div class="empty" *ngIf="unread().length === 0">
+      <div class="empty-icon">🔔</div>
+      <p>No notifications</p>
+    </div>
   </div>
 
   <div class="panel-footer">
-    <button type="button" class="link-btn" (click)="toggle()">Close</button>
+    <a routerLink="/learner/notifications" class="link-btn" (click)="toggle()">View All Notifications</a>
   </div>
 </div>
-
-<app-notification-detail-dialog #detailDlg></app-notification-detail-dialog>

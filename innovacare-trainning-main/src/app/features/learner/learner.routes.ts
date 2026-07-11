@@ -2,21 +2,9 @@
 import { Routes } from '@angular/router';
 
 import { authCanMatch } from '../../core/auth.canmatch';
+import { nonIndividualLearnerCanMatch } from '../../core/non-individual-learner.canmatch';
 import { roleCanMatch } from '../../core/role.canmatch';
-import { LearnerDashboardComponent } from './learner-dashboard/learner-dashboard';
-import { LearnerAssignments } from './assignments/learner-assignments/learner-assignments';
-import { Certifications } from './certifications/certifications/certifications';
-import { Library } from './library/library/library';
-import { Transcript } from './transcript/transcript/transcript';
-import { Rewards } from './rewards/rewards/rewards';
 import { LearnerShell } from './shell/learner-shell/learner-shell';
-
-// WOUND library/list/detail imports (fixed paths & filenames)
-import { WoundLabrary } from './woundLabrary/wound-labrary/wound-labrary';
-import { WoundLabraryTableComponent } from './woundLabrary/wound-labrary-list/wound-labrary-list';
-import { WoundLibraryDetailComponent } from './woundLabrary/wound-labrary-details/wound-labrary-details';
-import { PolicyList } from './policy/policy-list/policy-list';
-import { PolicyDetails } from './policy/policy-details/policy-details';
 
 export const learnerRoutes: Routes = [
   {
@@ -24,28 +12,122 @@ export const learnerRoutes: Routes = [
     component: LearnerShell,
     canMatch: [authCanMatch, roleCanMatch(['learner'])],
     children: [
-      { path: '', component: LearnerDashboardComponent },
-      { path: 'assignments', component: LearnerAssignments },
-      { path: 'certifications', component: Certifications },
-      { path: 'library', component: Library },
-      { path: 'transcript', component: Transcript },
+      {
+        path: '',
+        loadComponent: () =>
+          import('./learner-dashboard/learner-dashboard').then(m => m.LearnerDashboardComponent),
+      },
+      {
+        path: 'assignments',
+        loadComponent: () =>
+          import('./assignments/learner-assignments/learner-assignments').then(
+            m => m.LearnerAssignments
+          ),
+      },
+      {
+        path: 'certifications',
+        loadComponent: () =>
+          import('./certifications/certifications/certifications').then(m => m.Certifications),
+      },
+      {
+        path: 'official-certifications',
+        loadComponent: () =>
+          import('./official-certifications/official-certifications').then(
+            m => m.LearnerOfficialCertificationsComponent
+          ),
+      },
+      {
+        path: 'onsite-exams',
+        loadComponent: () =>
+          import('./onsite-exams/onsite-exams').then(
+            m => m.LearnerOnsiteExamsComponent
+          ),
+      },
+      {
+        path: 'official-certifications/:applicationId/exam',
+        loadComponent: () =>
+          import('./official-certifications/official-exam-launch').then(
+            m => m.OfficialExamLaunchComponent
+          ),
+      },
+      {
+        path: 'official-certifications/:applicationId/blueprint-exam/:blueprintId',
+        loadComponent: () =>
+          import('./official-certifications/blueprint-exam-runner').then(
+            m => m.BlueprintExamRunnerComponent
+          ),
+      },
+      {
+        path: 'certification-candidate/:applicationId',
+        loadComponent: () =>
+          import('./certification-candidate/candidate-profile').then(
+            m => m.CandidateProfileComponent
+          ),
+      },
+      {
+        path: 'verify-member',
+        loadComponent: () =>
+          import('../publics/member-verification/member-verification').then(
+            m => m.MemberVerificationComponent
+          ),
+      },
+      {
+        path: 'library',
+        canMatch: [nonIndividualLearnerCanMatch],
+        loadComponent: () => import('./library/library/library').then(m => m.Library),
+      },
+      {
+        path: 'transcript',
+        loadComponent: () => import('./transcript/transcript/transcript').then(m => m.Transcript),
+      },
 
-      // Wound library (list/table) and detail
-      { path: 'wound', component: WoundLabraryTableComponent },
-      { path: 'wound/:id', component: WoundLibraryDetailComponent },
-      { path: 'rewards', component: Rewards },
+      // Organization quick practice zone and detail
+      {
+        path: 'wound',
+        canMatch: [nonIndividualLearnerCanMatch],
+        loadComponent: () =>
+          import('./woundLabrary/wound-labrary-list/wound-labrary-list').then(
+            m => m.WoundLabraryTableComponent
+          ),
+      },
+      {
+        path: 'wound/:id',
+        canMatch: [nonIndividualLearnerCanMatch],
+        loadComponent: () =>
+          import('./woundLabrary/wound-labrary-details/wound-labrary-details').then(
+            m => m.WoundLibraryDetailComponent
+          ),
+      },
+      {
+        path: 'rewards',
+        loadComponent: () => import('./rewards/rewards/rewards').then(m => m.Rewards),
+      },
 
-      { path: 'policies', component: PolicyList },
-      { path: 'policies/:id', component: PolicyDetails },
+      {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./notifications/notification-center/notification-center').then(
+            m => m.NotificationCenterComponent
+          ),
+      },
+
+      {
+        path: 'policies',
+        canMatch: [nonIndividualLearnerCanMatch],
+        loadComponent: () => import('./policy/policy-list/policy-list').then(m => m.PolicyList),
+      },
+      {
+        path: 'policies/:id',
+        canMatch: [nonIndividualLearnerCanMatch],
+        loadComponent: () =>
+          import('./policy/policy-details/policy-details').then(m => m.PolicyDetails),
+      },
       {
         path: 'profile',
+        canMatch: [nonIndividualLearnerCanMatch],
         loadComponent: () =>
           import('./profile/profile-page/profile-page').then(m => m.ProfilePage),
       },
-      
-
-   
-      
 
       // Courses
       {
@@ -61,7 +143,7 @@ export const learnerRoutes: Routes = [
       {
         path: 'courses/:id/exam/:examId',
         loadComponent: () =>
-          import('./courses/course-exam/course-exam').then(m => m.CourseExam),
+          import('./exam-runner/exam-runner').then(m => m.ExamRunnerComponent),
       },
     ],
   },
