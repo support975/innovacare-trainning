@@ -1,0 +1,352 @@
+/* Premium Policy Details Page Design */
+
+:root {
+  --primary: #1a3f6f;
+  --secondary: #00a79d;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --light: #f9fafb;
+  --lighter: #f5f7fa;
+  --border: #e5e7eb;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+}
+
+/* Container */
+.policy-detail-page {
+  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  min-height: 100vh;
+  padding: 32px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 24px;
+  font-size: 14px;
+}
+
+.breadcrumb a {
+  color: var(--secondary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.breadcrumb a:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.breadcrumb span {
+  color: var(--text-secondary);
+}
+
+/* Header Card */
+.header-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 32px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border-top: 4px solid var(--secondary);
+}
+
+.policy-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.policy-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.policy-icon {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+.policy-title {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.policy-subtitle {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.policy-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.meta-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.meta-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.status-badge {
+  display: inline-flex;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid var(--border);
+  background: white;
+}
+
+.status-badge.acknowledged {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.status-badge.pending {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.status-badge.required {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Content Card */
+.content-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 32px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.content-section {
+  margin-bottom: 32px;
+}
+
+.content-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border);
+}
+
+.section-content {
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text-secondary);
+}
+
+.section-content p {
+  margin: 0 0 12px;
+}
+
+.section-content ul,
+.section-content ol {
+  margin: 12px 0;
+  padding-left: 24px;
+}
+
+.section-content li {
+  margin-bottom: 8px;
+}
+
+.section-content code {
+  background: var(--lighter);
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  color: var(--danger);
+}
+
+/* Actions Card */
+.actions-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.action-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  box-shadow: 0 4px 12px rgba(26, 63, 111, 0.3);
+}
+
+.btn.primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(26, 63, 111, 0.4);
+}
+
+.btn.outline {
+  background: white;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+}
+
+.btn.outline:hover:not(:disabled) {
+  background: rgba(26, 63, 111, 0.05);
+}
+
+.btn.ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.btn.ghost:hover:not(:disabled) {
+  background: var(--light);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Acknowledgment Box */
+.acknowledgment-box {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(0, 167, 157, 0.05));
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-left: 4px solid var(--success);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 24px 0;
+}
+
+.acknowledgment-box.warning {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(245, 158, 11, 0.05));
+  border-color: rgba(245, 158, 11, 0.3);
+  border-left-color: var(--warning);
+}
+
+.acknowledgment-box.danger {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.05), rgba(239, 68, 68, 0.05));
+  border-color: rgba(239, 68, 68, 0.3);
+  border-left-color: var(--danger);
+}
+
+.acknowledgment-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .policy-detail-page {
+    padding: 16px;
+  }
+
+  .header-card,
+  .content-card,
+  .actions-card {
+    padding: 20px;
+  }
+
+  .policy-title {
+    font-size: 22px;
+  }
+
+  .policy-header {
+    flex-direction: column;
+  }
+
+  .policy-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}
