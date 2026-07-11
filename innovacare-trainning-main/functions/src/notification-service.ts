@@ -1,5 +1,4 @@
-/* eslint max-len: ["error", { "code": 120, "ignoreUrls": true, "ignoreStrings": true }] */
-/* eslint-disable require-jsdoc */
+/* eslint-disable max-len, require-jsdoc */
 import * as admin from "firebase-admin";
 import sgMail from "@sendgrid/mail";
 
@@ -168,8 +167,8 @@ const emailTemplates = {
     `,
   }),
 
-  transcript: (learnerName: string, attachmentUrl?: string) => ({
-    subject: `Your Learning Transcript`,
+  transcript: (learnerName: string) => ({
+    subject: "Your Learning Transcript",
     html: `
       <!DOCTYPE html>
       <html>

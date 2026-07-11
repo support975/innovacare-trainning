@@ -1,6 +1,4 @@
-/* eslint max-len: ["error", { "code": 120, "ignoreUrls": true, "ignoreStrings":
-true, "ignoreTemplateLiterals": true }] */
-/* eslint-disable require-jsdoc */
+/* eslint-disable max-len, require-jsdoc, valid-jsdoc */
 /* functions/src/index.ts (Firebase Functions v2) */
 import * as admin from "firebase-admin";
 import {onDocumentCreated, onDocumentUpdated} from "firebase-functions/v2/firestore";
@@ -2991,7 +2989,7 @@ export const onEnrollmentCreated = onDocumentCreated(
       }
 
       // Create in-app notification
-      await db.collection("notifications/inapp").add({
+      await db.collection("notificationInApp").add({
         learnerId,
         type: "course_assigned",
         title: "New Course Assigned",
@@ -3070,7 +3068,7 @@ export const onEnrollmentCompleted = onDocumentUpdated(
 
       // Create in-app notification
       const msg = grade ? ` with grade ${grade}` : "";
-      await db.collection("notifications/inapp").add({
+      await db.collection("notificationInApp").add({
         learnerId,
         type: "course_completed",
         title: "Course Completed",
