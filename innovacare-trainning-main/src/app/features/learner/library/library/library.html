@@ -1,14 +1,14 @@
 <section class="toolbar">
-    <input type="search" placeholder="Search courses"
+    <input type="search" [placeholder]="t('library.searchPlaceholder')"
            [ngModel]="query()" (ngModelChange)="query.set($event)" />
     <div class="filters">
-      <button class="chip" [class.active]="lang()==='all'" (click)="lang.set('all')">All</button>
+      <button class="chip" [class.active]="lang()==='all'" (click)="lang.set('all')">{{ t('library.filterAll') }}</button>
       <button class="chip" [class.active]="lang()==='en'"  (click)="lang.set('en')">EN</button>
       <button class="chip" [class.active]="lang()==='fr'"  (click)="lang.set('fr')">FR</button>
       <button class="chip" [class.active]="lang()==='es'"  (click)="lang.set('es')">ES</button>
     </div>
   </section>
-  
+
   <section class="grid">
     <article class="card" *ngFor="let c of (view() | slice:0:showCount()); trackBy: trackById">
       <div class="kind">{{ c.kind }}</div>
@@ -19,11 +19,11 @@
         <span>{{ c.lang | uppercase }}</span>
       </div>
 
-      <p class="desc">{{ c.description || 'No description' }}</p>
+      <p class="desc">{{ c.description || t('library.noDescription') }}</p>
      <div class="toolbar" *ngIf="showCount() < view().length">
-  <button class="btn soft" (click)="showCount.set(showCount() + 5)">Load more</button>
+  <button class="btn soft" (click)="showCount.set(showCount() + 5)">{{ t('common.loadMore') }}</button>
 </div>
-      <button class="btn primary" (click)="open(c)">Start overview</button>
+      <button class="btn primary" (click)="open(c)">{{ t('library.startOverview') }}</button>
     </article>
   </section>
   

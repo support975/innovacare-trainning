@@ -6,6 +6,7 @@ import { Auth, authState } from '@angular/fire/auth';
 import { Firestore, collection, collectionData, doc, docData } from '@angular/fire/firestore';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { combineLatest, map, of, switchMap } from 'rxjs';
+import { LanguageService } from '../../../../shared/services/language';
 
 type EnrollmentStatus = 'assigned' | 'started' | 'completed';
 
@@ -88,6 +89,9 @@ export class Transcript {
   private afs = inject(Firestore);
   private auth = inject(Auth);
   private router = inject(Router);
+  private languageService = inject(LanguageService);
+
+  readonly t = (key: string, params?: Record<string, string | number>) => this.languageService.t(key, params);
 
   // UI
   filtersOpen = signal(true);

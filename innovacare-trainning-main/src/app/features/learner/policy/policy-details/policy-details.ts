@@ -13,6 +13,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../../../core/auth';
 import { Policy } from '../model/policy.model';
 import { PolicyService } from '../../../../shared/services/policy';
+import { LanguageService } from '../../../../shared/services/language';
 import { getAuth } from 'firebase/auth';
 
 type TocItem = { id: string; text: string; level: 2 | 3 };
@@ -40,9 +41,9 @@ type TocItem = { id: string; text: string; level: 2 | 3 };
       </div>
 
       <div class="top-actions">
-        <button mat-stroked-button (click)="back()">Back</button>
-        <button mat-stroked-button (click)="print()">Print</button>
-        <button mat-stroked-button (click)="share(vm.policy?.id)">Share</button>
+        <button mat-stroked-button (click)="back()">{{ t('common.back') }}</button>
+        <button mat-stroked-button (click)="print()">{{ t('common.print') }}</button>
+        <button mat-stroked-button (click)="share(vm.policy?.id)">{{ t('common.share') }}</button>
       </div>
     </div>
 
@@ -53,7 +54,7 @@ type TocItem = { id: string; text: string; level: 2 | 3 };
 
     <!-- Not found -->
     <mat-card *ngIf="!vm.loading && !vm.policy" class="card">
-      <div class="empty">Policy not found.</div>
+      <div class="empty">{{ t('policies.policyNotFound') }}</div>
     </mat-card>
 
     <!-- Main -->
@@ -68,7 +69,7 @@ type TocItem = { id: string; text: string; level: 2 | 3 };
                 {{ vm.policy.status || 'active' }}
               </span>
 
-              <span class="muted" *ngIf="vm.policy.owner">Policy Owner</span>
+              <span class="muted" *ngIf="vm.policy.owner">{{ t('policies.policyOwner') }}</span>
               <span class="pill" *ngIf="vm.policy.owner">{{ vm.policy.owner }}</span>
             </div>
 
@@ -79,15 +80,15 @@ type TocItem = { id: string; text: string; level: 2 | 3 };
               <span class="dot">•</span>
               <span class="pill">{{ vm.policy.version }}</span>
               <span class="dot">•</span>
-              <span class="muted">Effective</span> {{ vm.policy.effectiveDate }}
+              <span class="muted">{{ t('policies.effective') }}</span> {{ vm.policy.effectiveDate }}
             </div>
 
             <div class="chip-row">
               <mat-chip-set>
-                <mat-chip [disabled]="true" *ngIf="vm.policy.requiresAcknowledgement">Ack required</mat-chip>
-                <mat-chip [disabled]="true" *ngIf="vm.policy.blocking">Blocking</mat-chip>
-                <mat-chip [disabled]="true" *ngIf="vm.acknowledged">Acknowledged</mat-chip>
-                <mat-chip [disabled]="true" *ngIf="vm.policy.requiresAcknowledgement && !vm.acknowledged">Not acknowledged</mat-chip>
+                <mat-chip [disabled]="true" *ngIf="vm.policy.requiresAcknowledgement">{{ t('policies.chipAckRequired') }}</mat-chip>
+                <mat-chip [disabled]="true" *ngIf="vm.policy.blocking">{{ t('policies.chipBlocking') }}</mat-chip>
+                <mat-chip [disabled]="true" *ngIf="vm.acknowledged">{{ t('policies.chipAcknowledged') }}</mat-chip>
+                <mat-chip [disabled]="true" *ngIf="vm.policy.requiresAcknowledgement && !vm.acknowledged">{{ t('policies.chipNotAcknowledged') }}</mat-chip>
               </mat-chip-set>
             </div>
 
@@ -98,37 +99,37 @@ type TocItem = { id: string; text: string; level: 2 | 3 };
                 [disabled]="vm.busy || !vm.uid || vm.acknowledged"
                 (click)="acknowledge(vm.policy)"
               >
-                {{ vm.acknowledged ? 'Acknowledged' : 'Acknowledge' }}
+                {{ vm.acknowledged ? t('policies.btnAcknowledged') : t('policies.btnAcknowledge') }}
               </button>
 
-              <div class="acknote" *ngIf="!vm.uid">You must sign in to acknowledge.</div>
+              <div class="acknote" *ngIf="!vm.uid">{{ t('policies.signInToAcknowledge') }}</div>
             </div>
           </div>
 
           <div class="header-right">
             <div class="meta">
               <div class="meta-row">
-                <div class="k">Category</div>
+                <div class="k">{{ t('policies.metaCategory') }}</div>
                 <div class="v">{{ vm.policy.category || '-' }}</div>
               </div>
               <div class="meta-row">
-                <div class="k">Area</div>
+                <div class="k">{{ t('policies.metaArea') }}</div>
                 <div class="v">{{ vm.policy.area || vm.policy.category || '-' }}</div>
               </div>
               <div class="meta-row">
-                <div class="k">Owner</div>
+                <div class="k">{{ t('policies.metaOwner') }}</div>
                 <div class="v">{{ vm.policy.owner || '-' }}</div>
               </div>
               <div class="meta-row">
-                <div class="k">Language</div>
+                <div class="k">{{ t('policies.metaLanguage') }}</div>
                 <div class="v">{{ vm.policy.language || 'en' }}</div>
               </div>
               <div class="meta-row">
-                <div class="k">Last revised</div>
+                <div class="k">{{ t('policies.metaLastRevised') }}</div>
                 <div class="v">{{ vm.policy.lastRevised || '-' }}</div>
               </div>
               <div class="meta-row">
-                <div class="k">Next review</div>
+                <div class="k">{{ t('policies.metaNextReview') }}</div>
                 <div class="v">{{ vm.policy.nextReview || '-' }}</div>
               </div>
             </div>
@@ -141,7 +142,7 @@ type TocItem = { id: string; text: string; level: 2 | 3 };
 
         <!-- TOC -->
         <mat-card class="card toc" *ngIf="vm.toc?.length">
-          <div class="toc-title">Table of Contents</div>
+          <div class="toc-title">{{ t('policies.tableOfContents') }}</div>
           <a
             class="toc-item"
             *ngFor="let t of vm.toc"
@@ -154,14 +155,14 @@ type TocItem = { id: string; text: string; level: 2 | 3 };
 
         <!-- Content -->
         <mat-card class="card content">
-          <div class="content-title">Policy</div>
+          <div class="content-title">{{ t('policies.policy') }}</div>
           <mat-divider></mat-divider>
 
           <div class="html" [innerHTML]="vm.safeHtml"></div>
 
           <ng-container *ngIf="vm.policy.referencesHtml">
             <div class="refs">
-              <div class="content-title">References</div>
+              <div class="content-title">{{ t('policies.references') }}</div>
               <mat-divider></mat-divider>
               <div class="html refs-html" [innerHTML]="vm.safeRefs"></div>
             </div>
@@ -398,6 +399,9 @@ export class PolicyDetails implements OnInit {
   private sanitizer = inject(DomSanitizer);
   private auth = inject(AuthService);
   private policySvc = inject(PolicyService);
+  private languageService = inject(LanguageService);
+
+  readonly t = (key: string, params?: Record<string, string | number>) => this.languageService.t(key, params);
 
   private busy = false;
 

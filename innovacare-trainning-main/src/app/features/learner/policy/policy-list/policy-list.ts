@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -23,6 +23,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { AuthService } from '../../../../core/auth';
 import { PolicyService } from '../../../../shared/services/policy';
+import { LanguageService } from '../../../../shared/services/language';
 
 type PolicyVm = {
   id: string;
@@ -57,13 +58,13 @@ type PolicyVm = {
 
     <div class="hero">
       <div class="hero-inner">
-        <div class="hero-title">Search Policies</div>
+        <div class="hero-title">{{ t('policies.searchPolicies') }}</div>
 
         <div class="hero-search">
           <input
             class="search-input"
             [formControl]="qCtrl"
-            placeholder="Search policies by title"
+            [placeholder]="t('policies.searchPlaceholder')"
           />
           <button class="search-btn" (click)="noop()">
             <mat-icon>search</mat-icon>
@@ -77,9 +78,9 @@ type PolicyVm = {
 
     <div class="card" *ngIf="accessDenied">
       <div class="empty">
-        <div class="empty-title">Policies</div>
-        <div class="empty-sub">Read policies and acknowledge required items.</div>
-        <div class="empty-note">You must sign in to view policies.</div>
+        <div class="empty-title">{{ t('policies.title') }}</div>
+        <div class="empty-sub">{{ t('policies.readPolicies') }}</div>
+        <div class="empty-note">{{ t('policies.signInRequired') }}</div>
       </div>
     </div>
 
@@ -91,33 +92,33 @@ type PolicyVm = {
 
       <div class="filters">
         <div class="pill-row">
-          <button class="pill" [class.active]="scopeCtrl.value === 'TITLE'" (click)="scopeCtrl.setValue('TITLE')">Titles Only</button>
-          <button class="pill" [class.active]="scopeCtrl.value === 'ALL'" (click)="scopeCtrl.setValue('ALL')">Titles + Content</button>
+          <button class="pill" [class.active]="scopeCtrl.value === 'TITLE'" (click)="scopeCtrl.setValue('TITLE')">{{ t('policies.titlesOnly') }}</button>
+          <button class="pill" [class.active]="scopeCtrl.value === 'ALL'" (click)="scopeCtrl.setValue('ALL')">{{ t('policies.titlesAndContent') }}</button>
         </div>
 
         <div class="pill-row">
-          <button class="pill" [class.active]="areaCtrl.value === 'ALL'" (click)="areaCtrl.setValue('ALL')">All Areas</button>
-          <button class="pill" [class.active]="ownerCtrl.value === 'ALL'" (click)="ownerCtrl.setValue('ALL')">All Owners</button>
-          <button class="pill" [class.active]="refCtrl.value === 'ALL'" (click)="refCtrl.setValue('ALL')">All References</button>
+          <button class="pill" [class.active]="areaCtrl.value === 'ALL'" (click)="areaCtrl.setValue('ALL')">{{ t('policies.allAreas') }}</button>
+          <button class="pill" [class.active]="ownerCtrl.value === 'ALL'" (click)="ownerCtrl.setValue('ALL')">{{ t('policies.allOwners') }}</button>
+          <button class="pill" [class.active]="refCtrl.value === 'ALL'" (click)="refCtrl.setValue('ALL')">{{ t('policies.allReferences') }}</button>
         </div>
 
         <div class="count" *ngIf="(rows$ | async) as rows">
-          {{ rows.length }} results
+          {{ t('policies.results', { count: rows.length }) }}
         </div>
       </div>
 
       <div class="table-wrap" *ngIf="(rows$ | async) as rows">
-        <div class="empty-note" *ngIf="rows.length === 0">No policies found.</div>
+        <div class="empty-note" *ngIf="rows.length === 0">{{ t('policies.noPoliciesFound') }}</div>
 
         <table class="table" *ngIf="rows.length">
           <thead>
             <tr>
-              <th class="col-title">Title</th>
-              <th class="col-preview">Preview</th>
-              <th class="col-area">Area</th>
-              <th class="col-date">Last Revised</th>
-              <th class="col-date">Effective</th>
-              <th class="col-date">Last Approved</th>
+              <th class="col-title">{{ t('policies.colTitle') }}</th>
+              <th class="col-preview">{{ t('policies.colPreview') }}</th>
+              <th class="col-area">{{ t('policies.colArea') }}</th>
+              <th class="col-date">{{ t('policies.colLastRevised') }}</th>
+              <th class="col-date">{{ t('policies.colEffective') }}</th>
+              <th class="col-date">{{ t('policies.colLastApproved') }}</th>
             </tr>
           </thead>
 
@@ -127,9 +128,9 @@ type PolicyVm = {
                 <div class="title-cell">
                   <a class="title-link" (click)="openPolicy(p.id)">{{ p.title }}</a>
 
-                  <span class="mini-badge" *ngIf="p.requiresAcknowledgement">Ack</span>
-                  <span class="mini-badge warn" *ngIf="p.blocking">Blocking</span>
-                  <span class="mini-badge ok" *ngIf="p.requiresAcknowledgement && p.acknowledged">Done</span>
+                  <span class="mini-badge" *ngIf="p.requiresAcknowledgement">{{ t('policies.badgeAck') }}</span>
+                  <span class="mini-badge warn" *ngIf="p.blocking">{{ t('policies.badgeBlocking') }}</span>
+                  <span class="mini-badge ok" *ngIf="p.requiresAcknowledgement && p.acknowledged">{{ t('policies.badgeDone') }}</span>
 
                   <button
                     class="icon-btn"
@@ -377,6 +378,9 @@ type PolicyVm = {
 })
 export class PolicyList implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  private languageService = inject(LanguageService);
+
+  readonly t = (key: string, params?: Record<string, string | number>) => this.languageService.t(key, params);
 
   qCtrl = new FormControl<string>('', { nonNullable: true });
   scopeCtrl = new FormControl<'TITLE'|'ALL'>('TITLE', { nonNullable: true });

@@ -3,30 +3,30 @@
   <!-- LEFT FILTERS -->
   <aside class="filters" [class.closed]="!filtersOpen()">
     <div class="filters-head">
-      <div class="filters-title">Filters</div>
-      <button class="btn ghost sm" type="button" (click)="toggleFilters()">Close</button>
+      <div class="filters-title">{{ t('transcript.filters') }}</div>
+      <button class="btn ghost sm" type="button" (click)="toggleFilters()">{{ t('common.close') }}</button>
     </div>
 
     <!-- Completed accordion -->
     <section class="acc">
       <button class="acc-head" type="button" (click)="accCompleted.set(!accCompleted())">
-        <span>Completed Date</span>
+        <span>{{ t('transcript.completedDate') }}</span>
         <span class="muted">{{ accCompleted() ? '—' : '+' }}</span>
       </button>
 
       <div class="acc-body" *ngIf="accCompleted()">
         <div>
-          <div class="lbl">From</div>
+          <div class="lbl">{{ t('common.from') }}</div>
           <input class="inp" type="date" [value]="fCompletedFrom()" (change)="fCompletedFrom.set($any($event.target).value)" />
         </div>
 
         <div>
-          <div class="lbl">To</div>
+          <div class="lbl">{{ t('common.to') }}</div>
           <input class="inp" type="date" [value]="fCompletedTo()" (change)="fCompletedTo.set($any($event.target).value)" />
         </div>
 
         <div class="hint">
-          Tip: use date range to narrow down your transcript.
+          {{ t('transcript.dateRangeTip') }}
         </div>
       </div>
     </section>
@@ -34,23 +34,23 @@
     <!-- Due accordion -->
     <section class="acc">
       <button class="acc-head" type="button" (click)="accDue.set(!accDue())">
-        <span>Due Date (optional)</span>
+        <span>{{ t('transcript.dueDate') }}</span>
         <span class="muted">{{ accDue() ? '—' : '+' }}</span>
       </button>
 
       <div class="acc-body" *ngIf="accDue()">
         <div>
-          <div class="lbl">From</div>
+          <div class="lbl">{{ t('common.from') }}</div>
           <input class="inp" type="date" [value]="fDueFrom()" (change)="fDueFrom.set($any($event.target).value)" />
         </div>
 
         <div>
-          <div class="lbl">To</div>
+          <div class="lbl">{{ t('common.to') }}</div>
           <input class="inp" type="date" [value]="fDueTo()" (change)="fDueTo.set($any($event.target).value)" />
         </div>
 
         <div class="hint">
-          Due date is optional and depends on assignment configuration.
+          {{ t('transcript.dueDateHint') }}
         </div>
       </div>
     </section>
@@ -58,7 +58,7 @@
     <!-- Actions -->
     <section class="acc">
       <div class="acc-body">
-        <button class="btn ghost" type="button" (click)="resetFilters()">Reset filters</button>
+        <button class="btn ghost" type="button" (click)="resetFilters()">{{ t('transcript.resetFilters') }}</button>
       </div>
     </section>
   </aside>
@@ -70,11 +70,11 @@
       <div class="bar-left">
         <button class="linkbtn" type="button" (click)="toggleFilters()">
           <span class="ic">☰</span>
-          TRANSCRIPT
+          {{ t('transcript.title') }}
         </button>
 
         <div class="meta">
-          Showing <strong>{{ displayedCount() }}</strong> of <strong>{{ totalCount() }}</strong>
+          {{ t('transcript.showing', { shown: displayedCount(), total: totalCount() }) }}
         </div>
       </div>
 
@@ -83,48 +83,48 @@
           <span class="mag">🔎</span>
           <input
             type="search"
-            placeholder="Search courses or grades…"
+            [placeholder]="t('transcript.searchPlaceholder')"
             [value]="search()"
             (input)="search.set(($any($event.target).value || '').toString())"
           />
         </div>
 
-        <button class="btn ghost" type="button" (click)="toggleColumns()">Columns</button>
+        <button class="btn ghost" type="button" (click)="toggleColumns()">{{ t('transcript.columns') }}</button>
       </div>
     </div>
 
     <!-- columns card -->
     <div class="card columns" *ngIf="columnsOpen()">
-      <div class="columns-title">Select Columns</div>
+      <div class="columns-title">{{ t('transcript.selectColumns') }}</div>
 
       <label class="ck">
         <input type="checkbox" [checked]="colTitle()" (change)="colTitle.set($any($event.target).checked)" />
-        Title
+        {{ t('transcript.colTitle') }}
       </label>
 
       <label class="ck">
         <input type="checkbox" [checked]="colHours()" (change)="colHours.set($any($event.target).checked)" />
-        Hours
+        {{ t('transcript.colHours') }}
       </label>
 
       <label class="ck">
         <input type="checkbox" [checked]="colGrade()" (change)="colGrade.set($any($event.target).checked)" />
-        Grade
+        {{ t('transcript.colGrade') }}
       </label>
 
       <label class="ck">
         <input type="checkbox" [checked]="colCompleted()" (change)="colCompleted.set($any($event.target).checked)" />
-        Completed
+        {{ t('transcript.colCompleted') }}
       </label>
 
       <label class="ck">
         <input type="checkbox" [checked]="colDue()" (change)="colDue.set($any($event.target).checked)" />
-        Due
+        {{ t('transcript.colDue') }}
       </label>
 
       <label class="ck">
         <input type="checkbox" [checked]="colAction()" (change)="colAction.set($any($event.target).checked)" />
-        Action
+        {{ t('transcript.colAction') }}
       </label>
     </div>
 
@@ -133,12 +133,12 @@
       <table class="tbl">
         <thead>
           <tr>
-            <th *ngIf="colTitle()">Course</th>
-            <th *ngIf="colHours()">Hours</th>
-            <th *ngIf="colGrade()">Grade</th>
-            <th *ngIf="colCompleted()">Completed</th>
-            <th *ngIf="colDue()">Due</th>
-            <th *ngIf="colAction()">Certificate</th>
+            <th *ngIf="colTitle()">{{ t('transcript.colTitle') }}</th>
+            <th *ngIf="colHours()">{{ t('transcript.colHours') }}</th>
+            <th *ngIf="colGrade()">{{ t('transcript.colGrade') }}</th>
+            <th *ngIf="colCompleted()">{{ t('transcript.colCompleted') }}</th>
+            <th *ngIf="colDue()">{{ t('transcript.colDue') }}</th>
+            <th *ngIf="colAction()">{{ t('transcript.colCertificate') }}</th>
           </tr>
         </thead>
 
@@ -147,7 +147,7 @@
             <!-- Title -->
             <td *ngIf="colTitle()" class="title">
               <span class="tlink" (click)="getCertificate(r)">{{ r.title }}</span>
-              <div class="hint">Course ID: <code>{{ r.courseId }}</code></div>
+              <div class="hint">{{ t('transcript.courseId') }}: <code>{{ r.courseId }}</code></div>
             </td>
 
             <!-- Hours -->
@@ -173,7 +173,7 @@
             <!-- Action -->
             <td *ngIf="colAction()">
               <button class="action" type="button" (click)="getCertificate(r)">
-                Get Certificate
+                {{ t('transcript.getCertificate') }}
               </button>
             </td>
           </tr>
@@ -183,7 +183,7 @@
               class="empty"
               [attr.colspan]="(colTitle()?1:0)+(colHours()?1:0)+(colGrade()?1:0)+(colCompleted()?1:0)+(colDue()?1:0)+(colAction()?1:0)"
             >
-              No completed courses match your filters.
+              {{ t('transcript.noResults') }}
             </td>
           </tr>
         </tbody>

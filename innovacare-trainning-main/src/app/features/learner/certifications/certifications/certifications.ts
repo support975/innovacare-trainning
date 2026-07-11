@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 
 import { Auth } from '@angular/fire/auth';
 import { Firestore, doc, getDoc } from '@angular/fire/firestore';
+import { LanguageService } from '../../../../shared/services/language';
 
 type HonorLabel = 'Pass' | 'Merit' | 'Honors' | 'High Honors';
 
@@ -18,6 +19,9 @@ export class Certifications implements OnInit {
   private route = inject(ActivatedRoute);
   private afs = inject(Firestore);
   private auth = inject(Auth);
+  private languageService = inject(LanguageService);
+
+  readonly t = (key: string, params?: Record<string, string | number>) => this.languageService.t(key, params);
 
   courseId = '';
   examId = '';

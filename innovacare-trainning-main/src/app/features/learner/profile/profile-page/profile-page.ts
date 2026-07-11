@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { LicenseDoc, UserDirectoryService, UserDoc } from '../../../../shared/services/user-directory';
+import { LanguageService } from '../../../../shared/services/language';
 
 
 function epochMs(x: any): number | undefined {
@@ -28,6 +29,9 @@ function fmtShort(ms?: number): string {
 export class ProfilePage {
   private fb = inject(FormBuilder);
   private dir = inject(UserDirectoryService);
+  private languageService = inject(LanguageService);
+
+  readonly t = (key: string, params?: Record<string, string | number>) => this.languageService.t(key, params);
 
   tab = signal<'profile'|'licenses'>('profile');
   busy = signal(false);

@@ -108,7 +108,7 @@ export class LearnerDashboardComponent {
   private afs = inject(Firestore);
   private languageService = inject(LanguageService);
   private profile = toSignal(this.authService.profile$, { initialValue: null });
-  readonly t = (key: string) => this.languageService.t(key);
+  readonly t = (key: string, params?: Record<string, string | number>) => this.languageService.t(key, params);
   readonly isIndividualLearner = computed(() => {
     const p = this.profile();
     return p?.accountType === 'individual' && !p?.orgId;

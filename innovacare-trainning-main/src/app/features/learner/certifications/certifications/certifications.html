@@ -1,15 +1,15 @@
 <div class="page">
     <div class="top">
       <div class="left">
-        <h1>Certificate</h1>
-        <p class="muted">Print, download, or email your certificate after passing the exam.</p>
+        <h1>{{ t('certifications.title') }}</h1>
+        <p class="muted">{{ t('certifications.subtitle') }}</p>
       </div>
-  
+
       <div class="actions">
-        <button class="btn outline" type="button" (click)="print()" [disabled]="busy() || !certificateReady()">Print</button>
-        <button class="btn" type="button" (click)="downloadPdf()" [disabled]="busy() || !certificateReady()">Download PDF</button>
-        <button class="btn ghost" type="button" (click)="sendEmail()" [disabled]="busy() || !certificateReady()">Send by Email</button>
-        <a class="btn outline" [routerLink]="['/learner/assignments']">Back to Assignments</a>
+        <button class="btn outline" type="button" (click)="print()" [disabled]="busy() || !certificateReady()">{{ t('common.print') }}</button>
+        <button class="btn" type="button" (click)="downloadPdf()" [disabled]="busy() || !certificateReady()">{{ t('certifications.downloadPdf') }}</button>
+        <button class="btn ghost" type="button" (click)="sendEmail()" [disabled]="busy() || !certificateReady()">{{ t('certifications.sendEmail') }}</button>
+        <a class="btn outline" [routerLink]="['/learner/assignments']">{{ t('common.backToAssignments') }}</a>
       </div>
     </div>
   
@@ -27,34 +27,34 @@
           <div class="sub">Training</div>
         </div>
   
-        <div class="title">Certificate of Completion</div>
+        <div class="title">{{ t('certifications.certificateTitle') }}</div>
         <div class="line"></div>
-  
-        <div class="presented">This certificate is proudly presented to</div>
+
+        <div class="presented">{{ t('certifications.presentedTo') }}</div>
   
         <div class="name">{{ userName() }}</div>
         <div class="email" *ngIf="userEmail()">{{ userEmail() }}</div>
   
-        <div class="for">for successfully completing</div>
+        <div class="for">{{ t('certifications.forCompleting') }}</div>
         <div class="course">{{ courseTitle() }}</div>
   
         <div class="honor">
-          <span class="pill">Honor: {{ honor() }}</span>
-          <span class="pill" *ngIf="percent() > 0">Score: {{ percent() }}%</span>
-          <span class="pill">Completed: {{ completedAt() }}</span>
+          <span class="pill">{{ t('certifications.honor') }}: {{ honor() }}</span>
+          <span class="pill" *ngIf="percent() > 0">{{ t('certifications.score') }}: {{ percent() }}%</span>
+          <span class="pill">{{ t('certifications.completed') }}: {{ completedAt() }}</span>
         </div>
   
         <!-- Footer (NOT centered like the rest) -->
         <div class="footer">
           <div class="meta">
-            <div><strong>Certificate #</strong> {{ certificateNo() }}</div>
-            <div><strong>Issued</strong> {{ issuedOn() }}</div>
+            <div><strong>{{ t('certifications.certificateNo') }}</strong> {{ certificateNo() }}</div>
+            <div><strong>{{ t('certifications.issued') }}</strong> {{ issuedOn() }}</div>
           </div>
-  
+
           <div class="sign">
             <div class="sig-line"></div>
-            <div class="sig-name">Innovacare Training</div>
-            <div class="sig-role">Education &amp; Compliance</div>
+            <div class="sig-name">{{ t('certifications.signatory') }}</div>
+            <div class="sig-role">{{ t('certifications.signatoryRole') }}</div>
           </div>
         </div>
       </div>
@@ -63,8 +63,8 @@
     <ng-template #certificateUnavailableTpl>
       <section class="paper-wrap">
         <div class="paper" role="status">
-          <div class="title">Certificate Not Available</div>
-          <p class="muted">Complete the course first, then return to Transcript to download the certificate of completion.</p>
+          <div class="title">{{ t('certifications.notAvailable') }}</div>
+          <p class="muted">{{ t('certifications.notAvailableMessage') }}</p>
         </div>
       </section>
     </ng-template>

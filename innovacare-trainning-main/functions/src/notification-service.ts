@@ -267,14 +267,14 @@ export async function sendEmail(
     });
 
     // Log email in Firestore
-    await db.collection("notifications/emails").add({
+    await db.collection("notificationEmails").add({
       ...notification,
       sentAt: admin.firestore.FieldValue.serverTimestamp(),
       status: "sent",
     });
   } catch (error) {
     console.error("SendGrid error:", error);
-    await db.collection("notifications/emails").add({
+    await db.collection("notificationEmails").add({
       ...notification,
       status: "failed",
       error: String(error),
@@ -285,7 +285,7 @@ export async function sendEmail(
 }
 
 export async function createInAppNotification(notification: InAppNotification): Promise<string> {
-  const docRef = await db.collection("notifications/inapp").add({
+  const docRef = await db.collection("notificationInApp").add({
     ...notification,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   });

@@ -1,13 +1,13 @@
 <div class="page">
     <div class="head">
       <div>
-        <h1>User Profile</h1>
-        <p class="muted">Manage your contact information and professional licenses.</p>
+        <h1>{{ t('profile.title') }}</h1>
+        <p class="muted">{{ t('profile.subtitle') }}</p>
       </div>
-  
+
       <div class="tabs">
-        <button class="tab" [class.active]="tab()==='profile'" (click)="setTab('profile')">Profile</button>
-        <button class="tab" [class.active]="tab()==='licenses'" (click)="setTab('licenses')">My Licenses & Certifications</button>
+        <button class="tab" [class.active]="tab()==='profile'" (click)="setTab('profile')">{{ t('profile.tabProfile') }}</button>
+        <button class="tab" [class.active]="tab()==='licenses'" (click)="setTab('licenses')">{{ t('profile.tabLicenses') }}</button>
       </div>
     </div>
   
@@ -24,40 +24,40 @@
         <div class="grow">
           <div class="grid2">
             <div class="field">
-              <label>Display Name *</label>
+              <label>{{ t('profile.fieldDisplayName') }}</label>
               <input [formControl]="profileForm.controls.displayName" />
             </div>
-  
+
             <div class="field">
-              <label>Email</label>
+              <label>{{ t('profile.fieldEmail') }}</label>
               <input type="email" [formControl]="profileForm.controls.email" />
             </div>
-  
+
             <div class="field">
-              <label>Phone</label>
+              <label>{{ t('profile.fieldPhone') }}</label>
               <input [formControl]="profileForm.controls.phone" />
             </div>
-  
+
             <div class="field">
-              <label>Address</label>
+              <label>{{ t('profile.fieldAddress') }}</label>
               <input [formControl]="profileForm.controls.address" />
             </div>
-  
+
             <div class="field full">
-              <label>Profile Image URL</label>
-              <input [formControl]="profileForm.controls.profileImage" placeholder="https://..." />
+              <label>{{ t('profile.fieldProfileImage') }}</label>
+              <input [formControl]="profileForm.controls.profileImage" [placeholder]="t('profile.urlPlaceholder')" />
             </div>
           </div>
   
           <div class="meta">
-            <div><span>Role</span> <strong>{{ user()?.role || '—' }}</strong></div>
-            <div><span>Title</span> <strong>{{ user()?.title || '—' }}</strong></div>
-            <div><span>Department</span> <strong>{{ user()?.department || '—' }}</strong></div>
-            <div><span>Status</span> <strong>{{ user()?.status || '—' }}</strong></div>
+            <div><span>{{ t('profile.fieldRole') }}</span> <strong>{{ user()?.role || '—' }}</strong></div>
+            <div><span>{{ t('profile.fieldTitle') }}</span> <strong>{{ user()?.title || '—' }}</strong></div>
+            <div><span>{{ t('profile.fieldDepartment') }}</span> <strong>{{ user()?.department || '—' }}</strong></div>
+            <div><span>{{ t('profile.fieldStatus') }}</span> <strong>{{ user()?.status || '—' }}</strong></div>
           </div>
-  
+
           <div class="actions">
-            <button class="btn primary" type="button" (click)="saveProfile()" [disabled]="busy()">Save</button>
+            <button class="btn primary" type="button" (click)="saveProfile()" [disabled]="busy()">{{ t('common.save') }}</button>
           </div>
         </div>
       </div>
@@ -66,21 +66,21 @@
     <!-- LICENSES -->
     <section class="card" *ngIf="tab()==='licenses'">
       <div class="row-between">
-        <div class="card-title">My Licenses and Certifications</div>
-        <button class="btn outline" type="button" (click)="newLicense()">+ Add My License or Certification</button>
+        <div class="card-title">{{ t('profile.myLicenses') }}</div>
+        <button class="btn outline" type="button" (click)="newLicense()">+ {{ t('profile.addLicense') }}</button>
       </div>
-  
+
       <div class="table-wrap">
         <table class="table">
           <thead>
             <tr>
-              <th>State/Province</th>
-              <th>Type</th>
-              <th>Number</th>
-              <th>Renewal</th>
-              <th>Renewal Period</th>
-              <th>Hours</th>
-              <th>Reminder</th>
+              <th>{{ t('profile.colState') }}</th>
+              <th>{{ t('profile.colType') }}</th>
+              <th>{{ t('profile.colNumber') }}</th>
+              <th>{{ t('profile.colRenewal') }}</th>
+              <th>{{ t('profile.colRenewalPeriod') }}</th>
+              <th>{{ t('profile.colHours') }}</th>
+              <th>{{ t('profile.colReminder') }}</th>
               <th></th>
             </tr>
           </thead>
@@ -90,64 +90,64 @@
               <td>{{ r.type }}</td>
               <td>{{ r.number }}</td>
               <td>{{ fmtRenewal(r.renewalDate) }}</td>
-              <td>{{ (r.renewalPeriodMonths ?? 0) }} month(s)</td>
+              <td>{{ (r.renewalPeriodMonths ?? 0) }} {{ t('profile.months') }}</td>
               <td>{{ r.hours ?? 0 }}</td>
-              <td>{{ r.reminderWeeks ?? 0 }} weeks</td>
+              <td>{{ r.reminderWeeks ?? 0 }} {{ t('profile.weeks') }}</td>
               <td class="right">
-                <button class="btn tiny outline" type="button" (click)="editLicense(r)">Edit</button>
-                <button class="btn tiny danger" type="button" (click)="deleteLicense(r.id!)">Delete</button>
+                <button class="btn tiny outline" type="button" (click)="editLicense(r)">{{ t('common.edit') }}</button>
+                <button class="btn tiny danger" type="button" (click)="deleteLicense(r.id!)">{{ t('common.delete') }}</button>
               </td>
             </tr>
             <tr *ngIf="licensesView().length===0">
-              <td colspan="8" class="muted">No licenses added yet.</td>
+              <td colspan="8" class="muted">{{ t('profile.noLicenses') }}</td>
             </tr>
           </tbody>
         </table>
       </div>
   
       <div class="divider"></div>
-  
-      <div class="card-title">Add / Edit</div>
+
+      <div class="card-title">{{ t('profile.addEdit') }}</div>
       <div class="grid2">
         <div class="field">
-          <label>State/Province *</label>
+          <label>{{ t('profile.colState') }}</label>
           <input [formControl]="licenseForm.controls.state" />
         </div>
-  
+
         <div class="field">
-          <label>Type *</label>
+          <label>{{ t('profile.colType') }}</label>
           <input [formControl]="licenseForm.controls.type" />
         </div>
-  
+
         <div class="field">
-          <label>Number *</label>
+          <label>{{ t('profile.colNumber') }}</label>
           <input [formControl]="licenseForm.controls.number" />
         </div>
-  
+
         <div class="field">
-          <label>Renewal Date</label>
+          <label>{{ t('profile.colRenewal') }}</label>
           <input type="date" [formControl]="licenseForm.controls.renewalDate" />
         </div>
-  
+
         <div class="field">
-          <label>Renewal Period (months)</label>
+          <label>{{ t('profile.colRenewalPeriod') }}</label>
           <input type="number" min="0" [formControl]="licenseForm.controls.renewalPeriodMonths" />
         </div>
-  
+
         <div class="field">
-          <label>Hours</label>
+          <label>{{ t('profile.colHours') }}</label>
           <input type="number" min="0" [formControl]="licenseForm.controls.hours" />
         </div>
-  
+
         <div class="field">
-          <label>Reminder (weeks)</label>
+          <label>{{ t('profile.colReminder') }}</label>
           <input type="number" min="0" [formControl]="licenseForm.controls.reminderWeeks" />
         </div>
       </div>
-  
+
       <div class="actions">
-        <button class="btn primary" type="button" (click)="saveLicense()" [disabled]="busy()">Save License</button>
-        <button class="btn ghost" type="button" (click)="newLicense()" [disabled]="busy()">Clear</button>
+        <button class="btn primary" type="button" (click)="saveLicense()" [disabled]="busy()">{{ t('profile.saveLicense') }}</button>
+        <button class="btn ghost" type="button" (click)="newLicense()" [disabled]="busy()">{{ t('common.clear') }}</button>
       </div>
     </section>
   </div>

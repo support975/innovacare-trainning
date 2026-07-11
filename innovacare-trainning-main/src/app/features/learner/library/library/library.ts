@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { CoursesRepo } from '../../../../data/courses.repo';
 import { Course } from '../../../../data/models';
 import { AuthService } from '../../../../core/auth';
+import { LanguageService } from '../../../../shared/services/language';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { of, switchMap } from 'rxjs';
 
@@ -20,6 +21,9 @@ export class Library {
   private repo = inject(CoursesRepo);
   private router = inject(Router);
   private auth = inject(AuthService);
+  private languageService = inject(LanguageService);
+
+  readonly t = (key: string, params?: Record<string, string | number>) => this.languageService.t(key, params);
 
   private list = toSignal(
     this.auth.profile$.pipe(
