@@ -37,7 +37,7 @@ export class NotificationService {
     const user = this.auth.currentUser;
     if (!user) return;
 
-    const notificationsRef = collection(this.firestore, "notifications", "inapp", "");
+    const notificationsRef = collection(this.firestore, "notificationInApp");
     const q = query(notificationsRef, where("learnerId", "==", user.uid));
 
     this.unsubscribe = onSnapshot(q, (snapshot) => {
@@ -61,7 +61,7 @@ export class NotificationService {
     const user = this.auth.currentUser;
     if (!user) return;
 
-    const notificationRef = doc(this.firestore, "notifications/inapp", notificationId);
+    const notificationRef = doc(this.firestore, "notificationInApp", notificationId);
     await updateDoc(notificationRef, {read: true});
   }
 
@@ -80,7 +80,7 @@ export class NotificationService {
   }
 
   async deleteNotification(notificationId: string) {
-    const notificationRef = doc(this.firestore, "notifications/inapp", notificationId);
+    const notificationRef = doc(this.firestore, "notificationInApp", notificationId);
     await deleteDoc(notificationRef);
   }
 
