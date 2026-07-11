@@ -1220,6 +1220,15 @@ service cloud.firestore {
         allow update: if (isSignedIn()
             && request.resource.data.verified == false
             && request.resource.data.examCompleted == true)
+          // Member self-service: submit/withdraw documents while still unverified.
+          // Cannot flip verified/examCompleted/candidacyApproved themselves.
+          || (isSignedIn()
+            && request.auth.uid == uid
+            && resource.data.verified == false
+            && request.resource.data.candidateUid == request.auth.uid
+            && request.resource.data.verified == false
+            && request.resource.data.examCompleted == false
+            && request.resource.data.candidacyApproved == resource.data.candidacyApproved)
           || isManagerOrAbove()
           || myRole() == 'proctor';
         // Members may withdraw their own registration while still unverified
