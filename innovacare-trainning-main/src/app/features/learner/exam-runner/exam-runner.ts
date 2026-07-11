@@ -161,7 +161,7 @@ export class ExamRunnerComponent implements OnInit, OnDestroy {
   } | null>(null);
 
   ngOnInit() {
-    this.courseId = readParamDeep(this.route, 'courseId');
+    this.courseId = readParamDeep(this.route, 'id') || readParamDeep(this.route, 'courseId');
     this.examId = readParamDeep(this.route, 'examId');
     this.officialApplicationId = readParamDeep(this.route, 'officialApplicationId');
     this.certificationSessionId = readParamDeep(this.route, 'certificationSessionId');
