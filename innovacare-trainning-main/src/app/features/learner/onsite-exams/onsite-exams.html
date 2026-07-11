@@ -1,0 +1,99 @@
+<div class="onsite-exams-page">
+  <div class="page-header">
+    <h1>🏛️ Onsite Exams</h1>
+    <p class="subtitle">
+      Register for an upcoming onsite exam session. On exam day, bring a photo ID and your
+      account password — the proctor will verify your identity before you can start.
+    </p>
+  </div>
+
+  <div *ngIf="error()" class="alert alert-error">{{ error() }}</div>
+  <div *ngIf="notice()" class="alert alert-success">{{ notice() }}</div>
+
+  <div class="retake-banner" *ngIf="hasFailedAttempt()">
+    🔁 You did not pass your previous attempt. Register for an upcoming session below to retake the exam —
+    you will also receive an email whenever a new session opens.
+  </div>
+
+  <div *ngIf="loading()" class="empty-state">Loading exam sessions…</div>
+
+  <div class="session-list" *ngIf="!loading()">
+    <div class="session-card" *ngFor="let s of sessions()">
+      <div class="session-main">
+        <div class="session-title">{{ s.examTitle }}</div>
+        <div class="session-meta">
+          <span>📅 {{ s.sessionDate | toDate | date: 'EEEE, MMMM d, y • HH:mm' }}</span>
+          <span *ngIf="s.centerName">📍 {{ s.centerName }}</span>
+          <span class="chip" [class.chip-active]="s.status === 'active'">{{ s.status }}</span>
+        </div>
+        <div class="my-status" *ngIf="statusLabel(s)">
+          <span
+            class="badge"
+            [class.badge-success]="s.verified || s.examCompleted || s.candidacyApproved === true"
+            [class.badge-danger]="s.candidacyApproved === false"
+            [class.badge-info]="s.registered && !s.verified && !s.examCompleted && s.candidacyApproved === null"
+          >{{ statusLabel(s) }}</span>
+        </div>
+
+        <!-- Documents -->
+        <div class="docs-section" *ngIf="s.registered && !s.examCompleted">
+          <div class="docs-head">📎 My documents</div>
+
+          <div class="doc-row" *ngFor="let d of s.documents">
+            <a class="doc-link" [href]="d.url" target="_blank" rel="noopener">
+              {{ docTypeLabel(d.type) }} — {{ d.name }}
+            </a>
+            <span
+              class="doc-status"
+              [class.doc-approved]="d.status === 'approved'"
+              [class.doc-rejected]="d.status === 'rejected'"
+            >
+              {{ d.status === 'approved' ? '✓ Approved' : d.status === 'rejected' ? '✗ Rejected' : '⏳ Pending review' }}
+            </span>
+          </div>
+
+          <div class="doc-upload" *ngIf="!s.verified">
+            <select [(ngModel)]="uploadType" [name]="'docType_' + s.id">
+              <option value="identity">Identity document</option>
+              <option value="diploma">Diploma / qualification</option>
+              <option value="payment_proof">Payment proof</option>
+              <option value="other">Other</option>
+            </select>
+            <label class="btn-upload">
+              {{ uploadingFor() === s.id ? 'Uploading…' : '⬆ Upload document' }}
+              <input
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                (change)="onDocumentSelected($event, s)"
+                [disabled]="uploadingFor() === s.id"
+                hidden
+              />
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="session-actions">
+        <button
+          *ngIf="!s.registered"
+          class="btn-primary"
+          (click)="register(s)"
+          [disabled]="busy() === s.id"
+        >
+          {{ busy() === s.id ? 'Registering…' : 'Register' }}
+        </button>
+        <button
+          *ngIf="s.registered && !s.verified && !s.examCompleted"
+          class="btn-outline"
+          (click)="withdraw(s)"
+          [disabled]="busy() === s.id"
+        >
+          Withdraw
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="sessions().length === 0" class="empty-state">
+      No onsite exam sessions are scheduled for your organization right now.
+    </div>
+  </div>
+</div>

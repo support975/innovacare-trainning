@@ -1,0 +1,252 @@
+<main class="exam-shell" [class.time-critical]="phase() === 'questions' && timeCritical()">
+  <!-- TOP TESTING BAR -->
+  <header class="testing-bar" *ngIf="phase() === 'questions' || phase() === 'review'">
+    <div class="testing-bar__brand">
+      <span class="testing-bar__mark">IT</span>
+      <div class="testing-bar__title">
+        <strong>{{ blueprint()?.title || 'Official Exam' }}</strong>
+        <span>Secure Assessment Session</span>
+      </div>
+    </div>
+
+    <div class="testing-bar__center">
+      <span class="testing-bar__q">
+        Question {{ currentQuestionIndex() + 1 }} of {{ totalQuestions() }}
+      </span>
+    </div>
+
+    <div class="testing-bar__right">
+      <div class="timer-chip" [class.low]="timeLow()" [class.critical]="timeCritical()">
+        <span class="timer-icon">⏱</span>
+        <span class="timer-value">{{ formattedTime() }}</span>
+      </div>
+      <button type="button" class="btn-review-link" (click)="goToReview()">
+        Review &amp; Submit
+      </button>
+    </div>
+  </header>
+
+  <div class="exam-body">
+    <aside class="exam-rail" aria-label="Exam navigator" *ngIf="phase() === 'questions' || phase() === 'review'">
+      <div class="rail-progress">
+        <div class="rail-progress__top">
+          <span>{{ answeredCount() }}/{{ totalQuestions() }} answered</span>
+          <strong>{{ progressPercent() }}%</strong>
+        </div>
+        <div class="progress-track">
+          <span [style.width.%]="progressPercent()"></span>
+        </div>
+      </div>
+
+      <div class="rail-legend">
+        <span class="legend-item"><i class="dot dot-answered"></i> Answered</span>
+        <span class="legend-item"><i class="dot dot-flagged"></i> Flagged</span>
+        <span class="legend-item"><i class="dot dot-unanswered"></i> Unanswered</span>
+      </div>
+
+      <div class="rail-grid">
+        <button
+          type="button"
+          *ngFor="let q of questions(); index as i"
+          class="rail-cell"
+          [class.active]="i === currentQuestionIndex() && phase() === 'questions'"
+          [class.st-answered]="questionStatus(q) === 'answered'"
+          [class.st-flagged]="questionStatus(q) === 'flagged'"
+          [class.st-answered-flagged]="questionStatus(q) === 'answered-flagged'"
+          [class.st-unanswered]="questionStatus(q) === 'unanswered'"
+          (click)="backToQuestions(i)"
+        >
+          {{ i + 1 }}
+          <span class="rail-cell__flag" *ngIf="isFlagged(q.id!)">🚩</span>
+        </button>
+      </div>
+    </aside>
+
+    <section class="exam-stage">
+      <p *ngIf="notice()" class="notice">{{ notice() }}</p>
+      <p
+        *ngIf="proctorWarning()"
+        class="notice"
+        style="background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-weight:600"
+      >{{ proctorWarning() }}</p>
+
+      <!-- QUESTION VIEW -->
+      <section *ngIf="phase() === 'questions'" class="paper-stack" aria-label="Exam question">
+        <article class="exam-paper" *ngIf="currentQuestion() as q">
+          <div class="paper-meta">
+            <div class="paper-meta__row">
+              <span>Question {{ currentQuestionIndex() + 1 }} of {{ totalQuestions() }}</span>
+              <button
+                type="button"
+                class="flag-toggle"
+                [class.active]="isFlagged(q.id!)"
+                (click)="toggleFlag(q.id!)"
+              >
+                <span class="flag-toggle__icon">🚩</span>
+                {{ isFlagged(q.id!) ? 'Flagged for review' : 'Flag for review' }}
+              </button>
+            </div>
+          </div>
+
+          <div class="question-copy">
+            <h2>{{ q.prompt }}</h2>
+            <p *ngIf="q.mode === 'multi'">Select all that apply.</p>
+            <p *ngIf="q.mode !== 'multi'">Select the best answer.</p>
+          </div>
+
+          <div class="option-list">
+            <label
+              *ngFor="let opt of q.options; let oi = index"
+              class="option-card"
+              [class.selected]="isSelected(q.id!, opt.id)"
+            >
+              <input
+                [type]="q.mode === 'multi' ? 'checkbox' : 'radio'"
+                [name]="'q_' + q.id"
+                [value]="opt.id"
+                [checked]="isSelected(q.id!, opt.id)"
+                (change)="toggleOption(q.id!, opt.id, q.mode === 'multi' ? 'multi' : 'single')"
+              />
+              <span class="option-letter">{{ letterFor(oi) }}</span>
+              <span class="option-control"></span>
+              <span class="option-text">{{ opt.text }}</span>
+            </label>
+          </div>
+
+          <div class="paper-actions">
+            <button
+              type="button"
+              class="btn btn-ghost"
+              [disabled]="currentQuestionIndex() === 0 || busy()"
+              (click)="goToPreviousQuestion()"
+            >
+              Previous
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-primary"
+              *ngIf="!isLastQuestion()"
+              [disabled]="busy()"
+              (click)="goToNextQuestion()"
+            >
+              Next question
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-primary"
+              *ngIf="isLastQuestion()"
+              [disabled]="busy()"
+              (click)="goToReview()"
+            >
+              Review &amp; submit
+            </button>
+          </div>
+        </article>
+
+        <article class="exam-paper empty-paper" *ngIf="!currentQuestion() && !notice()">
+          <div class="loader-dot"></div>
+          <h2>Loading exam questions...</h2>
+        </article>
+      </section>
+
+      <!-- REVIEW SCREEN -->
+      <section *ngIf="phase() === 'review'" class="review-screen" aria-label="Review answers">
+        <div class="review-card">
+          <div class="review-header">
+            <span class="eyebrow">Before you submit</span>
+            <h2>Review your answers</h2>
+            <p>
+              You have answered {{ answeredCount() }} of {{ totalQuestions() }} questions.
+              <span *ngIf="flaggedCount() > 0">{{ flaggedCount() }} question(s) flagged for review.</span>
+              Once submitted, you cannot change your answers.
+            </p>
+          </div>
+
+          <div class="review-summary">
+            <div class="summary-chip answered">
+              <strong>{{ answeredCount() }}</strong>
+              <span>Answered</span>
+            </div>
+            <div class="summary-chip flagged">
+              <strong>{{ flaggedCount() }}</strong>
+              <span>Flagged</span>
+            </div>
+            <div class="summary-chip unanswered">
+              <strong>{{ unansweredCount() }}</strong>
+              <span>Unanswered</span>
+            </div>
+          </div>
+
+          <div class="review-grid">
+            <button
+              type="button"
+              *ngFor="let q of questions(); index as i"
+              class="review-item"
+              [class.st-answered]="questionStatus(q) === 'answered'"
+              [class.st-flagged]="questionStatus(q) === 'flagged'"
+              [class.st-answered-flagged]="questionStatus(q) === 'answered-flagged'"
+              [class.st-unanswered]="questionStatus(q) === 'unanswered'"
+              (click)="backToQuestions(i)"
+            >
+              <span class="review-item__index">{{ i + 1 }}</span>
+              <span class="review-item__status">
+                <ng-container [ngSwitch]="questionStatus(q)">
+                  <ng-container *ngSwitchCase="'answered'">Answered</ng-container>
+                  <ng-container *ngSwitchCase="'flagged'">Flagged</ng-container>
+                  <ng-container *ngSwitchCase="'answered-flagged'">Answered · Flagged</ng-container>
+                  <ng-container *ngSwitchCase="'unanswered'">Not answered</ng-container>
+                </ng-container>
+              </span>
+              <span class="review-item__flag" *ngIf="isFlagged(q.id!)">🚩</span>
+            </button>
+          </div>
+
+          <div class="review-actions">
+            <button type="button" class="btn btn-ghost" (click)="backToQuestions()">
+              Back to exam
+            </button>
+            <button type="button" class="btn btn-primary btn-submit" [disabled]="busy()" (click)="submit()">
+              Submit exam
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section *ngIf="phase() === 'scoring'" class="paper-stack result-stack" aria-live="polite">
+        <article class="result-card scoring">
+          <div class="score-orbit">
+            <span></span>
+            <strong>{{ displayPercent() }}%</strong>
+          </div>
+          <span class="eyebrow">Calculating result</span>
+          <h2>Reviewing your answers</h2>
+          <p>We are calculating your passing percentage and updating your candidate file.</p>
+        </article>
+      </section>
+
+      <section *ngIf="phase() === 'results' && result() as r" class="paper-stack result-stack" aria-live="polite">
+        <article class="result-card" [class.passed]="r.passed" [class.failed]="!r.passed">
+          <div class="score-ring" [style.--score]="displayPercent()">
+            <strong>{{ displayPercent() }}%</strong>
+            <span>{{ r.correct }}/{{ r.total }}</span>
+          </div>
+
+          <span class="eyebrow">{{ r.passed ? 'Assessment passed' : 'Below passing score' }}</span>
+          <h2>{{ r.passed ? 'Congratulations, you passed the official exam.' : 'You did not meet the passing score.' }}</h2>
+          <p>
+            Passing requires {{ passThreshold() }}% or higher.
+            Your certification authority will review and finalize your official results.
+          </p>
+
+          <div class="result-actions">
+            <button type="button" class="btn btn-primary" (click)="goToApplications()">
+              Back to my applications
+            </button>
+          </div>
+        </article>
+      </section>
+    </section>
+  </div>
+</main>

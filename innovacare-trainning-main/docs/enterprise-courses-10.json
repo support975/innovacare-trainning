@@ -1,0 +1,1165 @@
+[
+  {
+    "id": "enterprise-onboarding-culture",
+    "title": "Employee Onboarding and Company Culture",
+    "subtitle": "A structured start for new team members",
+    "description": "Help new employees understand the company mission, expectations, communication norms, tools, policies, and first-week priorities.",
+    "lang": "EN",
+    "durationMin": 45,
+    "ceCredit": 0,
+    "sortOrder": 101,
+    "active": true,
+    "isPublic": true,
+    "kind": "Course",
+    "type": "Hr",
+    "level": "Beginner",
+    "url": "/catalogue/enterprise-onboarding-culture",
+    "imageUrl": "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1200&q=80",
+    "tags": ["enterprise", "onboarding", "culture", "hr", "new-hire"],
+    "lecturer": "Innovacare Training Business Faculty",
+    "disclosures": ["This course is for general business training and should be adapted to each organization's internal policies."],
+    "targetAudience": ["New employees", "HR teams", "Managers", "Team leads"],
+    "prerequisites": ["None"],
+    "requirements": ["Complete all lessons", "Pass the final knowledge check"],
+    "accomodations": "Learners may request accessibility accommodations from their organization administrator.",
+    "orgId": null,
+    "assignedOrgIds": [],
+    "passingScore": 80,
+    "lockedSequence": true,
+    "sections": [
+      {
+        "id": "welcome",
+        "title": "Welcome and First Priorities",
+        "order": 1,
+        "estMin": 20,
+        "lessons": [
+          {
+            "id": "mission-values",
+            "title": "Mission, Values, and Culture",
+            "order": 1,
+            "estMin": 10,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "id": "intro",
+                "type": "heading",
+                "level": 2,
+                "text": "Starting with clarity"
+              },
+              {
+                "id": "body",
+                "type": "text",
+                "html": "<p>Every organization has a way of working. New employees should understand the mission, service standards, communication expectations, and behaviors that define professional success.</p><p>Culture is not only a statement on a wall. It is reflected in how people communicate, solve problems, serve customers, and support one another.</p>",
+                "required": true
+              },
+              {
+                "id": "callout",
+                "type": "callout",
+                "style": "info",
+                "html": "<strong>Manager tip:</strong> Pair this course with a local checklist for tools, passwords, schedule, and first-week meetings."
+              }
+            ]
+          },
+          {
+            "id": "first-week-success",
+            "title": "First-Week Success Checklist",
+            "order": 2,
+            "estMin": 10,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>A strong first week gives the employee a map. Confirm the role, reporting line, required tools, safety expectations, training plan, and first deliverables.</p><ul><li>Know who to contact for support.</li><li>Understand daily attendance and communication rules.</li><li>Review required policies and training assignments.</li><li>Ask questions early instead of guessing.</li></ul>",
+                "required": true
+              },
+              {
+                "id": "quiz",
+                "type": "quiz",
+                "mode": "single",
+                "question": "What is the best first-week practice for a new employee?",
+                "required": true,
+                "choices": [
+                  {"id": "a", "text": "Wait until the end of the month to ask questions", "correct": false},
+                  {"id": "b", "text": "Clarify expectations, tools, contacts, and training early", "correct": true},
+                  {"id": "c", "text": "Avoid manager check-ins", "correct": false}
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "workplace-expectations",
+        "title": "Professional Expectations",
+        "order": 2,
+        "estMin": 25,
+        "lessons": [
+          {
+            "id": "conduct-communication",
+            "title": "Professional Conduct and Communication",
+            "order": 1,
+            "estMin": 15,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Professional communication should be clear, respectful, timely, and documented when needed. Employees should use approved channels and avoid sharing sensitive information casually.</p>",
+                "required": true
+              }
+            ]
+          },
+          {
+            "id": "course-summary",
+            "title": "Course Summary",
+            "order": 2,
+            "estMin": 10,
+            "blocks": [
+              {
+                "id": "summary",
+                "type": "callout",
+                "style": "success",
+                "html": "<p>You are ready to begin with a clearer understanding of culture, conduct, first-week priorities, and support channels.</p>",
+                "required": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "workplace-safety-essentials",
+    "title": "Workplace Safety Essentials",
+    "subtitle": "Core safety habits for office, field, and operational teams",
+    "description": "Introduce hazard awareness, incident reporting, emergency response, slips/trips/falls prevention, and safe daily work habits.",
+    "lang": "EN",
+    "durationMin": 50,
+    "ceCredit": 0,
+    "sortOrder": 102,
+    "active": true,
+    "isPublic": true,
+    "kind": "Course",
+    "type": "safety",
+    "level": "Beginner",
+    "url": "/catalogue/workplace-safety-essentials",
+    "imageUrl": "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=1200&q=80",
+    "tags": ["enterprise", "safety", "incident-reporting", "osha", "risk"],
+    "lecturer": "Innovacare Training Safety Faculty",
+    "disclosures": ["This course does not replace site-specific safety training or legal compliance review."],
+    "targetAudience": ["All employees", "Supervisors", "Field teams", "Operations teams"],
+    "prerequisites": ["None"],
+    "requirements": ["Review safety procedures", "Pass the knowledge check"],
+    "accomodations": "Accessibility accommodations may be requested through the organization administrator.",
+    "orgId": null,
+    "assignedOrgIds": [],
+    "passingScore": 80,
+    "lockedSequence": true,
+    "sections": [
+      {
+        "id": "hazard-awareness",
+        "title": "Hazard Awareness",
+        "order": 1,
+        "estMin": 25,
+        "lessons": [
+          {
+            "id": "recognize-hazards",
+            "title": "Recognize Common Hazards",
+            "order": 1,
+            "estMin": 12,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Hazards can include wet floors, blocked exits, poor lighting, unsafe equipment, exposed cords, heavy lifting, chemical exposure, and workplace violence risks.</p><p>Employees should pause, identify risks, and follow the reporting process before a hazard becomes an incident.</p>",
+                "required": true
+              }
+            ]
+          },
+          {
+            "id": "prevent-injuries",
+            "title": "Prevent Common Injuries",
+            "order": 2,
+            "estMin": 13,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<ul><li>Keep walkways clear.</li><li>Use proper lifting technique.</li><li>Report damaged equipment.</li><li>Wear required protective equipment.</li><li>Follow lockout or access rules where applicable.</li></ul>",
+                "required": true
+              },
+              {
+                "id": "quiz",
+                "type": "quiz",
+                "mode": "single",
+                "question": "What should an employee do when a hazard is found?",
+                "required": true,
+                "choices": [
+                  {"id": "a", "text": "Ignore it if nobody was injured", "correct": false},
+                  {"id": "b", "text": "Report it using the approved process", "correct": true},
+                  {"id": "c", "text": "Post about it publicly", "correct": false}
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "emergency-response",
+        "title": "Emergency Response and Reporting",
+        "order": 2,
+        "estMin": 25,
+        "lessons": [
+          {
+            "id": "incident-reporting",
+            "title": "Incident and Near-Miss Reporting",
+            "order": 1,
+            "estMin": 12,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>A near miss is a warning sign. Reporting near misses helps the organization correct hazards before a serious injury occurs.</p>",
+                "required": true
+              }
+            ]
+          },
+          {
+            "id": "emergency-basics",
+            "title": "Emergency Basics",
+            "order": 2,
+            "estMin": 13,
+            "blocks": [
+              {
+                "id": "callout",
+                "type": "callout",
+                "style": "warn",
+                "html": "<p>Know evacuation routes, assembly points, emergency contacts, and when to call emergency services.</p>",
+                "required": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cybersecurity-awareness",
+    "title": "Cybersecurity Awareness for Employees",
+    "subtitle": "Protect accounts, devices, and company data",
+    "description": "Teach employees how to recognize phishing, protect passwords, secure devices, and respond to suspicious activity.",
+    "lang": "EN",
+    "durationMin": 55,
+    "ceCredit": 0,
+    "sortOrder": 103,
+    "active": true,
+    "isPublic": true,
+    "kind": "Course",
+    "type": "It",
+    "level": "Beginner",
+    "url": "/catalogue/cybersecurity-awareness",
+    "imageUrl": "https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?auto=format&fit=crop&w=1200&q=80",
+    "tags": ["enterprise", "cybersecurity", "phishing", "passwords", "it"],
+    "lecturer": "Innovacare Training IT Faculty",
+    "disclosures": ["This course is general awareness training and should be supplemented by organization-specific IT policies."],
+    "targetAudience": ["All employees", "Remote workers", "Managers", "Administrative teams"],
+    "prerequisites": ["Basic computer use"],
+    "requirements": ["Complete all lessons", "Pass the cybersecurity quiz"],
+    "accomodations": "Accessibility accommodations may be requested through the organization administrator.",
+    "orgId": null,
+    "assignedOrgIds": [],
+    "passingScore": 80,
+    "lockedSequence": true,
+    "sections": [
+      {
+        "id": "account-security",
+        "title": "Account Security",
+        "order": 1,
+        "estMin": 25,
+        "lessons": [
+          {
+            "id": "passwords-mfa",
+            "title": "Passwords and Multi-Factor Authentication",
+            "order": 1,
+            "estMin": 12,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Strong account protection starts with unique passwords and multi-factor authentication. Employees should never reuse work passwords on personal sites.</p>",
+                "required": true
+              }
+            ]
+          },
+          {
+            "id": "phishing",
+            "title": "Recognize Phishing Attempts",
+            "order": 2,
+            "estMin": 13,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Phishing messages often create urgency, request credentials, include unusual links, or imitate trusted people. Verify before clicking.</p>",
+                "required": true
+              },
+              {
+                "id": "quiz",
+                "type": "quiz",
+                "mode": "single",
+                "question": "Which sign may indicate phishing?",
+                "required": true,
+                "choices": [
+                  {"id": "a", "text": "A normal calendar invite from a known colleague", "correct": false},
+                  {"id": "b", "text": "An urgent message asking for your password", "correct": true},
+                  {"id": "c", "text": "A company newsletter from an approved sender", "correct": false}
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "device-data-security",
+        "title": "Device and Data Security",
+        "order": 2,
+        "estMin": 30,
+        "lessons": [
+          {
+            "id": "secure-devices",
+            "title": "Secure Devices and Networks",
+            "order": 1,
+            "estMin": 15,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Lock devices when away, install updates, avoid unknown USB devices, and use approved networks or VPN when required.</p>",
+                "required": true
+              }
+            ]
+          },
+          {
+            "id": "reporting",
+            "title": "Report Suspicious Activity",
+            "order": 2,
+            "estMin": 15,
+            "blocks": [
+              {
+                "id": "callout",
+                "type": "callout",
+                "style": "info",
+                "html": "<p>Fast reporting helps IT limit damage. If you clicked a suspicious link, report it immediately.</p>",
+                "required": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "data-privacy-confidential-information",
+    "title": "Data Privacy and Confidential Information",
+    "subtitle": "Handle sensitive business information responsibly",
+    "description": "Train employees to identify confidential information, reduce exposure, use approved systems, and report privacy concerns.",
+    "lang": "EN",
+    "durationMin": 50,
+    "ceCredit": 0,
+    "sortOrder": 104,
+    "active": true,
+    "isPublic": true,
+    "kind": "Course",
+    "type": "It",
+    "level": "Beginner",
+    "url": "/catalogue/data-privacy-confidential-information",
+    "imageUrl": "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1200&q=80",
+    "tags": ["enterprise", "privacy", "confidentiality", "data-protection", "compliance"],
+    "lecturer": "Innovacare Training Compliance Faculty",
+    "disclosures": ["This course does not provide legal advice. Organizations should align it with applicable privacy laws and contracts."],
+    "targetAudience": ["All employees", "Managers", "Administrative teams", "Customer-facing teams"],
+    "prerequisites": ["None"],
+    "requirements": ["Complete all lessons", "Pass the final quiz"],
+    "accomodations": "Accessibility accommodations may be requested through the organization administrator.",
+    "orgId": null,
+    "assignedOrgIds": [],
+    "passingScore": 80,
+    "lockedSequence": true,
+    "sections": [
+      {
+        "id": "privacy-basics",
+        "title": "Privacy Basics",
+        "order": 1,
+        "estMin": 25,
+        "lessons": [
+          {
+            "id": "identify-sensitive-data",
+            "title": "Identify Sensitive Information",
+            "order": 1,
+            "estMin": 12,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Confidential information may include customer data, employee records, pricing, contracts, credentials, financial records, trade secrets, and business plans.</p>",
+                "required": true
+              }
+            ]
+          },
+          {
+            "id": "minimum-necessary",
+            "title": "Use the Minimum Necessary Principle",
+            "order": 2,
+            "estMin": 13,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Only access, use, or share the information needed for the legitimate work purpose. Avoid downloading or forwarding sensitive files unless approved.</p>",
+                "required": true
+              },
+              {
+                "id": "quiz",
+                "type": "quiz",
+                "mode": "single",
+                "question": "Which action best protects confidential information?",
+                "required": true,
+                "choices": [
+                  {"id": "a", "text": "Share files with anyone who asks", "correct": false},
+                  {"id": "b", "text": "Use approved systems and limit access to business need", "correct": true},
+                  {"id": "c", "text": "Store customer lists on a personal device", "correct": false}
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "privacy-incidents",
+        "title": "Privacy Incidents",
+        "order": 2,
+        "estMin": 25,
+        "lessons": [
+          {
+            "id": "common-incidents",
+            "title": "Common Privacy Incidents",
+            "order": 1,
+            "estMin": 12,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Examples include sending information to the wrong recipient, losing a device, misplacing paper files, or using unapproved software.</p>",
+                "required": true
+              }
+            ]
+          },
+          {
+            "id": "report-concerns",
+            "title": "Report Concerns Quickly",
+            "order": 2,
+            "estMin": 13,
+            "blocks": [
+              {
+                "id": "callout",
+                "type": "callout",
+                "style": "warn",
+                "html": "<p>Report suspected privacy incidents immediately. Do not try to hide or delete evidence.</p>",
+                "required": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "customer-service-excellence",
+    "title": "Customer Service Excellence",
+    "subtitle": "Build trust through clear, respectful service",
+    "description": "Train employees on professional tone, listening skills, de-escalation, service recovery, and consistent customer communication.",
+    "lang": "EN",
+    "durationMin": 45,
+    "ceCredit": 0,
+    "sortOrder": 105,
+    "active": true,
+    "isPublic": true,
+    "kind": "Course",
+    "type": "Hr",
+    "level": "Beginner",
+    "url": "/catalogue/customer-service-excellence",
+    "imageUrl": "https://images.unsplash.com/photo-1556745757-8d76bdb6984b?auto=format&fit=crop&w=1200&q=80",
+    "tags": ["enterprise", "customer-service", "communication", "de-escalation"],
+    "lecturer": "Innovacare Training Customer Experience Faculty",
+    "disclosures": ["This course should be adapted to each organization's customer service standards."],
+    "targetAudience": ["Customer service teams", "Reception staff", "Sales teams", "Managers"],
+    "prerequisites": ["None"],
+    "requirements": ["Complete lessons", "Pass the service scenario quiz"],
+    "accomodations": "Accessibility accommodations may be requested through the organization administrator.",
+    "orgId": null,
+    "assignedOrgIds": [],
+    "passingScore": 80,
+    "lockedSequence": true,
+    "sections": [
+      {
+        "id": "service-foundations",
+        "title": "Service Foundations",
+        "order": 1,
+        "estMin": 22,
+        "lessons": [
+          {
+            "id": "trust",
+            "title": "Create Trust in Every Interaction",
+            "order": 1,
+            "estMin": 10,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Customers judge service by responsiveness, clarity, respect, and follow-through. A calm and professional tone can change the outcome of a difficult interaction.</p>",
+                "required": true
+              }
+            ]
+          },
+          {
+            "id": "listen-clarify",
+            "title": "Listen, Clarify, Confirm",
+            "order": 2,
+            "estMin": 12,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Use active listening: let the customer finish, summarize the concern, ask clarifying questions, and confirm the next step.</p>",
+                "required": true
+              },
+              {
+                "id": "quiz",
+                "type": "quiz",
+                "mode": "single",
+                "question": "What is the best response when a customer is upset?",
+                "required": true,
+                "choices": [
+                  {"id": "a", "text": "Interrupt and defend the company", "correct": false},
+                  {"id": "b", "text": "Listen, acknowledge, clarify, and explain the next step", "correct": true},
+                  {"id": "c", "text": "End the conversation immediately", "correct": false}
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "service-recovery",
+        "title": "Service Recovery",
+        "order": 2,
+        "estMin": 23,
+        "lessons": [
+          {
+            "id": "de-escalation",
+            "title": "De-escalation Basics",
+            "order": 1,
+            "estMin": 12,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Stay calm, avoid blame, use respectful language, and focus on what can be done next.</p>",
+                "required": true
+              }
+            ]
+          },
+          {
+            "id": "follow-through",
+            "title": "Close the Loop",
+            "order": 2,
+            "estMin": 11,
+            "blocks": [
+              {
+                "id": "callout",
+                "type": "callout",
+                "style": "success",
+                "html": "<p>Good service recovery ends with ownership: document the issue, communicate the next step, and follow through.</p>",
+                "required": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "respectful-workplace-anti-harassment",
+    "title": "Respectful Workplace and Anti-Harassment",
+    "subtitle": "Promote professionalism, dignity, and safe reporting",
+    "description": "Help employees understand respectful conduct, harassment prevention, bystander responsibility, and internal reporting expectations.",
+    "lang": "EN",
+    "durationMin": 60,
+    "ceCredit": 0,
+    "sortOrder": 106,
+    "active": true,
+    "isPublic": true,
+    "kind": "Course",
+    "type": "Hr",
+    "level": "Beginner",
+    "url": "/catalogue/respectful-workplace-anti-harassment",
+    "imageUrl": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=80",
+    "tags": ["enterprise", "hr", "harassment-prevention", "respect", "compliance"],
+    "lecturer": "Innovacare Training HR Compliance Faculty",
+    "disclosures": ["This course is general HR training and should be reviewed against local employment laws."],
+    "targetAudience": ["All employees", "Managers", "HR staff", "Supervisors"],
+    "prerequisites": ["None"],
+    "requirements": ["Complete all lessons", "Pass the respectful workplace quiz"],
+    "accomodations": "Accessibility accommodations may be requested through the organization administrator.",
+    "orgId": null,
+    "assignedOrgIds": [],
+    "passingScore": 80,
+    "lockedSequence": true,
+    "sections": [
+      {
+        "id": "respect",
+        "title": "Respectful Conduct",
+        "order": 1,
+        "estMin": 30,
+        "lessons": [
+          {
+            "id": "professional-behavior",
+            "title": "Professional Behavior",
+            "order": 1,
+            "estMin": 15,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Respectful workplaces are built through professional language, fair treatment, boundaries, inclusion, and accountability.</p>",
+                "required": true
+              }
+            ]
+          },
+          {
+            "id": "unacceptable-conduct",
+            "title": "Recognize Unacceptable Conduct",
+            "order": 2,
+            "estMin": 15,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Unacceptable conduct may include intimidation, insults, unwanted comments, retaliation, discriminatory behavior, or repeated disrespectful treatment.</p>",
+                "required": true
+              },
+              {
+                "id": "quiz",
+                "type": "quiz",
+                "mode": "single",
+                "question": "Which behavior supports a respectful workplace?",
+                "required": true,
+                "choices": [
+                  {"id": "a", "text": "Retaliating against someone who reports a concern", "correct": false},
+                  {"id": "b", "text": "Using respectful communication and reporting concerns appropriately", "correct": true},
+                  {"id": "c", "text": "Ignoring repeated inappropriate comments", "correct": false}
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "reporting",
+        "title": "Reporting and Bystander Responsibility",
+        "order": 2,
+        "estMin": 30,
+        "lessons": [
+          {
+            "id": "bystander",
+            "title": "Bystander Responsibility",
+            "order": 1,
+            "estMin": 15,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Bystanders can support a respectful workplace by documenting concerns, checking on affected coworkers, and reporting through approved channels.</p>",
+                "required": true
+              }
+            ]
+          },
+          {
+            "id": "no-retaliation",
+            "title": "No Retaliation",
+            "order": 2,
+            "estMin": 15,
+            "blocks": [
+              {
+                "id": "callout",
+                "type": "callout",
+                "style": "warn",
+                "html": "<p>Retaliation against someone who raises a good-faith concern should not be tolerated.</p>",
+                "required": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sop-quality-control-basics",
+    "title": "SOP and Quality Control Basics",
+    "subtitle": "Use procedures to create consistent results",
+    "description": "Train teams on standard operating procedures, quality checks, documentation habits, escalation, and continuous improvement.",
+    "lang": "EN",
+    "durationMin": 50,
+    "ceCredit": 0,
+    "sortOrder": 107,
+    "active": true,
+    "isPublic": true,
+    "kind": "Course",
+    "type": "safety",
+    "level": "Intermediate",
+    "url": "/catalogue/sop-quality-control-basics",
+    "imageUrl": "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80",
+    "tags": ["enterprise", "sop", "quality", "operations", "continuous-improvement"],
+    "lecturer": "Innovacare Training Operations Faculty",
+    "disclosures": ["This course should be paired with organization-specific SOPs and quality standards."],
+    "targetAudience": ["Operations teams", "Supervisors", "Quality teams", "New employees"],
+    "prerequisites": ["Basic understanding of the work process"],
+    "requirements": ["Complete all lessons", "Pass the SOP quiz"],
+    "accomodations": "Accessibility accommodations may be requested through the organization administrator.",
+    "orgId": null,
+    "assignedOrgIds": [],
+    "passingScore": 80,
+    "lockedSequence": true,
+    "sections": [
+      {
+        "id": "sop-foundations",
+        "title": "SOP Foundations",
+        "order": 1,
+        "estMin": 25,
+        "lessons": [
+          {
+            "id": "why-sops-matter",
+            "title": "Why SOPs Matter",
+            "order": 1,
+            "estMin": 12,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Standard operating procedures reduce variation, support training, improve safety, and make quality easier to measure.</p>",
+                "required": true
+              }
+            ]
+          },
+          {
+            "id": "follow-procedure",
+            "title": "Follow the Approved Procedure",
+            "order": 2,
+            "estMin": 13,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Employees should use the current approved version, avoid shortcuts, and ask a supervisor when a procedure does not match the situation.</p>",
+                "required": true
+              },
+              {
+                "id": "quiz",
+                "type": "quiz",
+                "mode": "single",
+                "question": "What should an employee do if an SOP seems outdated or unclear?",
+                "required": true,
+                "choices": [
+                  {"id": "a", "text": "Create an unofficial shortcut", "correct": false},
+                  {"id": "b", "text": "Ask for clarification and report the issue through the approved process", "correct": true},
+                  {"id": "c", "text": "Ignore the SOP completely", "correct": false}
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "quality-checks",
+        "title": "Quality Checks",
+        "order": 2,
+        "estMin": 25,
+        "lessons": [
+          {
+            "id": "document-results",
+            "title": "Document Results",
+            "order": 1,
+            "estMin": 12,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Good documentation makes work traceable. Record required checks accurately and at the time the work is performed.</p>",
+                "required": true
+              }
+            ]
+          },
+          {
+            "id": "continuous-improvement",
+            "title": "Continuous Improvement",
+            "order": 2,
+            "estMin": 13,
+            "blocks": [
+              {
+                "id": "callout",
+                "type": "callout",
+                "style": "success",
+                "html": "<p>Quality improves when employees report defects, near misses, process gaps, and repeated sources of rework.</p>",
+                "required": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "frontline-leadership-supervisors",
+    "title": "Frontline Leadership for Supervisors",
+    "subtitle": "Lead teams with clarity, fairness, and accountability",
+    "description": "Prepare supervisors to set expectations, coach employees, document performance, handle conflict, and communicate priorities.",
+    "lang": "EN",
+    "durationMin": 65,
+    "ceCredit": 0,
+    "sortOrder": 108,
+    "active": true,
+    "isPublic": true,
+    "kind": "Course",
+    "type": "Hr",
+    "level": "Intermediate",
+    "url": "/catalogue/frontline-leadership-supervisors",
+    "imageUrl": "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1200&q=80",
+    "tags": ["enterprise", "leadership", "supervisor", "management", "coaching"],
+    "lecturer": "Innovacare Training Leadership Faculty",
+    "disclosures": ["This course is general leadership training and should align with organization HR policies."],
+    "targetAudience": ["Supervisors", "Team leads", "Managers", "High-potential employees"],
+    "prerequisites": ["Basic workplace experience"],
+    "requirements": ["Complete all lessons", "Pass the leadership scenario quiz"],
+    "accomodations": "Accessibility accommodations may be requested through the organization administrator.",
+    "orgId": null,
+    "assignedOrgIds": [],
+    "passingScore": 80,
+    "lockedSequence": true,
+    "sections": [
+      {
+        "id": "supervisor-role",
+        "title": "The Supervisor Role",
+        "order": 1,
+        "estMin": 30,
+        "lessons": [
+          {
+            "id": "expectations",
+            "title": "Set Clear Expectations",
+            "order": 1,
+            "estMin": 15,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Supervisors translate company goals into daily priorities. Clear expectations reduce confusion and make accountability fairer.</p>",
+                "required": true
+              }
+            ]
+          },
+          {
+            "id": "coach-feedback",
+            "title": "Coach with Timely Feedback",
+            "order": 2,
+            "estMin": 15,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Effective coaching is specific, timely, respectful, and connected to observable behavior.</p>",
+                "required": true
+              },
+              {
+                "id": "quiz",
+                "type": "quiz",
+                "mode": "single",
+                "question": "Which feedback is most effective?",
+                "required": true,
+                "choices": [
+                  {"id": "a", "text": "You always do this wrong", "correct": false},
+                  {"id": "b", "text": "In yesterday's report, two required fields were missing. Let's review the checklist.", "correct": true},
+                  {"id": "c", "text": "No feedback until annual review", "correct": false}
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "accountability",
+        "title": "Accountability and Conflict",
+        "order": 2,
+        "estMin": 35,
+        "lessons": [
+          {
+            "id": "documentation",
+            "title": "Document Performance Fairly",
+            "order": 1,
+            "estMin": 17,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Performance documentation should be factual, timely, consistent, and aligned with policy.</p>",
+                "required": true
+              }
+            ]
+          },
+          {
+            "id": "conflict",
+            "title": "Handle Conflict Professionally",
+            "order": 2,
+            "estMin": 18,
+            "blocks": [
+              {
+                "id": "callout",
+                "type": "callout",
+                "style": "info",
+                "html": "<p>Address conflict early. Focus on behavior, impact, expectations, and next steps.</p>",
+                "required": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sales-ethics-client-communication",
+    "title": "Sales Ethics and Client Communication",
+    "subtitle": "Sell with accuracy, transparency, and trust",
+    "description": "Guide sales and business development teams on ethical selling, accurate claims, client documentation, follow-up, and relationship management.",
+    "lang": "EN",
+    "durationMin": 45,
+    "ceCredit": 0,
+    "sortOrder": 109,
+    "active": true,
+    "isPublic": true,
+    "kind": "Course",
+    "type": "Hr",
+    "level": "Beginner",
+    "url": "/catalogue/sales-ethics-client-communication",
+    "imageUrl": "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1200&q=80",
+    "tags": ["enterprise", "sales", "ethics", "client-communication", "business-development"],
+    "lecturer": "Innovacare Training Sales Enablement Faculty",
+    "disclosures": ["This course should be paired with the organization's sales policies, pricing rules, and contract approval process."],
+    "targetAudience": ["Sales teams", "Account managers", "Business development", "Customer success teams"],
+    "prerequisites": ["None"],
+    "requirements": ["Complete all lessons", "Pass the sales ethics quiz"],
+    "accomodations": "Accessibility accommodations may be requested through the organization administrator.",
+    "orgId": null,
+    "assignedOrgIds": [],
+    "passingScore": 80,
+    "lockedSequence": true,
+    "sections": [
+      {
+        "id": "ethical-selling",
+        "title": "Ethical Selling",
+        "order": 1,
+        "estMin": 22,
+        "lessons": [
+          {
+            "id": "accuracy",
+            "title": "Use Accurate Claims",
+            "order": 1,
+            "estMin": 11,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Sales communication should be accurate, clear, and supported by approved materials. Avoid promises the company cannot deliver.</p>",
+                "required": true
+              }
+            ]
+          },
+          {
+            "id": "transparency",
+            "title": "Transparency Builds Trust",
+            "order": 2,
+            "estMin": 11,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Be clear about pricing, limitations, timelines, support, and contract terms. Escalate custom commitments before making promises.</p>",
+                "required": true
+              },
+              {
+                "id": "quiz",
+                "type": "quiz",
+                "mode": "single",
+                "question": "What should a salesperson do before promising a custom feature or discount?",
+                "required": true,
+                "choices": [
+                  {"id": "a", "text": "Promise it immediately to close the deal", "correct": false},
+                  {"id": "b", "text": "Confirm approval through the correct internal process", "correct": true},
+                  {"id": "c", "text": "Avoid documenting it", "correct": false}
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "client-communication",
+        "title": "Client Communication",
+        "order": 2,
+        "estMin": 23,
+        "lessons": [
+          {
+            "id": "follow-up",
+            "title": "Professional Follow-Up",
+            "order": 1,
+            "estMin": 11,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Strong follow-up is timely, concise, and documents decisions, owners, and next steps.</p>",
+                "required": true
+              }
+            ]
+          },
+          {
+            "id": "records",
+            "title": "Keep Clear Sales Records",
+            "order": 2,
+            "estMin": 12,
+            "blocks": [
+              {
+                "id": "callout",
+                "type": "callout",
+                "style": "info",
+                "html": "<p>Use the approved CRM or tracking system. Good records protect the client and the company.</p>",
+                "required": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "remote-work-productivity-communication",
+    "title": "Remote Work Productivity and Communication",
+    "subtitle": "Work effectively across locations and time zones",
+    "description": "Train remote and hybrid employees on expectations, communication rhythm, meetings, cybersecurity habits, documentation, and accountability.",
+    "lang": "EN",
+    "durationMin": 45,
+    "ceCredit": 0,
+    "sortOrder": 110,
+    "active": true,
+    "isPublic": true,
+    "kind": "Course",
+    "type": "Hr",
+    "level": "Beginner",
+    "url": "/catalogue/remote-work-productivity-communication",
+    "imageUrl": "https://images.unsplash.com/photo-1587614382346-4ec70e388b28?auto=format&fit=crop&w=1200&q=80",
+    "tags": ["enterprise", "remote-work", "hybrid-work", "communication", "productivity"],
+    "lecturer": "Innovacare Training Workplace Performance Faculty",
+    "disclosures": ["This course should be aligned with each organization's remote work policy."],
+    "targetAudience": ["Remote employees", "Hybrid teams", "Managers", "Administrative teams"],
+    "prerequisites": ["Basic computer and collaboration tool use"],
+    "requirements": ["Complete all lessons", "Pass the remote work quiz"],
+    "accomodations": "Accessibility accommodations may be requested through the organization administrator.",
+    "orgId": null,
+    "assignedOrgIds": [],
+    "passingScore": 80,
+    "lockedSequence": true,
+    "sections": [
+      {
+        "id": "remote-expectations",
+        "title": "Remote Work Expectations",
+        "order": 1,
+        "estMin": 22,
+        "lessons": [
+          {
+            "id": "availability",
+            "title": "Availability and Responsiveness",
+            "order": 1,
+            "estMin": 10,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Remote work requires clear availability, timely responses, documented priorities, and respect for schedules across locations.</p>",
+                "required": true
+              }
+            ]
+          },
+          {
+            "id": "meetings",
+            "title": "Better Remote Meetings",
+            "order": 2,
+            "estMin": 12,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Effective remote meetings have a purpose, agenda, owner, decisions, and documented next steps.</p>",
+                "required": true
+              },
+              {
+                "id": "quiz",
+                "type": "quiz",
+                "mode": "single",
+                "question": "What makes a remote meeting more effective?",
+                "required": true,
+                "choices": [
+                  {"id": "a", "text": "No agenda and no follow-up", "correct": false},
+                  {"id": "b", "text": "Clear purpose, owner, decisions, and next steps", "correct": true},
+                  {"id": "c", "text": "Inviting everyone to every meeting", "correct": false}
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "remote-accountability",
+        "title": "Remote Accountability",
+        "order": 2,
+        "estMin": 23,
+        "lessons": [
+          {
+            "id": "documentation",
+            "title": "Document Work Clearly",
+            "order": 1,
+            "estMin": 11,
+            "blocks": [
+              {
+                "id": "text",
+                "type": "text",
+                "html": "<p>Remote teams work better when tasks, deadlines, decisions, and blockers are visible in approved tools.</p>",
+                "required": true
+              }
+            ]
+          },
+          {
+            "id": "secure-remote-work",
+            "title": "Secure Remote Work Habits",
+            "order": 2,
+            "estMin": 12,
+            "blocks": [
+              {
+                "id": "callout",
+                "type": "callout",
+                "style": "info",
+                "html": "<p>Use approved devices, secure networks, password protection, and private spaces when handling company information remotely.</p>",
+                "required": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

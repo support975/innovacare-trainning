@@ -1,4 +1,4 @@
-<div class="shell" [class.side-hidden]="!sidebarOpen()">
+<div class="shell" [class.side-hidden]="!sidebarOpen()" [style.--org-accent]="organizationAccent()">
   <!-- TOP BAR -->
   <header class="topbar">
     <button
@@ -6,19 +6,50 @@
       type="button"
       (click)="toggleSidebar()"
       [attr.aria-expanded]="sidebarOpen()"
-      aria-label="Toggle menu">
+      [attr.aria-label]="t('shell.menuToggle')">
       ☰
     </button>
 
     <div class="brand">
-      <strong>INNOVACARE-TRAINING</strong>
+      <span class="brand-logo">
+        <img [src]="organizationLogoUrl() || '/logo.png'" [alt]="organizationName()" />
+      </span>
+      <span class="brand-copy">
+        <strong>{{ organizationName() }}</strong>
+        <small>Training Portal</small>
+      </span>
     </div>
 
     <div class="top-actions">
-      <span class="role">Learner</span>
-      <div class="avatar" title="Profile"></div>
+      <div class="language-switch" role="group" aria-label="Language">
+        <button
+          type="button"
+          class="language-option"
+          [class.active]="languageCode() === 'en'"
+          (click)="setLanguage('en')">
+          {{ t('language.english') }}
+        </button>
+        <button
+          type="button"
+          class="language-option"
+          [class.active]="languageCode() === 'fr'"
+          (click)="setLanguage('fr')">
+          {{ t('language.french') }}
+        </button>
+      </div>
+      <span class="role">{{ t('shell.roleLearner') }}</span>
+      <div class="profile-chip">
+        <div class="avatar" [title]="t('shell.profile')">
+          <img *ngIf="avatarUrl(); else learnerInitials" [src]="avatarUrl()" [alt]="displayName()" />
+          <ng-template #learnerInitials>{{ initials() }}</ng-template>
+        </div>
+        <div class="profile-copy">
+          <div class="profile-name">{{ displayName() }}</div>
+          <div class="profile-org">{{ organizationName() }}</div>
+        </div>
+      </div>
       <app-notification-bell-plain></app-notification-bell-plain>
-      <button class="btn logout" type="button" (click)="logout()">Logout</button>
+      <button class="btn logout" type="button" (click)="logout()">{{ t('shell.logout') }}</button>
     </div>
   </header>
 
@@ -27,12 +58,22 @@
     class="sidebar"
     [class.open]="sidebarOpen()"
     [attr.aria-hidden]="!sidebarOpen()">
-    <nav class="menu" aria-label="Primary">
+    <nav class="menu" [attr.aria-label]="t('shell.primaryNav')">
+      <div class="org-panel">
+        <div class="org-panel__brand">
+          <span class="org-panel__logo">
+            <img [src]="organizationLogoUrl() || '/logo.png'" [alt]="organizationName()" />
+          </span>
+        </div>
+        <div class="org-panel__label">{{ t('shell.roleLearner') }}</div>
+        <div class="org-panel__name">{{ organizationName() }}</div>
+      </div>
+
       <div class="menu-group">
-        <div class="menu-title">Overview</div>
+        <div class="menu-title">{{ t('shell.overview') }}</div>
 
         <a
-          *ngFor="let l of links"
+          *ngFor="let l of links()"
           [routerLink]="l.path"
           routerLinkActive="active"
           class="menu-item"
@@ -42,10 +83,10 @@
       </div>
 
       <div class="menu-group">
-        <div class="menu-title">Resources</div>
+        <div class="menu-title">{{ t('shell.resources') }}</div>
 
         <a
-          *ngFor="let r of resources"
+          *ngFor="let r of resources()"
           [routerLink]="r.path"
           routerLinkActive="active"
           class="menu-item"

@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { Auth } from '@angular/fire/auth';
 import {
   Firestore,
   collection,
@@ -12,15 +13,46 @@ import {
   query,
   orderBy,
   setDoc,
+  arrayRemove,
+  arrayUnion,
 } from '@angular/fire/firestore';
-import { combineLatest, map, Observable } from 'rxjs';
+import { filter, firstValueFrom, map, Observable, timeout } from 'rxjs';
 import { SuperAdminLogsService } from './super-admin-logs';
 import { OrganizationCourseAssignment, OrgType, PlanType, SuperAdminOrganization, SuperAdminUser } from '../models/super-admin.models';
+
+type GeneratedOwnerResult = {
+  orgId: string;
+  ownerUid: string;
+  ownerEmail: string;
+  temporaryPassword: string;
+};
+
+type OrganizationAdminCreateRequest = {
+  status?: 'pending' | 'processing' | 'completed' | 'failed';
+  result?: GeneratedOwnerResult;
+  error?: {
+    message?: string;
+    code?: string;
+  };
+};
+
+type CourseAssignmentBackfillRequest = {
+  status?: 'pending' | 'processing' | 'completed' | 'failed';
+  updatedCourses?: number;
+  updatedLearningPaths?: number;
+  assignmentCount?: number;
+  pathAssignmentCount?: number;
+  removedEnrollments?: number;
+  error?: {
+    message?: string;
+  };
+};
 
 
 @Injectable({ providedIn: 'root' })
 export class SuperAdminOrganizationsService {
   private afs = inject(Firestore);
+  private auth = inject(Auth);
   private logs = inject(SuperAdminLogsService);
 
   private colRef = collection(this.afs, 'organizations');
@@ -155,6 +187,59 @@ export class SuperAdminOrganizationsService {
     return orgRef.id;
   }
 
+  async createWithGeneratedOwner(params: {
+    organization: Omit<SuperAdminOrganization, 'id' | 'createdAt' | 'updatedAt' | 'ownerUid' | 'ownerEmail'>;
+    owner: {
+      email: string;
+      displayName?: string;
+    };
+  }): Promise<GeneratedOwnerResult> {
+    const currentUser = this.auth.currentUser;
+    if (!currentUser) {
+      throw new Error('Sign in required.');
+    }
+
+    const requestRef = await addDoc(collection(this.afs, 'organizationAdminCreateRequests'), {
+      status: 'pending',
+      requestedByUid: currentUser.uid,
+      requestedByEmail: currentUser.email || '',
+      organization: {
+        name: params.organization.name,
+        type: params.organization.type,
+        plan: params.organization.plan,
+        active: params.organization.active ?? true,
+        orgId: params.organization.orgId || undefined,
+        learnerLimit: params.organization.learnerLimit ?? null,
+      },
+      owner: {
+        email: params.owner.email,
+        displayName: params.owner.displayName || '',
+      },
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+
+    const request = await firstValueFrom(
+      docData(requestRef).pipe(
+        filter((doc): doc is OrganizationAdminCreateRequest => {
+          const status = (doc as OrganizationAdminCreateRequest | undefined)?.status;
+          return status === 'completed' || status === 'failed';
+        }),
+        timeout(120000)
+      )
+    );
+
+    if (request.status === 'failed') {
+      throw new Error(request.error?.message || 'Failed to create organization.');
+    }
+
+    if (!request.result) {
+      throw new Error('Organization created, but the result was not returned.');
+    }
+
+    return request.result;
+  }
+
   async update(
     id: string,
     payload: Partial<SuperAdminOrganization>,
@@ -200,19 +285,27 @@ export class SuperAdminOrganizationsService {
     courseId: string;
     actor?: { uid?: string; email?: string };
   }): Promise<string> {
-    const ref = await addDoc(this.assignmentColRef, {
+    const assignmentId = `${params.orgId}_${params.courseId}`;
+    const assignmentRef = doc(this.afs, `organizationCourseAssignments/${assignmentId}`);
+
+    await setDoc(assignmentRef, {
       orgId: params.orgId,
       courseId: params.courseId,
       active: true,
       assignedByUid: params.actor?.uid ?? null,
       assignedByEmail: params.actor?.email ?? null,
       assignedAt: serverTimestamp(),
-    } satisfies OrganizationCourseAssignment);
+    } satisfies OrganizationCourseAssignment, { merge: true });
+
+    await updateDoc(doc(this.afs, `courses/${params.courseId}`), {
+      assignedOrgIds: arrayUnion(params.orgId),
+      updatedAt: serverTimestamp(),
+    });
 
     await this.logs.audit({
       action: 'ASSIGN_COURSE_TO_ORGANIZATION',
       targetType: 'organizationCourseAssignment',
-      targetId: ref.id,
+      targetId: assignmentId,
       actorUid: params.actor?.uid,
       actorEmail: params.actor?.email,
       message: `Course assigned to organization`,
@@ -222,7 +315,82 @@ export class SuperAdminOrganizationsService {
       },
     });
 
-    return ref.id;
+    return assignmentId;
+  }
+
+  listCourseAssignments(): Observable<OrganizationCourseAssignment[]> {
+    return collectionData(this.assignmentColRef, { idField: 'id' }) as Observable<OrganizationCourseAssignment[]>;
+  }
+
+  async requestCourseAssignmentBackfill(): Promise<{
+    updatedCourses: number;
+    updatedLearningPaths: number;
+    assignmentCount: number;
+    pathAssignmentCount: number;
+    removedEnrollments: number;
+  }> {
+    const currentUser = this.auth.currentUser;
+    if (!currentUser) {
+      throw new Error('Sign in required.');
+    }
+
+    const requestRef = await addDoc(collection(this.afs, 'courseAssignmentBackfillRequests'), {
+      status: 'pending',
+      requestedByUid: currentUser.uid,
+      requestedByEmail: currentUser.email || '',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+
+    const request = await firstValueFrom(
+      docData(requestRef).pipe(
+        filter((doc): doc is CourseAssignmentBackfillRequest => {
+          const status = (doc as CourseAssignmentBackfillRequest | undefined)?.status;
+          return status === 'completed' || status === 'failed';
+        }),
+        timeout(120000)
+      )
+    );
+
+    if (request.status === 'failed') {
+      throw new Error(request.error?.message || 'Course assignment sync failed.');
+    }
+
+    return {
+      updatedCourses: request.updatedCourses ?? 0,
+      updatedLearningPaths: request.updatedLearningPaths ?? 0,
+      assignmentCount: request.assignmentCount ?? 0,
+      pathAssignmentCount: request.pathAssignmentCount ?? 0,
+      removedEnrollments: request.removedEnrollments ?? 0,
+    };
+  }
+
+  async removeCourseAssignment(
+    assignment: Pick<OrganizationCourseAssignment, 'id' | 'orgId' | 'courseId'>,
+    actor?: { uid?: string; email?: string }
+  ): Promise<void> {
+    if (!assignment.id) throw new Error('Missing assignment id.');
+
+    await deleteDoc(doc(this.afs, `organizationCourseAssignments/${assignment.id}`));
+
+    await updateDoc(doc(this.afs, `courses/${assignment.courseId}`), {
+      assignedOrgIds: arrayRemove(assignment.orgId),
+      updatedAt: serverTimestamp(),
+    });
+
+    await this.logs.audit({
+      action: 'REMOVE_COURSE_FROM_ORGANIZATION',
+      targetType: 'organizationCourseAssignment',
+      targetId: assignment.id,
+      actorUid: actor?.uid,
+      actorEmail: actor?.email,
+      message: `Course assignment removed from organization`,
+      severity: 'warning',
+      meta: {
+        orgId: assignment.orgId,
+        courseId: assignment.courseId,
+      },
+    });
   }
 
   listAssignmentsForOrg(orgId: string): Observable<OrganizationCourseAssignment[]> {

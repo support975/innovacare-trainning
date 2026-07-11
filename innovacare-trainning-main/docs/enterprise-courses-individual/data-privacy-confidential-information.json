@@ -1,0 +1,145 @@
+{
+  "id": "data-privacy-confidential-information",
+  "title": "Data Privacy and Confidential Information",
+  "subtitle": "Handle sensitive business information responsibly",
+  "description": "Train employees to identify confidential information, reduce exposure, use approved systems, and report privacy concerns.",
+  "lang": "EN",
+  "durationMin": 50,
+  "ceCredit": 0,
+  "sortOrder": 104,
+  "active": true,
+  "isPublic": true,
+  "kind": "Course",
+  "type": "It",
+  "level": "Beginner",
+  "url": "/catalogue/data-privacy-confidential-information",
+  "imageUrl": "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1200&q=80",
+  "tags": [
+    "enterprise",
+    "privacy",
+    "confidentiality",
+    "data-protection",
+    "compliance"
+  ],
+  "lecturer": "Innovacare Training Compliance Faculty",
+  "disclosures": [
+    "This course does not provide legal advice. Organizations should align it with applicable privacy laws and contracts."
+  ],
+  "targetAudience": [
+    "All employees",
+    "Managers",
+    "Administrative teams",
+    "Customer-facing teams"
+  ],
+  "prerequisites": [
+    "None"
+  ],
+  "requirements": [
+    "Complete all lessons",
+    "Pass the final quiz"
+  ],
+  "accomodations": "Accessibility accommodations may be requested through the organization administrator.",
+  "orgId": null,
+  "assignedOrgIds": [],
+  "passingScore": 80,
+  "lockedSequence": true,
+  "sections": [
+    {
+      "id": "privacy-basics",
+      "title": "Privacy Basics",
+      "order": 1,
+      "estMin": 25,
+      "lessons": [
+        {
+          "id": "identify-sensitive-data",
+          "title": "Identify Sensitive Information",
+          "order": 1,
+          "estMin": 12,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Confidential information may include customer data, employee records, pricing, contracts, credentials, financial records, trade secrets, and business plans.</p>",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "minimum-necessary",
+          "title": "Use the Minimum Necessary Principle",
+          "order": 2,
+          "estMin": 13,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Only access, use, or share the information needed for the legitimate work purpose. Avoid downloading or forwarding sensitive files unless approved.</p>",
+              "required": true
+            },
+            {
+              "id": "quiz",
+              "type": "quiz",
+              "mode": "single",
+              "question": "Which action best protects confidential information?",
+              "required": true,
+              "choices": [
+                {
+                  "id": "a",
+                  "text": "Share files with anyone who asks",
+                  "correct": false
+                },
+                {
+                  "id": "b",
+                  "text": "Use approved systems and limit access to business need",
+                  "correct": true
+                },
+                {
+                  "id": "c",
+                  "text": "Store customer lists on a personal device",
+                  "correct": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "privacy-incidents",
+      "title": "Privacy Incidents",
+      "order": 2,
+      "estMin": 25,
+      "lessons": [
+        {
+          "id": "common-incidents",
+          "title": "Common Privacy Incidents",
+          "order": 1,
+          "estMin": 12,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Examples include sending information to the wrong recipient, losing a device, misplacing paper files, or using unapproved software.</p>",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "report-concerns",
+          "title": "Report Concerns Quickly",
+          "order": 2,
+          "estMin": 13,
+          "blocks": [
+            {
+              "id": "callout",
+              "type": "callout",
+              "style": "warn",
+              "html": "<p>Report suspected privacy incidents immediately. Do not try to hide or delete evidence.</p>",
+              "required": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

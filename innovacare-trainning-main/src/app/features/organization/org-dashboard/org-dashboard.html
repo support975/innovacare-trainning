@@ -1,0 +1,166 @@
+<div class="org-dashboard">
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <div class="navbar-brand">
+        <span class="brand-icon">🏢</span>
+        <div class="brand-info">
+          <div class="brand-name" *ngIf="organization()">{{ organization()?.name }}</div>
+          <div class="brand-subtitle">Professional Training Platform</div>
+        </div>
+      </div>
+      <div class="navbar-right">
+        <div class="user-info" *ngIf="currentUser | async as user">
+          <div class="user-avatar">{{ (user.displayName?.charAt(0) | uppercase) || '?' }}</div>
+          <div class="user-details">
+            <div class="user-name">{{ user.displayName || user.email }}</div>
+            <div class="user-role">{{ user.role }}</div>
+          </div>
+        </div>
+        <button class="btn-logout" (click)="logout()" title="Sign out">
+          <span>Logout</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading()">
+    <div class="spinner"></div>
+    <p>Loading dashboard...</p>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div class="dashboard-content" *ngIf="!loading() && organization()">
+    <!-- Welcome Section -->
+    <section class="welcome-section">
+      <div class="welcome-container">
+        <div class="welcome-content">
+          <h1 class="welcome-title">Welcome to {{ organization()!.name }}</h1>
+          <p class="welcome-subtitle">
+            You're now registered as a professional learner. Start your journey today!
+          </p>
+        </div>
+        <div class="welcome-icon">📚</div>
+      </div>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="quick-actions">
+      <div class="actions-container">
+        <h2 class="section-title">Quick Actions</h2>
+        <div class="actions-grid">
+          <button class="action-card" (click)="navigateToLearner()">
+            <div class="action-icon">📖</div>
+            <h3 class="action-title">View Courses</h3>
+            <p class="action-description">Browse and enroll in available courses</p>
+          </button>
+
+          <button class="action-card">
+            <div class="action-icon">✅</div>
+            <h3 class="action-title">Take Exams</h3>
+            <p class="action-description">Complete certification exams</p>
+          </button>
+
+          <button class="action-card">
+            <div class="action-icon">🏆</div>
+            <h3 class="action-title">My Achievements</h3>
+            <p class="action-description">View your certificates and badges</p>
+          </button>
+
+          <button class="action-card">
+            <div class="action-icon">📊</div>
+            <h3 class="action-title">Progress</h3>
+            <p class="action-description">Track your learning progress</p>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Organization Info -->
+    <section class="org-info-section">
+      <div class="org-info-container">
+        <div class="org-info-card">
+          <h2 class="section-title">Organization Details</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Organization Name</span>
+              <span class="info-value">{{ organization()!.name }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Type</span>
+              <span class="info-value info-badge" [class]="'badge-' + organization()!.type">
+                {{ organization()!.type }}
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Plan</span>
+              <span class="info-value info-badge" [class]="'badge-' + organization()!.plan">
+                {{ organization()!.plan | uppercase }}
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Status</span>
+              <span class="info-value info-badge badge-active">
+                {{ organization()!.active ? 'Active' : 'Inactive' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="org-contact-card">
+          <h3 class="card-title">Need Help?</h3>
+          <p class="card-description">Contact your organization's training administrator for support.</p>
+          <button class="btn btn-secondary">Contact Support</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Getting Started Guide -->
+    <section class="getting-started">
+      <div class="gs-container">
+        <h2 class="section-title">Getting Started Guide</h2>
+        <div class="steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h4 class="step-title">Complete Your Profile</h4>
+              <p class="step-description">Add a profile picture and complete your professional information.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h4 class="step-title">Browse Courses</h4>
+              <p class="step-description">Explore available courses tailored to your professional development needs.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h4 class="step-title">Start Learning</h4>
+              <p class="step-description">Enroll in courses and begin your learning journey at your own pace.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-content">
+              <h4 class="step-title">Earn Certification</h4>
+              <p class="step-description">Complete courses and pass exams to earn professional certifications.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-state" *ngIf="!loading() && !organization()">
+    <div class="error-container">
+      <div class="error-icon">❌</div>
+      <h2 class="error-title">Organization Not Found</h2>
+      <p class="error-description">We couldn't find the organization you're looking for.</p>
+      <button routerLink="/home" class="btn btn-primary">Back to Home</button>
+    </div>
+  </div>
+</div>

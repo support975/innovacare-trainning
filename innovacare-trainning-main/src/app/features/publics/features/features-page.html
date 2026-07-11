@@ -1,37 +1,11 @@
-<header class="landing-header" [class.scrolled]="headerScrolled">
-  <div class="container header-inner">
-    <a class="brand" href="#top" (click)="closeMobileMenu()">
-      <span>Innovacare</span>
-      <strong>Training</strong>
-    </a>
-
-    <button class="menu-toggle" type="button" (click)="toggleMobileMenu()" aria-label="Ouvrir le menu">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
-
-    <nav class="nav" [class.open]="mobileMenuOpen">
-      <a  routerLink="fonctionnalites" (click)="closeMobileMenu()">Fonctionnalités</a>
-      <a  routerLink="categories" (click)="closeMobileMenu()">Catégories</a>
-       <a  routerLink="/catalogue" (click)="closeMobileMenu()">Cours</a>
-      <a  routerLink="temoignages" (click)="closeMobileMenu()">Témoignages</a>
-      <a  routerLink="faq" (click)="closeMobileMenu()">FAQ</a>
-      <button class="nav-cta mobile-only" type="button" (click)="openDemoDialog(); closeMobileMenu()">
-        Demander une démo
-      </button>
-    </nav>
-
-    <button class="nav-cta desktop-only" type="button" (click)="openDemoDialog()">
-      Demo
-    </button>
-    <button class="nav-cta desktop-only" type="button" (click)="login()">
-      Connexion
-    </button>
-    <button class="nav-cta desktop-only" type="button"  routerLink="pricing">Pricing</button>
-  </div>
-</header>
-<section class="features-page">
+<app-public-site-nav
+  page="features"
+  contextLabel="Modules produit"
+  contextValue="Pilotage, conformité et traçabilité"
+  mobileMetaLabel="Fonctionnalités"
+  mobileMetaValue="Explorez les modules clés de la plateforme"
+></app-public-site-nav>
+<section class="features-page" appPublicTranslate>
   <div class="hero">
     <div class="container hero-grid">
       <div class="hero-copy">
@@ -127,7 +101,7 @@
 </section>
 
 
-<footer class="landing-footer">
+<footer class="landing-footer" appPublicTranslate>
   <div class="container footer-grid">
     <div>
       <div class="footer-brand">Innovacare Training</div>

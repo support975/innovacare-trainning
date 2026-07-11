@@ -1,0 +1,75 @@
+<div class="registry-page">
+  <header class="registry-header">
+    <h1>Member Registry</h1>
+    <p class="subtitle">
+      Verify whether a professional is registered on the official roster ("le tableau") —
+      search by member number, name, email, or profession.
+    </p>
+  </header>
+
+  <section class="stat-row">
+    <article class="stat-card">
+      <div class="stat-value">{{ members().length }}</div>
+      <div class="stat-label">Total Members</div>
+    </article>
+    <article class="stat-card stat-card--ok">
+      <div class="stat-value">{{ activeCount() }}</div>
+      <div class="stat-label">Active</div>
+    </article>
+    <article class="stat-card stat-card--warn">
+      <div class="stat-value">{{ expiredCount() }}</div>
+      <div class="stat-label">Expired</div>
+    </article>
+  </section>
+
+  <section class="search-panel">
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Search by member number, name, email or profession..."
+      [ngModel]="searchTerm()"
+      (ngModelChange)="searchTerm.set($event)"
+    />
+  </section>
+
+  <section class="table-wrap" *ngIf="filteredMembers().length; else emptyState">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Member Number</th>
+          <th>Name</th>
+          <th>Profession</th>
+          <th>Status</th>
+          <th>Issued</th>
+          <th>Expires</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let m of filteredMembers()">
+          <td class="mono">{{ m.membershipCard?.number }}</td>
+          <td>{{ m.profileSnapshot?.['displayName'] || '—' }}</td>
+          <td>{{ m.profileSnapshot?.['profession'] || '—' }}</td>
+          <td>
+            <span class="pill" [class.pill--ok]="!isExpired(m.membershipCard?.expiresAt)" [class.pill--danger]="isExpired(m.membershipCard?.expiresAt)">
+              {{ isExpired(m.membershipCard?.expiresAt) ? 'Expired' : 'Active' }}
+            </span>
+          </td>
+          <td>{{ asDate(m.membershipCard?.issuedAt) | date: 'mediumDate' }}</td>
+          <td>{{ asDate(m.membershipCard?.expiresAt) | date: 'mediumDate' }}</td>
+          <td>
+            <a class="btn-ghost" [routerLink]="['/manager/certification-candidate', m.id]">View</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <ng-template #emptyState>
+    <div class="empty-state">
+      <div class="empty-icon">◇</div>
+      <h2>No members found</h2>
+      <p>Approved candidates with an issued membership card will appear here.</p>
+    </div>
+  </ng-template>
+</div>

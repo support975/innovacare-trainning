@@ -1,71 +1,158 @@
-<!-- SORT SELECT -->
-<div class="sort">
-  <label>Sort by</label>
-  <select [ngModel]="sortBy()" (ngModelChange)="setSort($event)">
-    <option value="due">Due date</option>
-    <option value="az">A–Z</option>
-    <option value="course">Course name</option>
-  </select>
+<div class="assignments-page">
+  <!-- Header -->
+  <header class="page-head">
+    <div>
+      <h1>{{ t('assignments.title') }}</h1>
+      <p class="subtitle">{{ t('assignments.subtitle') }}</p>
+    </div>
+    <div class="head-stats">
+      <div class="stat">
+        <span class="stat-value">{{ stats().active }}</span>
+        <span class="stat-label">{{ t('assignments.statActive') }}</span>
+      </div>
+      <div class="stat stat-danger" *ngIf="stats().overdue">
+        <span class="stat-value">{{ stats().overdue }}</span>
+        <span class="stat-label">{{ t('assignments.statOverdue') }}</span>
+      </div>
+      <div class="stat stat-ok">
+        <span class="stat-value">{{ stats().completed }}</span>
+        <span class="stat-label">{{ t('assignments.statCompleted') }}</span>
+      </div>
+    </div>
+  </header>
 
-  <button class="btn tiny outline" (click)="toggleSortDirection()">
-    {{ sortAsc() ? '▲' : '▼' }}
-  </button>
-</div>
+  <!-- Toolbar: tabs + search + sort -->
+  <div class="toolbar">
+    <div class="tabs">
+      <button class="tab" [class.active]="tab() === 'active'" (click)="setTab('active')">
+        {{ t('assignments.tabActive') }} <span class="count">{{ stats().active }}</span>
+      </button>
+      <button class="tab" [class.active]="tab() === 'completed'" (click)="setTab('completed')">
+        {{ t('assignments.tabCompleted') }} <span class="count">{{ stats().completed }}</span>
+      </button>
+    </div>
 
-<!-- SEARCH -->
-<div class="search">
-  <input
-    type="search"
-    placeholder="Search assignments"
-    [ngModel]="query()"
-    (ngModelChange)="onQueryChange($event)"
-  />
-</div>
-
-<!-- LIST -->
-<article class="assignment card" *ngFor="let a of view()">
-  <div class="bar"></div>
-
-  <div class="body">
-    <div class="title">{{ a.courseName }}</div>
-    <div class="meta">
-      <span class="icon">📘</span><span>{{ a.kind }}</span>
-      <span class="dot"></span>
-      <span>{{ formatDuration(a.durationMin) }}</span>
+    <div class="tools">
+      <input
+        class="search-input"
+        type="search"
+        [placeholder]="t('assignments.searchPlaceholder')"
+        [ngModel]="query()"
+        (ngModelChange)="onQueryChange($event)"
+      />
+      <select class="sort-select" [ngModel]="sortBy()" (ngModelChange)="setSort($event)">
+        <option value="due">{{ t('assignments.sortDue') }}</option>
+        <option value="az">{{ t('assignments.sortAz') }}</option>
+        <option value="kind">{{ t('assignments.sortKind') }}</option>
+      </select>
+      <button class="btn-icon" (click)="toggleSortDirection()" [title]="t('assignments.sortBy')">
+        {{ sortAsc() ? '▲' : '▼' }}
+      </button>
     </div>
   </div>
 
-  <div class="side">
-    <div class="due" [class.overdue]="isOverdue(a)">{{ labelDue(a) }}</div>
+  <!-- Access requests -->
+  <section class="access-requests" *ngIf="tab() === 'active' && accessRequests().length">
+    <div class="access-requests__header">
+      <h2>{{ t('assignments.accessRequestsTitle') }}</h2>
+      <p>{{ t('assignments.accessRequestsHint') }}</p>
+    </div>
 
-    <div class="actions">
-      <!-- Navigate to your course detail (adjust route to your app) -->
-      <a class="btn primary" [routerLink]="['/learner/courses', a.id]">
-        {{ a.status==='in-progress' ? 'Resume' : (a.status==='completed' ? 'Review' : 'Start') }}
-      </a>
-
-      <div class="dropdown" (mouseleave)="closeMenu()">
-        <button class="btn outline" (click)="toggleMenu(a.id)">
-          Add to calendar ▾
-        </button>
-      
-        <div class="menu" *ngIf="openMenuId() === a.id">
-          <a
-            class="menu-item"
-            [href]="getGoogleCalUrl(a)"
-            target="_blank"
-            rel="noopener"
-            (click)="closeMenu()"
-          >
-            Google Calendar
-          </a>
-          <button class="menu-item" type="button" (click)="downloadIcs(a)">
-            Download .ics (Outlook/Apple)
-          </button>
+    <article class="access-request" *ngFor="let req of accessRequests()">
+      <div>
+        <div class="access-request__title">
+          {{ req.courseTitle || ('Course ' + req.courseId) }}
         </div>
-      </div>      
+        <div class="access-request__hint">{{ requestStatusHint(req) }}</div>
+      </div>
+      <span
+        class="request-status"
+        [class.request-status--pending]="req.status === 'pending_approval'"
+        [class.request-status--payment]="req.status === 'approved_pending_payment'"
+        [class.request-status--granted]="req.status === 'granted'"
+        [class.request-status--rejected]="req.status === 'rejected'"
+      >
+        {{ requestStatusLabel(req) }}
+      </span>
+    </article>
+  </section>
+
+  <!-- Active list -->
+  <ng-container *ngIf="tab() === 'active'">
+    <div class="empty-state" *ngIf="!activeList().length">
+      {{ t('assignments.emptyActive') }}
     </div>
 
-    <a class="more muted" [routerLink]="['/learner/library', a.id]">VIEW MORE ▾</a>
-  </div>
-</article>
+    <div class="assignment-grid">
+      <article
+        class="assignment-card"
+        *ngFor="let a of activeList()"
+        [class.is-overdue]="isOverdue(a)"
+        [class.is-started]="a.status === 'in-progress'"
+      >
+        <div class="card-top">
+          <span class="kind-chip">{{ a.kind }}</span>
+          <span class="status-chip" [ngClass]="'status-' + a.status">{{ statusLabel(a) }}</span>
+        </div>
+
+        <h3 class="card-title">{{ a.courseName }}</h3>
+
+        <div class="card-meta">
+          <span>⏱ {{ formatDuration(a.durationMin) }}</span>
+          <span class="due-label" [class.overdue]="isOverdue(a)">
+            {{ labelDue(a) }}
+          </span>
+        </div>
+
+        <div class="card-actions">
+          <a class="btn-primary" [routerLink]="['/learner/courses', a.id]">
+            {{ ctaLabel(a) }}
+          </a>
+
+          <div class="dropdown" (mouseleave)="closeMenu()">
+            <button class="btn-outline" (click)="toggleMenu(a.id)">
+              📅 <span class="cal-label">{{ t('assignments.addToCalendar') }}</span> ▾
+            </button>
+            <div class="menu" *ngIf="openMenuId() === a.id">
+              <a class="menu-item" [href]="getGoogleCalUrl(a)" target="_blank" rel="noopener" (click)="closeMenu()">
+                {{ t('assignments.googleCalendar') }}
+              </a>
+              <button class="menu-item" type="button" (click)="downloadIcs(a)">
+                {{ t('assignments.downloadIcs') }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </ng-container>
+
+  <!-- Completed list -->
+  <ng-container *ngIf="tab() === 'completed'">
+    <div class="empty-state" *ngIf="!completedList().length">
+      {{ t('assignments.emptyCompleted') }}
+    </div>
+
+    <div class="assignment-grid">
+      <article class="assignment-card is-completed" *ngFor="let a of completedList()">
+        <div class="card-top">
+          <span class="kind-chip">{{ a.kind }}</span>
+          <span class="status-chip status-completed">✓ {{ statusLabel(a) }}</span>
+        </div>
+
+        <h3 class="card-title">{{ a.courseName }}</h3>
+
+        <div class="card-meta">
+          <span>⏱ {{ formatDuration(a.durationMin) }}</span>
+          <span class="due-label done">{{ labelDue(a) }}</span>
+        </div>
+
+        <div class="card-actions">
+          <a class="btn-outline wide" [routerLink]="['/learner/courses', a.id]">
+            {{ t('assignments.review') }}
+          </a>
+        </div>
+      </article>
+    </div>
+  </ng-container>
+</div>

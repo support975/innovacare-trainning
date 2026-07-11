@@ -1,109 +1,167 @@
-<!-- src/app/features/learner/woundLabrary/wound-labrary-details/wound-labrary-details.component.html -->
-
-<div class="container" *ngIf="loading; else content">
-    <div class="loader">
-      <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
-    </div>
+<div class="resource-detail" *ngIf="loading; else content">
+  <div class="loader">
+    <mat-progress-spinner diameter="36" mode="indeterminate"></mat-progress-spinner>
   </div>
-  
-  <ng-template #content>
-    <!-- Narrow wound into local variable `w` so the template compiler knows it's defined -->
-    <div class="container" *ngIf="wound as w; else notfound">
-      <button mat-button (click)="back()">
-        <mat-icon>arrow_back</mat-icon> Back
-      </button>
-  
-      <mat-card class="header-card">
-        <div class="header-left">
-          <h1>{{ w.name }}</h1>
-  
-          <div class="meta" *ngIf="(w.tags && w.tags.length) || w.category">
-            <div class="tags" *ngIf="w.tags?.length">
-              <span class="tag" *ngFor="let t of w.tags">{{ t }}</span>
-            </div>
-            <div class="category" *ngIf="w.category">Category: {{ w.category }}</div>
-          </div>
-  
-          <p class="short" *ngIf="w.shortDescription">{{ w.shortDescription }}</p>
+</div>
+
+<ng-template #content>
+  <div class="resource-detail" *ngIf="wound as w; else notfound">
+    <button class="back-button" type="button" (click)="back()">
+      <mat-icon>arrow_back</mat-icon>
+      Back to quick practice
+    </button>
+
+    <section class="hero-panel">
+      <div class="hero-copy">
+        <p class="page-eyebrow">Organization quick sheet</p>
+        <h1>{{ w.name }}</h1>
+        <p class="summary" *ngIf="w.shortDescription">{{ w.shortDescription }}</p>
+
+        <div class="meta-row" *ngIf="w.category || w.tags?.length">
+          <span class="category" *ngIf="w.category">{{ w.category }}</span>
+          <span class="tag" *ngFor="let t of (w.tags || [])">{{ t }}</span>
         </div>
-  
-        <!-- Gallery: only shown if images array exists and has length -->
-        <div class="gallery" *ngIf="w.images && w.images.length; else noimg">
-          <img
-  class="main"
-  [src]="(w.images && w.images.length && selected >= 0 && selected < w.images.length) ? w.images[selected] : placeholder"
-  (error)="onImgError($event)"
-  alt="Wound image"
-  loading="lazy"
-  decoding="async"  (error)="onImgError($event)" alt="Wound image" loading="lazy" decoding="async"
-/>
-  
-          <div class="thumbs">
-            <img
+
+        <div class="support-note">
+          Internal quick practice material for your organization. Follow assigned training, organization policy and your role requirements for work decisions.
+        </div>
+      </div>
+
+      <div class="gallery" *ngIf="w.images && w.images.length; else noimg">
+        <img
+          class="main-image"
+          [src]="selectedImage(w)"
+          (error)="onImgError($event)"
+          alt="Quick practice image"
+          loading="lazy"
+          decoding="async"
+        />
+
+        <div class="thumbs" *ngIf="w.images.length > 1">
+          <button
+            class="thumb-button"
+            type="button"
             *ngFor="let u of (w.images || []); let i = index"
-            [src]="u"
             [class.active]="i === selected"
             (click)="selectThumbnail(i)"
-            (error)="onImgError($event)"
-            alt="Wound thumbnail"
-            loading="lazy"
-            decoding="async"
-          />
-          </div>
+            [attr.aria-label]="'Show image ' + (i + 1)">
+            <img [src]="u" (error)="onImgError($event)" alt="" loading="lazy" decoding="async" />
+          </button>
         </div>
-  
-        <ng-template #noimg>
-          <div class="noimg">No images</div>
-        </ng-template>
-      </mat-card>
-  
-      <div class="two-col">
-        <mat-card>
-          <h3>Full description</h3>
-          <p *ngIf="w.fullDescription; else nodesc">{{ w.fullDescription }}</p>
-          <ng-template #nodesc><p class="muted">No detailed description available.</p></ng-template>
-  
-          <h3 *ngIf="w.characteristics?.length">Characteristics</h3>
-          <ul *ngIf="w.characteristics?.length">
+      </div>
+
+      <ng-template #noimg>
+        <div class="no-image">
+          <mat-icon>assignment</mat-icon>
+          <span>No image published</span>
+        </div>
+      </ng-template>
+    </section>
+
+    <section class="info-panel video-panel" *ngIf="w.videos?.length">
+      <h2>Short Videos</h2>
+      <div class="video-list">
+        <div class="video-card" *ngFor="let video of (w.videos || []); let i = index">
+          <ng-container *ngIf="safeVideoEmbedUrl(video) as embedUrl; else directVideo">
+            <iframe
+              class="video-frame"
+              [src]="embedUrl"
+              [title]="videoLabel(video, i)"
+              loading="lazy"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen>
+            </iframe>
+          </ng-container>
+
+          <ng-template #directVideo>
+            <video
+              *ngIf="isDirectVideoUrl(video); else externalVideo"
+              class="video-frame"
+              controls
+              preload="metadata"
+              [src]="video">
+            </video>
+          </ng-template>
+
+          <ng-template #externalVideo>
+            <a class="video-link" [href]="video" target="_blank" rel="noopener noreferrer">
+              <mat-icon>open_in_new</mat-icon>
+              Open short video
+            </a>
+          </ng-template>
+
+          <div class="video-caption">{{ videoLabel(video, i) }}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-grid">
+      <article class="info-panel">
+        <h2>Quick Sheet</h2>
+        <p *ngIf="w.fullDescription; else nodesc">{{ w.fullDescription }}</p>
+        <ng-template #nodesc><p class="muted">No detailed description is available yet.</p></ng-template>
+
+        <div class="subsection" *ngIf="w.characteristics?.length">
+          <h3>Key reminders</h3>
+          <ul>
             <li *ngFor="let c of w.characteristics">{{ c }}</li>
           </ul>
-        </mat-card>
-  
-        <mat-card>
-          <h3>Treatment options</h3>
-          <mat-list *ngIf="w.treatmentOptions?.length; else notreat">
-            <mat-list-item *ngFor="let t of w.treatmentOptions">
-              <div matLine><strong>{{ t.title }}</strong></div>
-              <div matLine class="muted">{{ t.description }}</div>
-            </mat-list-item>
-          </mat-list>
-          <ng-template #notreat><p class="muted">No treatment options listed.</p></ng-template>
-  
-          <h3>Dressing options</h3>
-          <mat-list *ngIf="w.dressingOptions?.length; else nodress">
-            <mat-list-item *ngFor="let d of w.dressingOptions">
-              <div matLine><strong>{{ d.type }}</strong></div>
-              <div matLine class="muted">{{ d.description }}</div>
-            </mat-list-item>
-          </mat-list>
-          <ng-template #nodress><p class="muted">No dressing options listed.</p></ng-template>
-  
-          <h3 *ngIf="w.patientEducation">Patient education</h3>
-          <p *ngIf="w.patientEducation?.shortHandout">{{ w.patientEducation?.shortHandout }}</p>
-  
-          <h3 *ngIf="w.references?.length">References</h3>
-          <ul *ngIf="w.references?.length">
-            <li *ngFor="let r of (w.references || [])">{{ r.title }} <span class="muted">({{ r.source }})</span></li>
-          </ul>
-        </mat-card>
-      </div>
+        </div>
+      </article>
+
+      <article class="info-panel">
+        <h2>Practice Guidance</h2>
+
+        <div class="subsection">
+          <h3>Practice steps</h3>
+          <div class="guidance-list" *ngIf="w.treatmentOptions?.length; else notreat">
+            <div class="guidance-item" *ngFor="let t of w.treatmentOptions">
+              <strong>{{ t.title }}</strong>
+              <p *ngIf="t.description">{{ t.description }}</p>
+            </div>
+          </div>
+          <ng-template #notreat><p class="muted">No practice steps are listed.</p></ng-template>
+        </div>
+
+        <div class="subsection">
+          <h3>Tools, materials or notes</h3>
+          <div class="guidance-list" *ngIf="w.dressingOptions?.length; else nodress">
+            <div class="guidance-item" *ngFor="let d of w.dressingOptions">
+              <strong>{{ d.type }}</strong>
+              <p *ngIf="d.description">{{ d.description }}</p>
+            </div>
+          </div>
+          <ng-template #nodress><p class="muted">No tools or notes are listed.</p></ng-template>
+        </div>
+      </article>
+    </section>
+
+    <section class="content-grid secondary-grid" *ngIf="w.patientEducation || w.references?.length">
+      <article class="info-panel" *ngIf="w.patientEducation">
+        <h2>Learner Note</h2>
+        <p *ngIf="w.patientEducation.shortHandout; else nohandout">{{ w.patientEducation.shortHandout }}</p>
+        <ng-template #nohandout><p class="muted">No learner note is available.</p></ng-template>
+      </article>
+
+      <article class="info-panel" *ngIf="w.references?.length">
+        <h2>References</h2>
+        <ul>
+          <li *ngFor="let r of (w.references || [])">
+            {{ r.title }} <span class="muted" *ngIf="r.source">({{ r.source }})</span>
+          </li>
+        </ul>
+      </article>
+    </section>
+  </div>
+</ng-template>
+
+<ng-template #notfound>
+  <div class="resource-detail">
+    <div class="empty-state">
+      <div class="empty-state__icon"><mat-icon>menu_book</mat-icon></div>
+      <h1>Quick sheet not found</h1>
+      <p>The quick sheet may have been removed, made inactive, or belongs to another organization.</p>
+      <button class="back-button" type="button" (click)="back()">Back to quick practice</button>
     </div>
-  </ng-template>
-  
-  <ng-template #notfound>
-    <div class="container">
-      <p>Wound type not found.</p>
-      <button mat-button (click)="back()">Back</button>
-    </div>
-  </ng-template>
-  
+  </div>
+</ng-template>

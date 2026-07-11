@@ -1,4 +1,69 @@
-<section class="page-card">
-  <h1>Setup</h1>
-  <p>Configure system setup options and preferences.</p>
-</section>
+<div class="sa-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <p class="page-eyebrow">Super Admin · Setup</p>
+      <h1 class="page-title">Platform Setup</h1>
+      <p class="page-sub">Complete these steps to get your platform production-ready.</p>
+    </div>
+    <div class="setup-progress-label">
+      <span class="setup-progress-pct">{{ progress() }}%</span>
+      <span class="setup-progress-text">Complete</span>
+    </div>
+  </div>
+
+  <!-- Progress Bar -->
+  <div class="setup-progress-bar-wrap">
+    <div class="setup-progress-bar">
+      <div
+        class="setup-progress-bar__fill"
+        [style.width.%]="progress()"
+      ></div>
+    </div>
+    <div class="setup-progress-meta">
+      <span class="setup-progress-meta__done">{{ doneCount() }} of {{ steps().length }} steps completed</span>
+    </div>
+  </div>
+
+  <!-- Checklist -->
+  <div class="setup-checklist">
+    <div
+      *ngFor="let step of steps(); let i = index"
+      [class]="'setup-card' + (step.done ? ' setup-card--done' : '')"
+      (click)="toggle(i)"
+    >
+      <div class="setup-card__left">
+        <div [class]="'setup-card__icon' + (step.done ? ' setup-card__icon--done' : '')">
+          <span *ngIf="!step.done">{{ step.icon }}</span>
+          <svg *ngIf="step.done" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <div class="setup-card__body">
+          <div class="setup-card__label">{{ step.label }}</div>
+          <div class="setup-card__desc">{{ step.desc }}</div>
+        </div>
+      </div>
+      <div class="setup-card__right">
+        <div [class]="'setup-card__check' + (step.done ? ' setup-card__check--done' : '')">
+          <svg *ngIf="step.done" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <span [class]="'setup-card__status' + (step.done ? ' setup-card__status--done' : '')">
+          {{ step.done ? 'Done' : 'Pending' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Completion Banner -->
+  <div class="notice-banner" *ngIf="progress() === 100">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+    <span class="notice-banner__text">All setup steps are complete! Your platform is production-ready.</span>
+  </div>
+
+</div>

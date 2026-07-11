@@ -1,0 +1,155 @@
+<div class="org-login-container">
+  <div class="org-login-wrapper">
+    <div class="org-login-card">
+      <!-- Header -->
+      <div class="card-header">
+        <div class="back-link-wrap">
+          <a routerLink="/" class="back-link">
+            <span class="back-icon">←</span>
+            Back
+          </a>
+        </div>
+        <div class="logo-section">
+          <h1 class="title">Organization Login</h1>
+          <p class="subtitle">Sign in to your professional organization account</p>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="card-body">
+        <form [formGroup]="form" (ngSubmit)="submit()" class="form">
+
+          <!-- Organization Selection -->
+          <div class="form-group">
+            <label class="label">Organization</label>
+            <div class="org-search-wrapper">
+              <div class="org-input-container">
+                <span class="input-icon">🏢</span>
+                <input
+                  class="input org-search-input"
+                  type="text"
+                  formControlName="orgSearch"
+                  placeholder="Search your organization..."
+                  autocomplete="off"
+                />
+                <button
+                  *ngIf="selectedOrg()"
+                  type="button"
+                  class="clear-btn"
+                  (click)="clearSelection()"
+                  title="Clear selection">
+                  ✕
+                </button>
+              </div>
+
+              <!-- Organization Dropdown -->
+              <div class="org-dropdown" *ngIf="showOrgDropdown() && organizations().length > 0">
+                <div
+                  class="org-option"
+                  *ngFor="let org of organizations()"
+                  (click)="selectOrganization(org)">
+                  <div class="org-info">
+                    <div class="org-name">{{ org.name }}</div>
+                    <div class="org-meta">{{ org.type }} • {{ org.id }}</div>
+                  </div>
+                  <div class="org-badge">{{ org.plan }}</div>
+                </div>
+              </div>
+
+              <!-- No results -->
+              <div class="org-no-results" *ngIf="showOrgDropdown() && organizations().length === 0 && searchTerm()">
+                <p class="no-results-text">No organizations found</p>
+              </div>
+
+              <!-- Selected Organization Display -->
+              <div class="selected-org" *ngIf="selectedOrg()">
+                <div class="selected-org-content">
+                  <span class="selected-org-icon">✓</span>
+                  <div class="selected-org-info">
+                    <div class="selected-org-name">{{ selectedOrg()!.name }}</div>
+                    <div class="selected-org-type">{{ selectedOrg()!.type }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <small class="help error-text" *ngIf="form.get('orgSearch')?.invalid && form.get('orgSearch')?.touched">
+              ⚠️ Please select an organization
+            </small>
+          </div>
+
+          <!-- Email Field -->
+          <div class="form-group">
+            <label class="label">Email Address</label>
+            <div class="input-wrapper">
+              <span class="input-icon">✉️</span>
+              <input
+                class="input"
+                type="email"
+                formControlName="email"
+                placeholder="your.email@organization.com"
+                autocomplete="email"
+              />
+            </div>
+            <small class="help error-text" *ngIf="form.get('email')?.invalid && form.get('email')?.touched">
+              ⚠️ Valid email address required
+            </small>
+          </div>
+
+          <!-- Password Field -->
+          <div class="form-group">
+            <label class="label">Password</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🔒</span>
+              <input
+                class="input"
+                type="password"
+                formControlName="password"
+                placeholder="••••••••"
+                autocomplete="current-password"
+              />
+            </div>
+            <small class="help error-text" *ngIf="form.get('password')?.invalid && form.get('password')?.touched">
+              ⚠️ Minimum 6 characters required
+            </small>
+          </div>
+
+          <!-- Error Message -->
+          <div class="error-alert" *ngIf="error()">
+            <span class="error-icon">❌</span>
+            <p class="error">{{ error() }}</p>
+          </div>
+
+          <!-- Sign In Button -->
+          <button
+            class="btn btn-primary btn-block"
+            type="submit"
+            [disabled]="loading() || !selectedOrg()">
+            <span *ngIf="!loading()">Sign In</span>
+            <span *ngIf="loading()">Signing in...</span>
+          </button>
+
+          <!-- Divider -->
+          <div class="divider">
+            <span>or</span>
+          </div>
+
+          <!-- Links -->
+          <div class="footer-links">
+            <p class="footer-link-item">
+              New to your organization?
+              <a routerLink="/register-organization" class="link">Register here</a>
+            </p>
+            <p class="footer-link-item">
+              Forgot your password?
+              <a routerLink="/reset" class="link">Reset it here</a>
+            </p>
+            <p class="footer-link-item">
+              Looking for individual access?
+              <a routerLink="/signup" class="link">Create a learner profile</a>
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

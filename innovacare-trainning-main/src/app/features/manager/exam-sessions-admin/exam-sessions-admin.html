@@ -1,0 +1,337 @@
+<div class="exam-admin">
+  <h1>Exam Centers & Sessions Management</h1>
+
+  <div class="notice" *ngIf="notice()" [class.success]="notice().includes('✓')">
+    {{ notice() }}
+  </div>
+
+  <div class="tabs">
+    <button
+      class="tab-btn"
+      [class.active]="activeTab() === 'centers'"
+      (click)="activeTab.set('centers')"
+    >
+      Exam Centers
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="activeTab() === 'sessions'"
+      (click)="activeTab.set('sessions')"
+    >
+      Sessions
+    </button>
+  </div>
+
+  <!-- CENTERS TAB -->
+  <section *ngIf="activeTab() === 'centers'" class="tab-content">
+    <h2>Create Exam Center</h2>
+    <form class="form-grid" (ngSubmit)="addCenter()">
+      <div class="form-group">
+        <label>Center Name *</label>
+        <input
+          type="text"
+          [(ngModel)]="newCenter().name"
+          name="centerName"
+          placeholder="e.g., Washington Medical Center"
+          [disabled]="busy()"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Address</label>
+        <input
+          type="text"
+          [(ngModel)]="newCenter().address"
+          name="address"
+          placeholder="123 Health Ave"
+          [disabled]="busy()"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>City *</label>
+        <input
+          type="text"
+          [(ngModel)]="newCenter().city"
+          name="city"
+          placeholder="Washington"
+          [disabled]="busy()"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>State/Province</label>
+        <input
+          type="text"
+          [(ngModel)]="newCenter().state"
+          name="state"
+          placeholder="DC"
+          [disabled]="busy()"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Country</label>
+        <input
+          type="text"
+          [(ngModel)]="newCenter().country"
+          name="country"
+          value="USA"
+          [disabled]="busy()"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Timezone</label>
+        <select [(ngModel)]="newCenter().timezone" name="timezone" [disabled]="busy()">
+          <option value="America/New_York">Eastern (America/New_York)</option>
+          <option value="America/Chicago">Central (America/Chicago)</option>
+          <option value="America/Denver">Mountain (America/Denver)</option>
+          <option value="America/Los_Angeles">Pacific (America/Los_Angeles)</option>
+          <option value="Europe/London">GMT (Europe/London)</option>
+          <option value="Europe/Paris">CET (Europe/Paris)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Organization</label>
+        <input
+          type="text"
+          [value]="userOrgId() || 'Your Organization'"
+          [disabled]="true"
+          class="input-disabled"
+        />
+        <small>Automatically set to your organization</small>
+      </div>
+
+      <button type="submit" class="btn-primary" [disabled]="busy()">
+        {{ busy() ? 'Creating...' : 'Create Center' }}
+      </button>
+    </form>
+
+    <div class="centers-list" *ngIf="centers().length > 0">
+      <h3>Centers</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>City</th>
+            <th>Timezone</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let center of centers()">
+            <td>{{ center.name }}</td>
+            <td>{{ center.city }}, {{ center.state }}</td>
+            <td>{{ center.timezone }}</td>
+            <td>
+              <button class="btn-small">Edit</button>
+              <button
+                class="btn-small btn-delete"
+                (click)="deleteCenter(center.id || '')"
+                [disabled]="busy()"
+                title="Delete this center"
+              >
+                🗑 Delete
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SESSIONS TAB -->
+  <section *ngIf="activeTab() === 'sessions'" class="tab-content">
+    <h2>Create Exam Session</h2>
+    <form class="form-grid" (ngSubmit)="addSession()">
+      <div class="form-group">
+        <label>Exam *</label>
+        <select
+          [(ngModel)]="newSession().examId"
+          name="examId"
+          [disabled]="busy() || availableExams().length === 0"
+          required
+        >
+          <option value="">-- Select an Exam --</option>
+          <option *ngFor="let exam of availableExams()" [value]="exam.id">
+            {{ exam.title }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Exam Center *</label>
+        <select
+          [(ngModel)]="newSession().centerId"
+          name="centerId"
+          [disabled]="busy() || availableCenters().length === 0"
+          required
+        >
+          <option value="">-- Select a Center --</option>
+          <option *ngFor="let center of availableCenters()" [value]="center.id">
+            {{ center.name }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Organization</label>
+        <input
+          type="text"
+          [value]="userOrgId() || 'Your Organization'"
+          [disabled]="true"
+          class="input-disabled"
+        />
+        <small>Automatically set to your organization</small>
+      </div>
+
+      <div class="form-group">
+        <label>Session Date *</label>
+        <input
+          type="date"
+          [(ngModel)]="newSession().sessionDate"
+          name="sessionDate"
+          [disabled]="busy()"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Start Time</label>
+        <input
+          type="time"
+          [(ngModel)]="newSession().startTime"
+          name="startTime"
+          [disabled]="busy()"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>End Time</label>
+        <input
+          type="time"
+          [(ngModel)]="newSession().endTime"
+          name="endTime"
+          [disabled]="busy()"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Duration (minutes)</label>
+        <input
+          type="number"
+          [(ngModel)]="newSession().durationMinutes"
+          name="durationMinutes"
+          [disabled]="busy()"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Require Identity Verification</label>
+        <input
+          type="checkbox"
+          [(ngModel)]="newSession().requireIdentityVerification"
+          name="requireIdentityVerification"
+          [disabled]="busy()"
+        />
+      </div>
+
+      <button type="submit" class="btn-primary" [disabled]="busy()">
+        {{ busy() ? 'Creating...' : 'Create Session' }}
+      </button>
+    </form>
+
+    <div class="sessions-list" *ngIf="sessions().length > 0">
+      <h3>Sessions</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Exam</th>
+            <th>Center</th>
+            <th>Status</th>
+            <th>Verification</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let session of sessions()">
+            <td>{{ session.sessionDate | toDate | date: 'MMM d, y' }}</td>
+            <td>{{ getExamName(session.examId) }}</td>
+            <td>{{ getCenterName(session.centerId) }}</td>
+            <td>{{ session.status }}</td>
+            <td>{{ session.requireIdentityVerification ? '✓' : '✗' }}</td>
+            <td>
+              <button
+                class="btn-small"
+                (click)="generateAccessPassword(session.id || '')"
+                [disabled]="busy()"
+                title="Generate onsite access password"
+              >
+                🔑 Password
+              </button>
+              <button class="btn-small" [routerLink]="['/proctor/sessions', session.id]">
+                Manage
+              </button>
+              <button
+                class="btn-small"
+                (click)="openKioskSetup(session.id || '')"
+                [disabled]="busy()"
+                title="Setup kiosk login URLs for 10 stations"
+              >
+                💻 Kiosk
+              </button>
+              <button
+                class="btn-small btn-delete"
+                (click)="deleteSession(session.id || '')"
+                [disabled]="busy()"
+                title="Delete this session"
+              >
+                🗑 Delete
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Kiosk Setup Modal -->
+  <div class="modal" *ngIf="kioskModalOpen()" [class.open]="kioskModalOpen()">
+    <div class="modal-content">
+      <button class="close-btn" (click)="closeKioskModal()">&times;</button>
+      <h2>Kiosk Login URLs - 10 Stations</h2>
+      <p class="subtitle">Share these URLs with each station computer. Each station shows only login - no admin UI.</p>
+
+      <div class="kiosk-urls-grid">
+        <div *ngFor="let url of kioskUrls()" class="kiosk-url-card">
+          <div class="station-number">Station {{ url.stationId }}</div>
+          <div class="url-display">
+            <code>{{ url.url }}</code>
+            <button class="btn-copy" (click)="copyToClipboard(url.url)" title="Copy URL">
+              📋 Copy
+            </button>
+          </div>
+          <div class="url-qr" *ngIf="url.qrCode">
+            <img [src]="url.qrCode" alt="QR Code" />
+            <p class="qr-label">Scan to open on station</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="kiosk-instructions">
+        <h3>Setup Instructions:</h3>
+        <ol>
+          <li>On each station computer, open the URL (bookmark it)</li>
+          <li>The login screen will appear with no admin UI</li>
+          <li>When learner arrives, proctor adds them and verifies identity</li>
+          <li>Learner enters email and password on the station</li>
+          <li>Exam starts immediately on that station</li>
+        </ol>
+      </div>
+
+      <button class="btn-primary" (click)="closeKioskModal()">Done</button>
+    </div>
+  </div>
+</div>

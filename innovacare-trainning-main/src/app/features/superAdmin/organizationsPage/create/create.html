@@ -1,1 +1,162 @@
-<p>create works!</p>
+<div class="sa-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <div class="back-link-wrap">
+        <a class="back-link" routerLink="/super-admin/organizations">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Organizations
+        </a>
+      </div>
+      <p class="page-eyebrow">Super Admin · Organizations</p>
+      <h1 class="page-title">Create Organization</h1>
+      <p class="page-sub">Add a new tenant organization and its initial owner account.</p>
+    </div>
+  </div>
+
+  <!-- Notice Banner -->
+  <div *ngIf="notice()" [class]="'notice-banner' + (isError() ? ' notice-banner--error' : '')">
+    <span class="notice-banner__text">{{ notice() }}</span>
+  </div>
+
+  <div class="success-card" *ngIf="created() as result">
+    <div class="success-card__title">Generated organization admin</div>
+    <div class="success-card__grid">
+      <div>
+        <div class="success-card__label">Organization document</div>
+        <div class="success-card__value">{{ result.orgId }}</div>
+      </div>
+      <div>
+        <div class="success-card__label">Generated UID</div>
+        <div class="success-card__value">{{ result.ownerUid }}</div>
+      </div>
+      <div>
+        <div class="success-card__label">Admin email</div>
+        <div class="success-card__value">{{ result.ownerEmail }}</div>
+      </div>
+      <div>
+        <div class="success-card__label">Temporary password</div>
+        <div class="success-card__value success-card__value--secret">{{ result.temporaryPassword }}</div>
+      </div>
+    </div>
+    <p class="success-card__hint">Share this temporary password securely, then ask the org admin to change it after first sign-in.</p>
+    <div class="success-card__actions">
+      <button type="button" class="btn-ghost" (click)="goToOrganizations()">Back to Organizations</button>
+    </div>
+  </div>
+
+  <!-- Form Layout -->
+  <div class="create-layout">
+
+    <!-- Section 1: Organization Details -->
+    <div class="panel">
+      <div class="panel__head">
+        <div>
+          <div class="panel__title">Organization Details</div>
+          <div class="panel__sub">Basic info about the new tenant organization.</div>
+        </div>
+        <div class="section-badge">1 / 2</div>
+      </div>
+      <div class="form-body">
+        <div class="form-grid">
+          <div class="field field--full">
+            <label class="field__label" for="orgName">Organization Name <span class="field__req">*</span></label>
+            <input
+              id="orgName"
+              class="field__input"
+              type="text"
+              [(ngModel)]="form.name"
+              placeholder="e.g. Sunrise Health System"
+              required
+            />
+          </div>
+          <div class="field">
+            <label class="field__label" for="orgId">Organization ID</label>
+            <input
+              id="orgId"
+              class="field__input"
+              type="text"
+              [(ngModel)]="form.orgId"
+              placeholder="Auto-generated if blank"
+            />
+            <span class="field__hint">Use lowercase letters, numbers, and hyphens only.</span>
+          </div>
+          <div class="field">
+            <label class="field__label" for="orgType">Type</label>
+            <select id="orgType" class="field__select" [(ngModel)]="form.type">
+              <option value="">Select type...</option>
+              <option value="health">Health</option>
+              <option value="IT">IT</option>
+              <option value="school">School</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field__label" for="orgPlan">Billing Plan</label>
+            <select id="orgPlan" class="field__select" [(ngModel)]="form.plan">
+              <option value="">Select plan...</option>
+              <option *ngFor="let option of planOptions" [value]="option.value">
+                {{ option.label }} · {{ option.hint }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Owner Account -->
+    <div class="panel">
+      <div class="panel__head">
+        <div>
+          <div class="panel__title">Owner Account</div>
+          <div class="panel__sub">The admin user will be created automatically in Firebase Auth and linked to this organization.</div>
+        </div>
+        <div class="section-badge">2 / 2</div>
+      </div>
+      <div class="form-body">
+        <div class="form-grid">
+          <div class="field">
+            <label class="field__label" for="ownerEmail">Owner Email <span class="field__req">*</span></label>
+            <input
+              id="ownerEmail"
+              class="field__input"
+              type="email"
+              [(ngModel)]="form.ownerEmail"
+              placeholder="owner@example.com"
+              required
+            />
+          </div>
+          <div class="field field--full">
+            <label class="field__label" for="ownerDisplayName">Owner Display Name</label>
+            <input
+              id="ownerDisplayName"
+              class="field__input"
+              type="text"
+              [(ngModel)]="form.ownerDisplayName"
+              placeholder="Full name (optional)"
+            />
+            <span class="field__hint">The UID is generated automatically during account creation.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer Actions -->
+  <div class="form-footer">
+    <a class="btn-ghost" routerLink="/super-admin/organizations">Cancel</a>
+    <button class="btn-primary" (click)="create()" [disabled]="busy()">
+      <span *ngIf="busy()" class="spinner"></span>
+      <span *ngIf="!busy()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </span>
+      {{ busy() ? 'Creating...' : 'Create Organization' }}
+    </button>
+  </div>
+
+</div>

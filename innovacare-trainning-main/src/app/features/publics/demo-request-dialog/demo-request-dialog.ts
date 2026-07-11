@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DemoRequestService } from '../demo-request';
+import { PublicTranslateDirective } from '../../../shared/directives/public-translate.directive';
 
 interface DemoDialogData {
   source?: string;
@@ -30,6 +31,7 @@ interface DemoDialogData {
     MatIconModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
+    PublicTranslateDirective,
   ],
   templateUrl: './demo-request-dialog.html',
   styleUrl: './demo-request-dialog.css',

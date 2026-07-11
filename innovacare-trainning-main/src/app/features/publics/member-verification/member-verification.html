@@ -1,0 +1,65 @@
+<div class="verify-page">
+  <section class="verify-hero">
+    <div class="verify-eyebrow">Registry Verification</div>
+    <h1>Verify a Membership</h1>
+    <p>
+      Confirm whether a professional is currently registered in good standing.
+      Enter the membership number found on their digital card or certificate.
+    </p>
+
+    <form class="search-form" (ngSubmit)="search()">
+      <input
+        type="text"
+        class="search-input"
+        placeholder="e.g. MC-XXXXXX-XXXX"
+        [(ngModel)]="membershipNumber"
+        name="membershipNumber"
+        autocomplete="off"
+      />
+      <button type="submit" class="btn-primary" [disabled]="searching() || !membershipNumber.trim()">
+        {{ searching() ? 'Searching...' : 'Verify' }}
+      </button>
+    </form>
+
+    <p class="error-text" *ngIf="error()">{{ error() }}</p>
+  </section>
+
+  <section class="result-section" *ngIf="searched() && !searching()">
+    <ng-container *ngIf="result() as r">
+      <div class="result-card not-found" *ngIf="!r.found">
+        <div class="result-icon">✕</div>
+        <h2>No membership found</h2>
+        <p>We could not find a registered member with that number. Please check the number and try again.</p>
+      </div>
+
+      <div class="result-card found" *ngIf="r.found" [class.expired]="r.status === 'expired'">
+        <div class="result-status">
+          <span class="status-badge" [class.active]="r.status === 'active'" [class.expired]="r.status === 'expired'">
+            {{ r.status === 'active' ? '✓ Active Member' : '⚠ Membership Expired' }}
+          </span>
+        </div>
+
+        <h2>{{ r.name || 'Registered Member' }}</h2>
+        <p class="profession" *ngIf="r.profession">{{ r.profession }}</p>
+        <p class="organization" *ngIf="r.organizationName">{{ r.organizationName }}</p>
+
+        <div class="result-details">
+          <div class="detail-row">
+            <span class="detail-label">Membership Number</span>
+            <span class="detail-value mono">{{ r.membershipNumber }}</span>
+          </div>
+          <div class="detail-row" *ngIf="r.issuedAt">
+            <span class="detail-label">Issued</span>
+            <span class="detail-value">{{ r.issuedAt | toDate | date: 'mediumDate' }}</span>
+          </div>
+          <div class="detail-row" *ngIf="r.expiresAt">
+            <span class="detail-label">Valid Until</span>
+            <span class="detail-value">{{ r.expiresAt | toDate | date: 'mediumDate' }}</span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <button type="button" class="btn-ghost search-again" (click)="reset()">Search another member</button>
+  </section>
+</div>

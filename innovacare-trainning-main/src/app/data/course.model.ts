@@ -64,11 +64,13 @@ export interface Course {
   requirements: string[];
   accomodations: string;
   orgId?: string | null;
+  assignedOrgIds?: string[];
   orgType?: OrgType;
   healthMeta?: HealthMeta;
   releaseAt?: any;
   publishedAt?: any;
   isPublic?: boolean;
+  allowedEmailDomains?: string[];
   passingScore: number;
   lockedSequence: boolean;
   exipirationDate?: any;

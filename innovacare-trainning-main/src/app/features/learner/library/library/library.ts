@@ -4,7 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CoursesRepo } from '../../../../data/courses.repo';
 import { Course } from '../../../../data/models';
-import { addDoc, collection, Firestore } from '@angular/fire/firestore';
+import { AuthService } from '../../../../core/auth';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { of, switchMap } from 'rxjs';
 
 
 @Component({
@@ -17,9 +19,14 @@ import { addDoc, collection, Firestore } from '@angular/fire/firestore';
 export class Library {
   private repo = inject(CoursesRepo);
   private router = inject(Router);
+  private auth = inject(AuthService);
 
-  // live list from Firestore
-  private list = this.repo.allActive();
+  private list = toSignal(
+    this.auth.profile$.pipe(
+      switchMap(profile => profile ? this.repo.visibleForProfile(profile) : of([] as Course[]))
+    ),
+    { initialValue: [] as Course[] }
+  );
 
   // UI state
   query = signal('');

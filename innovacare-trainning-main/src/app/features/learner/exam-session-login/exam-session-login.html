@@ -1,0 +1,58 @@
+<div class="exam-session-login">
+  <div class="login-container">
+    <div class="login-header">
+      <h1>🔐 Exam Login</h1>
+      <p class="subtitle">Onsite Candidate Authentication</p>
+    </div>
+
+    <div *ngIf="error()" class="error-alert">
+      {{ error() }}
+    </div>
+
+    <div *ngIf="sessionInfo() as session" class="session-info">
+      <p><strong>Session Date:</strong> {{ session.sessionDate }}</p>
+      <p><strong>Duration:</strong> {{ session.durationMinutes }} minutes</p>
+      <p class="warning">⚠️ Enter your email and session password provided by the proctor</p>
+    </div>
+
+    <form (ngSubmit)="onLogin()" class="login-form">
+      <div class="form-group">
+        <label for="email">Email Address *</label>
+        <input
+          id="email"
+          type="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="your.email@example.com"
+          [disabled]="loading()"
+          autocomplete="email"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Session Password *</label>
+        <input
+          id="password"
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="••••••••"
+          [disabled]="loading()"
+          autocomplete="off"
+          required
+        />
+        <small>Provided on your exam center card</small>
+      </div>
+
+      <button type="submit" class="btn-login" [disabled]="loading()">
+        {{ loading() ? 'Verifying...' : '→ Next: Proctor Verification' }}
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <p>🔒 Secure examination environment</p>
+      <p>Next step: Identity verification with proctor</p>
+    </div>
+  </div>
+</div>

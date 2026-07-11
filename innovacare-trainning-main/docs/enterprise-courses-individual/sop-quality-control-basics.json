@@ -1,0 +1,145 @@
+{
+  "id": "sop-quality-control-basics",
+  "title": "SOP and Quality Control Basics",
+  "subtitle": "Use procedures to create consistent results",
+  "description": "Train teams on standard operating procedures, quality checks, documentation habits, escalation, and continuous improvement.",
+  "lang": "EN",
+  "durationMin": 50,
+  "ceCredit": 0,
+  "sortOrder": 107,
+  "active": true,
+  "isPublic": true,
+  "kind": "Course",
+  "type": "safety",
+  "level": "Intermediate",
+  "url": "/catalogue/sop-quality-control-basics",
+  "imageUrl": "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1200&q=80",
+  "tags": [
+    "enterprise",
+    "sop",
+    "quality",
+    "operations",
+    "continuous-improvement"
+  ],
+  "lecturer": "Innovacare Training Operations Faculty",
+  "disclosures": [
+    "This course should be paired with organization-specific SOPs and quality standards."
+  ],
+  "targetAudience": [
+    "Operations teams",
+    "Supervisors",
+    "Quality teams",
+    "New employees"
+  ],
+  "prerequisites": [
+    "Basic understanding of the work process"
+  ],
+  "requirements": [
+    "Complete all lessons",
+    "Pass the SOP quiz"
+  ],
+  "accomodations": "Accessibility accommodations may be requested through the organization administrator.",
+  "orgId": null,
+  "assignedOrgIds": [],
+  "passingScore": 80,
+  "lockedSequence": true,
+  "sections": [
+    {
+      "id": "sop-foundations",
+      "title": "SOP Foundations",
+      "order": 1,
+      "estMin": 25,
+      "lessons": [
+        {
+          "id": "why-sops-matter",
+          "title": "Why SOPs Matter",
+          "order": 1,
+          "estMin": 12,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Standard operating procedures reduce variation, support training, improve safety, and make quality easier to measure.</p>",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "follow-procedure",
+          "title": "Follow the Approved Procedure",
+          "order": 2,
+          "estMin": 13,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Employees should use the current approved version, avoid shortcuts, and ask a supervisor when a procedure does not match the situation.</p>",
+              "required": true
+            },
+            {
+              "id": "quiz",
+              "type": "quiz",
+              "mode": "single",
+              "question": "What should an employee do if an SOP seems outdated or unclear?",
+              "required": true,
+              "choices": [
+                {
+                  "id": "a",
+                  "text": "Create an unofficial shortcut",
+                  "correct": false
+                },
+                {
+                  "id": "b",
+                  "text": "Ask for clarification and report the issue through the approved process",
+                  "correct": true
+                },
+                {
+                  "id": "c",
+                  "text": "Ignore the SOP completely",
+                  "correct": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "quality-checks",
+      "title": "Quality Checks",
+      "order": 2,
+      "estMin": 25,
+      "lessons": [
+        {
+          "id": "document-results",
+          "title": "Document Results",
+          "order": 1,
+          "estMin": 12,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Good documentation makes work traceable. Record required checks accurately and at the time the work is performed.</p>",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "continuous-improvement",
+          "title": "Continuous Improvement",
+          "order": 2,
+          "estMin": 13,
+          "blocks": [
+            {
+              "id": "callout",
+              "type": "callout",
+              "style": "success",
+              "html": "<p>Quality improves when employees report defects, near misses, process gaps, and repeated sources of rework.</p>",
+              "required": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

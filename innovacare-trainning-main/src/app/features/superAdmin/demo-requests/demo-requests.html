@@ -1,0 +1,222 @@
+<div class="sa-page">
+  <div class="page-header">
+    <div>
+      <p class="page-eyebrow">Super Admin · Intake</p>
+      <h1 class="page-title">Demo Requests</h1>
+      <p class="page-sub">Receive, qualify, respond to, and close public demo leads from one queue.</p>
+    </div>
+    <div class="live-pill">
+      <span></span>
+      Live intake
+    </div>
+  </div>
+
+  <div class="stat-row">
+    <article class="stat-card">
+      <div class="stat-card__icon stat-icon--navy">∑</div>
+      <div>
+        <div class="stat-card__value">{{ kpis().total }}</div>
+        <div class="stat-card__label">Total requests</div>
+      </div>
+    </article>
+    <article class="stat-card">
+      <div class="stat-card__icon stat-icon--orange">!</div>
+      <div>
+        <div class="stat-card__value">{{ kpis().new }}</div>
+        <div class="stat-card__label">New</div>
+      </div>
+    </article>
+    <article class="stat-card">
+      <div class="stat-card__icon stat-icon--teal">↗</div>
+      <div>
+        <div class="stat-card__value">{{ kpis().contacted }}</div>
+        <div class="stat-card__label">Contacted</div>
+      </div>
+    </article>
+    <article class="stat-card">
+      <div class="stat-card__icon stat-icon--navy">✓</div>
+      <div>
+        <div class="stat-card__value">{{ kpis().converted }}</div>
+        <div class="stat-card__label">Converted</div>
+      </div>
+    </article>
+    <article class="stat-card">
+      <div class="stat-card__icon stat-icon--red">↑</div>
+      <div>
+        <div class="stat-card__value">{{ kpis().urgent }}</div>
+        <div class="stat-card__label">Urgent</div>
+      </div>
+    </article>
+  </div>
+
+  <div class="notice-banner" *ngIf="notice()">
+    <span class="notice-banner__text">{{ notice() }}</span>
+  </div>
+
+  <section class="intake-grid">
+    <aside class="panel queue-panel">
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input
+            class="search-input"
+            type="text"
+            placeholder="Search name, email, company..."
+            [value]="search()"
+            (input)="search.set($any($event.target).value)"
+          />
+        </div>
+        <select
+          class="filter-select"
+          [value]="statusFilter()"
+          (change)="statusFilter.set($any($event.target).value)"
+        >
+          <option value="all">All statuses</option>
+          <option *ngFor="let option of statusOptions" [value]="option.value">{{ option.label }}</option>
+        </select>
+      </div>
+
+      <div class="request-list" *ngIf="filtered().length; else emptyQueue">
+        <button
+          type="button"
+          class="request-row"
+          *ngFor="let request of filtered()"
+          [class.active]="selectedId() === request.id"
+          (click)="select(request)"
+        >
+          <span class="request-avatar">{{ request.fullName.slice(0, 2).toUpperCase() }}</span>
+          <span class="request-main">
+            <strong>{{ request.organizationName }}</strong>
+            <small>{{ request.fullName }} · {{ request.workEmail }}</small>
+            <span class="request-meta">
+              <span [class]="'badge badge--' + statusOf(request)">{{ statusOf(request) }}</span>
+              <span [class]="'priority priority--' + priorityOf(request)">{{ priorityOf(request) }}</span>
+              <span>{{ formatDate(request.createdAt) }}</span>
+            </span>
+          </span>
+        </button>
+      </div>
+
+      <ng-template #emptyQueue>
+        <div class="empty-state">
+          <div class="empty-state__icon">□</div>
+          <strong>No requests found</strong>
+          <span>New public demo requests will appear here automatically.</span>
+        </div>
+      </ng-template>
+    </aside>
+
+    <section class="panel detail-panel" *ngIf="selected() as request; else noSelection">
+      <div class="detail-head">
+        <div>
+          <p class="page-eyebrow">Request details</p>
+          <h2>{{ request.organizationName }}</h2>
+          <p>{{ request.fullName }} · {{ request.workEmail }}</p>
+        </div>
+        <span [class]="'badge badge--' + statusOf(request)">{{ statusOf(request) }}</span>
+      </div>
+
+      <div class="detail-actions">
+        <label class="field">
+          <span class="field__label">Status</span>
+          <select
+            class="field__select"
+            [value]="statusOf(request)"
+            [disabled]="saving()"
+            (change)="updateStatus(request, $any($event.target).value)"
+          >
+            <option *ngFor="let option of statusOptions" [value]="option.value">{{ option.label }}</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field__label">Priority</span>
+          <select
+            class="field__select"
+            [value]="priorityOf(request)"
+            [disabled]="saving()"
+            (change)="updatePriority(request, $any($event.target).value)"
+          >
+            <option *ngFor="let option of priorityOptions" [value]="option.value">{{ option.label }}</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="info-grid">
+        <div>
+          <span>Email</span>
+          <strong>{{ request.workEmail }}</strong>
+        </div>
+        <div>
+          <span>Phone</span>
+          <strong>{{ request.phone || '—' }}</strong>
+        </div>
+        <div>
+          <span>Organization type</span>
+          <strong>{{ request.organizationType }}</strong>
+        </div>
+        <div>
+          <span>Selected plan</span>
+          <strong>{{ request.selectedPlan || 'Not selected' }}</strong>
+        </div>
+        <div>
+          <span>Source</span>
+          <strong>{{ request.source || 'landing-page' }}</strong>
+        </div>
+        <div>
+          <span>Received</span>
+          <strong>{{ formatDate(request.createdAt) }}</strong>
+        </div>
+      </div>
+
+      <article class="message-card">
+        <span class="field__label">Original message</span>
+        <p>{{ request.message }}</p>
+      </article>
+
+      <div class="workbench">
+        <label class="field">
+          <span class="field__label">Treatment notes</span>
+          <textarea
+            class="field__textarea"
+            rows="5"
+            [ngModel]="internalNotes()"
+            (ngModelChange)="internalNotes.set($event)"
+            placeholder="Qualification, decision, next step, payment notes..."
+          ></textarea>
+        </label>
+
+        <label class="field">
+          <span class="field__label">Response draft</span>
+          <textarea
+            class="field__textarea response-textarea"
+            rows="8"
+            [ngModel]="responseDraft()"
+            (ngModelChange)="responseDraft.set($event)"
+          ></textarea>
+        </label>
+      </div>
+
+      <div class="button-row">
+        <button class="btn-ghost" type="button" (click)="saveTreatment(request)" [disabled]="saving()">
+          Save treatment
+        </button>
+        <button class="btn-ghost" type="button" (click)="call(request)" [disabled]="!request.phone">
+          Call
+        </button>
+        <button class="btn-primary" type="button" (click)="respond(request)" [disabled]="saving()">
+          Respond by email
+        </button>
+      </div>
+    </section>
+
+    <ng-template #noSelection>
+      <section class="panel detail-panel">
+        <div class="empty-state">
+          <div class="empty-state__icon">◇</div>
+          <strong>Select a request</strong>
+          <span>Choose a lead from the intake queue to review and respond.</span>
+        </div>
+      </section>
+    </ng-template>
+  </section>
+</div>

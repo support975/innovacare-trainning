@@ -1,6 +1,6 @@
 // app.config.ts
 import { ApplicationConfig } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { routes } from './app.routes';
 
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
@@ -10,16 +10,23 @@ import { provideAuth, getAuth } from '@angular/fire/auth';
 import { provideFirestore, getFirestore } from '@angular/fire/firestore';
 import { provideStorage, getStorage } from '@angular/fire/storage';
 import { provideFunctions, getFunctions, connectFunctionsEmulator } from '@angular/fire/functions';
+import { getApp } from 'firebase/app';
 
 import { environment } from '../enviroments/enviroment';
-import { enableIndexedDbPersistence } from 'firebase/firestore';
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 
 // IMPORTANT: setPersistence vient de firebase/auth (pas AngularFire)
 import { browserLocalPersistence, setPersistence } from 'firebase/auth';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes),
+    provideRouter(
+      routes,
+      withInMemoryScrolling({
+        anchorScrolling: 'enabled',
+        scrollPositionRestoration: 'enabled',
+      })
+    ),
     provideHttpClient(withInterceptorsFromDi()),
 
     // 1 seule initialisation de l'app Firebase
@@ -34,17 +41,27 @@ export const appConfig: ApplicationConfig = {
     }),
 
     provideStorage(() => getStorage()),
-    provideFunctions(() => getFunctions(undefined, 'us-central1')),
     provideFunctions(() => {
-  const fns = getFunctions(undefined, "us-central1");
-  connectFunctionsEmulator(fns, "localhost", 5001);
-  return fns;
-}),
+      const fns = getFunctions(undefined, environment.functions.region);
+      const emulator = environment.functions.emulator;
+
+      if (emulator.enabled) {
+        connectFunctionsEmulator(fns, emulator.host, emulator.port);
+      }
+
+      return fns;
+    }),
 
     provideFirestore(() => {
-      const db = getFirestore();
-      enableIndexedDbPersistence(db).catch(() => {});
-      return db;
+      try {
+        return initializeFirestore(getApp(), {
+          localCache: persistentLocalCache({
+            tabManager: persistentMultipleTabManager(),
+          }),
+        });
+      } catch {
+        return getFirestore();
+      }
     }),
   ],
 };

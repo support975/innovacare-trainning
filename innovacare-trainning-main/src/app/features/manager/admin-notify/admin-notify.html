@@ -1,130 +1,236 @@
-<div class="card">
-  <div class="hdr">
-    <div>
-      <div class="title">Manager • Send Notification</div>
-      <div class="sub">Creates an internal alert visible in the learner notification bell.</div>
+<div class="notify-page">
+
+  <!-- PAGE HEADER -->
+  <header class="page-header">
+    <div class="page-header__left">
+      <div class="page-eyebrow">Manager · Notifications</div>
+      <h1 class="page-title">Send Notification</h1>
+      <p class="page-sub">Push an alert to your learners' notification bell — by role, or pick specific people.</p>
     </div>
-    <span class="pill">{{ audienceType() }}</span>
+  </header>
+
+  <!-- NOTICE BANNER -->
+  <div class="notice-banner" *ngIf="notice()" [class.notice-banner--error]="isError()">
+    <span class="notice-banner__icon">{{ isError() ? '✕' : '✓' }}</span>
+    <span class="notice-banner__text">{{ notice() }}</span>
+    <button class="notice-banner__close" (click)="clearNotice()">✕</button>
   </div>
 
-  <div class="grid">
-    <div class="field">
-      <label>Title</label>
-      <input [ngModel]="title()" (ngModelChange)="title.set($event)" placeholder="Short title" />
-    </div>
+  <!-- MAIN GRID -->
+  <div class="compose-grid">
 
-    <div class="field">
-      <label>Severity</label>
-      <select [ngModel]="severity()" (ngModelChange)="severity.set($event)">
-        <option value="info">info</option>
-        <option value="warning">warning</option>
-        <option value="critical">critical</option>
-      </select>
-    </div>
+    <!-- ── COMPOSE PANEL ─────────────────────────────── -->
+    <div class="panel">
+      <div class="panel__head">
+        <div class="panel__title">Compose Message</div>
+        <div class="panel__sub">Write the notification your recipients will see.</div>
+      </div>
 
-    <div class="field full">
-      <label>Body</label>
-      <textarea rows="3" [ngModel]="body()" (ngModelChange)="body.set($event)" placeholder="Message..."></textarea>
-    </div>
+      <div class="panel__body">
 
-    <div class="field full">
-      <label>Link (optional)</label>
-      <input
-        [ngModel]="link()"
-        (ngModelChange)="link.set($event)"
-        placeholder="/learner/courses/xyz or /learner/profile"
-      />
-    </div>
-
-    <div class="field">
-      <label>Audience</label>
-      <select [ngModel]="audienceType()" (ngModelChange)="audienceType.set($event)">
-        <option value="role">Role</option>
-        <option value="all">All users</option>
-        <option value="user">Single user</option>
-      </select>
-    </div>
-
-    <div class="field" *ngIf="audienceType() === 'role'">
-      <label>Role</label>
-      <select [ngModel]="audienceRole()" (ngModelChange)="audienceRole.set($event)">
-        <option value="learner">learner</option>
-        <option value="nurse">nurse</option>
-        <option value="staff">staff</option>
-        <option value="admin">admin</option>
-        <option value="manager">manager</option>
-      </select>
-    </div>
-
-    <!-- Single user picker -->
-    <div class="field full" *ngIf="audienceType() === 'user'">
-      <label>Select user</label>
-
-      <div class="userbox">
-        <div class="row">
-          <input
-            class="search"
-            [ngModel]="uQuery()"
-            (ngModelChange)="uQuery.set($event)"
-            placeholder="Search by name, email, or uid..."
-            [disabled]="!!selectedUser()"
-          />
-          <button type="button" class="btn-light" (click)="clearUser()" *ngIf="selectedUser()">
-            Clear
-          </button>
-        </div>
-
-        <div class="picked" *ngIf="selectedUser() as u">
-          <div class="avatar">{{ (u.displayName || u.email || u.id).slice(0,1).toUpperCase() }}</div>
-          <div class="meta">
-            <div class="name">{{ u.displayName || "No name" }}</div>
-            <div class="small">
-              <span>{{ u.email || "No email" }}</span>
-              <span class="dot">•</span>
-              <span>{{ u.role || "no role" }}</span>
-              <span class="dot">•</span>
-              <span class="mono">{{ u.id }}</span>
-            </div>
+        <!-- Severity -->
+        <div class="field">
+          <div class="field__label">Severity</div>
+          <div class="severity-tabs">
+            <button type="button"
+              class="severity-tab severity-tab--info"
+              [class.active]="severity() === 'info'"
+              (click)="severity.set('info')">
+              <span class="severity-tab__dot"></span>Info
+            </button>
+            <button type="button"
+              class="severity-tab severity-tab--warning"
+              [class.active]="severity() === 'warning'"
+              (click)="severity.set('warning')">
+              <span class="severity-tab__dot"></span>Warning
+            </button>
+            <button type="button"
+              class="severity-tab severity-tab--critical"
+              [class.active]="severity() === 'critical'"
+              (click)="severity.set('critical')">
+              <span class="severity-tab__dot"></span>Critical
+            </button>
           </div>
         </div>
 
-        <div class="list" *ngIf="!selectedUser()">
-          <button type="button" class="item" *ngFor="let u of filteredUsers()" (click)="pickUser(u)">
-            <div class="avatar">{{ (u.displayName || u.email || u.id).slice(0,1).toUpperCase() }}</div>
-            <div class="meta">
-              <div class="name">{{ u.displayName || "No name" }}</div>
-              <div class="small">
-                <span>{{ u.email || "No email" }}</span>
-                <span class="dot">•</span>
-                <span>{{ u.role || "no role" }}</span>
-              </div>
-              <div class="mono">{{ u.id }}</div>
-            </div>
-          </button>
+        <!-- Title -->
+        <div class="field">
+          <label class="field__label" for="notif-title">Title <span class="required">*</span></label>
+          <input
+            id="notif-title"
+            class="field__input"
+            type="text"
+            placeholder="e.g. New training assigned"
+            [ngModel]="title()"
+            (ngModelChange)="title.set($event)"
+            maxlength="120"
+          />
+        </div>
 
-          <div class="hint" *ngIf="filteredUsers().length === 0">
-            No users found. Try another search term.
+        <!-- Body -->
+        <div class="field">
+          <label class="field__label" for="notif-body">
+            Message <span class="required">*</span>
+            <span class="char-count">{{ charCount() }}/500</span>
+          </label>
+          <textarea
+            id="notif-body"
+            class="field__textarea"
+            rows="4"
+            placeholder="Write a clear, concise message for your recipients…"
+            [ngModel]="body()"
+            (ngModelChange)="body.set($event)"
+            maxlength="500"
+          ></textarea>
+        </div>
+
+        <!-- Link -->
+        <div class="field">
+          <label class="field__label" for="notif-link">
+            Link <span class="optional">(optional)</span>
+          </label>
+          <div class="link-wrap">
+            <span class="link-prefix">/</span>
+            <input
+              id="notif-link"
+              class="field__input field__input--link"
+              type="text"
+              placeholder="learner/courses/xyz"
+              [ngModel]="link()"
+              (ngModelChange)="link.set($event)"
+            />
+          </div>
+          <div class="field__hint">Absolute paths like /learner/courses/abc or leave blank.</div>
+        </div>
+
+        <!-- Notification Preview -->
+        <div class="preview-card" [class.preview-card--warning]="severity() === 'warning'" [class.preview-card--critical]="severity() === 'critical'">
+          <div class="preview-card__label">Preview</div>
+          <div class="preview-card__title">{{ title() || 'Your notification title…' }}</div>
+          <div class="preview-card__body">{{ body() || 'Your message will appear here…' }}</div>
+          <div class="preview-card__meta">
+            <span class="severity-badge" [class.severity-badge--info]="severity() === 'info'" [class.severity-badge--warning]="severity() === 'warning'" [class.severity-badge--critical]="severity() === 'critical'">
+              {{ severity() }}
+            </span>
+            <span *ngIf="link()" class="preview-card__link">→ {{ link() }}</span>
           </div>
         </div>
 
-        <!-- optional: show uid field (keeps manual fallback) -->
-        <div class="field uidline">
-          <label>UID (auto-filled)</label>
-          <input
-            [ngModel]="audienceUid()"
-            (ngModelChange)="audienceUid.set($event)"
-            placeholder="UID"
-          />
-        </div>
       </div>
     </div>
+
+    <!-- ── AUDIENCE PANEL ─────────────────────────────── -->
+    <div class="panel">
+      <div class="panel__head">
+        <div class="panel__title">Audience</div>
+        <div class="panel__sub">Who should receive this notification?</div>
+      </div>
+
+      <div class="panel__body">
+
+        <!-- Audience type tabs -->
+        <div class="audience-tabs">
+          <button type="button" class="audience-tab" [class.active]="audienceType() === 'all'"  (click)="audienceType.set('all')">
+            <span class="audience-tab__icon">◉</span>All Users
+          </button>
+          <button type="button" class="audience-tab" [class.active]="audienceType() === 'role'" (click)="audienceType.set('role')">
+            <span class="audience-tab__icon">◎</span>By Role
+          </button>
+          <button type="button" class="audience-tab" [class.active]="audienceType() === 'user'" (click)="audienceType.set('user')">
+            <span class="audience-tab__icon">◈</span>Specific People
+          </button>
+        </div>
+
+        <!-- ALL -->
+        <div class="audience-hint" *ngIf="audienceType() === 'all'">
+          <span class="audience-hint__icon">◉</span>
+          <span>This notification will be sent to <strong>every user</strong> in your organisation.</span>
+        </div>
+
+        <!-- BY ROLE -->
+        <div *ngIf="audienceType() === 'role'" class="field">
+          <label class="field__label">Target Role</label>
+          <select class="field__select" [ngModel]="audienceRole()" (ngModelChange)="audienceRole.set($event)">
+            <option value="learner">Learner</option>
+            <option value="nurse">Nurse</option>
+            <option value="staff">Staff</option>
+            <option value="admin">Admin</option>
+            <option value="manager">Manager</option>
+          </select>
+          <div class="field__hint">All users with role <strong>{{ audienceRole() }}</strong> in your org will receive this.</div>
+        </div>
+
+        <!-- SPECIFIC USERS -->
+        <div *ngIf="audienceType() === 'user'" class="user-picker">
+
+          <!-- Selected recipients -->
+          <div *ngIf="selectedRecipientCount() > 0" class="picked-section">
+            <div class="picked-section__header">
+              <span class="picked-section__title">Selected ({{ selectedRecipientCount() }})</span>
+              <button type="button" class="btn-ghost-sm" (click)="clearUser()">Clear all</button>
+            </div>
+            <div class="picked-list">
+              <div class="picked-row" *ngFor="let u of selectedUsers()">
+                <div class="avatar">{{ getInitials(u.displayName || u.email || u.id) }}</div>
+                <div class="picked-row__body">
+                  <div class="picked-row__name">{{ u.displayName || '(no name)' }}</div>
+                  <div class="picked-row__email">{{ u.email || u.id }}</div>
+                </div>
+                <button type="button" class="picked-remove" (click)="removeUser(u.id)" title="Remove">✕</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Search available users -->
+          <div class="picker-search-wrap">
+            <span class="search-icon">⌕</span>
+            <input
+              class="search-input"
+              type="text"
+              placeholder="Search by name or email…"
+              [ngModel]="uQuery()"
+              (ngModelChange)="uQuery.set($event)"
+            />
+            <button class="search-clear" *ngIf="uQuery()" (click)="uQuery.set('')">✕</button>
+          </div>
+
+          <div class="picker-list">
+            <button type="button" class="picker-row" *ngFor="let u of filteredUsers()" (click)="pickUser(u)">
+              <div class="avatar">{{ getInitials(u.displayName || u.email || u.id) }}</div>
+              <div class="picker-row__body">
+                <div class="picker-row__name">{{ u.displayName || '(no name)' }}</div>
+                <div class="picker-row__email">{{ u.email || u.id }}</div>
+              </div>
+              <span class="picker-row__add">+</span>
+            </button>
+            <div class="picker-empty" *ngIf="filteredUsers().length === 0">
+              No users found. Try another search term.
+            </div>
+          </div>
+
+        </div>
+
+      </div><!-- /panel__body -->
+
+      <!-- SEND BAR inside the audience panel -->
+      <div class="send-bar">
+        <div class="send-bar__summary">
+          <span *ngIf="audienceType() === 'all'">Sending to <strong>all users</strong></span>
+          <span *ngIf="audienceType() === 'role'">Sending to all <strong>{{ audienceRole() }}s</strong></span>
+          <span *ngIf="audienceType() === 'user' && selectedRecipientCount() === 0" class="send-bar__warn">Select at least one recipient</span>
+          <span *ngIf="audienceType() === 'user' && selectedRecipientCount() > 0">Sending to <strong>{{ selectedRecipientCount() }} recipient{{ selectedRecipientCount() !== 1 ? 's' : '' }}</strong></span>
+        </div>
+        <button
+          type="button"
+          class="btn-send"
+          (click)="send()"
+          [disabled]="busy() || !title().trim() || !body().trim() || (audienceType() === 'user' && selectedRecipientCount() === 0)">
+          <span *ngIf="busy()" class="spinner"></span>
+          <span>{{ busy() ? 'Sending…' : 'Send Notification' }}</span>
+        </button>
+      </div>
+
+    </div>
   </div>
 
-  <div class="actions">
-    <button type="button" class="btn" (click)="send()" [disabled]="busy()">
-      {{ busy() ? "Sending..." : "Send" }}
-    </button>
-
-    <span class="msg" [class.err]="isError()" *ngIf="notice()">{{ notice() }}</span>
-  </div>
 </div>

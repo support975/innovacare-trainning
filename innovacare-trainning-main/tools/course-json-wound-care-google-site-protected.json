@@ -1,0 +1,272 @@
+{
+  "docData": {
+    "title": "Wound Care Concepts - Protected Google Site",
+    "subtitle": "Domain-restricted course access for Perry Home Wound Care learners",
+    "description": "This Innovacare course launches the Perry Home Wound Care Google Site for domain-authorized learners and keeps a minimal completion record inside Innovacare. Learners must sign in with a perryhomewoundcare.network Google account to view the protected Google Site.",
+    "lang": "EN",
+    "durationMin": 45,
+    "ceCredit": 0,
+    "sortOrder": 10,
+    "active": true,
+    "kind": "Course",
+    "type": "Health",
+    "level": "Beginner",
+    "imageUrl": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1600&q=80",
+    "url": "https://sites.google.com/perryhomewoundcare.network/perry-home-wound-care/Wound-Care",
+    "lecturer": "Perry Home Wound Care",
+    "accomodations": "Learners must use an authorized perryhomewoundcare.network Google account. Contact the training administrator if access is denied.",
+    "passingScore": 80,
+    "lockedSequence": true,
+    "isPublic": false,
+    "allowedEmailDomains": [
+      "perryhomewoundcare.network"
+    ],
+    "tags": [
+      "wound care",
+      "google site",
+      "protected resource",
+      "health"
+    ],
+    "disclosures": [
+      "This course links to a domain-restricted Google Site. Content access is controlled by Google Workspace permissions.",
+      "Innovacare can track course-shell completion, but it cannot verify every page interaction inside Google Sites."
+    ],
+    "targetAudience": [
+      "Perry Home Wound Care staff",
+      "Authorized learners with perryhomewoundcare.network accounts"
+    ],
+    "prerequisites": [
+      "Authorized Google account ending in perryhomewoundcare.network"
+    ],
+    "requirements": [
+      "Open the protected Google Site",
+      "Review each required Google Site section",
+      "Complete the Innovacare acknowledgement"
+    ],
+    "sections": [
+      {
+        "id": "launch-access",
+        "title": "Access the Protected Google Site",
+        "order": 0,
+        "lessons": [
+          {
+            "id": "launch-wound-care-site",
+            "title": "Launch Wound Care Course Site",
+            "estMin": 5,
+            "continueMode": "guided",
+            "order": 0,
+            "blocks": [
+              {
+                "id": "hero-google-site-launch",
+                "type": "hero",
+                "title": "Open the Perry Home Wound Care Course Site",
+                "imageUrl": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1600&q=80",
+                "buttonLabel": "Confirm access step",
+                "required": true,
+                "bodyHtml": "<p>This course is hosted on a protected Google Site. Open it in a new tab and sign in with your <strong>perryhomewoundcare.network</strong> Google account.</p><p><a href=\"https://sites.google.com/perryhomewoundcare.network/perry-home-wound-care/Wound-Care\" target=\"_blank\" rel=\"noopener\" style=\"display:inline-flex;align-items:center;padding:12px 18px;border-radius:999px;background:#1a3f6f;color:#fff;text-decoration:none;font-weight:800;\">Open protected Google Site</a></p>"
+              },
+              {
+                "id": "access-requirements",
+                "type": "accordion",
+                "title": "Before You Continue",
+                "introHtml": "<p>Open each item to confirm the access requirements.</p>",
+                "required": true,
+                "items": [
+                  {
+                    "id": "domain-login",
+                    "title": "Use the correct Google account",
+                    "bodyHtml": "<p>You must sign in with an authorized Google account from <strong>perryhomewoundcare.network</strong>. Personal Gmail accounts may be blocked.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "new-tab",
+                    "title": "Open in a new tab",
+                    "bodyHtml": "<p>Protected Google Sites usually work best when opened in a separate browser tab. If you see a Google sign-in screen, sign in and then return to Innovacare.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "tracking-limit",
+                    "title": "Understand tracking limits",
+                    "bodyHtml": "<p>Innovacare records that you launched and acknowledged the course. It cannot automatically track every click inside Google Sites unless the Google Site content is rebuilt as native Innovacare lessons.</p>",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "google-site-outline",
+        "title": "Google Site Course Outline",
+        "order": 1,
+        "lessons": [
+          {
+            "id": "wound-care-basics-outline",
+            "title": "Wound Care Basics",
+            "estMin": 10,
+            "continueMode": "guided",
+            "order": 0,
+            "blocks": [
+              {
+                "id": "basics-tabs",
+                "type": "tabs",
+                "title": "Review These Google Site Areas",
+                "introHtml": "<p>Use this checklist while reviewing the protected Google Site.</p>",
+                "required": true,
+                "tabs": [
+                  {
+                    "id": "concepts",
+                    "label": "Concepts",
+                    "title": "Wound Care Concepts",
+                    "bodyHtml": "<p>Review the Wound Care Concepts page, including the history of wound care and foundational care principles.</p><p><a href=\"https://sites.google.com/perryhomewoundcare.network/perry-home-wound-care/Wound-Care\" target=\"_blank\" rel=\"noopener\">Open Google Site</a></p>",
+                    "imageUrl": "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?auto=format&fit=crop&w=1600&q=80",
+                    "imageAlt": "Healthcare learning concept",
+                    "required": true
+                  },
+                  {
+                    "id": "types",
+                    "label": "Types",
+                    "title": "Types of Wounds",
+                    "bodyHtml": "<p>Review wound types and how different wound characteristics affect care decisions.</p><p><a href=\"https://sites.google.com/perryhomewoundcare.network/perry-home-wound-care/Wound-Care\" target=\"_blank\" rel=\"noopener\">Open Google Site</a></p>",
+                    "imageUrl": "https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=1600&q=80",
+                    "imageAlt": "Clinical care setting",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "wound-bed-preparation-outline",
+            "title": "Wound Bed Preparation",
+            "estMin": 10,
+            "continueMode": "guided",
+            "order": 1,
+            "blocks": [
+              {
+                "id": "wound-bed-prep-accordion",
+                "type": "accordion",
+                "title": "Wound Bed Preparation Review",
+                "introHtml": "<p>Open each reminder while reviewing the Google Site section.</p>",
+                "required": true,
+                "items": [
+                  {
+                    "id": "assessment",
+                    "title": "Assessment",
+                    "bodyHtml": "<p>Review how wound assessment supports care planning, documentation, and escalation.</p><p><a href=\"https://sites.google.com/perryhomewoundcare.network/perry-home-wound-care/Wound-Care\" target=\"_blank\" rel=\"noopener\">Open Google Site</a></p>",
+                    "required": true
+                  },
+                  {
+                    "id": "preparation",
+                    "title": "Preparation",
+                    "bodyHtml": "<p>Review wound bed preparation concepts and how they support healing-focused wound care.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "selection",
+                    "title": "Care decisions",
+                    "bodyHtml": "<p>Review how wound characteristics and patient context influence dressing and care choices.</p>",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "choices-key-takeaways-outline",
+            "title": "So Many Choices, Key Takeaways, and Conclusion",
+            "estMin": 15,
+            "continueMode": "guided",
+            "order": 2,
+            "blocks": [
+              {
+                "id": "review-cards",
+                "type": "cardStack",
+                "title": "Final Google Site Review",
+                "introHtml": "<p>Open each card after reviewing the matching Google Site area.</p>",
+                "variant": "gated",
+                "required": true,
+                "cards": [
+                  {
+                    "id": "choices",
+                    "title": "So Many Choices",
+                    "teaser": "Review product and care option decision-making.",
+                    "bodyHtml": "<p>Review the Google Site section about available wound care choices and how to think through care selection.</p><p><a href=\"https://sites.google.com/perryhomewoundcare.network/perry-home-wound-care/Wound-Care\" target=\"_blank\" rel=\"noopener\">Open Google Site</a></p>",
+                    "imageUrl": "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&w=1600&q=80",
+                    "required": true
+                  },
+                  {
+                    "id": "takeaways",
+                    "title": "Key Takeaways",
+                    "teaser": "Identify the major learning points.",
+                    "bodyHtml": "<p>Review the key takeaways and connect them to your role and documentation responsibilities.</p>",
+                    "imageUrl": "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1600&q=80",
+                    "required": true
+                  },
+                  {
+                    "id": "conclusion",
+                    "title": "Conclusion and References",
+                    "teaser": "Finish with contributors and references.",
+                    "bodyHtml": "<p>Review the conclusion, course contributors, and references/resources pages before completing this Innovacare shell course.</p>",
+                    "imageUrl": "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1600&q=80",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "completion",
+        "title": "Completion",
+        "order": 2,
+        "lessons": [
+          {
+            "id": "protected-site-acknowledgement",
+            "title": "Acknowledgement",
+            "estMin": 5,
+            "continueMode": "guided",
+            "order": 0,
+            "blocks": [
+              {
+                "id": "acknowledgement",
+                "type": "accordion",
+                "title": "Course Acknowledgement",
+                "introHtml": "<p>Open each item to complete your acknowledgement.</p>",
+                "required": true,
+                "items": [
+                  {
+                    "id": "ack-access",
+                    "title": "I accessed the protected Google Site",
+                    "bodyHtml": "<p>I confirm that I opened the Perry Home Wound Care Google Site using my authorized domain account.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "ack-review",
+                    "title": "I reviewed the required sections",
+                    "bodyHtml": "<p>I confirm that I reviewed the Wound Care Concepts, Types of Wounds, Wound Bed Preparation, So Many Choices, Key Takeaways, Conclusion, Course Contributors, and References areas.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "ack-support",
+                    "title": "I know how to request help",
+                    "bodyHtml": "<p>If I cannot access the protected Google Site, I will contact my supervisor or training administrator for domain access support.</p>",
+                    "required": true
+                  }
+                ]
+              },
+              {
+                "id": "completion-note",
+                "type": "callout",
+                "style": "success",
+                "html": "<strong>Completion note:</strong> This Innovacare record confirms completion of the protected Google Site review shell. For full per-page tracking and quizzes, rebuild the Google Site content as native Innovacare lessons."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

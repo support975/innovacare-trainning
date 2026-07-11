@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
-import { Firestore, collection, collectionData, doc, docData } from '@angular/fire/firestore';
+import { Firestore, collection, collectionData, doc, docData, query, where } from '@angular/fire/firestore';
 import { Auth, authState } from '@angular/fire/auth';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 import { combineLatest, map, of, switchMap } from 'rxjs';
+import { canAccessCourseByEmail } from '../../../../shared/course-domain-access';
+import { LanguageService } from '../../../../shared/services/language';
 
 /* If you don't want an extra lib, use this tiny UID helper instead of uuid: */
 function tinyUid() { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
@@ -42,6 +44,25 @@ interface CourseDoc {
   kind?: string;
   durationMin?: number;
   dueDate?: string;       // ISO string (optional)
+  allowedEmailDomains?: string[];
+}
+
+type AccessRequestStatus =
+  | 'pending_approval'
+  | 'approved_pending_payment'
+  | 'granted'
+  | 'rejected';
+
+type AccessPaymentStatus = 'not_started' | 'pending' | 'paid' | 'waived';
+
+interface CourseAccessRequest {
+  id: string;
+  courseId: string;
+  courseTitle?: string;
+  status: AccessRequestStatus;
+  paymentStatus?: AccessPaymentStatus;
+  createdAt?: any;
+  updatedAt?: any;
 }
 
 /* -------- helpers -------- */
@@ -76,6 +97,11 @@ function isoOrUndef(ms?: number) {
 export class LearnerAssignments {
   private afs = inject(Firestore);
   private auth = inject(Auth);
+  readonly lang = inject(LanguageService);
+
+  t(key: string, params: Record<string, string | number> = {}): string {
+    return this.lang.t(key, params);
+  }
 
   // ----------------- UI state -----------------
   private _tab = signal<TabKey>('active');
@@ -101,11 +127,13 @@ export class LearnerAssignments {
           const list = (enrollments as EnrollmentDoc[]);
           if (!list.length) return of<Assignment[]>([]);
 
+          const userEmail = user.email ?? '';
           const perCourse$ = list.map(enr => {
             const cRef = doc(this.afs, `courses/${enr.courseId}`);
             return docData(cRef, { idField: 'id' }).pipe(
               map((c) => {
                 const course = (c || {}) as CourseDoc;
+                if (!canAccessCourseByEmail(course, userEmail)) return null;
 
                 const uiStatus: Assignment['status'] =
                   enr.status === 'completed' ? 'completed'
@@ -134,13 +162,38 @@ export class LearnerAssignments {
             );
           });
 
-          return combineLatest(perCourse$);
+          return combineLatest(perCourse$).pipe(
+            map(items => items.filter((item): item is Assignment => !!item))
+          );
         })
       );
     })
   );
 
   private assignmentsSrc = toSignal(this.assignments$, { initialValue: [] as Assignment[] });
+
+  private accessRequests$ = authState(this.auth).pipe(
+    switchMap(user => {
+      if (!user) return of<CourseAccessRequest[]>([]);
+      const reqQuery = query(
+        collection(this.afs, 'courseAccessRequests'),
+        where('uid', '==', user.uid)
+      );
+      return collectionData(reqQuery, { idField: 'id' }).pipe(
+        map((items) => items as CourseAccessRequest[])
+      );
+    })
+  );
+
+  private accessRequestsSrc = toSignal(this.accessRequests$, {
+    initialValue: [] as CourseAccessRequest[],
+  });
+
+  accessRequests = computed(() =>
+    [...this.accessRequestsSrc()].sort(
+      (a, b) => (epochMs(b.updatedAt) ?? 0) - (epochMs(a.updatedAt) ?? 0)
+    )
+  );
 
   // ----------------- Split: Active vs Completed -----------------
   activeList = computed(() => {
@@ -218,8 +271,31 @@ export class LearnerAssignments {
   toggleSortDirection() { this._sortAsc.set(!this._sortAsc()); }
   onQueryChange(v: string) { this._query.set(v); }
 
+  // ----------------- Stats for header -----------------
+  stats = computed(() => {
+    const all = this.assignmentsSrc();
+    const active = all.filter(a => a.status !== 'completed');
+    return {
+      active: active.length,
+      overdue: active.filter(a => this.isOverdue(a)).length,
+      completed: all.filter(a => a.status === 'completed').length,
+    };
+  });
+
   // ----------------- Helpers for template -----------------
-  formatDuration(min: number) { return `${min} min`; }
+  formatDuration(min: number) { return this.t('assignments.minutes', { n: min }); }
+
+  statusLabel(a: Assignment): string {
+    if (a.status === 'completed') return this.t('assignments.status.completed');
+    if (a.status === 'in-progress') return this.t('assignments.status.inProgress');
+    return this.t('assignments.status.notStarted');
+  }
+
+  ctaLabel(a: Assignment): string {
+    if (a.status === 'in-progress') return this.t('assignments.resume');
+    if (a.status === 'completed') return this.t('assignments.review');
+    return this.t('assignments.start');
+  }
 
   isOverdue(a: Assignment) {
     // ✅ overdue applies ONLY for active items
@@ -229,12 +305,43 @@ export class LearnerAssignments {
 
   labelDue(a: Assignment) {
     if (a.status === 'completed') {
-      if (!a.completedAt) return 'Completed';
-      return `Completed ${new Date(a.completedAt).toLocaleDateString()}`;
+      if (!a.completedAt) return this.t('assignments.completedLabel');
+      return this.t('assignments.completedOn', { date: new Date(a.completedAt).toLocaleDateString() });
     }
-    if (!a.dueDate) return 'No due date';
-    const d = new Date(a.dueDate);
-    return this.isOverdue(a) ? `Overdue (${d.toLocaleDateString()})` : `Due ${d.toLocaleDateString()}`;
+    if (!a.dueDate) return this.t('assignments.noDueDate');
+    const d = new Date(a.dueDate).toLocaleDateString();
+    return this.isOverdue(a)
+      ? this.t('assignments.overdueOn', { date: d })
+      : this.t('assignments.dueOn', { date: d });
+  }
+
+  daysLeft(a: Assignment): number | null {
+    if (a.status === 'completed' || !a.dueDate) return null;
+    return Math.ceil((new Date(a.dueDate).getTime() - Date.now()) / DAY);
+  }
+
+  requestStatusLabel(req: CourseAccessRequest): string {
+    if (req.status === 'pending_approval') return 'Waiting for admin approval';
+    if (req.status === 'approved_pending_payment') return 'Approved, payment required';
+    if (req.status === 'granted') return 'Paid and granted';
+    if (req.status === 'rejected') return 'Rejected';
+    return 'Request submitted';
+  }
+
+  requestStatusHint(req: CourseAccessRequest): string {
+    if (req.status === 'pending_approval') {
+      return 'An admin must approve this request before payment can be completed.';
+    }
+    if (req.status === 'approved_pending_payment') {
+      return 'Your request was approved. Complete payment with the organization before the course opens.';
+    }
+    if (req.status === 'granted') {
+      return 'Access is active. The course appears in your assignments after the enrollment is created.';
+    }
+    if (req.status === 'rejected') {
+      return 'Contact the organization if you believe this request should be reviewed again.';
+    }
+    return 'Your request is being reviewed.';
   }
 
   // ----------------- Calendar (unchanged) -----------------

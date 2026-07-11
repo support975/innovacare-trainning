@@ -1,66 +1,204 @@
 <!-- CONTENT ONLY (no topbar, no sidebar) -->
 <main class="content">
-  <!-- Welcome / Hero -->
-  <section class="ld-hero card">
-    <div class="ld-hero-art"></div>
-    <div class="ld-hero-text">
-      <h1>Welcome, {{ displayName() }}</h1>
-      <p class="muted">Your learning hub for mandatory training and CE credits.</p>
-      <div class="ld-hero-cta">
-        <a routerLink="/learner/library" class="btn">Browse Courses</a>
-        <a routerLink="/learner/assignments" class="btn outline">My Assignments</a>
+  <!-- USER PROFILE CARD -->
+  <section class="ld-profile-section">
+    <div class="ld-profile-card card">
+      <div class="profile-header">
+        <div class="profile-avatar">
+          <div class="avatar-placeholder">{{ displayName().charAt(0).toUpperCase() }}</div>
+        </div>
+        <div class="profile-info">
+          <h1>{{ displayName() }}</h1>
+          <p class="role-badge">{{ role() }} · Healthcare Professional</p>
+          <p class="org-name" *ngIf="userStats()?.organization">{{ userStats().organization }}</p>
+        </div>
+        <div class="profile-level">
+          <div class="level-badge" [style.background-color]="levelFromPoints().color">
+            {{ levelFromPoints().name }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Level Progress Bar -->
+      <div class="level-progress">
+        <div class="progress-header">
+          <span class="label">Level Progress</span>
+          <span class="points">{{ userStats()?.points || 0 }} pts · {{ pointsProgress().pointsToNext }} to next</span>
+        </div>
+        <div class="progress-track">
+          <span class="progress-bar" [style.width.%]="pointsProgress().percent"></span>
+        </div>
       </div>
     </div>
 
-    <div class="ld-hero-help card">
-      <h3>Quick links</h3>
-      <ul>
-        <li><a routerLink="/learner/transcript">Transcript & certificates</a></li>
-        <li><a routerLink="/learner/certifications">Licenses & CE credits</a></li>
-        <a routerLink="/learner/policies">Policies</a>
-        <li><a routerLink="/help">Get support</a></li>
-      </ul>
+    <!-- QUICK STATS GRID -->
+    <div class="ld-stats-grid">
+      <div class="stat-card card">
+        <div class="stat-icon">🎓</div>
+        <div class="stat-content">
+          <div class="stat-number">{{ learningStats().totalHours }}h</div>
+          <div class="stat-label">Learning Hours</div>
+        </div>
+      </div>
+
+      <div class="stat-card card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-content">
+          <div class="stat-number">{{ learningStats().completed }}/{{ learningStats().total }}</div>
+          <div class="stat-label">Courses Completed</div>
+        </div>
+      </div>
+
+      <div class="stat-card card">
+        <div class="stat-icon">⚡</div>
+        <div class="stat-content">
+          <div class="stat-number">{{ userStats()?.points || 0 }}</div>
+          <div class="stat-label">Total Points</div>
+        </div>
+      </div>
+
+      <div class="stat-card card">
+        <div class="stat-icon">🏅</div>
+        <div class="stat-content">
+          <div class="stat-number">{{ badges().length }}</div>
+          <div class="stat-label">Badges Earned</div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- KPIs -->
+  <!-- HERO / WELCOME SECTION -->
+  <section class="ld-hero card">
+    <div class="ld-hero-art"></div>
+    <div class="ld-hero-text">
+      <h2>Welcome back, {{ displayName() | slice:0:1 }}</h2>
+      <p class="muted">Continue your professional development and stay current with mandatory training.</p>
+      <div class="ld-progress">
+        <div class="ld-progress-head">
+          <span>{{ completionSummary().completed }} of {{ completionSummary().total }} completed</span>
+          <strong>{{ completionSummary().percent }}%</strong>
+        </div>
+        <div class="ld-progress-track">
+          <span [style.width.%]="completionSummary().percent"></span>
+        </div>
+      </div>
+      <div class="ld-hero-cta">
+        <a *ngIf="!isIndividualLearner()" routerLink="/learner/library" class="btn primary">Explore Courses</a>
+        <a routerLink="/learner/assignments" class="btn outline">View All Assignments</a>
+      </div>
+    </div>
+
+    <!-- NEXT ACTION -->
+    <div class="ld-hero-help card" *ngIf="nextAction() as next; else allCaughtUp">
+      <div class="next-label">📌 Next Priority</div>
+      <h3>{{ next.title }}</h3>
+      <div class="next-meta">
+        <span class="pill" [class.pill-amber]="next.status === 'started'" [class.pill-slate]="next.status === 'assigned'">
+          {{ next.status | titlecase }}
+        </span>
+        <span class="due" [class.overdue]="next.isOverdue">{{ next.due }}</span>
+      </div>
+      <p class="muted">{{ next.kind }} · {{ next.duration }}</p>
+      <a [routerLink]="['/learner/courses', next.courseId]" class="btn primary">{{ next.cta }} Now</a>
+    </div>
+
+    <ng-template #allCaughtUp>
+      <div class="ld-hero-help card success">
+        <div class="next-label">✨ All Caught Up</div>
+        <h3>Excellent progress!</h3>
+        <p class="muted">All assigned courses are complete. Keep exploring for continued learning.</p>
+        <a routerLink="/learner/transcript" class="btn">View Transcript</a>
+      </div>
+    </ng-template>
+  </section>
+
+  <!-- ENHANCED KPIs -->
   <section class="ld-kpis">
-    <div class="card kpi">
-      <div class="kpi-title">Stay on track</div>
-      <p class="muted">Complete assignments before the due date to keep your record perfect.</p>
-      <a routerLink="/learner/assignments" class="btn">Go to Assignments</a>
+    <div class="card kpi info">
+      <div class="kpi-icon">📋</div>
+      <div class="kpi-content">
+        <div class="kpi-title">Stay on Track</div>
+        <p class="muted">Complete assignments by their due dates to maintain compliance.</p>
+      </div>
+      <a routerLink="/learner/assignments" class="kpi-link">Go to Assignments →</a>
     </div>
 
-    <div class="card kpi stat warning">
-      <div class="kpi-number kpi-overdue">{{ due().overdue }}</div>
-      <div class="kpi-label">Overdue</div>
+    <div class="card kpi stat warning" *ngIf="due().overdue > 0">
+      <div class="kpi-icon">⚠️</div>
+      <div class="kpi-content">
+        <div class="kpi-number">{{ due().overdue }}</div>
+        <div class="kpi-label">Overdue</div>
+      </div>
+    </div>
+
+    <div class="card kpi stat alert" *ngIf="due().in7 > 0">
+      <div class="kpi-icon">🔔</div>
+      <div class="kpi-content">
+        <div class="kpi-number">{{ due().in7 }}</div>
+        <div class="kpi-label">Due in 7 days</div>
+      </div>
     </div>
 
     <div class="card kpi stat">
-      <div class="kpi-number kpi-7">{{ due().in7 }}</div>
-      <div class="kpi-label">Due in 7 days</div>
+      <div class="kpi-icon">📅</div>
+      <div class="kpi-content">
+        <div class="kpi-number">{{ due().in30 }}</div>
+        <div class="kpi-label">Due in 30 days</div>
+      </div>
     </div>
 
     <div class="card kpi stat">
-      <div class="kpi-number kpi-30">{{ due().in30 }}</div>
-      <div class="kpi-label">Due in 30 days</div>
-    </div>
-
-    <div class="card kpi stat">
-      <div class="kpi-number kpi-90">{{ due().in90 }}</div>
-      <div class="kpi-label">Due in 90 days</div>
+      <div class="kpi-icon">📊</div>
+      <div class="kpi-content">
+        <div class="kpi-number">{{ due().in90 }}</div>
+        <div class="kpi-label">Due in 90 days</div>
+      </div>
     </div>
   </section>
 
-  <!-- My Assignments -->
+  <!-- BADGES SECTION -->
+  <section class="ld-section" *ngIf="badges().length">
+    <div class="ld-section-head">
+      <h2>🏆 Your Achievements</h2>
+      <span class="muted">{{ badges().length }} badges earned</span>
+    </div>
+    <div class="badges-grid">
+      <div class="badge-item" *ngFor="let badge of badges()">
+        <div class="badge-icon">{{ badge.icon || '🎖️' }}</div>
+        <div class="badge-name">{{ badge.name }}</div>
+        <div class="badge-desc">{{ badge.description }}</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOCUS QUEUE -->
+  <section class="ld-section" *ngIf="focusQueue().length">
+    <div class="ld-section-head">
+      <h2>📌 Focus Queue</h2>
+      <span class="muted">{{ completionSummary().active }} in progress · {{ completionSummary().assigned }} not started</span>
+    </div>
+
+    <div class="focus-list">
+      <a class="focus-item" *ngFor="let item of focusQueue().slice(0, 5)" [routerLink]="['/learner/courses', item.courseId]">
+        <span class="focus-status" [class.focus-status--warn]="item.isOverdue"></span>
+        <div class="focus-content">
+          <strong>{{ item.title }}</strong>
+          <small>{{ item.kind }} · {{ item.duration }}</small>
+        </div>
+        <span class="focus-due" [class.overdue]="item.isOverdue">{{ item.due }}</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- MY ASSIGNMENTS -->
   <section class="ld-section">
     <div class="ld-section-head">
-      <h2>My Assignments</h2>
-      <a routerLink="/learner/assignments" class="btn outline">View all</a>
+      <h2>📚 My Assignments</h2>
+      <a routerLink="/learner/assignments" class="btn outline">View All ({{ rows().length }})</a>
     </div>
 
     <div class="ld-cards" *ngIf="rows().length; else emptyState">
-      <article class="ld-course" *ngFor="let row of rows()">
+      <article class="ld-course" *ngFor="let row of rows().slice(0, 6)">
         <div class="ld-course-head">
           <span class="pill"
                 [class.pill-green]="row.enr.status==='completed'"
@@ -68,7 +206,6 @@
                 [class.pill-slate]="row.enr.status==='assigned'">
             {{ row.enr.status | titlecase }}
           </span>
-
           <span class="due" [class.overdue]="dueLabel(row.enr,row.course)==='Overdue'">
             {{ dueLabel(row.enr, row.course) }}
           </span>
@@ -83,8 +220,9 @@
         </div>
 
         <div class="ld-course-actions">
-          <a [routerLink]="['/learner/courses', row.course.id || row.enr.courseId]" class="btn">Open</a>
-          <a [routerLink]="['/learner/courses', row.course.id || row.enr.courseId]" class="btn outline">Details</a>
+          <a [routerLink]="['/learner/courses', row.course.id || row.enr.courseId]" class="btn primary">
+            {{ row.enr.status === 'completed' ? 'Review' : 'Open' }}
+          </a>
         </div>
       </article>
     </div>
@@ -93,37 +231,84 @@
       <div class="card empty">
         <h3>No assignments yet</h3>
         <p class="muted">When a course is assigned, it will appear here.</p>
-        <a routerLink="/learner/library" class="btn">Explore Library</a>
+        <a *ngIf="!isIndividualLearner(); else individualEmptyAction" routerLink="/learner/library" class="btn primary">Explore Courses</a>
+        <ng-template #individualEmptyAction>
+          <a routerLink="/catalogue" class="btn primary">Browse Public Courses</a>
+        </ng-template>
       </div>
     </ng-template>
   </section>
 
-  <!-- Recent Activity -->
+  <!-- RECENT ACTIVITY -->
   <section class="ld-section">
     <div class="ld-section-head">
-      <h2>Recent Activity</h2>
+      <h2>🕐 Recent Activity</h2>
     </div>
 
     <div class="card">
       <div class="ld-recent-list" *ngIf="recent().length; else noRecent">
         <div class="ld-recent-row" *ngFor="let item of recent()">
+          <div class="activity-icon">
+            <span *ngIf="item.type === 'Course'">📖</span>
+            <span *ngIf="item.type === 'Module'">📝</span>
+            <span *ngIf="item.type === 'Text'">📄</span>
+            <span *ngIf="!item.type">📌</span>
+          </div>
           <div class="left">
             <div class="course-title">{{ item.title }}</div>
             <div class="course-meta">
               <span class="badge">{{ item.type }}</span>
               <span class="dot"></span>
               <span>{{ item.duration }}</span>
+              <span class="dot"></span>
+              <span class="muted">{{ item.date }}</span>
             </div>
           </div>
           <div class="right">
-            <span class="muted">{{ item.date }}</span>
             <a [routerLink]="item.link" class="btn outline">Open</a>
           </div>
         </div>
       </div>
       <ng-template #noRecent>
-        <p class="muted" style="margin: 6px 0;">No recent activity yet.</p>
+        <p class="muted" style="margin: 6px 0;">No recent activity yet. Start a course to begin tracking!</p>
       </ng-template>
+    </div>
+  </section>
+
+  <!-- OFFICIAL EXAM RESULTS -->
+  <section class="ld-section" *ngIf="examAttempts().length">
+    <div class="ld-section-head">
+      <h2>🎓 Official Exam Results</h2>
+    </div>
+
+    <div class="card">
+      <div class="ld-recent-list">
+        <div class="ld-recent-row exam-result" *ngFor="let att of examAttempts()">
+          <div class="exam-status" [class.passed]="att.passed" [class.failed]="!att.passed">
+            {{ att.passed ? '✅ PASSED' : '❌ FAILED' }}
+          </div>
+          <div class="left">
+            <div class="course-title">
+              {{ att.passed ? 'Official Certification Exam' : 'Exam Attempt' }} — <strong>{{ att.score }}%</strong>
+            </div>
+            <div class="course-meta">
+              <span class="badge" [class.badge-success]="att.passed" [class.badge-danger]="!att.passed">
+                {{ att.passed ? 'PASSED' : 'FAILED' }}
+              </span>
+              <span class="dot"></span>
+              <span>{{ att.correctCount }} / {{ att.totalQuestions }} correct</span>
+              <ng-container *ngIf="att.membershipNumber">
+                <span class="dot"></span>
+                <span>Card: <strong>{{ att.membershipNumber }}</strong></span>
+              </ng-container>
+            </div>
+          </div>
+          <div class="right">
+            <span class="muted">{{ examAttemptDate(att) }}</span>
+            <a [routerLink]="['/exam-results']" [queryParams]="{ attemptId: att.id }" class="btn outline">Details</a>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 </main>

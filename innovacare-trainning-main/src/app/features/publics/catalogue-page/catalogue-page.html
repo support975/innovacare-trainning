@@ -1,39 +1,13 @@
-<header class="landing-header" [class.scrolled]="headerScrolled">
-  <div class="container header-inner">
-    <a class="brand" href="#top" (click)="closeMobileMenu()">
-      <span>Innovacare</span>
-      <strong>Training</strong>
-    </a>
-
-    <button class="menu-toggle" type="button" (click)="toggleMobileMenu()" aria-label="Ouvrir le menu">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
-
-    <nav class="nav" [class.open]="mobileMenuOpen">
-      <a  routerLink="/fonctionnalites" (click)="closeMobileMenu()">Fonctionnalités</a>
-      <a  routerLink="/categories" (click)="closeMobileMenu()">Catégories</a>
-      <a  routerLink="/catalogue" (click)="closeMobileMenu()">Cours</a>
-      <a  routerLink="/temoignages" (click)="closeMobileMenu()">Témoignages</a>
-      <a  routerLink="/faq" (click)="closeMobileMenu()">FAQ</a>
-      <button class="nav-cta mobile-only" type="button" (click)="openDemoDialog(); closeMobileMenu()">
-        Demander une démo
-      </button>
-    </nav>
-
-    <button class="nav-cta desktop-only" type="button" (click)="openDemoDialog()">
-      Demander une démo
-    </button>
-    <button class="nav-cta desktop-only" type="button" (click)="login()">
-      Connexion
-    </button>
-    <button class="nav-cta desktop-only" type="button"  routerLink="/pricing">Pricing</button>
-  </div>
-</header>
+<app-public-site-nav
+  page="catalogue"
+  contextLabel="Bibliothèque publique"
+  [contextValue]="courses().length + ' modules disponibles'"
+  mobileMetaLabel="Catalogue santé"
+  [mobileMetaValue]="filteredCourses().length + ' résultats visibles'"
+></app-public-site-nav>
 
 
-<section class="catalog-page">
+<section class="catalog-page" appPublicTranslate>
   <div class="catalog-hero">
     <div class="container catalog-hero__grid">
       <div class="catalog-hero__copy">
@@ -75,7 +49,7 @@
   </div>
 
   <div class="container section">
-    <div class="filter-shell">
+    <div id="filters" class="filter-shell">
       <div class="filter-grid">
         <mat-form-field appearance="outline">
           <mat-label>Recherche</mat-label>
@@ -155,7 +129,7 @@
     </div>
   </div>
 
-  <div class="container section section--compact" *ngIf="featuredCourses().length">
+  <div id="featured" class="container section section--compact" *ngIf="featuredCourses().length">
     <div class="section-head">
       <span class="eyebrow">Cours en vedette</span>
       <h2>Les modules les plus visibles</h2>
@@ -197,7 +171,7 @@
     </div>
   </div>
 
-  <div class="container section">
+  <div id="results" class="container section">
     <div class="catalog-header-row">
       <div>
         <span class="eyebrow">Résultats</span>

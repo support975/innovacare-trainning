@@ -1,4 +1,512 @@
-<section class="page-card">
-  <h1>Billing</h1>
-  <p>Review subscriptions, invoices, usage tiers, and payment status.</p>
-</section>
+<div class="sa-page">
+  <div class="page-header">
+    <div>
+      <p class="page-eyebrow">Super Admin · Billing</p>
+      <h1 class="page-title">Billing Command Center</h1>
+      <p class="page-sub">Monitor revenue, subscription risk, renewals, and payment follow-up.</p>
+    </div>
+    <div class="header-actions">
+      <span class="live-pill"><span></span> Live billing records</span>
+    </div>
+  </div>
+
+  <div class="stat-row">
+    <article class="stat-card stat-card--wide">
+      <div class="stat-card__icon stat-icon--navy">$</div>
+      <div>
+        <div class="stat-card__value">{{ formatMoney(stats().recurring) }}</div>
+        <div class="stat-card__label">Estimated MRR</div>
+      </div>
+    </article>
+    <article class="stat-card">
+      <div class="stat-card__icon stat-icon--teal">✓</div>
+      <div>
+        <div class="stat-card__value">{{ stats().active }}</div>
+        <div class="stat-card__label">Active</div>
+      </div>
+    </article>
+    <article class="stat-card">
+      <div class="stat-card__icon stat-icon--navy">◔</div>
+      <div>
+        <div class="stat-card__value">{{ stats().trial }}</div>
+        <div class="stat-card__label">Trial</div>
+      </div>
+    </article>
+    <article class="stat-card">
+      <div class="stat-card__icon stat-icon--orange">!</div>
+      <div>
+        <div class="stat-card__value">{{ stats().pastDue }}</div>
+        <div class="stat-card__label">Past due</div>
+      </div>
+    </article>
+    <article class="stat-card">
+      <div class="stat-card__icon stat-icon--red">↑</div>
+      <div>
+        <div class="stat-card__value">{{ formatMoney(stats().unpaid) }}</div>
+        <div class="stat-card__label">Unpaid</div>
+      </div>
+    </article>
+    <article class="stat-card">
+      <div class="stat-card__icon stat-icon--navy">↻</div>
+      <div>
+        <div class="stat-card__value">{{ stats().renewals }}</div>
+        <div class="stat-card__label">30-day renewals</div>
+      </div>
+    </article>
+  </div>
+
+  <div class="notice-banner" *ngIf="notice()">
+    <span class="notice-banner__text">{{ notice() }}</span>
+  </div>
+
+  <section class="panel create-bill-panel">
+    <button class="create-bill-toggle" type="button" (click)="createPanelOpen.set(!createPanelOpen())">
+      <span>
+        <strong>Create manual bill</strong>
+        <small>Use this for organizations paying by mobile money, bank transfer, cash, or a local Africa number.</small>
+      </span>
+      <span class="toggle-symbol">{{ createPanelOpen() ? '-' : '+' }}</span>
+    </button>
+
+    <div class="create-bill-body" *ngIf="createPanelOpen()">
+      <div class="manual-payment create-bill-grid">
+        <label class="field">
+          <span class="field__label">Organization</span>
+          <select
+            class="field__select"
+            [ngModel]="newBillOrgId()"
+            (ngModelChange)="selectNewBillOrg($event)"
+          >
+            <option value="">Manual organization</option>
+            <option *ngFor="let org of organizations()" [value]="org.id">{{ org.name || org.id }}</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field__label">Organization name</span>
+          <input
+            class="field__input"
+            type="text"
+            [ngModel]="newBillOrgName()"
+            (ngModelChange)="newBillOrgName.set($event)"
+            placeholder="Example: Innovacare Africa"
+          />
+        </label>
+        <label class="field">
+          <span class="field__label">Billing email</span>
+          <input
+            class="field__input"
+            type="email"
+            [ngModel]="newBillEmail()"
+            (ngModelChange)="newBillEmail.set($event)"
+          />
+        </label>
+        <label class="field">
+          <span class="field__label">Plan</span>
+          <select class="field__select" [ngModel]="newBillPlan()" (ngModelChange)="setNewBillPlan($event)">
+            <option *ngFor="let option of planOptions" [value]="option.value">{{ option.label }}</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field__label">Status</span>
+          <select class="field__select" [ngModel]="newBillStatus()" (ngModelChange)="setNewBillStatus($event)">
+            <option *ngFor="let option of statusOptions" [value]="option.value">{{ option.label }}</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field__label">Billing interval</span>
+          <select class="field__select" [ngModel]="newBillInterval()" (ngModelChange)="setNewBillInterval($event)">
+            <option value="monthly">Monthly</option>
+            <option value="yearly">Yearly</option>
+            <option value="one_time">One-time</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field__label">Amount received</span>
+          <input
+            class="field__input"
+            type="number"
+            min="0"
+            [ngModel]="newBillAmount()"
+            (ngModelChange)="setNewBillAmount($event)"
+          />
+        </label>
+        <label class="field">
+          <span class="field__label">Currency</span>
+          <input
+            class="field__input"
+            type="text"
+            maxlength="3"
+            [ngModel]="newBillCurrency()"
+            (ngModelChange)="newBillCurrency.set(($event || 'USD').toUpperCase())"
+          />
+        </label>
+        <label class="field">
+          <span class="field__label">Payment method</span>
+          <select class="field__select" [ngModel]="newBillMethod()" (ngModelChange)="setNewBillMethod($event)">
+            <option *ngFor="let option of manualMethodOptions" [value]="option.value">{{ option.label }}</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field__label">Receiving local number</span>
+          <input
+            class="field__input"
+            type="text"
+            placeholder="+237..., MTN, Orange, bank account..."
+            [ngModel]="newBillLocalNumber()"
+            (ngModelChange)="newBillLocalNumber.set($event)"
+          />
+        </label>
+        <label class="field">
+          <span class="field__label">Payer name</span>
+          <input
+            class="field__input"
+            type="text"
+            [ngModel]="newBillPayerName()"
+            (ngModelChange)="newBillPayerName.set($event)"
+          />
+        </label>
+        <label class="field">
+          <span class="field__label">Payer phone</span>
+          <input
+            class="field__input"
+            type="text"
+            [ngModel]="newBillPayerPhone()"
+            (ngModelChange)="newBillPayerPhone.set($event)"
+          />
+        </label>
+        <label class="field">
+          <span class="field__label">Transaction reference</span>
+          <input
+            class="field__input"
+            type="text"
+            [ngModel]="newBillReference()"
+            (ngModelChange)="newBillReference.set($event)"
+          />
+        </label>
+        <label class="field field--wide">
+          <span class="field__label">Payment note</span>
+          <input
+            class="field__input"
+            type="text"
+            placeholder="Example: Paid to Innovacare Africa local number"
+            [ngModel]="newBillNote()"
+            (ngModelChange)="newBillNote.set($event)"
+          />
+        </label>
+      </div>
+
+      <div class="manual-card__actions">
+        <button class="btn-primary" type="button" (click)="createManualBill()" [disabled]="saving()">
+          Create bill and record payment
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="billing-grid">
+    <aside class="panel records-panel">
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <span class="search-icon">⌕</span>
+          <input
+            class="search-input"
+            type="text"
+            placeholder="Search org, email, Stripe ID..."
+            [value]="search()"
+            (input)="search.set($any($event.target).value)"
+          />
+        </div>
+        <select
+          class="filter-select"
+          [value]="statusFilter()"
+          (change)="statusFilter.set($any($event.target).value)"
+        >
+          <option value="all">All statuses</option>
+          <option value="active">Active</option>
+          <option value="trial">Trial</option>
+          <option value="past_due">Past due</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <select
+          class="filter-select"
+          [value]="planFilter()"
+          (change)="planFilter.set($any($event.target).value)"
+        >
+          <option value="all">All plans</option>
+          <option value="free">Starter</option>
+          <option value="pro">Growth</option>
+          <option value="enterprise">Enterprise</option>
+        </select>
+      </div>
+
+      <div class="record-list" *ngIf="filtered().length; else emptyBilling">
+        <button
+          type="button"
+          class="record-row"
+          *ngFor="let record of filtered()"
+          [class.active]="selectedId() === record.id"
+          (click)="select(record)"
+        >
+          <span class="record-avatar">{{ (record.orgName || record.orgId).slice(0, 2).toUpperCase() }}</span>
+          <span class="record-main">
+            <strong>{{ record.orgName || record.orgId }}</strong>
+            <small>{{ record.billingEmail || record.orgId }}</small>
+            <span class="record-meta">
+              <span [class]="'badge badge--' + record.plan">{{ record.plan }}</span>
+              <span [class]="'badge badge--' + record.status">{{ record.status }}</span>
+              <span>{{ formatMoney(record.amount) }}</span>
+            </span>
+          </span>
+        </button>
+      </div>
+
+      <ng-template #emptyBilling>
+        <div class="empty-state">
+          <div class="empty-state__icon">□</div>
+          <strong>No billing records found</strong>
+          <span>Stripe webhooks and manual records will appear here.</span>
+        </div>
+      </ng-template>
+    </aside>
+
+    <section class="panel detail-panel" *ngIf="selected() as record; else noSelection">
+      <div class="detail-head">
+        <div>
+          <p class="page-eyebrow">Billing profile</p>
+          <h2>{{ record.orgName || record.orgId }}</h2>
+          <p>{{ record.billingEmail || 'No billing email' }}</p>
+        </div>
+        <span [class]="'badge badge--' + record.status">{{ record.status }}</span>
+      </div>
+
+      <div class="detail-actions">
+        <label class="field">
+          <span class="field__label">Plan</span>
+          <select
+            class="field__select"
+            [value]="record.plan"
+            [disabled]="saving()"
+            (change)="updatePlan(record, $any($event.target).value)"
+          >
+            <option *ngFor="let option of planOptions" [value]="option.value">{{ option.label }}</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field__label">Status</span>
+          <select
+            class="field__select"
+            [value]="record.status"
+            [disabled]="saving()"
+            (change)="updateStatus(record, $any($event.target).value)"
+          >
+            <option *ngFor="let option of statusOptions" [value]="option.value">{{ option.label }}</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="info-grid">
+        <div>
+          <span>Amount</span>
+          <strong>{{ formatMoney(record.amount) }}</strong>
+        </div>
+        <div>
+          <span>Interval</span>
+          <strong>{{ record.interval || 'monthly/manual' }}</strong>
+        </div>
+        <div>
+          <span>Seats</span>
+          <strong>{{ record.seats || '-' }}</strong>
+        </div>
+        <div>
+          <span>Provider</span>
+          <strong>{{ methodLabel(record.paymentProvider) }}</strong>
+        </div>
+        <div>
+          <span>Period start</span>
+          <strong>{{ formatDate(record.periodStart) }}</strong>
+        </div>
+        <div>
+          <span>Period end</span>
+          <strong>{{ formatDate(record.periodEnd) }}</strong>
+        </div>
+        <div>
+          <span>Renewal risk</span>
+          <strong>{{ renewalState(record) }}</strong>
+        </div>
+        <div>
+          <span>Stripe customer</span>
+          <strong>{{ record.stripeCustomerId || '-' }}</strong>
+        </div>
+        <div>
+          <span>Stripe subscription</span>
+          <strong>{{ record.stripeSubscriptionId || '-' }}</strong>
+        </div>
+        <div>
+          <span>Last payment</span>
+          <strong>
+            {{ record.lastPayment ? formatMoneyForCurrency(record.lastPayment.amount, record.lastPayment.currency) : '-' }}
+          </strong>
+        </div>
+        <div>
+          <span>Local number</span>
+          <strong>{{ record.localPaymentNumber || record.lastPayment?.receiverNumber || '-' }}</strong>
+        </div>
+      </div>
+
+      <div class="workbench">
+        <label class="field">
+          <span class="field__label">Internal billing notes</span>
+          <textarea
+            class="field__textarea"
+            rows="6"
+            [ngModel]="notes()"
+            (ngModelChange)="notes.set($event)"
+            placeholder="Contract notes, invoice context, payment promise, next step..."
+          ></textarea>
+        </label>
+        <label class="field">
+          <span class="field__label">Payment reminder draft</span>
+          <textarea
+            class="field__textarea response-textarea"
+            rows="8"
+            [ngModel]="reminderDraft()"
+            (ngModelChange)="reminderDraft.set($event)"
+          ></textarea>
+        </label>
+      </div>
+
+      <div class="manual-card">
+        <div class="manual-card__head">
+          <div>
+            <p class="page-eyebrow">Manual / local payment</p>
+            <h3>Record a payment outside Stripe</h3>
+          </div>
+          <span class="badge badge--manual">Local pay</span>
+        </div>
+
+        <div class="manual-payment">
+          <label class="field">
+            <span class="field__label">Amount received</span>
+            <input
+              class="field__input"
+              type="number"
+              min="0"
+              [ngModel]="manualAmount()"
+              (ngModelChange)="setManualAmount($event)"
+            />
+          </label>
+          <label class="field">
+            <span class="field__label">Currency</span>
+            <input
+              class="field__input"
+              type="text"
+              maxlength="3"
+              [ngModel]="manualCurrency()"
+              (ngModelChange)="manualCurrency.set(($event || 'USD').toUpperCase())"
+            />
+          </label>
+          <label class="field">
+            <span class="field__label">Payment method</span>
+            <select
+              class="field__select"
+              [ngModel]="manualMethod()"
+              (ngModelChange)="setManualMethod($event)"
+            >
+              <option *ngFor="let option of manualMethodOptions" [value]="option.value">{{ option.label }}</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="field__label">Receiving local number</span>
+            <input
+              class="field__input"
+              type="text"
+              placeholder="+237..., MTN, Orange, bank account..."
+              [ngModel]="manualReceiverNumber()"
+              (ngModelChange)="manualReceiverNumber.set($event)"
+            />
+          </label>
+          <label class="field">
+            <span class="field__label">Payer name</span>
+            <input
+              class="field__input"
+              type="text"
+              [ngModel]="manualPayerName()"
+              (ngModelChange)="manualPayerName.set($event)"
+            />
+          </label>
+          <label class="field">
+            <span class="field__label">Payer phone</span>
+            <input
+              class="field__input"
+              type="text"
+              [ngModel]="manualPayerPhone()"
+              (ngModelChange)="manualPayerPhone.set($event)"
+            />
+          </label>
+          <label class="field">
+            <span class="field__label">Transaction reference</span>
+            <input
+              class="field__input"
+              type="text"
+              placeholder="Mobile money confirmation, receipt, invoice..."
+              [ngModel]="manualReference()"
+              (ngModelChange)="manualReference.set($event)"
+            />
+          </label>
+          <label class="field field--wide">
+            <span class="field__label">Payment note</span>
+            <input
+              class="field__input"
+              type="text"
+              placeholder="Example: Paid to Innovacare Africa local number"
+              [ngModel]="manualNote()"
+              (ngModelChange)="manualNote.set($event)"
+            />
+          </label>
+        </div>
+
+        <div class="manual-card__actions">
+          <button class="btn-primary" type="button" (click)="markManualPayment(record)" [disabled]="saving()">
+            Add payment to bill
+          </button>
+        </div>
+
+        <div class="payment-history" *ngIf="recentManualPayments(record).length">
+          <p class="field__label">Recent manual payments</p>
+          <div class="payment-row" *ngFor="let payment of recentManualPayments(record)">
+            <span>
+              <strong>{{ formatMoneyForCurrency(payment.amount, payment.currency) }}</strong>
+              <small>{{ methodLabel(payment.method) }} · {{ formatDate(payment.recordedAt) }}</small>
+            </span>
+            <span>
+              <strong>{{ payment.reference || '-' }}</strong>
+              <small>{{ payment.receiverNumber || 'No local number saved' }}</small>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="button-row">
+        <button class="btn-ghost" type="button" (click)="saveNotes(record)" [disabled]="saving()">
+          Save notes
+        </button>
+        <button class="btn-ghost" type="button" (click)="sendReminder(record)" [disabled]="saving()">
+          Send reminder draft
+        </button>
+        <button class="btn-primary" type="button" (click)="openStripe(record)" [disabled]="!hasStripeLink(record)">
+          Open Stripe
+        </button>
+      </div>
+    </section>
+
+    <ng-template #noSelection>
+      <section class="panel detail-panel">
+        <div class="empty-state">
+          <div class="empty-state__icon">◇</div>
+          <strong>Select a billing record</strong>
+          <span>Choose an organization to review subscription details and actions.</span>
+        </div>
+      </section>
+    </ng-template>
+  </section>
+</div>

@@ -1,0 +1,171 @@
+{
+  "docPath": "courses/complaints-and-grievances-mt-cir-ipr-2026",
+  "docId": "complaints-and-grievances-mt-cir-ipr-2026",
+  "docData": {
+    "title": "Complaints and Grievances (MT CIR-IPR 2026)",
+    "subtitle": "Complaint and grievance identification and response",
+    "description": "Training course covering the difference between complaints and grievances and the action steps required for appropriate follow-up.",
+    "lang": "EN",
+    "durationMin": 18,
+    "ceCredit": 0,
+    "active": false,
+    "kind": "Course",
+    "type": "Health",
+    "level": "Beginner",
+    "imageUrl": "",
+    "url": "https://selectmedical.csod.com/content/selectmedical/publications/16187/scormcontent/index.html#/",
+    "lecturer": "Innovacare Training",
+    "disclosures": [],
+    "targetAudience": ["Clinical staff", "Administrative staff", "Leaders"],
+    "prerequisites": [],
+    "requirements": ["Review all lessons", "Complete the acknowledgement"],
+    "accomodations": "",
+    "passingScore": 80,
+    "lockedSequence": true,
+    "isPublic": false,
+    "tags": ["complaints", "grievances", "patient rights", "CIR-IPR 2026"],
+    "sections": [
+      {
+        "id": "complaints-grievances-main",
+        "title": "Complaints and Grievances",
+        "order": 0,
+        "lessons": [
+          {
+            "id": "introduction",
+            "title": "Introduction",
+            "estMin": 3,
+            "order": 0,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "hero",
+                "title": "Complaints and Grievances",
+                "bodyHtml": "<p>This course reviews how to recognize, document, and escalate complaints and grievances.</p>",
+                "buttonLabel": "Start lesson",
+                "required": true
+              }
+            ]
+          },
+          {
+            "id": "what-are-complaints-and-grievances",
+            "title": "What are Complaints and Grievances?",
+            "estMin": 6,
+            "order": 1,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "tabs",
+                "title": "Complaint or Grievance?",
+                "introHtml": "<p>Select each tab to compare the two concepts.</p>",
+                "required": true,
+                "tabs": [
+                  {
+                    "id": "complaint",
+                    "label": "Complaint",
+                    "title": "Complaint",
+                    "bodyHtml": "<p>A complaint is a concern that can often be resolved promptly by staff present at the time of the concern.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "grievance",
+                    "label": "Grievance",
+                    "title": "Grievance",
+                    "bodyHtml": "<p>A grievance is a formal or unresolved concern that requires the organization’s grievance process, documentation, review, and follow-up.</p>",
+                    "required": true
+                  }
+                ]
+              },
+              {
+                "type": "accordion",
+                "title": "Key Decision Points",
+                "introHtml": "<p>Open each decision point.</p>",
+                "required": true,
+                "items": [
+                  {
+                    "id": "resolved-now",
+                    "title": "Can it be resolved now?",
+                    "bodyHtml": "<p>If the concern can be resolved promptly, document the action and notify the appropriate leader if required.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "formal-followup",
+                    "title": "Does it require formal follow-up?",
+                    "bodyHtml": "<p>If formal review or written response is required, route it through the grievance process.</p>",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "action-steps",
+            "title": "Action Steps",
+            "estMin": 6,
+            "order": 2,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "cardStack",
+                "title": "Action Steps",
+                "introHtml": "<p>Open each card in sequence.</p>",
+                "variant": "gated",
+                "required": true,
+                "cards": [
+                  {
+                    "id": "listen",
+                    "title": "Listen",
+                    "teaser": "Hear the concern",
+                    "bodyHtml": "<p>Listen respectfully and gather the facts without dismissing the concern.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "document",
+                    "title": "Document",
+                    "teaser": "Capture objective details",
+                    "bodyHtml": "<p>Document what was reported, who was involved, and any immediate actions taken.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "escalate",
+                    "title": "Escalate",
+                    "teaser": "Notify the right person",
+                    "bodyHtml": "<p>Escalate according to policy and support required follow-up.</p>",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "course-conclusion",
+            "title": "Course Conclusion",
+            "estMin": 3,
+            "order": 3,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "quizIntro",
+                "title": "Acknowledgement",
+                "bodyHtml": "<p>Confirm your understanding of the complaint and grievance response process.</p>",
+                "buttonLabel": "Continue",
+                "passPct": 80,
+                "required": true
+              },
+              {
+                "type": "quiz",
+                "mode": "single",
+                "question": "What is the best first response when someone reports a concern?",
+                "required": true,
+                "choices": [
+                  { "id": "listen", "text": "Listen, document, and follow the required escalation process", "correct": true },
+                  { "id": "delay", "text": "Delay documentation until the concern is repeated", "correct": false },
+                  { "id": "dismiss", "text": "Dismiss it if it seems minor", "correct": false }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

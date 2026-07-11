@@ -35,6 +35,9 @@ export interface Enrollment {
   courseId: string;
   status: EnrollmentStatus;
   assignedBy: 'self' | string;
+  accessMode?: 'individual' | 'organization' | 'approved_individual';
+  paymentStatus?: 'not_started' | 'pending' | 'paid' | 'waived';
+  accessRequestId?: string;
 
   assignedAt?: any;
   startedAt?: any;
@@ -112,6 +115,7 @@ export class EnrollmentService {
         courseId,
         status: 'assigned' as EnrollmentStatus,
         assignedBy,
+        ...(assignedBy === 'self' ? { accessMode: 'individual' as const, orgId: null } : {}),
         assignedAt: serverTimestamp(),
         ...(dueDate ? { dueDate } : {}),
       },
@@ -209,30 +213,37 @@ export class EnrollmentService {
     );
   }
 
-  /** Manager/Admin: now supports dueDate */
-  async managerAssignCourseToUser(targetUid: string, courseId: string, dueDate?: Timestamp): Promise<void> {
+  /** Manager/Admin: now supports dueDate and orgId for collectionGroup isolation */
+  async managerAssignCourseToUser(
+    targetUid: string,
+    courseId: string,
+    dueDate?: Timestamp,
+    orgId?: string | null
+  ): Promise<void> {
     const manager = this.auth.currentUser;
     if (!manager) throw new Error('Not authenticated.');
 
     await setDoc(
       this.ref(targetUid, courseId),
       {
-        uid: targetUid,            // ✅ ALWAYS store uid
+        uid: targetUid,
         courseId,
         status: 'assigned' as EnrollmentStatus,
         assignedBy: manager.uid,
         assignedAt: serverTimestamp(),
+        ...(orgId ? { orgId } : {}),
         ...(dueDate ? { dueDate } : {}),
       },
       { merge: true }
     );
   }
 
-  /** Bulk assign supports optional uniform dueDate */
+  /** Bulk assign — orgId is written on every enrollment for collectionGroup isolation */
   async managerAssignBulk(
     userIds: string[],
     courseIds: string[],
-    dueDate?: Timestamp
+    dueDate?: Timestamp,
+    orgId?: string | null
   ): Promise<{ ok: number; failed: Array<{ uid: string; courseId: string; err: any }> }> {
     const manager = this.auth.currentUser;
     if (!manager) throw new Error('Not authenticated.');
@@ -244,44 +255,78 @@ export class EnrollmentService {
     let ok = 0;
     const failed: Array<{ uid: string; courseId: string; err: any }> = [];
 
+    const basePayload = (uid: string, courseId: string) => ({
+      uid,
+      courseId,
+      status: 'assigned' as EnrollmentStatus,
+      assignedBy: manager.uid,
+      assignedAt: serverTimestamp(),
+      ...(orgId ? { orgId } : {}),
+      ...(dueDate ? { dueDate } : {}),
+    });
+
     for (let i = 0; i < pairs.length; i += MAX_PER_BATCH) {
       const batch = writeBatch(this.db);
       const slice = pairs.slice(i, i + MAX_PER_BATCH);
 
       for (const { uid, courseId } of slice) {
-        batch.set(
-          this.ref(uid, courseId),
-          {
-            uid,                   // ✅ ALWAYS store uid
-            courseId,
-            status: 'assigned' as EnrollmentStatus,
-            assignedBy: manager.uid,
-            assignedAt: serverTimestamp(),
-            ...(dueDate ? { dueDate } : {}),
-          },
-          { merge: true }
-        );
+        batch.set(this.ref(uid, courseId), basePayload(uid, courseId), { merge: true });
       }
 
       try {
         await batch.commit();
         ok += slice.length;
       } catch (err) {
-        // fallback individual
         for (const { uid, courseId } of slice) {
           try {
-            await setDoc(
-              this.ref(uid, courseId),
-              {
-                uid,
-                courseId,
-                status: 'assigned' as EnrollmentStatus,
-                assignedBy: manager.uid,
-                assignedAt: serverTimestamp(),
-                ...(dueDate ? { dueDate } : {}),
-              },
-              { merge: true }
-            );
+            await setDoc(this.ref(uid, courseId), basePayload(uid, courseId), { merge: true });
+            ok++;
+          } catch (e) {
+            failed.push({ uid, courseId, err: e });
+          }
+        }
+      }
+    }
+
+    return { ok, failed };
+  }
+
+  /** Admin/Super-admin: remove assigned courses from learner assignment lists. */
+  async adminRemoveAssignmentsBulk(
+    userIds: string[],
+    courseIds: string[]
+  ): Promise<{ ok: number; failed: Array<{ uid: string; courseId: string; err: any }> }> {
+    const admin = this.auth.currentUser;
+    if (!admin) throw new Error('Not authenticated.');
+
+    const pairs: Array<{ uid: string; courseId: string }> = [];
+    for (const uid of userIds) {
+      for (const courseId of courseIds) {
+        pairs.push({ uid, courseId });
+      }
+    }
+
+    const MAX_PER_BATCH = 400;
+    let ok = 0;
+    const failed: Array<{ uid: string; courseId: string; err: any }> = [];
+
+    for (let i = 0; i < pairs.length; i += MAX_PER_BATCH) {
+      const batch = writeBatch(this.db);
+      const slice = pairs.slice(i, i + MAX_PER_BATCH);
+
+      for (const { uid, courseId } of slice) {
+        batch.delete(this.ref(uid, courseId));
+      }
+
+      try {
+        await batch.commit();
+        ok += slice.length;
+      } catch (err) {
+        for (const { uid, courseId } of slice) {
+          try {
+            const single = writeBatch(this.db);
+            single.delete(this.ref(uid, courseId));
+            await single.commit();
             ok++;
           } catch (e) {
             failed.push({ uid, courseId, err: e });

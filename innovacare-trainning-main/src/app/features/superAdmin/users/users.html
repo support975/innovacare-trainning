@@ -1,57 +1,175 @@
-<section class="page">
-  <div class="page-head">
-    <h1>Users</h1>
-    <p>Manage roles, account state, and basic user administration.</p>
+<div class="sa-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <p class="page-eyebrow">Super Admin · Users</p>
+      <h1 class="page-title">Users</h1>
+      <p class="page-sub">Manage roles, activation status, and account administration.</p>
+    </div>
   </div>
 
+  <!-- Notice Banner -->
+  <div *ngIf="notice()" class="notice-banner" [class.notice-banner--error]="noticeError()">
+    <span class="notice-banner__text">{{ notice() }}</span>
+  </div>
+
+  <div class="panel create-user-panel">
+    <div class="create-user-head">
+      <div>
+        <div class="create-user-title">Add a user to an organization</div>
+        <div class="create-user-sub">Creates the login account and links it to the selected organization.</div>
+      </div>
+    </div>
+    <form class="create-user-form" (ngSubmit)="createUser()">
+      <input class="form-input" name="displayName" [(ngModel)]="createForm.displayName" placeholder="Full name" />
+      <input class="form-input" name="email" type="email" [(ngModel)]="createForm.email" placeholder="Email address" required />
+      <select class="filter-select" name="role" [(ngModel)]="createForm.role">
+        <option value="learner">Learner</option>
+        <option value="manager">Manager</option>
+        <option value="admin">Organization Admin</option>
+      </select>
+      <select class="filter-select" name="orgId" [(ngModel)]="createForm.orgId" required>
+        <option value="">Select organization</option>
+        <option *ngFor="let org of organizations()" [value]="org.id">{{ org.name }}</option>
+      </select>
+      <button class="btn-primary" type="submit" [disabled]="creating()">
+        {{ creating() ? 'Creating…' : 'Create User' }}
+      </button>
+    </form>
+    <div class="credentials-card" *ngIf="createdUser() as created">
+      <span>Temporary credentials for {{ created.email }}</span>
+      <strong>{{ created.temporaryPassword }}</strong>
+      <small>Copy this password now and ask the user to reset it after signing in.</small>
+    </div>
+  </div>
+
+  <!-- Main Panel -->
   <div class="panel">
-    <div class="filters">
-      <input [ngModel]="search()" (ngModelChange)="search.set($event)" placeholder="Search user by email / name / uid" />
-      <select [ngModel]="roleFilter()" (ngModelChange)="roleFilter.set($event)">
-        <option value="">All roles</option>
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <span class="search-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </span>
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Search by email, name, or UID..."
+          [value]="search()"
+          (input)="search.set($any($event.target).value)"
+        />
+      </div>
+      <select
+        class="filter-select"
+        [value]="roleFilter()"
+        (change)="roleFilter.set($any($event.target).value)"
+      >
+        <option value="all">All Roles</option>
         <option value="super_admin">Super Admin</option>
         <option value="admin">Admin</option>
         <option value="manager">Manager</option>
         <option value="learner">Learner</option>
         <option value="guest">Guest</option>
       </select>
-      <button class="btn" (click)="refresh()">Apply</button>
+      <button class="btn-primary" (click)="refresh()">Apply</button>
     </div>
 
-    <p class="notice" *ngIf="notice()">{{ notice() }}</p>
-  </div>
-
-  <div class="panel">
-    <div class="table">
-      <div class="thead">
-        <div>Email</div>
-        <div>Name</div>
-        <div>Role</div>
-        <div>Status</div>
-        <div>Actions</div>
-      </div>
-
-      <div class="tbody">
-        <div class="tr" *ngFor="let u of users()">
-          <div>{{ u.email }}</div>
-          <div>{{ u.displayName || '—' }}</div>
-          <div>{{ u.role }}</div>
-          <div>{{ u.active ? 'Active' : 'Disabled' }}</div>
-          <div class="actions-cell">
-            <select #roleSel [ngModel]="u.role">
-              <option value="super_admin">Super Admin</option>
-              <option value="admin">Admin</option>
-              <option value="manager">Manager</option>
-              <option value="learner">Learner</option>
-              <option value="guest">Guest</option>
-            </select>
-            <button class="btn" (click)="changeRole(u.uid, roleSel.value)">Save role</button>
-            <button class="btn" (click)="toggleActive(u.uid, !!u.active)">
-              {{ u.active ? 'Disable' : 'Enable' }}
-            </button>
-          </div>
-        </div>
-      </div>
+    <!-- Table -->
+    <div *ngIf="users().length > 0; else emptyUsers">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th>Organization</th>
+            <th>Analytics</th>
+            <th>Active</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let u of users()">
+            <td>
+              <div class="user-cell">
+                <div class="avatar">
+                  {{ (u.displayName || u.email || '?').charAt(0).toUpperCase() }}
+                </div>
+                <div class="user-info">
+                  <div class="user-name">{{ u.displayName || '—' }}</div>
+                  <div class="user-email">{{ u.email }}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <select #roleSel [ngModel]="u.role" class="role-select">
+                <option value="super_admin">Super Admin</option>
+                <option value="admin">Admin</option>
+                <option value="manager">Manager</option>
+                <option value="learner">Learner</option>
+                <option value="guest">Guest</option>
+              </select>
+            </td>
+            <td>
+              <select #orgSel class="org-select" [ngModel]="u.orgId || ''">
+                <option value="">No organization</option>
+                <option *ngFor="let org of organizations()" [value]="org.id">{{ org.name }}</option>
+              </select>
+              <button class="btn-ghost btn-sm org-save" (click)="changeOrganization(u.uid, orgSel.value)">
+                Save Org
+              </button>
+            </td>
+            <td>
+              <div class="analytics-cell">
+                <div class="analytics-top">
+                  <span class="analytics-pill analytics-pill--navy">
+                    Progress {{ u.analytics.averageProgress !== null ? u.analytics.averageProgress + '%' : '—' }}
+                  </span>
+                  <span class="analytics-pill analytics-pill--teal">
+                    Study {{ formatStudyTime(u.analytics.estimatedStudyMinutes) }}
+                  </span>
+                  <span class="analytics-pill analytics-pill--blue">
+                    App {{ formatStudyTime(u.analytics.totalAppMinutes) }}
+                  </span>
+                </div>
+                <div class="analytics-meta">
+                  <span>Seen {{ formatLastSeen(u.analytics.lastSeenAt) }}</span>
+                  <span>{{ u.analytics.activeCourses }} active</span>
+                  <span>{{ u.analytics.completedCourses }} completed</span>
+                  <span>Score {{ u.analytics.averageScore !== null ? u.analytics.averageScore + '%' : '—' }}</span>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span [class]="'badge badge--' + (u.active ? 'active' : 'inactive')">
+                {{ u.active ? 'Active' : 'Disabled' }}
+              </span>
+            </td>
+            <td>
+              <div class="user-actions">
+                <button class="btn-ghost btn-sm" (click)="changeRole(u.uid, roleSel.value)">Save Role</button>
+                <button
+                  [class]="u.active ? 'btn-danger btn-sm' : 'btn-primary btn-sm'"
+                  (click)="toggleActive(u.uid, !!u.active)"
+                >
+                  {{ u.active ? 'Disable' : 'Enable' }}
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
+
+    <ng-template #emptyUsers>
+      <div class="empty-state">
+        <div class="empty-state__icon">&#128100;</div>
+        <strong>No users found</strong>
+        <span>Try adjusting your filters or search query.</span>
+      </div>
+    </ng-template>
   </div>
-</section>
+
+</div>

@@ -1,4 +1,4 @@
-<section class="course-detail-page" *ngIf="!loading(); else loadingTpl">
+<section class="course-detail-page" *ngIf="!loading(); else loadingTpl" appPublicTranslate>
   <div class="container" *ngIf="course() as course; else notFoundTpl">
     <!-- Hero Section -->
     <div class="detail-hero">
@@ -32,7 +32,7 @@
             </div>
             <div class="meta-item">
               <mat-icon>schedule</mat-icon>
-           
+              <span>{{ course.durationMin || 0 }} min</span>
             </div>
             <div class="meta-item">
               <mat-icon>play_circle</mat-icon>
@@ -49,9 +49,16 @@
           </div>
 
           <div class="detail-actions">
-            <button mat-flat-button color="primary" type="button" class="btn-primary">
+            <button
+              mat-flat-button
+              color="primary"
+              type="button"
+              class="btn-primary"
+              (click)="startCourse()"
+              [disabled]="starting()"
+            >
               <mat-icon>play_arrow</mat-icon>
-              Commencer le cours
+              {{ starting() ? 'Préparation...' : 'Commencer le cours' }}
             </button>
             <button mat-stroked-button type="button" (click)="addToPathway()" class="btn-secondary">
               <mat-icon>bookmark_border</mat-icon>
@@ -138,22 +145,22 @@
                   <div class="section-number">{{ i + 1 }}</div>
                   <div class="section-info">
                     <h3>{{ section.title }}</h3>
-                    <p class="section-lessons" *ngIf="section.lessons?.length">
-                      {{ section.lessons?.length }} leçons
+                    <p class="section-lessons" *ngIf="section.lessons.length">
+                      {{ section.lessons.length }} leçons
                     </p>
                   </div>
                 </div>
 
                 <p class="section-description" *ngIf="section['description']">{{ section['description'] }}</p>
 
-                <div class="lesson-list" *ngIf="section.lessons?.length">
+                <div class="lesson-list" *ngIf="section.lessons.length">
                   <div class="lesson-item" *ngFor="let lesson of section.lessons">
                     <div class="lesson-indicator">
                       <mat-icon>video_library</mat-icon>
                     </div>
                     <div class="lesson-content">
                       <strong>{{ lesson.title }}</strong>
-                      <span class="lesson-meta">{{ lesson.blocks?.length || 0 }} blocs</span>
+                      <span class="lesson-meta">{{ lesson.blocks.length || 0 }} blocs</span>
                     </div>
                   </div>
                 </div>
@@ -230,7 +237,28 @@
 
   <ng-template #notFoundTpl>
     <div class="container">
-      <p>Cours introuvable.</p>
+      <div class="access-request-card">
+        <h2>Organization course access</h2>
+        <p>
+          This course is not public. Individual learners must request access, wait for admin
+          approval, complete payment, then the course will appear in assignments.
+        </p>
+        <button
+          *ngIf="requestedCourseId()"
+          mat-flat-button
+          color="primary"
+          type="button"
+          (click)="requestOrganizationCourseAccess()"
+          [disabled]="accessRequesting()"
+        >
+          <mat-icon>lock_open</mat-icon>
+          {{ accessRequesting() ? 'Submitting...' : 'Request access' }}
+        </button>
+        <a routerLink="/catalogue" class="back-link access-request-card__back">
+          <mat-icon>arrow_back</mat-icon>
+          <span>Back to public catalogue</span>
+        </a>
+      </div>
     </div>
   </ng-template>
 </section>

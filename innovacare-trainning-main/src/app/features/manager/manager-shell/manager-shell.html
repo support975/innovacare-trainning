@@ -1,38 +1,85 @@
-<div class="shell">
+<div class="shell" [style.--org-accent]="organizationAccent()">
+
   <!-- TOP BAR -->
   <header class="topbar">
-    <button class="menu-toggle" (click)="toggleSidebar()" aria-label="Open menu">☰</button>
-    <div class="brand"><strong>INNOVACARE-TRAINING</strong></div>
+    <button class="menu-toggle" (click)="toggleSidebar()" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+
+    <a class="brand" routerLink="/manager/dashboard">
+      <div class="brand-mark">
+        <img [src]="organizationLogoUrl() || '/logo.png'" [alt]="organizationName()" />
+      </div>
+      <div class="brand-copy">
+        <span>{{ organizationName() }}</span>
+        <strong>{{ lang.t('Training Portal') }}</strong>
+      </div>
+    </a>
+
     <div class="top-actions">
-      <span class="role">Manager</span>
-      <div class="avatar" title="Profile"></div>
+      <div class="lang-toggle">
+        <button
+          type="button"
+          [class.active]="lang.language() === 'en'"
+          (click)="lang.setLanguage('en')"
+        >EN</button>
+        <button
+          type="button"
+          [class.active]="lang.language() === 'fr'"
+          (click)="lang.setLanguage('fr')"
+        >FR</button>
+      </div>
       <app-notification-bell-plain></app-notification-bell-plain>
-      <button class="btn logout" (click)="logout()">Logout</button>
+      <div class="plan-chip">
+        <strong>{{ planName() }}</strong>
+        <span>{{ planLimitLabel() }}</span>
+      </div>
+      <div class="role-badge">{{ lang.t('Manager') }}</div>
+      <div class="user-chip">
+        <div class="user-avatar" [attr.aria-label]="displayName()">
+          <img *ngIf="avatarUrl(); else managerInitials" [src]="avatarUrl()" [alt]="displayName()" />
+          <ng-template #managerInitials>{{ initials() }}</ng-template>
+        </div>
+        <div class="user-copy">
+          <div class="user-name">{{ displayName() }}</div>
+          <div class="user-org">{{ organizationName() }}</div>
+        </div>
+      </div>
+      <button class="btn-logout" (click)="logout()">{{ lang.t('Sign out') }}</button>
     </div>
   </header>
 
   <!-- SIDEBAR -->
   <aside class="sidebar" [class.open]="sidebarOpen()">
     <nav class="menu">
-      <div class="menu-group">
-        <div class="menu-title">Overview</div>
-        <a *ngFor="let i of nav()"
-           [routerLink]="i.path"
+      <div class="menu-section" *ngFor="let section of sections()">
+        <div class="menu-section-label">{{ lang.t(section.label) }}</div>
+        <a *ngFor="let item of section.items"
+           [routerLink]="item.path"
            routerLinkActive="active"
            class="menu-item"
-           (click)="closeSidebar()">{{ i.label }}</a>
+           (click)="closeSidebar()">
+          <span class="menu-item-icon">{{ item.icon }}</span>
+          <span class="menu-item-copy">
+            <span class="menu-item-title">{{ lang.t(item.label) }}</span>
+            <span class="menu-item-hint">{{ lang.t(item.hint) }}</span>
+          </span>
+        </a>
       </div>
 
-      <div class="menu-group">
-        <div class="menu-title">Resources</div>
-        <a *ngFor="let r of resources()"
-           [routerLink]="r.path"
-           routerLinkActive="active"
-           class="menu-item"
-           (click)="closeSidebar()">{{ r.label }}</a>
-           
-      </div>
     </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-footer-brand">
+        <div class="brand-mark brand-mark--sm">
+          <img [src]="organizationLogoUrl() || '/logo.png'" [alt]="organizationName()" />
+        </div>
+        <div class="sidebar-footer-info">
+          <div class="sidebar-footer-name">{{ organizationName() }}</div>
+          <div class="sidebar-footer-role">{{ planName() }} · {{ planLimitLabel() }}</div>
+        </div>
+      </div>
+    </div>
   </aside>
 
   <!-- BACKDROP -->
@@ -42,4 +89,5 @@
   <main class="content">
     <router-outlet></router-outlet>
   </main>
+
 </div>

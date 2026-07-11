@@ -1,38 +1,204 @@
-<section class="card">
-    <h2>Assign courses</h2>
+<div class="assign-page">
 
-    <div class="grid">
-      <div>
-        <h3>Users</h3>
-        <input type="search" placeholder="Search users"
-          [ngModel]="uQuery()" (ngModelChange)="uQuery.set($event)" />
-        <div class="list">
-          <label *ngFor="let u of filteredUsers()">
-            <input type="checkbox" [checked]="selectedUsers().has(u.id)" (change)="toggleUser(u.id, $event.target.checked)" />
-            {{ u.displayName || u.email || u.id }} <span class="muted">({{ u.role || 'n/a' }})</span>
-          </label>
-        </div>
-      </div>
+  <!-- PAGE HEADER -->
+  <header class="page-header">
+    <div class="page-header__left">
+      <div class="page-eyebrow">Manager · Assign</div>
+      <h1 class="page-title">Assign Training</h1>
+      <p class="page-sub">Select learners and courses, then click Assign to enroll them.</p>
+    </div>
+  </header>
 
-      <div>
-        <h3>Courses</h3>
-        <input type="search" placeholder="Search courses"
-          [ngModel]="cQuery()" (ngModelChange)="cQuery.set($event)" />
-        <div class="list">
-          <label *ngFor="let c of filteredCourses()">
-            <input type="checkbox" [checked]="selectedCourses().has(c.id)" (change)="toggleCourse(c.id, $event.target.checked)" />
-            {{ c.title || c.id }} <span class="muted">({{ c.kind || 'Course' }})</span>
-            <span *ngIf="c.active===false" class="muted">• inactive</span>
-          </label>
-        </div>
-      </div>
+  <!-- NOTICE BANNER -->
+  <div class="notice-banner" *ngIf="notice()" [class.notice-banner--error]="error()">
+    <span class="notice-banner__icon">{{ error() ? '✕' : '✓' }}</span>
+    <span class="notice-banner__text">{{ notice() }}</span>
+    <button class="notice-banner__close" (click)="clearNotice()">✕</button>
+  </div>
+
+  <!-- LEARNING PATH SELECTOR -->
+  <section class="path-panel" *ngIf="paths().length">
+    <div class="path-panel__copy">
+      <div class="path-panel__eyebrow">Learning Paths</div>
+      <h2>Assign a complete program</h2>
+      <p>Select a path to automatically choose all courses included in that organization-approved program.</p>
     </div>
 
-    <div class="actions">
-      <button class="btn primary" [disabled]="busy() || selectedUsers().size===0 || selectedCourses().size===0"
-              (click)="assign()">
-        {{ busy() ? 'Assigning…' : 'Assign selected' }}
+    <div class="path-panel__controls">
+      <select
+        class="path-select"
+        [ngModel]="selectedPathId()"
+        (ngModelChange)="selectedPathId.set($event)">
+        <option value="">Select learning path</option>
+        <option *ngFor="let path of paths()" [value]="path.id">
+          {{ path.title }} ({{ path.courseIds.length }} courses)
+        </option>
+      </select>
+      <button class="btn-path" type="button" [disabled]="!selectedPath()" (click)="applySelectedPath()">
+        Select path courses
       </button>
-      <span *ngIf="notice()" [class.error]="error()">{{ notice() }}</span>
+    </div>
+
+    <div class="path-panel__meta" *ngIf="selectedPath() as path">
+      <span>{{ path.category || 'General' }}</span>
+      <span>{{ selectedPathCourseCount() }} course{{ selectedPathCourseCount() !== 1 ? 's' : '' }}</span>
+      <span>{{ path.durationDays || 0 }} target days</span>
     </div>
   </section>
+
+  <!-- SUMMARY BAR -->
+  <div class="summary-bar" [class.summary-bar--ready]="selectedUsers().size > 0 && selectedCourses().size > 0">
+    <div class="summary-bar__counts">
+      <div class="summary-chip" [class.summary-chip--active]="selectedUsers().size > 0">
+        <span class="summary-chip__icon">◎</span>
+        <span class="summary-chip__val">{{ selectedUsers().size }}</span>
+        <span class="summary-chip__label">learner{{ selectedUsers().size !== 1 ? 's' : '' }} selected</span>
+      </div>
+      <div class="summary-bar__arrow">→</div>
+      <div class="summary-chip" [class.summary-chip--active]="selectedCourses().size > 0">
+        <span class="summary-chip__icon">▣</span>
+        <span class="summary-chip__val">{{ selectedCourses().size }}</span>
+        <span class="summary-chip__label">course{{ selectedCourses().size !== 1 ? 's' : '' }} selected</span>
+      </div>
+      <div class="summary-bar__equals" *ngIf="selectedUsers().size > 0 && selectedCourses().size > 0">
+        = {{ selectedUsers().size * selectedCourses().size }} enrollment{{ selectedUsers().size * selectedCourses().size !== 1 ? 's' : '' }}
+      </div>
+    </div>
+
+    <div class="summary-actions">
+      <button
+        class="btn-remove"
+        *ngIf="canRemoveAssignments()"
+        [disabled]="busy() || selectedUsers().size === 0 || selectedCourses().size === 0"
+        (click)="removeSelectedAssignments()">
+        Remove Selected
+      </button>
+
+      <button
+        class="btn-assign"
+        [disabled]="busy() || selectedUsers().size === 0 || selectedCourses().size === 0"
+        (click)="assign()">
+        <span *ngIf="busy()" class="spinner"></span>
+        <span>{{ busy() ? 'Working…' : 'Assign Now' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- TWO-PANEL GRID -->
+  <div class="panels-grid">
+
+    <!-- LEARNERS PANEL -->
+    <div class="panel">
+      <div class="panel__head">
+        <div>
+          <div class="panel__title">Learners</div>
+          <div class="panel__sub">{{ filteredUsers().length }} of {{ users().length }} shown</div>
+        </div>
+        <div class="panel__head-right">
+          <span class="sel-badge" *ngIf="selectedUsers().size > 0">{{ selectedUsers().size }} selected</span>
+          <button class="btn-ghost-sm" *ngIf="selectedUsers().size > 0" (click)="clearSelectedUsers()">Clear</button>
+        </div>
+      </div>
+
+      <div class="panel__search">
+        <span class="search-icon">⌕</span>
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Search by name or email…"
+          [ngModel]="uQuery()"
+          (ngModelChange)="uQuery.set($event)"
+        />
+        <button class="search-clear" *ngIf="uQuery()" (click)="uQuery.set('')">✕</button>
+      </div>
+
+      <div class="panel__list">
+        <label class="row" *ngFor="let u of filteredUsers()" [class.row--checked]="selectedUsers().has(u.id)">
+          <input
+            class="row__check"
+            type="checkbox"
+            [checked]="selectedUsers().has(u.id)"
+            (change)="toggleUser(u.id, $any($event.target).checked)"
+          />
+          <div class="avatar">{{ getInitials(u.displayName || u.email || u.id) }}</div>
+          <div class="row__body">
+            <div class="row__name">{{ u.displayName || '(no name)' }}</div>
+            <div class="row__meta">{{ u.email || u.id }}</div>
+          </div>
+          <span class="row__check-mark" *ngIf="selectedUsers().has(u.id)">✓</span>
+        </label>
+
+        <div class="panel__empty" *ngIf="filteredUsers().length === 0 && users().length > 0">
+          <div class="panel__empty-icon">◎</div>
+          <div>No learners match your search</div>
+          <button class="link-btn" (click)="uQuery.set('')">Clear filter</button>
+        </div>
+
+        <div class="panel__empty" *ngIf="users().length === 0">
+          <div class="panel__empty-icon">◎</div>
+          <div>No learners in your organisation yet</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COURSES PANEL -->
+    <div class="panel">
+      <div class="panel__head">
+        <div>
+          <div class="panel__title">Courses</div>
+          <div class="panel__sub">{{ filteredCourses().length }} of {{ courses().length }} shown</div>
+        </div>
+        <div class="panel__head-right">
+          <span class="sel-badge" *ngIf="selectedCourses().size > 0">{{ selectedCourses().size }} selected</span>
+          <button class="btn-ghost-sm" *ngIf="selectedCourses().size > 0" (click)="clearSelectedCourses()">Clear</button>
+        </div>
+      </div>
+
+      <div class="panel__search">
+        <span class="search-icon">⌕</span>
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Search by title…"
+          [ngModel]="cQuery()"
+          (ngModelChange)="cQuery.set($event)"
+        />
+        <button class="search-clear" *ngIf="cQuery()" (click)="cQuery.set('')">✕</button>
+      </div>
+
+      <div class="panel__list">
+        <label class="row" *ngFor="let c of filteredCourses()" [class.row--checked]="selectedCourses().has(c.id)" [class.row--inactive]="c.active === false">
+          <input
+            class="row__check"
+            type="checkbox"
+            [checked]="selectedCourses().has(c.id)"
+            (change)="toggleCourse(c.id, $any($event.target).checked)"
+          />
+          <div class="course-icon" [class.course-icon--inactive]="c.active === false">▣</div>
+          <div class="row__body">
+            <div class="row__name">{{ c.title || c.id }}</div>
+            <div class="row__meta">
+              <span class="kind-badge">{{ c.kind || 'Course' }}</span>
+              <span *ngIf="c.durationMin" class="row__dur">{{ c.durationMin }} min</span>
+              <span *ngIf="c.active === false" class="inactive-pill">Inactive</span>
+            </div>
+          </div>
+          <span class="row__check-mark" *ngIf="selectedCourses().has(c.id)">✓</span>
+        </label>
+
+        <div class="panel__empty" *ngIf="filteredCourses().length === 0 && courses().length > 0">
+          <div class="panel__empty-icon">▣</div>
+          <div>No courses match your search</div>
+          <button class="link-btn" (click)="cQuery.set('')">Clear filter</button>
+        </div>
+
+        <div class="panel__empty" *ngIf="courses().length === 0">
+          <div class="panel__empty-icon">▣</div>
+          <div>No courses available yet</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /panels-grid -->
+
+</div>

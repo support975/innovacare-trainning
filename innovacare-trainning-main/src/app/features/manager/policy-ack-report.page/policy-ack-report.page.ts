@@ -1,223 +1,225 @@
-import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { from, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-
-import { MatTableModule } from '@angular/material/table';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatCardModule } from '@angular/material/card';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
-import { MatDividerModule } from '@angular/material/divider';
-
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Firestore, doc, getDoc } from '@angular/fire/firestore';
-
 import { Policy, PolicyAcknowledgement } from '../../learner/policy/model/policy.model';
 import { PolicyService } from '../../../shared/services/policy';
 
-type UserLabel = { name: string; email: string; role: string };
+type UserLabel = {
+  name: string;
+  email: string;
+  role: string;
+};
+
+type ReportRow = {
+  userId: string;
+  userName: string;
+  userEmail: string;
+  userRole: string;
+  status: 'acknowledged' | 'missing';
+  policyVersion: string;
+  acknowledgedAt: string;
+  acknowledgedAtMs: number;
+  assignmentState: 'assigned' | 'acknowledged_without_assignment';
+};
 
 @Component({
   selector: 'app-policy-ack-report',
   standalone: true,
-  imports: [
-    CommonModule, ReactiveFormsModule,
-    MatCardModule, MatButtonModule, MatFormFieldModule, MatSelectModule, MatDividerModule,
-    MatTableModule, MatProgressBarModule
-  ],
-  template: `
-<mat-card>
-  <mat-card-title>Policy Acknowledgements Report</mat-card-title>
-
-  <form [formGroup]="form" class="row">
-    <mat-form-field appearance="outline" class="field">
-      <mat-label>Policy</mat-label>
-      <mat-select formControlName="policyId">
-        <mat-option *ngFor="let p of (policies$ | async)" [value]="p.id">
-          {{ p.title }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-
-    <button mat-raised-button color="primary"
-            type="button"
-            (click)="run()"
-            [disabled]="busy || !form.value.policyId">
-      Run
-    </button>
-  </form>
-
-  <mat-progress-bar *ngIf="busy" mode="indeterminate"></mat-progress-bar>
-
-  <mat-divider></mat-divider>
-
-  <div class="empty" *ngIf="!busy && rows.length === 0">No rows yet.</div>
-
-  <div class="table-wrap" *ngIf="rows.length">
-    <table mat-table [dataSource]="rows" class="mat-elevation-z0 full">
-
-      <!-- User -->
-      <ng-container matColumnDef="userName">
-        <th mat-header-cell *matHeaderCellDef>User</th>
-        <td mat-cell *matCellDef="let r">
-          {{ r.userName }}
-        </td>
-      </ng-container>
-
-      <!-- Email -->
-      <ng-container matColumnDef="userEmail">
-        <th mat-header-cell *matHeaderCellDef>Email</th>
-        <td mat-cell *matCellDef="let r">
-          {{ r.userEmail }}
-        </td>
-      </ng-container>
-
-      <!-- Role (optional) -->
-      <ng-container matColumnDef="userRole">
-        <th mat-header-cell *matHeaderCellDef>Role</th>
-        <td mat-cell *matCellDef="let r">
-          {{ r.userRole }}
-        </td>
-      </ng-container>
-
-      <!-- Version -->
-      <ng-container matColumnDef="policyVersion">
-        <th mat-header-cell *matHeaderCellDef>Version</th>
-        <td mat-cell *matCellDef="let r">{{ r.policyVersion }}</td>
-      </ng-container>
-
-      <!-- Acknowledged At -->
-      <ng-container matColumnDef="acknowledgedAt">
-        <th mat-header-cell *matHeaderCellDef>Acknowledged At</th>
-        <td mat-cell *matCellDef="let r">{{ r.acknowledgedAt }}</td>
-      </ng-container>
-
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-
-    </table>
-  </div>
-</mat-card>
-`,
-  styles: [`
-  .row{display:flex;gap:12px;align-items:center;margin-top:12px;flex-wrap:wrap}
-  .field{min-width: 320px; flex: 1 1 320px}
-  .empty{padding:12px;color:#666}
-  .table-wrap{padding:12px 0; overflow:auto}
-  table.full{width:100%}
-  `]
+  imports: [CommonModule, FormsModule],
+  templateUrl: './policy-ack-report.page.html',
+  styleUrl: './policy-ack-report.page.css',
 })
 export class PolicyAckReportPage implements OnInit {
-  private fb = inject(FormBuilder);
-  private policySvc = inject(PolicyService);
-  private afs = inject(Firestore);
+  private readonly policySvc = inject(PolicyService);
+  private readonly afs = inject(Firestore);
 
-  // ✅ Columns shown to surveyor
-  displayedColumns: Array<'userName'|'userEmail'|'userRole'|'policyVersion'|'acknowledgedAt'> =
-    ['userName', 'userEmail', 'userRole', 'policyVersion', 'acknowledgedAt'];
+  readonly policies = signal<Policy[]>([]);
+  readonly rows = signal<ReportRow[]>([]);
+  readonly selectedPolicyId = signal('');
+  readonly statusFilter = signal<'all' | 'acknowledged' | 'missing'>('all');
+  readonly search = signal('');
+  readonly busy = signal(false);
+  readonly loaded = signal(false);
+  readonly notice = signal('');
+  readonly isError = signal(false);
 
-  policies$!: Observable<Policy[]>;
-  rows: Array<{
-    userId: string;
-    userName: string;
-    userEmail: string;
-    userRole: string;
-    policyVersion: string;
-    acknowledgedAt: string;
-  }> = [];
+  readonly selectedPolicy = computed(() =>
+    this.policies().find(policy => policy.id === this.selectedPolicyId()) ?? null
+  );
 
-  busy = false;
+  readonly filteredRows = computed(() => {
+    const status = this.statusFilter();
+    const term = this.search().trim().toLowerCase();
 
-  form = this.fb.group({
-    policyId: this.fb.control<string>('', { nonNullable: true }),
+    return this.rows().filter(row => {
+      const matchStatus = status === 'all' || row.status === status;
+      const blob = `${row.userName} ${row.userEmail} ${row.userRole} ${row.policyVersion}`.toLowerCase();
+      return matchStatus && (!term || blob.includes(term));
+    });
   });
 
-  ngOnInit(): void {
-    this.policies$ = from(this.policySvc.listPolicies({ includeArchived: true })).pipe(
-      map(list => list.sort((a, b) => (a.title || '').localeCompare(b.title || '')))
-    );
+  readonly summary = computed(() => {
+    const rows = this.rows();
+    const assigned = rows.filter(row => row.assignmentState === 'assigned').length;
+    const acknowledged = rows.filter(row => row.status === 'acknowledged').length;
+    const missing = rows.filter(row => row.status === 'missing').length;
+    const completionPct = assigned ? Math.round((acknowledged / assigned) * 100) : 0;
+
+    return {
+      assigned,
+      acknowledged,
+      missing,
+      completionPct,
+    };
+  });
+
+  async ngOnInit(): Promise<void> {
+    await this.loadPolicies();
   }
 
-  async run() {
-    const policyId = this.form.controls.policyId.value;
-    if (!policyId) return;
-
-    this.busy = true;
-    this.rows = [];
+  async loadPolicies(): Promise<void> {
+    this.busy.set(true);
+    this.notice.set('');
+    this.isError.set(false);
 
     try {
-      const acks = await this.policySvc.listAcknowledgementsForPolicy(policyId);
+      const policies = await this.policySvc.listPolicies({ includeArchived: true });
+      const sorted = policies.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+      this.policies.set(sorted);
 
-      // Unique users
-      const uids = Array.from(new Set(
-        (acks ?? []).map(a => String((a as any).userId ?? '')).filter(Boolean)
-      ));
+      if (!this.selectedPolicyId() && sorted[0]?.id) {
+        this.selectedPolicyId.set(sorted[0].id);
+        await this.run();
+      }
+    } catch (error: any) {
+      this.notice.set(error?.message || 'Unable to load policies.');
+      this.isError.set(true);
+    } finally {
+      this.busy.set(false);
+    }
+  }
 
-      // Resolve users once
+  async run(): Promise<void> {
+    const policyId = this.selectedPolicyId();
+    if (!policyId) return;
+
+    this.busy.set(true);
+    this.loaded.set(false);
+    this.notice.set('');
+    this.isError.set(false);
+
+    try {
+      const [assignments, acknowledgements] = await Promise.all([
+        this.policySvc.listAssignmentsForPolicy(policyId),
+        this.policySvc.listAcknowledgementsForPolicy(policyId),
+      ]);
+
+      const activeAssignments = assignments.filter(assignment => assignment.active !== false);
+      const assignedUserIds = activeAssignments
+        .map(assignment => String(assignment.userId ?? ''))
+        .filter(Boolean);
+
+      const latestAckByUser = new Map<string, PolicyAcknowledgement>();
+      for (const ack of acknowledgements) {
+        const userId = String((ack as any).userId ?? '');
+        if (!userId) continue;
+        const current = latestAckByUser.get(userId);
+        if (!current || this.epochMs(ack.acknowledgedAt) > this.epochMs(current.acknowledgedAt)) {
+          latestAckByUser.set(userId, ack);
+        }
+      }
+
+      const allUserIds = Array.from(new Set([
+        ...assignedUserIds,
+        ...Array.from(latestAckByUser.keys()),
+      ]));
+
       const userMap = new Map<string, UserLabel>();
-      await Promise.all(uids.map(async (uid) => {
+      await Promise.all(allUserIds.map(async uid => {
         userMap.set(uid, await this.getUserLabel(uid));
       }));
 
-      // Map rows
-      this.rows = (acks ?? []).map((a: PolicyAcknowledgement & any) => {
-        const uid = String(a.userId ?? '');
-        const u = userMap.get(uid) ?? { name: '', email: '', role: '' };
+      const rows: ReportRow[] = allUserIds.map(userId => {
+        const user = userMap.get(userId) ?? { name: '', email: '', role: '' };
+        const ack = latestAckByUser.get(userId);
+        const assigned = assignedUserIds.includes(userId);
 
         return {
-          userId: uid,
-          userName: u.name || '(Unknown user)',
-          userEmail: u.email || '',
-          userRole: u.role || '',
-          policyVersion: String(a.policyVersion ?? ''),
-          acknowledgedAt: this.formatDate(a.acknowledgedAt),
+          userId,
+          userName: user.name || user.email || userId,
+          userEmail: user.email,
+          userRole: user.role || 'learner',
+          status: ack ? 'acknowledged' : 'missing',
+          policyVersion: String((ack as any)?.policyVersion ?? this.selectedPolicy()?.version ?? ''),
+          acknowledgedAt: ack ? this.formatDate(ack.acknowledgedAt) : '-',
+          acknowledgedAtMs: ack ? this.epochMs(ack.acknowledgedAt) : 0,
+          assignmentState: assigned ? 'assigned' : 'acknowledged_without_assignment',
         };
       });
 
-      // Optional: sort by userName then acknowledgedAt desc
-      this.rows.sort((x, y) => (x.userName || '').localeCompare(y.userName || ''));
+      rows.sort((a, b) => {
+        if (a.status !== b.status) return a.status === 'missing' ? -1 : 1;
+        return a.userName.localeCompare(b.userName);
+      });
+
+      this.rows.set(rows);
+      this.loaded.set(true);
+
+      if (!activeAssignments.length && !acknowledgements.length) {
+        this.notice.set('No learner has been assigned to this policy yet.');
+      }
+    } catch (error: any) {
+      this.notice.set(error?.message || 'Unable to build acknowledgement report.');
+      this.isError.set(true);
     } finally {
-      this.busy = false;
+      this.busy.set(false);
     }
+  }
+
+  exportCsv(): void {
+    const rows = this.filteredRows();
+    if (!rows.length) return;
+
+    const header = ['User', 'Email', 'Role', 'Status', 'Version', 'Acknowledged At', 'Assignment'];
+    const body = rows.map(row => [
+      row.userName,
+      row.userEmail,
+      row.userRole,
+      row.status,
+      row.policyVersion,
+      row.acknowledgedAt,
+      row.assignmentState,
+    ]);
+
+    const csv = [header, ...body]
+      .map(line => line.map(value => `"${String(value ?? '').replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `policy-acknowledgements-${this.selectedPolicyId() || 'report'}.csv`;
+    anchor.click();
+    URL.revokeObjectURL(url);
   }
 
   private async getUserLabel(uid: string): Promise<UserLabel> {
     try {
-      const ref = doc(this.afs, `users/${uid}`);
-      const snap = await getDoc(ref);
-
+      const snap = await getDoc(doc(this.afs, `users/${uid}`));
       if (!snap.exists()) return { name: '', email: '', role: '' };
 
-      const d: any = snap.data();
-
-      const name =
-        String(
-          d.displayName ??
-          d.fullName ??
-          d.name ??
-          d.profile?.displayName ??
-          ''
-        ).trim();
-
-      const email =
-        String(
-          d.email ??
-          d.profile?.email ??
-          ''
-        ).trim();
-
-      // role/title/position are often named differently—keep best-effort
-      const role =
-        String(
-          d.role ??
-          d.title ??
-          d.position ??
-          d.jobTitle ??
-          d.profile?.role ??
-          ''
-        ).trim();
+      const data: any = snap.data();
+      const name = String(
+        data.displayName ??
+        data.fullName ??
+        data.name ??
+        data.profile?.displayName ??
+        ''
+      ).trim();
+      const email = String(data.email ?? data.profile?.email ?? '').trim();
+      const role = String(data.role ?? data.title ?? data.position ?? data.jobTitle ?? '').trim();
 
       return { name, email, role };
     } catch {
@@ -225,26 +227,23 @@ export class PolicyAckReportPage implements OnInit {
     }
   }
 
-  private formatDate(ts: any): string {
-    try {
-      const d: Date =
-        ts?.toDate ? ts.toDate() :
-        ts instanceof Date ? ts :
-        ts?.seconds ? new Date(ts.seconds * 1000) :
-        new Date(ts);
+  private formatDate(value: any): string {
+    const ms = this.epochMs(value);
+    if (!ms) return '-';
+    return new Date(ms).toLocaleString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+  }
 
-      if (isNaN(d.getTime())) return String(ts ?? '');
-
-      // survey-friendly local format
-      return d.toLocaleString(undefined, {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return String(ts ?? '');
-    }
+  private epochMs(value: any): number {
+    if (!value) return 0;
+    if (typeof value?.toMillis === 'function') return value.toMillis();
+    if (typeof value?.seconds === 'number') return value.seconds * 1000;
+    const parsed = new Date(value).getTime();
+    return Number.isNaN(parsed) ? 0 : parsed;
   }
 }

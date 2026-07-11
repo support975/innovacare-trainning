@@ -1,12 +1,15 @@
 // src/app/features/learner/rewards/rewards/rewards.ts
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 
 import { Auth, authState } from '@angular/fire/auth';
 import { Firestore, collection, collectionData, doc, docData } from '@angular/fire/firestore';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { combineLatest, map, of, switchMap } from 'rxjs';
+import { AuthService } from '../../../../core/auth';
+import { LanguageService } from '../../../../shared/services/language';
 
 type RewardType = 'certificate' | 'badge' | 'points' | 'credit_hours';
 
@@ -27,6 +30,7 @@ interface RewardRow {
   creditUnit?: string;
 
   points?: number;
+  badge?: string;
 
   certificateId?: string;
   certificateNo?: string;
@@ -35,6 +39,30 @@ interface RewardRow {
 interface WalletDoc {
   totalPoints?: number;
 }
+
+interface LevelDef {
+  key: string;
+  labelKey: string;
+  icon: string;
+  minPoints: number;
+}
+
+const LEVELS: LevelDef[] = [
+  { key: 'bronze', labelKey: 'rewards.levelBronze', icon: '🥉', minPoints: 0 },
+  { key: 'silver', labelKey: 'rewards.levelSilver', icon: '🥈', minPoints: 250 },
+  { key: 'gold', labelKey: 'rewards.levelGold', icon: '🥇', minPoints: 750 },
+  { key: 'platinum', labelKey: 'rewards.levelPlatinum', icon: '💎', minPoints: 1500 },
+  { key: 'legend', labelKey: 'rewards.levelLegend', icon: '🏆', minPoints: 3000 },
+];
+
+const BADGE_CATALOG: Array<{ key: string; icon: string }> = [
+  { key: 'first_course', icon: '🌱' },
+  { key: 'five_courses', icon: '📚' },
+  { key: 'ten_courses', icon: '🔍' },
+  { key: 'twenty_five_courses', icon: '🎓' },
+  { key: 'exam_passed', icon: '🏅' },
+  { key: 'perfect_score', icon: '⭐' },
+];
 
 function epochMs(x: any): number | undefined {
   if (!x) return undefined;
@@ -56,14 +84,25 @@ function fmtDate(ms?: number): string {
 @Component({
   selector: 'app-rewards',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './rewards.html',
   styleUrl: './rewards.css',
 })
 export class Rewards {
   private afs = inject(Firestore);
   private auth = inject(Auth);
+  private authService = inject(AuthService);
   private router = inject(Router);
+  private profile = toSignal(this.authService.profile$, { initialValue: null });
+  readonly isIndividualLearner = computed(() => {
+    const p = this.profile();
+    return p?.accountType === 'individual' && !p?.orgId;
+  });
+  readonly lang = inject(LanguageService);
+
+  t(key: string, params: Record<string, string | number> = {}): string {
+    return this.lang.t(key, params);
+  }
 
   // Filters (Relias-like)
   search = signal('');
@@ -105,6 +144,7 @@ export class Rewards {
             hours: typeof r.hours === 'number' ? r.hours : undefined,
             creditUnit: r.creditUnit ? String(r.creditUnit) : undefined,
             points: typeof r.points === 'number' ? r.points : undefined,
+            badge: r.badge ? String(r.badge) : undefined,
             certificateId: r.certificateId ? String(r.certificateId) : undefined,
             certificateNo: r.certificateNo ? String(r.certificateNo) : undefined,
             issuedAtMs: epochMs(r.issuedAt),
@@ -170,16 +210,65 @@ export class Rewards {
   totalShown = computed(() => this.view().length);
   totalAll = computed(() => this.rowsSrc().length);
 
+  // ── Gamification: level + badges ──────────────────────────────
+  readonly levelInfo = computed(() => {
+    const points = this.wallet().totalPoints ?? 0;
+    let current = LEVELS[0];
+    let next: LevelDef | null = null;
+    for (const lvl of LEVELS) {
+      if (points >= lvl.minPoints) current = lvl;
+      else { next = lvl; break; }
+    }
+    const base = current.minPoints;
+    const span = next ? next.minPoints - base : 0;
+    const percent = next ? Math.min(100, Math.round(((points - base) / span) * 100)) : 100;
+    return {
+      current,
+      next,
+      percent,
+      pointsToNext: next ? next.minPoints - points : 0,
+    };
+  });
+
+  readonly badges = computed(() => {
+    const earned = new Set(
+      this.rowsSrc()
+        .filter(r => r.type === 'badge')
+        .map(r => (r as any).badge || r.id.replace(/^badge_/, ''))
+    );
+    return BADGE_CATALOG.map(b => ({
+      ...b,
+      earned: earned.has(b.key),
+      name: this.t(`badge.${b.key}`),
+      desc: this.t(`badge.${b.key}.desc`),
+    }));
+  });
+
+  readonly badgesEarnedCount = computed(() => this.badges().filter(b => b.earned).length);
+  readonly coursesRewarded = computed(
+    () => this.rowsSrc().filter(r => r.type === 'points' && r.courseId).length
+  );
+
   fmtDate(ms?: number) { return fmtDate(ms); }
 
-  labelType(t: RewardType) {
-    if (t === 'certificate') return 'Certificate';
-    if (t === 'badge') return 'Badge';
-    if (t === 'credit_hours') return 'Hours';
-    return 'Points';
+  labelType(type: RewardType) {
+    if (type === 'certificate') return this.t('rewards.typeCertificate');
+    if (type === 'badge') return this.t('rewards.typeBadge');
+    if (type === 'credit_hours') return this.t('rewards.typeHours');
+    return this.t('rewards.typePoints');
+  }
+
+  rewardDisplayTitle(r: RewardRow): string {
+    if (r.type === 'badge' && r.badge) return this.t(`badge.${r.badge}`);
+    return r.title || this.labelType(r.type);
   }
 
   openCertificate(r: RewardRow) {
+    if (this.isIndividualLearner()) {
+      this.router.navigate(['/learner/transcript']);
+      return;
+    }
+
     // your learnerRoutes: { path: 'certifications', component: Certifications }
     // certifications reads queryParam courseId (recommended)
     this.router.navigate(['/learner/certifications'], {

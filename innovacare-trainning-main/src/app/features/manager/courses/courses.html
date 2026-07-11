@@ -1,408 +1,908 @@
-<!-- Create / Edit Course -->
-<form class="card form" [formGroup]="form" (ngSubmit)="save()">
-  <h2>{{ editId ? 'Edit Course' : 'Create Course' }}</h2>
+<div class="sa-page">
 
-  <div class="row">
-    <label>Title</label>
-    <input formControlName="title" placeholder="Course title" />
-    <div class="err" *ngIf="form.get('title')?.invalid && form.get('title')?.touched">
-      Title is required (min 3)
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <p class="page-eyebrow">{{ isSuperAdmin ? 'Super Admin' : 'Manager' }} · Courses</p>
+      <h1 class="page-title">{{ isSuperAdmin ? 'Course Library & Editor' : 'Course Library' }}</h1>
+      <p class="page-sub">{{ isSuperAdmin ? 'Create, edit and manage training courses for the platform.' : 'Browse available training courses.' }}</p>
+    </div>
+    <div class="header-actions" *ngIf="canManageCourses">
+      <span class="course-count-pill">{{ courses().length }} courses</span>
     </div>
   </div>
 
-  <div class="row">
-    <label>Subtitle</label>
-    <input formControlName="subtitle" placeholder="Short subtitle" />
-  </div>
+  <!-- Create / Edit Course Panel -->
+  <form *ngIf="canManageCourses" class="panel form-panel" [formGroup]="form" (ngSubmit)="save()">
 
-  <div class="row">
-    <label>Description</label>
-    <textarea formControlName="description" rows="3" placeholder="Short description"></textarea>
-  </div>
+    <div class="panel__head">
+      <div>
+        <div class="panel__title">{{ editId ? 'Edit Course' : 'Create Course' }}</div>
+        <div class="panel__sub">{{ editId ? 'Update course details and content structure.' : 'Fill in the details to add a new course to the platform.' }}</div>
+      </div>
+      <div class="panel-form-actions" *ngIf="editId">
+        <button type="button" class="btn-ghost" (click)="cancelEdit()">Cancel edit</button>
+      </div>
+    </div>
 
-  <div class="row grid">
+    <!-- Import JSON -->
+    <div class="form-section">
+      <div class="form-section__head">
+        <div class="form-section__title">Import JSON</div>
+      </div>
+      <div class="row">
+        <label class="field-label">Course JSON file</label>
+        <input class="file-input" type="file" accept="application/json,.json" (change)="importCourseJson($event)" />
+        <div class="field-hint">Accepts a direct Course object or a file with docData. You can import directly or apply to form for editing before saving.</div>
+        <div class="msg msg--error" *ngIf="importError">{{ importError }}</div>
+        <div class="msg msg--ok" *ngIf="importSuccess">{{ importSuccess }}</div>
+        <div class="msg msg--ok" *ngIf="jsonAppliedNotice">{{ jsonAppliedNotice }}</div>
+      </div>
+
+      <div class="import-preview" *ngIf="pendingImport as preview">
+        <div class="import-preview__head">
+          <div>
+            <strong class="import-preview__title">JSON Preview</strong>
+            <div class="field-hint" *ngIf="pendingImportName">File: {{ pendingImportName }}</div>
+          </div>
+          <div class="import-preview__actions">
+            <button type="button" class="btn-outline" (click)="cancelImportPreview()">Cancel</button>
+            <button type="button" class="btn-outline" (click)="applyPendingImportToForm()">Apply to form</button>
+            <button
+              type="button"
+              class="btn-primary"
+              [disabled]="importingCourse"
+              (click)="confirmImportCourse()"
+            >
+              {{ importingCourse ? 'Importing...' : 'Confirm import' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="row grid import-preview__stats">
+          <div>
+            <label class="field-label">Title</label>
+            <div class="field-hint">{{ preview.title }}</div>
+          </div>
+          <div>
+            <label class="field-label">Language</label>
+            <div class="field-hint">{{ preview.lang }}</div>
+          </div>
+          <div>
+            <label class="field-label">Sections</label>
+            <div class="field-hint">{{ preview.sections.length }}</div>
+          </div>
+          <div>
+            <label class="field-label">Lessons</label>
+            <div class="field-hint">{{ previewLessonCount(preview) }}</div>
+          </div>
+          <div>
+            <label class="field-label">Blocks</label>
+            <div class="field-hint">{{ previewBlockCount(preview) }}</div>
+          </div>
+          <div>
+            <label class="field-label">Type</label>
+            <div class="field-hint">{{ preview.type }}</div>
+          </div>
+        </div>
+
+        <div class="import-preview__outline">
+          <div class="field-hint" *ngFor="let section of preview.sections; let si = index">
+            {{ si + 1 }}. {{ section.title }}
+            <span *ngIf="section.lessons.length"> · {{ section.lessons.length }} lessons</span>
+          </div>
+        </div>
+
+        <details class="json-preview-details">
+          <summary>View complete JSON</summary>
+          <pre class="json-preview-code">{{ importedJsonPreview(preview) }}</pre>
+        </details>
+      </div>
+    </div>
+
+    <!-- Basic Info -->
+    <div class="form-section">
+      <div class="form-section__head">
+        <div class="form-section__title">Basic Info</div>
+      </div>
+
+      <div class="row">
+        <label class="field-label">Title <span class="required">*</span></label>
+        <input class="field-input" formControlName="title" placeholder="Course title" />
+        <div class="msg msg--error" *ngIf="form.get('title')?.invalid && form.get('title')?.touched">
+          Title is required (min 3 characters)
+        </div>
+      </div>
+
+      <div class="row">
+        <label class="field-label">Subtitle</label>
+        <input class="field-input" formControlName="subtitle" placeholder="Short subtitle" />
+      </div>
+
+      <div class="row">
+        <label class="field-label">Description</label>
+        <textarea class="field-input" formControlName="description" rows="3" placeholder="Short description"></textarea>
+      </div>
+
+      <div class="row">
+        <label class="field-label">Image URL</label>
+        <input class="field-input" formControlName="imageUrl" placeholder="https://…" />
+      </div>
+
+      <div class="row grid-4">
+        <div>
+          <label class="field-label">Language</label>
+          <select class="field-input" formControlName="lang">
+            <option value="EN">EN</option>
+            <option value="FR">FR</option>
+            <option value="ES">ES</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label">Duration (min)</label>
+          <input class="field-input" type="number" formControlName="durationMin" />
+        </div>
+        <div>
+          <label class="field-label">CE Credit</label>
+          <input class="field-input" type="number" formControlName="ceCredit" />
+        </div>
+        <div>
+          <label class="field-label">Sort order</label>
+          <input class="field-input" type="number" min="1" formControlName="sortOrder" />
+        </div>
+        <div>
+          <label class="field-label">Kind</label>
+          <select class="field-input" formControlName="kind">
+            <option value="Course">Course</option>
+            <option value="Text">Text</option>
+            <option value="Module">Module</option>
+          </select>
+        </div>
+        <div class="check-field">
+          <label class="check-label"><input type="checkbox" formControlName="active" /> Active</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Advanced Settings -->
+    <div class="form-section">
+      <div class="form-section__head">
+        <div class="form-section__title">Advanced Settings</div>
+      </div>
+
+      <div class="row grid-4">
+        <div>
+          <label class="field-label">Course Type</label>
+          <select class="field-input" formControlName="type">
+            <option value="Health">Health</option>
+            <option value="It">IT</option>
+            <option value="Hr">HR</option>
+            <option value="safety">Safety</option>
+          </select>
+        </div>
+        <div>
+          <label class="field-label">Lecturer</label>
+          <input class="field-input" formControlName="lecturer" placeholder="Instructor / lecturer" />
+        </div>
+        <div>
+          <label class="field-label">Canonical URL</label>
+          <input class="field-input" formControlName="url" placeholder="https://…" />
+        </div>
+        <div>
+          <label class="field-label">Passing Score (%)</label>
+          <input class="field-input" type="number" formControlName="passingScore" />
+        </div>
+        <div class="check-field">
+          <label class="check-label"><input type="checkbox" formControlName="lockedSequence" /> Locked sequence</label>
+        </div>
+        <div class="check-field">
+          <label class="check-label"><input type="checkbox" formControlName="isPublic" /> Public course</label>
+        </div>
+      </div>
+
+      <div class="row grid-2">
+        <div>
+          <label class="field-label">Tags (comma separated)</label>
+          <input class="field-input" formControlName="tagsText" placeholder="ethics, nursing, safety" />
+        </div>
+        <div>
+          <label class="field-label">Disclosures (comma separated)</label>
+          <input class="field-input" formControlName="disclosuresText" placeholder="none, conflict of interest" />
+        </div>
+        <div>
+          <label class="field-label">Target audience (comma separated)</label>
+          <input class="field-input" formControlName="targetAudienceText" placeholder="RN, LPN, CNA, NP" />
+        </div>
+        <div>
+          <label class="field-label">Prerequisites (comma separated)</label>
+          <input class="field-input" formControlName="prerequisitesText" placeholder="Safety basics, onboarding, role orientation" />
+        </div>
+        <div>
+          <label class="field-label">Requirements (comma separated)</label>
+          <input class="field-input" formControlName="requirementsText" placeholder="Internet, computer, speakers" />
+        </div>
+      </div>
+
+      <div class="row">
+        <label class="field-label">Accommodations</label>
+        <textarea class="field-input" formControlName="accomodations" rows="3" placeholder="Accessibility / accommodations information"></textarea>
+      </div>
+    </div>
+
+    <!-- Sections (Drag & Drop) -->
+    <div class="form-section">
+      <div class="form-section__head">
+        <div class="form-section__title">Content Structure</div>
+        <div class="content-actions">
+          <label class="check-label">
+            <input
+              type="checkbox"
+              [checked]="ttsIncludeQuizChoices"
+              (change)="setTtsIncludeQuizChoices($any($event.target).checked)"
+            />
+            Include quiz choices in audio
+          </label>
+          <button type="button" class="btn-outline" (click)="addSection()">+ Add section</button>
+        </div>
+      </div>
+
+      <div cdkDropList (cdkDropListDropped)="dropSections($event)">
+        <div
+          class="section-card"
+          *ngFor="let s of sectionsFA.controls; let si = index"
+          [formGroup]="s"
+          cdkDrag
+        >
+          <div class="section-bar">
+            <span class="drag-handle" cdkDragHandle title="Drag to reorder">⠿</span>
+            <input class="section-title-input" formControlName="title" placeholder="Section title" />
+            <button type="button" class="btn-ghost-sm" (click)="removeSection(si)">Remove</button>
+          </div>
+
+          <!-- Lessons (Drag & Drop) -->
+          <div class="lessons-wrap" cdkDropList (cdkDropListDropped)="dropLessons(si, $event)">
+            <div class="lesson-head">
+              <strong class="lessons-label">Lessons</strong>
+              <div class="lesson-template-actions">
+                <button type="button" class="btn-outline-sm" (click)="addLesson(si)">+ Add lesson</button>
+                <button type="button" class="btn-outline-sm" (click)="addLessonTemplate(si, 'hotspot-diagram')">+ Hotspot diagram</button>
+                <button type="button" class="btn-outline-sm" (click)="addLessonTemplate(si, 'tabbed-compare')">+ Tabbed compare</button>
+              </div>
+            </div>
+
+            <div
+              class="lesson-card"
+              *ngFor="let l of lessonsFA(si).controls; let li = index"
+              [formGroup]="l"
+              cdkDrag
+            >
+              <div class="lesson-bar">
+                <span class="drag-handle" cdkDragHandle title="Drag to reorder">⠿</span>
+                <input class="w-2/3" formControlName="title" placeholder="Lesson title" />
+                <input class="w-1/6" type="number" formControlName="estMin" placeholder="Est. min" />
+                <button
+                  type="button"
+                  class="btn-outline-sm btn-tts"
+                  [disabled]="ttsStatus(si, li)?.loading || !editId"
+                  (click)="generateAudio(si, li)"
+                >
+                  {{ ttsButtonLabel(si, li) }}
+                </button>
+                <button type="button" class="btn-ghost-sm" (click)="removeLesson(si, li)">Remove</button>
+              </div>
+              <div class="lesson-tts-status" *ngIf="ttsStatus(si, li) as status">
+                <span class="lesson-tts-status__loading" *ngIf="status.loading">Generating narration...</span>
+                <span class="lesson-tts-status__success" *ngIf="status.success">{{ status.success }}</span>
+                <span class="lesson-tts-status__error" *ngIf="status.error">{{ status.error }}</span>
+                <a class="lesson-tts-status__link" *ngIf="status.url" [href]="status.url" target="_blank" rel="noopener">Open MP3</a>
+              </div>
+
+              <!-- Blocks (Drag & Drop) -->
+              <div class="blocks-wrap" cdkDropList (cdkDropListDropped)="dropBlocks(si, li, $event)">
+                <div class="block-head">
+                  <span class="blocks-label">Blocks</span>
+                  <div class="add-row">
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'heading')">+ Heading</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'text')">+ Text</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'image')">+ Image</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'audio')">+ Audio</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'video')">+ Video</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'hero')">+ Hero</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'accordion')">+ Accordion</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'tabs')">+ Tabs</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'cardStack')">+ Card stack</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'quizIntro')">+ Quiz intro</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'slideDeck')">+ Slide deck</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'callout')">+ Callout</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'quiz')">+ Quiz</button>
+                  </div>
+                </div>
+
+                <div
+                  class="block-card"
+                  *ngFor="let b of blocksFA(si, li).controls; let bi = index"
+                  [formGroup]="b"
+                  cdkDrag
+                >
+                  <div class="block-bar">
+                    <span class="drag-handle" cdkDragHandle title="Drag to reorder">⠿</span>
+                    <span class="block-type-badge">{{ b.value.type }}</span>
+                    <select class="block-type-select" formControlName="type" (change)="onBlockTypeChange(b)">
+                      <option value="heading">Heading</option>
+                      <option value="text">Text</option>
+                      <option value="image">Image</option>
+                      <option value="audio">Audio</option>
+                      <option value="video">Video</option>
+                      <option value="hero">Hero</option>
+                      <option value="accordion">Accordion</option>
+                      <option value="tabs">Tabs</option>
+                      <option value="cardStack">Card stack</option>
+                      <option value="quizIntro">Quiz intro</option>
+                      <option value="slideDeck">Slide deck</option>
+                      <option value="callout">Callout</option>
+                      <option value="quiz">Quiz</option>
+                    </select>
+                    <button type="button" class="btn-ghost-sm" (click)="removeBlock(si, li, bi)">Remove</button>
+                  </div>
+
+                  <!-- Heading -->
+                  <div *ngIf="b.value.type === 'heading'" class="block-body">
+                    <div class="editor-grid">
+                      <div class="editor">
+                        <label class="field-label">Level</label>
+                        <select class="field-input" formControlName="level">
+                          <option [value]="1">H1</option>
+                          <option [value]="2">H2</option>
+                          <option [value]="3">H3</option>
+                        </select>
+                        <input class="field-input" formControlName="text" placeholder="Heading text" />
+                      </div>
+                      <div class="preview">
+                        <div class="preview-title">Preview</div>
+                        <div class="preview-box" [innerHTML]="previewFor(b)"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Text -->
+                  <div *ngIf="b.value.type === 'text'" class="block-body">
+                    <div class="editor-grid">
+                      <div class="editor">
+                        <label class="field-label">HTML</label>
+                        <textarea class="field-input mono" rows="6" formControlName="html" placeholder="<p>…</p>"></textarea>
+                      </div>
+                      <div class="preview">
+                        <div class="preview-title">Live Preview</div>
+                        <div class="preview-box" [innerHTML]="previewFor(b)"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Image -->
+                  <div *ngIf="b.value.type === 'image'" class="block-body">
+                    <div class="editor-grid">
+                      <div class="editor">
+                        <input class="field-input" formControlName="url" placeholder="Image URL" />
+                        <input class="field-input" formControlName="alt" placeholder="Alt text" />
+                        <input class="field-input" formControlName="caption" placeholder="Caption" />
+                      </div>
+                      <div class="preview">
+                        <div class="preview-title">Preview</div>
+                        <div class="preview-box" [innerHTML]="previewFor(b)"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Audio -->
+                  <div *ngIf="b.value.type === 'audio'" class="block-body">
+                    <div class="editor-grid">
+                      <div class="editor">
+                        <input class="field-input" formControlName="title" placeholder="Audio title" />
+                        <input class="field-input" formControlName="url" placeholder="Audio URL" />
+                        <textarea class="field-input mono" rows="3" formControlName="transcript" placeholder="Transcript"></textarea>
+                      </div>
+                      <div class="preview">
+                        <div class="preview-title">Preview</div>
+                        <div class="preview-box" [innerHTML]="previewFor(b)"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Video -->
+                  <div *ngIf="b.value.type === 'video'" class="block-body">
+                    <div class="editor-grid">
+                      <div class="editor">
+                        <input class="field-input" formControlName="url" placeholder="Video URL (YouTube, Vimeo, MP4…)" />
+                        <textarea class="field-input mono" rows="3" formControlName="transcript" placeholder="Transcript / notes"></textarea>
+                      </div>
+                      <div class="preview">
+                        <div class="preview-title">Preview</div>
+                        <div class="preview-box" [innerHTML]="previewFor(b)"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Hero -->
+                  <div *ngIf="b.value.type === 'hero'" class="block-body">
+                    <div class="editor-grid">
+                      <div class="editor">
+                        <input class="field-input" formControlName="title" placeholder="Hero title" />
+                        <input class="field-input" formControlName="imageUrl" placeholder="Hero image URL" />
+                        <input class="field-input" formControlName="buttonLabel" placeholder="Button label" />
+                        <textarea class="field-input mono" rows="6" formControlName="bodyHtml" placeholder="<p>Intro copy...</p>"></textarea>
+                      </div>
+                      <div class="preview">
+                        <div class="preview-title">Preview</div>
+                        <div class="preview-box" [innerHTML]="previewFor(b)"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Accordion -->
+                  <div *ngIf="b.value.type === 'accordion'" class="block-body">
+                    <div class="editor-grid">
+                      <div class="editor">
+                        <input class="field-input" formControlName="title" placeholder="Accordion section title" />
+                        <textarea class="field-input mono" rows="4" formControlName="introHtml" placeholder="<p>Section intro...</p>"></textarea>
+
+                        <div class="choices" formArrayName="items">
+                          <div
+                            class="choice"
+                            *ngFor="let item of b.controls.items.controls; let itemIndex = index"
+                            [formGroup]="item"
+                          >
+                            <input class="field-input w-full" formControlName="title" placeholder="Accordion item title" />
+                            <label class="check-label">
+                              <input type="checkbox" formControlName="required" /> Required for continue
+                            </label>
+                            <textarea class="field-input mono" rows="4" formControlName="bodyHtml" placeholder="Item body HTML"></textarea>
+                            <button type="button" class="btn-ghost-sm" (click)="removeAccordionItem(si, li, bi, itemIndex)">Remove item</button>
+                          </div>
+                          <button type="button" class="btn-outline-sm" (click)="addAccordionItem(si, li, bi)">+ Add accordion item</button>
+                        </div>
+                      </div>
+                      <div class="preview">
+                        <div class="preview-title">Preview</div>
+                        <div class="preview-box" [innerHTML]="previewFor(b)"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Tabs -->
+                  <div *ngIf="b.value.type === 'tabs'" class="block-body">
+                    <div class="editor-grid">
+                      <div class="editor">
+                        <input class="field-input" formControlName="title" placeholder="Tabs section title" />
+                        <textarea class="field-input mono" rows="4" formControlName="introHtml" placeholder="<p>Instructions...</p>"></textarea>
+
+                        <div class="choices" formArrayName="tabs">
+                          <div
+                            class="choice"
+                            *ngFor="let tab of b.controls.tabs.controls; let tabIndex = index"
+                            [formGroup]="tab"
+                          >
+                            <div class="grid two">
+                              <input class="field-input w-full" formControlName="label" placeholder="Tab label" />
+                              <input class="field-input w-full" formControlName="title" placeholder="Panel title" />
+                            </div>
+                            <input class="field-input w-full" formControlName="imageUrl" placeholder="Panel image URL (optional)" />
+                            <input class="field-input w-full" formControlName="imageAlt" placeholder="Panel image alt text" />
+                            <label class="check-label">
+                              <input type="checkbox" formControlName="required" /> Required for continue
+                            </label>
+                            <textarea class="field-input mono" rows="5" formControlName="bodyHtml" placeholder="Panel body HTML"></textarea>
+                            <button type="button" class="btn-ghost-sm" (click)="removeTabItem(si, li, bi, tabIndex)">Remove tab</button>
+                          </div>
+                          <button type="button" class="btn-outline-sm" (click)="addTabItem(si, li, bi)">+ Add tab</button>
+                        </div>
+                      </div>
+                      <div class="preview">
+                        <div class="preview-title">Preview</div>
+                        <div class="preview-box" [innerHTML]="previewFor(b)"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Card stack -->
+                  <div *ngIf="b.value.type === 'cardStack'" class="block-body">
+                    <div class="editor-grid">
+                      <div class="editor">
+                        <input class="field-input" formControlName="title" placeholder="Card stack title" />
+                        <select class="field-input" formControlName="variant">
+                          <option value="flip">Flip cards</option>
+                          <option value="gated">Gated sequence</option>
+                        </select>
+                        <textarea class="field-input mono" rows="4" formControlName="introHtml" placeholder="<p>Instructions...</p>"></textarea>
+
+                        <div class="choices" formArrayName="cards">
+                          <div
+                            class="choice"
+                            *ngFor="let card of b.controls.cards.controls; let cardIndex = index"
+                            [formGroup]="card"
+                          >
+                            <input class="field-input w-full" formControlName="title" placeholder="Card title" />
+                            <input class="field-input w-full" formControlName="teaser" placeholder="Short teaser" />
+                            <input class="field-input w-full" formControlName="imageUrl" placeholder="Card image URL (optional)" />
+                            <textarea class="field-input mono" rows="4" formControlName="bodyHtml" placeholder="Card body HTML"></textarea>
+                            <button type="button" class="btn-ghost-sm" (click)="removeBlockCard(si, li, bi, cardIndex)">Remove card</button>
+                          </div>
+                          <button type="button" class="btn-outline-sm" (click)="addBlockCard(si, li, bi)">+ Add card</button>
+                        </div>
+                      </div>
+                      <div class="preview">
+                        <div class="preview-title">Preview</div>
+                        <div class="preview-box" [innerHTML]="previewFor(b)"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Quiz intro -->
+                  <div *ngIf="b.value.type === 'quizIntro'" class="block-body">
+                    <div class="editor-grid">
+                      <div class="editor">
+                        <input class="field-input" formControlName="title" placeholder="Quiz intro title" />
+                        <input class="field-input" formControlName="buttonLabel" placeholder="Button label" />
+                        <input class="field-input" type="number" min="0" max="100" formControlName="passPct" placeholder="Passing score %" />
+                        <textarea class="field-input mono" rows="6" formControlName="bodyHtml" placeholder="<p>Explain the quiz...</p>"></textarea>
+                      </div>
+                      <div class="preview">
+                        <div class="preview-title">Preview</div>
+                        <div class="preview-box" [innerHTML]="previewFor(b)"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Slide Deck -->
+                  <div *ngIf="b.value.type === 'slideDeck'" class="block-body">
+                    <div class="editor-grid">
+                      <div class="editor">
+                        <label class="field-label">Theme</label>
+                        <select class="field-input" formControlName="theme">
+                          <option value="default">Default</option>
+                          <option value="focus">Focus</option>
+                        </select>
+
+                        <div class="choices">
+                          <div
+                            class="choice"
+                            *ngFor="let slide of b.controls.slides.controls; let slideIndex = index"
+                            [formGroup]="slide"
+                          >
+                            <input class="field-input w-full" formControlName="title" placeholder="Slide title" />
+                            <input class="field-input w-full" formControlName="imageUrl" placeholder="Slide image URL" />
+                            <input class="field-input w-full" formControlName="audioUrl" placeholder="Slide audio URL" />
+                            <textarea class="field-input mono" rows="3" formControlName="transcript" placeholder="Transcript"></textarea>
+                            <textarea class="field-input mono" rows="4" formControlName="notesHtml" placeholder="Notes HTML"></textarea>
+
+                            <div class="choices nested" formArrayName="interactiveCards">
+                              <div
+                                class="choice"
+                                *ngFor="let card of slide.controls.interactiveCards.controls; let cardIndex = index"
+                                [formGroup]="card"
+                              >
+                                <input class="field-input w-full" formControlName="title" placeholder="Card title" />
+                                <select class="field-input w-full" formControlName="variant">
+                                  <option value="default">Default card</option>
+                                  <option value="flip">Flip card</option>
+                                  <option value="hotspot">Hotspot</option>
+                                  <option value="sequence">Sequential reveal</option>
+                                </select>
+                                <input class="field-input w-full" formControlName="teaser" placeholder="Short teaser" />
+                                <input class="field-input w-full" formControlName="imageUrl" placeholder="Card image URL (optional)" />
+                                <div class="grid two" *ngIf="card.value.variant === 'hotspot'">
+                                  <input class="field-input w-full" type="number" min="0" max="100" formControlName="hotspotX" placeholder="Hotspot X %" />
+                                  <input class="field-input w-full" type="number" min="0" max="100" formControlName="hotspotY" placeholder="Hotspot Y %" />
+                                </div>
+                                <textarea class="field-input mono" rows="4" formControlName="bodyHtml" placeholder="Card body HTML"></textarea>
+                                <button type="button" class="btn-ghost-sm" (click)="removeInteractiveCard(si, li, bi, slideIndex, cardIndex)">Remove card</button>
+                              </div>
+
+                              <button type="button" class="btn-outline-sm" (click)="addInteractiveCard(si, li, bi, slideIndex)">
+                                + Add interactive card
+                              </button>
+                            </div>
+
+                            <button type="button" class="btn-ghost-sm" (click)="removeSlide(si, li, bi, slideIndex)">Remove slide</button>
+                          </div>
+
+                          <button type="button" class="btn-outline-sm" (click)="addSlide(si, li, bi)">+ Add slide</button>
+                        </div>
+                      </div>
+
+                      <div class="preview">
+                        <div class="preview-title">Preview</div>
+                        <div class="preview-box" [innerHTML]="previewFor(b)"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Callout -->
+                  <div *ngIf="b.value.type === 'callout'" class="block-body">
+                    <div class="editor-grid">
+                      <div class="editor">
+                        <label class="field-label">Style</label>
+                        <select class="field-input" formControlName="style">
+                          <option value="info">Info</option>
+                          <option value="warn">Warn</option>
+                          <option value="success">Success</option>
+                        </select>
+                        <textarea class="field-input mono" rows="6" formControlName="html" placeholder="<p>Important note…</p>"></textarea>
+                      </div>
+                      <div class="preview">
+                        <div class="preview-title">Live Preview</div>
+                        <div class="preview-box" [innerHTML]="previewFor(b)"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Quiz -->
+                  <div *ngIf="b.value.type === 'quiz'" class="block-body">
+                    <div class="editor-grid">
+                      <div class="editor">
+                        <label class="field-label">Mode</label>
+                        <select class="field-input" formControlName="mode">
+                          <option value="single">Single</option>
+                          <option value="multi">Multi</option>
+                          <option value="caseStudy">Case Study</option>
+                        </select>
+
+                        <input class="field-input" formControlName="question" placeholder="Question" />
+
+                        <div class="choices">
+                          <div
+                            class="choice"
+                            *ngFor="let c of b.controls.choices.controls; let ci = index"
+                            [formGroup]="c"
+                          >
+                            <input class="field-input w-full" formControlName="text" placeholder="Choice text" />
+                            <label class="check-label">
+                              <input type="checkbox" formControlName="correct" /> Correct
+                            </label>
+                            <button type="button" class="btn-ghost-sm" (click)="removeChoice(si, li, bi, ci)">Remove</button>
+                          </div>
+                          <button type="button" class="btn-outline-sm" (click)="addChoice(si, li, bi)">+ Add choice</button>
+                        </div>
+                      </div>
+                      <div class="preview">
+                        <div class="preview-title">Preview</div>
+                        <div class="preview-box" [innerHTML]="previewFor(b)"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div> <!-- /block-card -->
+              </div> <!-- /blocks-wrap -->
+
+            </div> <!-- /lesson-card -->
+          </div> <!-- /lessons-wrap -->
+        </div> <!-- /section-card -->
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <button class="btn-primary" type="submit" [disabled]="savingCourse">
+        {{ savingCourse ? (editId ? 'Updating course...' : 'Creating course...') : (editId ? 'Update course' : 'Create course') }}
+      </button>
+      <button type="button" class="btn-outline" [disabled]="savingCourse" (click)="previewCurrentFormJson()">
+        {{ currentJsonPreview ? 'Refresh JSON preview' : 'Preview JSON' }}
+      </button>
+      <button *ngIf="editId" type="button" class="btn-outline" [disabled]="savingCourse" (click)="cancelEdit()">Cancel edit</button>
+      <span *ngIf="loadingEdit" class="loading-text">Loading…</span>
+      <span *ngIf="saveError" class="msg msg--error">{{ saveError }}</span>
+    </div>
+
+    <div class="current-json-preview" *ngIf="currentJsonPreview">
+      <div class="current-json-preview__head">
+        <div>
+          <strong>Course JSON preview</strong>
+          <div class="field-hint">Snapshot of the current form. Refresh after making changes.</div>
+        </div>
+        <button type="button" class="btn-ghost" (click)="closeCurrentJsonPreview()">Close</button>
+      </div>
+      <pre class="json-preview-code">{{ currentJsonPreview }}</pre>
+    </div>
+  </form>
+
+  <!-- Read-only notice (managers) -->
+  <div *ngIf="!canManageCourses" class="panel info-panel">
+    <div class="info-panel__icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+      </svg>
+    </div>
     <div>
-      <label>Language</label>
-      <select formControlName="lang">
+      <div class="info-panel__title">Course Library</div>
+      <div class="info-panel__sub">Course creation and JSON import is reserved for super admins. Managers and org admins can browse the existing library here.</div>
+    </div>
+  </div>
+
+  <!-- Course List -->
+  <div class="panel list-panel">
+    <div class="panel__head">
+      <div>
+        <div class="panel__title">All Courses</div>
+        <div class="panel__sub">
+          {{ filteredCourses().length }} of {{ courses().length }} course{{ courses().length === 1 ? '' : 's' }} shown. Sorted by course order, then title.
+        </div>
+      </div>
+    </div>
+
+    <div class="course-filter-bar">
+      <div class="course-search">
+        <span class="course-search__icon">⌕</span>
+        <input
+          class="course-search__input"
+          type="search"
+          placeholder="Search title, tags, instructor..."
+          [value]="courseSearch()"
+          (input)="courseSearch.set($any($event.target).value)"
+        />
+        <button
+          class="course-search__clear"
+          type="button"
+          *ngIf="courseSearch()"
+          (click)="courseSearch.set('')">
+          ×
+        </button>
+      </div>
+
+      <select
+        class="course-filter-select"
+        [value]="courseStatusFilter()"
+        (change)="courseStatusFilter.set($any($event.target).value)">
+        <option value="all">All status</option>
+        <option value="active">Active only</option>
+        <option value="inactive">Inactive only</option>
+      </select>
+
+      <select
+        class="course-filter-select"
+        [value]="courseLangFilter()"
+        (change)="courseLangFilter.set($any($event.target).value)">
+        <option value="all">All languages</option>
         <option value="EN">EN</option>
         <option value="FR">FR</option>
         <option value="ES">ES</option>
       </select>
-    </div>
 
-    <div>
-      <label>Duration (min)</label>
-      <input type="number" formControlName="durationMin" />
-    </div>
-
-    <div>
-      <label>CE Credit</label>
-      <input type="number" formControlName="ceCredit" />
-    </div>
-
-    <div>
-      <label>Kind</label>
-      <select formControlName="kind">
-        <option value="Course">Course</option>
-        <option value="Text">Text</option>
-        <option value="Module">Module</option>
-      </select>
-    </div>
-
-    <div class="check">
-      <label><input type="checkbox" formControlName="active" /> Active</label>
-    </div>
-  </div>
-
-  <div class="row grid">
-    <div>
-      <label>Course Type</label>
-      <select formControlName="type">
+      <select
+        class="course-filter-select"
+        [value]="courseTypeFilter()"
+        (change)="courseTypeFilter.set($any($event.target).value)">
+        <option value="all">All types</option>
         <option value="Health">Health</option>
         <option value="It">IT</option>
         <option value="Hr">HR</option>
         <option value="safety">Safety</option>
       </select>
-    </div>
-
-    <div>
-      <label>Lecturer</label>
-      <input formControlName="lecturer" placeholder="Instructor / lecturer" />
-    </div>
-
-    <div>
-      <label>Canonical URL</label>
-      <input formControlName="url" placeholder="https://…" />
-    </div>
-
-    <div>
-      <label>Passing Score (%)</label>
-      <input type="number" formControlName="passingScore" />
-    </div>
-
-    <div class="check">
-      <label><input type="checkbox" formControlName="lockedSequence" /> Locked sequence</label>
-    </div>
-
-    <div class="check">
-      <label><input type="checkbox" formControlName="isPublic" /> Public course</label>
-    </div>
-  </div>
-
-  <div class="row">
-    <label>Image URL</label>
-    <input formControlName="imageUrl" placeholder="https://…" />
-  </div>
-
-  <div class="row">
-    <label>Tags (comma separated)</label>
-    <input formControlName="tagsText" placeholder="ethics, nursing, safety" />
-  </div>
-
-  <div class="row">
-    <label>Disclosures (comma separated)</label>
-    <input formControlName="disclosuresText" placeholder="none, conflict of interest" />
-  </div>
-
-  <div class="row">
-    <label>Target audience (comma separated)</label>
-    <input formControlName="targetAudienceText" placeholder="RN, LPN, CNA, NP" />
-  </div>
-
-  <div class="row">
-    <label>Prerequisites (comma separated)</label>
-    <input formControlName="prerequisitesText" placeholder="HIPAA, basic wound care" />
-  </div>
-
-  <div class="row">
-    <label>Requirements (comma separated)</label>
-    <input formControlName="requirementsText" placeholder="Internet, computer, speakers" />
-  </div>
-
-  <div class="row">
-    <label>Accommodations</label>
-    <textarea
-      formControlName="accomodations"
-      rows="3"
-      placeholder="Accessibility / accommodations information"
-    ></textarea>
-  </div>
-
-  <!-- Sections (Drag & Drop) -->
-  <div class="row">
-    <div class="section-head">
-      <h3>Sections</h3>
-      <button type="button" class="btn outline" (click)="addSection()">+ Add section</button>
-    </div>
-
-    <div cdkDropList (cdkDropListDropped)="dropSections($event)">
-      <div
-        class="section"
-        *ngFor="let s of sectionsFA.controls; let si = index"
-        [formGroup]="s"
-        cdkDrag
-      >
-        <div class="section-bar">
-          <span class="drag-handle" cdkDragHandle title="Drag to reorder">⠿</span>
-          <input class="w-full" formControlName="title" placeholder="Section title" />
-          <button type="button" class="btn tiny ghost" (click)="removeSection(si)">Remove</button>
-        </div>
-
-        <!-- Lessons (Drag & Drop) -->
-        <div class="lessons" cdkDropList (cdkDropListDropped)="dropLessons(si, $event)">
-          <div class="lesson-head">
-            <strong>Lessons</strong>
-            <button type="button" class="btn tiny outline" (click)="addLesson(si)">+ Add lesson</button>
-          </div>
-
-          <div
-            class="lesson"
-            *ngFor="let l of lessonsFA(si).controls; let li = index"
-            [formGroup]="l"
-            cdkDrag
-          >
-            <div class="lesson-bar">
-              <span class="drag-handle" cdkDragHandle title="Drag to reorder">⠿</span>
-              <input class="w-2/3" formControlName="title" placeholder="Lesson title" />
-              <input class="w-1/6" type="number" formControlName="estMin" placeholder="Est. min" />
-              <button type="button" class="btn tiny ghost" (click)="removeLesson(si, li)">Remove</button>
-            </div>
-
-            <!-- Blocks (Drag & Drop) -->
-            <div class="blocks" cdkDropList (cdkDropListDropped)="dropBlocks(si, li, $event)">
-              <div class="block-head">
-                <span>Blocks</span>
-                <div class="add-row">
-                  <button type="button" class="btn tiny outline" (click)="addBlock(si, li, 'heading')">+ Heading</button>
-                  <button type="button" class="btn tiny outline" (click)="addBlock(si, li, 'text')">+ Text</button>
-                  <button type="button" class="btn tiny outline" (click)="addBlock(si, li, 'image')">+ Image</button>
-                  <button type="button" class="btn tiny outline" (click)="addBlock(si, li, 'audio')">+ Audio</button>
-                  <button type="button" class="btn tiny outline" (click)="addBlock(si, li, 'video')">+ Video</button>
-                  <button type="button" class="btn tiny outline" (click)="addBlock(si, li, 'callout')">+ Callout</button>
-                  <button type="button" class="btn tiny outline" (click)="addBlock(si, li, 'quiz')">+ Quiz</button>
-                </div>
-              </div>
-
-              <div
-                class="block"
-                *ngFor="let b of blocksFA(si, li).controls; let bi = index"
-                [formGroup]="b"
-                cdkDrag
-              >
-                <div class="block-bar">
-                  <span class="drag-handle" cdkDragHandle title="Drag to reorder">⠿</span>
-
-                  <select formControlName="type" (change)="onBlockTypeChange(b)">
-                    <option value="heading">Heading</option>
-                    <option value="text">Text</option>
-                    <option value="image">Image</option>
-                    <option value="audio">Audio</option>
-                    <option value="video">Video</option>
-                    <option value="callout">Callout</option>
-                    <option value="quiz">Quiz</option>
-                  </select>
-
-                  <button type="button" class="btn tiny ghost" (click)="removeBlock(si, li, bi)">Remove</button>
-                </div>
-
-                <!-- Heading -->
-                <div *ngIf="b.value.type === 'heading'" class="block-body">
-                  <div class="editor-grid">
-                    <div class="editor">
-                      <label>Level</label>
-                      <select formControlName="level">
-                        <option [value]="1">H1</option>
-                        <option [value]="2">H2</option>
-                        <option [value]="3">H3</option>
-                      </select>
-                      <input formControlName="text" placeholder="Heading text" />
-                    </div>
-                    <div class="preview">
-                      <div class="preview-title">Preview</div>
-                      <div class="preview-box" [innerHTML]="previewFor(b)"></div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Text -->
-                <div *ngIf="b.value.type === 'text'" class="block-body">
-                  <div class="editor-grid">
-                    <div class="editor">
-                      <label>HTML</label>
-                      <textarea rows="6" formControlName="html" placeholder="<p>…</p>"></textarea>
-                    </div>
-                    <div class="preview">
-                      <div class="preview-title">Live Preview</div>
-                      <div class="preview-box" [innerHTML]="previewFor(b)"></div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Image -->
-                <div *ngIf="b.value.type === 'image'" class="block-body">
-                  <div class="editor-grid">
-                    <div class="editor">
-                      <input formControlName="url" placeholder="Image URL" />
-                      <input formControlName="alt" placeholder="Alt text" />
-                      <input formControlName="caption" placeholder="Caption" />
-                    </div>
-                    <div class="preview">
-                      <div class="preview-title">Preview</div>
-                      <div class="preview-box" [innerHTML]="previewFor(b)"></div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Audio -->
-                <div *ngIf="b.value.type === 'audio'" class="block-body">
-                  <div class="editor-grid">
-                    <div class="editor">
-                      <input formControlName="url" placeholder="Audio URL" />
-                      <textarea rows="3" formControlName="transcript" placeholder="Transcript"></textarea>
-                    </div>
-                    <div class="preview">
-                      <div class="preview-title">Preview</div>
-                      <div class="preview-box" [innerHTML]="previewFor(b)"></div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Video -->
-                <div *ngIf="b.value.type === 'video'" class="block-body">
-                  <div class="editor-grid">
-                    <div class="editor">
-                      <input formControlName="url" placeholder="Video URL (YouTube, Vimeo, MP4…)" />
-                      <textarea rows="3" formControlName="transcript" placeholder="Transcript / notes"></textarea>
-                    </div>
-                    <div class="preview">
-                      <div class="preview-title">Preview</div>
-                      <div class="preview-box" [innerHTML]="previewFor(b)"></div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Callout -->
-                <div *ngIf="b.value.type === 'callout'" class="block-body">
-                  <div class="editor-grid">
-                    <div class="editor">
-                      <label>Style</label>
-                      <select formControlName="style">
-                        <option value="info">Info</option>
-                        <option value="warn">Warn</option>
-                        <option value="success">Success</option>
-                      </select>
-                      <textarea rows="6" formControlName="html" placeholder="<p>Important note…</p>"></textarea>
-                    </div>
-                    <div class="preview">
-                      <div class="preview-title">Live Preview</div>
-                      <div class="preview-box" [innerHTML]="previewFor(b)"></div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Quiz -->
-                <div *ngIf="b.value.type === 'quiz'" class="block-body">
-                  <div class="editor-grid">
-                    <div class="editor">
-                      <label>Mode</label>
-                      <select formControlName="mode">
-                        <option value="single">Single</option>
-                        <option value="multi">Multi</option>
-                        <option value="caseStudy">Case Study</option>
-                      </select>
-
-                      <input formControlName="question" placeholder="Question" />
-
-                      <div class="choices">
-                        <div
-                          class="choice"
-                          *ngFor="let c of b.controls.choices.controls; let ci = index"
-                          [formGroup]="c"
-                        >
-                          <input class="w-full" formControlName="text" placeholder="Choice text" />
-                          <label class="chk">
-                            <input type="checkbox" formControlName="correct" /> Correct
-                          </label>
-                          <button
-                            type="button"
-                            class="btn tiny ghost"
-                            (click)="removeChoice(si, li, bi, ci)"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                        <button type="button" class="btn tiny outline" (click)="addChoice(si, li, bi)">
-                          + Add choice
-                        </button>
-                      </div>
-                    </div>
-                    <div class="preview">
-                      <div class="preview-title">Preview</div>
-                      <div class="preview-box" [innerHTML]="previewFor(b)"></div>
-                    </div>
-                  </div>
-                </div>
-
-              </div> <!-- /block -->
-            </div> <!-- /blocks -->
-
-          </div> <!-- /lesson -->
-        </div> <!-- /lessons -->
-      </div> <!-- /section -->
-    </div>
-  </div> <!-- /row (sections) -->
-
-  <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-    <button class="btn primary" type="submit">
-      {{ editId ? 'Update course' : 'Create course' }}
-    </button>
-
-    <button *ngIf="editId" type="button" class="btn outline" (click)="cancelEdit()">
-      Cancel edit
-    </button>
-
-    <span *ngIf="loadingEdit" class="muted">Loading…</span>
-  </div>
-</form>
-
-<!-- Existing courses -->
-<section class="list">
-  <h3>Courses</h3>
-
-  <div class="card item" *ngFor="let c of courses(); trackBy: trackById">
-    <div class="title">{{ c.title }}</div>
-
-    <div class="meta">
-      <span>{{ c.lang }}</span>
-      <span>• {{ c.durationMin }} min</span>
-      <span>• {{ c.active ? 'Active' : 'Inactive' }}</span>
-      <span>• {{ c.kind }}</span>
-      <span>• {{ c.type }}</span>
-    </div>
-
-    <div class="desc">{{ c.description }}</div>
-
-    <div class="muted" *ngIf="c.lecturer">Lecturer: {{ c.lecturer }}</div>
-    <div class="muted" *ngIf="c.tags && c.tags.length">Tags: {{ c.tags.join(', ') }}</div>
-    <div class="muted" *ngIf="c.sections && c.sections.length">Sections: {{ c.sections.length }}</div>
-    <div class="muted" *ngIf="c.passingScore">Passing score: {{ c.passingScore }}%</div>
-    <div class="muted" *ngIf="c.lockedSequence">Locked sequence enabled</div>
-
-    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
-      <button class="btn outline" type="button" (click)="editCourse(c)">Edit Course</button>
 
       <button
-        class="btn outline"
+        class="btn-ghost"
         type="button"
-        [disabled]="duplicatingId === c.id"
-        (click)="duplicateCourse(c)"
-      >
-        {{ duplicatingId === c.id ? 'Duplicating…' : 'Duplicate Course' }}
+        *ngIf="hasCourseFilters()"
+        (click)="clearCourseFilters()">
+        Clear filters
       </button>
+    </div>
 
-      <button class="btn primary" type="button" (click)="open(c)">Add Extras</button>
+    <div class="course-list">
+      <div class="course-card" *ngFor="let c of filteredCourses(); let courseIndex = index; trackBy: trackById">
+
+        <div class="course-card__main">
+          <div class="course-sort-box" *ngIf="canManageCourses">
+            <span class="course-sort-box__label">Order</span>
+            <span class="course-sort-box__value">{{ courseOrderLabel(c, courseIndex) }}</span>
+          </div>
+
+          <div class="course-card__icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+          </div>
+
+          <div class="course-card__body">
+            <div class="course-card__title">{{ c.title }}</div>
+            <div class="course-card__desc" *ngIf="c.description">{{ c.description }}</div>
+
+            <div class="course-card__meta">
+              <span class="meta-item" *ngIf="c.lang">{{ c.lang }}</span>
+              <span class="meta-sep" *ngIf="c.durationMin">·</span>
+              <span class="meta-item" *ngIf="c.durationMin">{{ c.durationMin }} min</span>
+              <span class="meta-sep" *ngIf="c.lecturer">·</span>
+              <span class="meta-item" *ngIf="c.lecturer">{{ c.lecturer }}</span>
+              <span class="meta-sep" *ngIf="c.sections && c.sections.length">·</span>
+              <span class="meta-item" *ngIf="c.sections && c.sections.length">{{ c.sections.length }} sections</span>
+              <span class="meta-sep" *ngIf="c.passingScore">·</span>
+              <span class="meta-item score-item" *ngIf="c.passingScore">{{ c.passingScore }}% pass</span>
+            </div>
+
+            <div class="course-card__tags" *ngIf="c.tags && c.tags.length">
+              <span class="tag" *ngFor="let t of c.tags">{{ t }}</span>
+            </div>
+          </div>
+
+          <div class="course-card__badges">
+            <span [class]="'badge badge--' + (c.active ? 'active' : 'inactive')">{{ c.active ? 'Active' : 'Inactive' }}</span>
+            <span class="badge badge--kind" *ngIf="c.kind">{{ c.kind }}</span>
+            <span class="badge badge--type" *ngIf="c.type">{{ c.type }}</span>
+            <span class="badge badge--locked" *ngIf="c.lockedSequence">Locked</span>
+          </div>
+        </div>
+
+        <div *ngIf="canManageCourses" class="course-card__actions">
+          <button
+            class="btn-action btn-action--icon"
+            type="button"
+            [disabled]="!canMoveCourse(c, -1)"
+            title="Move course up"
+            (click)="moveCourse(c, -1)">
+            ↑
+          </button>
+
+          <button
+            class="btn-action btn-action--icon"
+            type="button"
+            [disabled]="!canMoveCourse(c, 1)"
+            title="Move course down"
+            (click)="moveCourse(c, 1)">
+            ↓
+          </button>
+
+          <button class="btn-action" type="button" (click)="editCourse(c)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            Edit
+          </button>
+
+          <button
+            class="btn-action"
+            type="button"
+            [disabled]="duplicatingId === c.id"
+            (click)="duplicateCourse(c)"
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            {{ duplicatingId === c.id ? 'Duplicating…' : 'Duplicate' }}
+          </button>
+
+          <button class="btn-action" type="button" (click)="exportCourseJson(c)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Export JSON
+          </button>
+
+          <button class="btn-action btn-action--teal" type="button" (click)="open(c)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="16"/>
+              <line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+            Add Extras
+          </button>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="!courses().length">
+        <div class="empty-state__icon">&#128218;</div>
+        <span>No courses yet. Create the first one above.</span>
+      </div>
+
+      <div class="empty-state" *ngIf="courses().length && !filteredCourses().length">
+        <div class="empty-state__icon">&#8981;</div>
+        <span>No courses match the current filters.</span>
+        <button type="button" class="btn-outline" (click)="clearCourseFilters()">Clear filters</button>
+      </div>
     </div>
   </div>
 
-  <p *ngIf="!courses().length" class="muted">No courses yet.</p>
-</section>
+</div>

@@ -1,0 +1,264 @@
+<div class="org-register-container">
+  <div class="org-register-wrapper">
+    <!-- Registration Complete -->
+    <div class="registration-complete" *ngIf="registrationComplete()">
+      <div class="success-card">
+        <div class="success-icon">✓</div>
+        <h2 class="success-title">Welcome to {{ selectedOrg()?.name }}!</h2>
+        <p class="success-message">Your account has been created successfully.</p>
+        <p class="success-submessage">Redirecting to your dashboard...</p>
+        <div class="success-spinner"></div>
+      </div>
+    </div>
+
+    <!-- Registration Form -->
+    <div class="org-register-card" *ngIf="!registrationComplete()">
+      <!-- Header -->
+      <div class="card-header">
+        <div class="back-link-wrap">
+          <a routerLink="/" class="back-link">
+            <span class="back-icon">←</span>
+            Back to Home
+          </a>
+        </div>
+        <div class="logo-section">
+          <h1 class="title">Register to Your Organization</h1>
+          <p class="subtitle">Create your professional account</p>
+        </div>
+
+        <!-- Progress Indicator -->
+        <div class="progress-container">
+          <div class="progress-step" [class.active]="currentStep() === 'org-selection'">
+            <div class="progress-number">1</div>
+            <div class="progress-label">Select Organization</div>
+          </div>
+          <div class="progress-divider"></div>
+          <div class="progress-step" [class.active]="currentStep() === 'account-details'">
+            <div class="progress-number">2</div>
+            <div class="progress-label">Create Account</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Body -->
+      <div class="card-body">
+        <form [formGroup]="form" (ngSubmit)="submit()" class="form">
+
+          <!-- Step 1: Organization Selection -->
+          <div class="form-step" *ngIf="currentStep() === 'org-selection'">
+            <div class="step-title">Find Your Organization</div>
+            <p class="step-description">Search for your professional organization by name, code, or type.</p>
+
+            <div class="form-group">
+              <label class="label">Your Organization</label>
+              <div class="org-search-wrapper">
+                <div class="org-input-container">
+                  <span class="input-icon">🏢</span>
+                  <input
+                    class="input org-search-input"
+                    type="text"
+                    formControlName="orgSearch"
+                    placeholder="Search by name or code..."
+                    autocomplete="off"
+                  />
+                  <button
+                    *ngIf="selectedOrg()"
+                    type="button"
+                    class="clear-btn"
+                    (click)="clearSelection()"
+                    title="Clear selection">
+                    ✕
+                  </button>
+                </div>
+
+                <!-- Organization Dropdown -->
+                <div class="org-dropdown" *ngIf="showOrgDropdown() && organizations().length > 0">
+                  <div
+                    class="org-option"
+                    *ngFor="let org of organizations()"
+                    (click)="selectOrganization(org)">
+                    <div class="org-info">
+                      <div class="org-name">{{ org.name }}</div>
+                      <div class="org-meta">{{ org.type }} • {{ org.code || org.id }}</div>
+                    </div>
+                    <div class="org-badge">{{ org.plan }}</div>
+                  </div>
+                </div>
+
+                <!-- No results -->
+                <div class="org-no-results" *ngIf="showOrgDropdown() && organizations().length === 0 && searchTerm()">
+                  <p class="no-results-text">No organizations found</p>
+                  <p class="no-results-hint">Try searching with a different name or code</p>
+                </div>
+
+                <!-- Selected Organization Display -->
+                <div class="selected-org" *ngIf="selectedOrg()">
+                  <div class="selected-org-content">
+                    <span class="selected-org-icon">✓</span>
+                    <div class="selected-org-info">
+                      <div class="selected-org-name">{{ selectedOrg()!.name }}</div>
+                      <div class="selected-org-type">{{ selectedOrg()!.type }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <small class="help error-text" *ngIf="form.get('orgSearch')?.invalid && form.get('orgSearch')?.touched">
+                ⚠️ Please select an organization
+              </small>
+            </div>
+
+            <!-- Next Button -->
+            <button
+              type="button"
+              class="btn btn-primary btn-block"
+              [disabled]="!selectedOrg()"
+              (click)="currentStep.set('account-details')">
+              Continue to Account Details
+            </button>
+          </div>
+
+          <!-- Step 2: Account Details -->
+          <div class="form-step" *ngIf="currentStep() === 'account-details'">
+            <div class="step-title">Create Your Account</div>
+            <p class="step-description">Set up your professional account for {{ selectedOrg()?.name }}</p>
+
+            <!-- Selected Org Display -->
+            <div class="selected-org-card">
+              <div class="selected-org-icon">🏢</div>
+              <div class="selected-org-text">
+                <div class="selected-org-label">Organization</div>
+                <div class="selected-org-value">{{ selectedOrg()?.name }}</div>
+              </div>
+              <button type="button" class="change-org-btn" (click)="goBack()">Change</button>
+            </div>
+
+            <!-- Display Name -->
+            <div class="form-group">
+              <label class="label">Full Name</label>
+              <div class="input-wrapper">
+                <span class="input-icon">👤</span>
+                <input
+                  class="input"
+                  type="text"
+                  formControlName="displayName"
+                  placeholder="John Doe"
+                />
+              </div>
+              <small class="help error-text" *ngIf="form.get('displayName')?.invalid && form.get('displayName')?.touched">
+                ⚠️ Full name is required (minimum 2 characters)
+              </small>
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+              <label class="label">Email Address</label>
+              <div class="input-wrapper">
+                <span class="input-icon">✉️</span>
+                <input
+                  class="input"
+                  type="email"
+                  formControlName="email"
+                  placeholder="your.email@professional.com"
+                  autocomplete="email"
+                />
+              </div>
+              <small class="help error-text" *ngIf="form.get('email')?.invalid && form.get('email')?.touched">
+                ⚠️ Valid email address required
+              </small>
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+              <label class="label">Password</label>
+              <div class="input-wrapper">
+                <span class="input-icon">🔒</span>
+                <input
+                  class="input"
+                  type="password"
+                  formControlName="password"
+                  placeholder="••••••••"
+                  autocomplete="new-password"
+                />
+              </div>
+              <small class="help" *ngIf="!form.get('password')?.value">
+                Minimum 8 characters required
+              </small>
+              <small class="help error-text" *ngIf="form.get('password')?.invalid && form.get('password')?.touched">
+                ⚠️ Password must be at least 8 characters
+              </small>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="form-group">
+              <label class="label">Confirm Password</label>
+              <div class="input-wrapper">
+                <span class="input-icon">🔒</span>
+                <input
+                  class="input"
+                  type="password"
+                  formControlName="confirmPassword"
+                  placeholder="••••••••"
+                  autocomplete="new-password"
+                />
+              </div>
+              <small class="help error-text" *ngIf="passwordMismatch">
+                ⚠️ Passwords do not match
+              </small>
+            </div>
+
+            <!-- Terms Acceptance -->
+            <div class="form-group checkbox-group">
+              <label class="checkbox-label">
+                <input
+                  type="checkbox"
+                  formControlName="agreeTerms"
+                  class="checkbox-input"
+                />
+                <span class="checkbox-text">
+                  I agree to the
+                  <a href="#" class="link">Terms of Service</a> and
+                  <a href="#" class="link">Privacy Policy</a>
+                </span>
+              </label>
+              <small class="help error-text" *ngIf="form.get('agreeTerms')?.invalid && form.get('agreeTerms')?.touched">
+                ⚠️ You must accept the terms to continue
+              </small>
+            </div>
+
+            <!-- Error Message -->
+            <div class="error-alert" *ngIf="error()">
+              <span class="error-icon">❌</span>
+              <p class="error">{{ error() }}</p>
+            </div>
+
+            <!-- Submit Button -->
+            <button
+              class="btn btn-primary btn-block"
+              type="submit"
+              [disabled]="loading()">
+              <span *ngIf="!loading()">Create Account & Register</span>
+              <span *ngIf="loading()">Creating account...</span>
+            </button>
+
+            <!-- Back Button -->
+            <button
+              type="button"
+              class="btn btn-secondary btn-block"
+              (click)="goBack()"
+              [disabled]="loading()">
+              ← Back
+            </button>
+
+            <!-- Footer Links -->
+            <div class="footer-links">
+              <p class="footer-link-item">
+                Already have an account?
+                <a routerLink="/login-org" class="link">Sign in here</a>
+              </p>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

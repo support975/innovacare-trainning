@@ -1,0 +1,145 @@
+{
+  "id": "cybersecurity-awareness",
+  "title": "Cybersecurity Awareness for Employees",
+  "subtitle": "Protect accounts, devices, and company data",
+  "description": "Teach employees how to recognize phishing, protect passwords, secure devices, and respond to suspicious activity.",
+  "lang": "EN",
+  "durationMin": 55,
+  "ceCredit": 0,
+  "sortOrder": 103,
+  "active": true,
+  "isPublic": true,
+  "kind": "Course",
+  "type": "It",
+  "level": "Beginner",
+  "url": "/catalogue/cybersecurity-awareness",
+  "imageUrl": "https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?auto=format&fit=crop&w=1200&q=80",
+  "tags": [
+    "enterprise",
+    "cybersecurity",
+    "phishing",
+    "passwords",
+    "it"
+  ],
+  "lecturer": "Innovacare Training IT Faculty",
+  "disclosures": [
+    "This course is general awareness training and should be supplemented by organization-specific IT policies."
+  ],
+  "targetAudience": [
+    "All employees",
+    "Remote workers",
+    "Managers",
+    "Administrative teams"
+  ],
+  "prerequisites": [
+    "Basic computer use"
+  ],
+  "requirements": [
+    "Complete all lessons",
+    "Pass the cybersecurity quiz"
+  ],
+  "accomodations": "Accessibility accommodations may be requested through the organization administrator.",
+  "orgId": null,
+  "assignedOrgIds": [],
+  "passingScore": 80,
+  "lockedSequence": true,
+  "sections": [
+    {
+      "id": "account-security",
+      "title": "Account Security",
+      "order": 1,
+      "estMin": 25,
+      "lessons": [
+        {
+          "id": "passwords-mfa",
+          "title": "Passwords and Multi-Factor Authentication",
+          "order": 1,
+          "estMin": 12,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Strong account protection starts with unique passwords and multi-factor authentication. Employees should never reuse work passwords on personal sites.</p>",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "phishing",
+          "title": "Recognize Phishing Attempts",
+          "order": 2,
+          "estMin": 13,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Phishing messages often create urgency, request credentials, include unusual links, or imitate trusted people. Verify before clicking.</p>",
+              "required": true
+            },
+            {
+              "id": "quiz",
+              "type": "quiz",
+              "mode": "single",
+              "question": "Which sign may indicate phishing?",
+              "required": true,
+              "choices": [
+                {
+                  "id": "a",
+                  "text": "A normal calendar invite from a known colleague",
+                  "correct": false
+                },
+                {
+                  "id": "b",
+                  "text": "An urgent message asking for your password",
+                  "correct": true
+                },
+                {
+                  "id": "c",
+                  "text": "A company newsletter from an approved sender",
+                  "correct": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "device-data-security",
+      "title": "Device and Data Security",
+      "order": 2,
+      "estMin": 30,
+      "lessons": [
+        {
+          "id": "secure-devices",
+          "title": "Secure Devices and Networks",
+          "order": 1,
+          "estMin": 15,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Lock devices when away, install updates, avoid unknown USB devices, and use approved networks or VPN when required.</p>",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "reporting",
+          "title": "Report Suspicious Activity",
+          "order": 2,
+          "estMin": 15,
+          "blocks": [
+            {
+              "id": "callout",
+              "type": "callout",
+              "style": "info",
+              "html": "<p>Fast reporting helps IT limit damage. If you clicked a suspicious link, report it immediately.</p>",
+              "required": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

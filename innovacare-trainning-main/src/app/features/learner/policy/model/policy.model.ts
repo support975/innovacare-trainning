@@ -3,6 +3,10 @@ export type PolicyStatus = 'active' | 'archived';
 
 export interface Policy {
   id?: string;
+  orgId?: string | null;
+  scope?: 'platform' | 'organization';
+  sourcePolicyId?: string | null;
+  createdByUid?: string;
 
   status: PolicyStatus;
   title: string;
@@ -34,9 +38,20 @@ export interface Policy {
 }
 
 export interface PolicyAcknowledgement {
-  id?: string;                // `${policyId}_${uid}`
+  id?: string;
+  orgId: string;
   policyId: string;
   policyVersion: string;
   userId: string;
   acknowledgedAt: any;
+}
+
+export interface PolicyAssignment {
+  id?: string;
+  orgId: string;
+  policyId: string;
+  userId: string;
+  assignedByUid: string;
+  assignedAt: any;
+  active: boolean;
 }

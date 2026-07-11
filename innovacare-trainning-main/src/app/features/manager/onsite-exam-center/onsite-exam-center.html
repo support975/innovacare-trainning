@@ -1,0 +1,240 @@
+<div class="onsite-center">
+  <!-- ── Session list view ─────────────────────────────────────────── -->
+  <ng-container *ngIf="!selectedSession()">
+    <div class="page-header">
+      <h1>🏛️ Onsite Exam Center</h1>
+      <p class="subtitle">Manage kiosk exam sessions: results, publication, and card delivery.</p>
+    </div>
+
+    <div *ngIf="error()" class="alert alert-error">{{ error() }}</div>
+
+    <div class="session-grid">
+      <div class="session-card" *ngFor="let s of sessions()" (click)="selectSession(s)">
+        <div class="session-card-title">{{ examTitle(s.examId) }}</div>
+        <div class="session-card-meta">
+          <span>📅 {{ s.sessionDate | toDate | date: 'MMM d, y HH:mm' }}</span>
+          <span class="status-chip" [class.chip-active]="s.status === 'active'">{{ s.status }}</span>
+        </div>
+      </div>
+      <div *ngIf="sessions().length === 0" class="empty-state">
+        No exam sessions yet. Create one from Exam Sessions.
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ── Session detail view ───────────────────────────────────────── -->
+  <ng-container *ngIf="selectedSession() as session">
+    <button class="btn-link" (click)="backToSessions()">← All sessions</button>
+
+    <div class="page-header">
+      <h1>{{ examTitle(session.examId) }}</h1>
+      <p class="subtitle">
+        {{ session.sessionDate | toDate | date: 'MMMM d, y • HH:mm' }} — Status: {{ session.status }}
+      </p>
+    </div>
+
+    <div *ngIf="error()" class="alert alert-error">{{ error() }}</div>
+    <div *ngIf="success()" class="alert alert-success">{{ success() }}</div>
+
+    <!-- Stats -->
+    <div class="stats-row" *ngIf="stats() as st">
+      <div class="stat-tile"><span class="stat-value">{{ st.total }}</span><span class="stat-label">Enrolled</span></div>
+      <div class="stat-tile"><span class="stat-value">{{ st.verified }}</span><span class="stat-label">Verified</span></div>
+      <div class="stat-tile"><span class="stat-value">{{ st.attempted }}</span><span class="stat-label">Attempted</span></div>
+      <div class="stat-tile stat-pass"><span class="stat-value">{{ st.passed }}</span><span class="stat-label">Passed</span></div>
+      <div class="stat-tile"><span class="stat-value">{{ st.published }}</span><span class="stat-label">Published</span></div>
+      <div class="stat-tile stat-card-issued"><span class="stat-value">{{ st.cardsIssued }}</span><span class="stat-label">Cards Issued</span></div>
+    </div>
+
+    <div class="detail-layout">
+      <!-- Candidate table -->
+      <div class="candidates-panel">
+        <div class="panel-header">
+          <h2>Candidates</h2>
+          <button class="btn-secondary" (click)="refreshCandidates()" [disabled]="loading()">↻ Refresh</button>
+        </div>
+
+        <div *ngIf="loading()" class="empty-state">Loading candidates…</div>
+
+        <table class="candidates-table" *ngIf="!loading()">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Score</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let c of candidates(); trackBy: trackByUid"
+              (click)="openCandidate(c)"
+              [class.row-selected]="selectedCandidate()?.uid === c.uid"
+            >
+              <td>
+                <div class="cand-name">{{ c.name }}</div>
+                <div class="cand-email">{{ c.email }}</div>
+              </td>
+              <td>
+                <span *ngIf="c.attempt" class="score" [class.score-pass]="c.attempt.passed" [class.score-fail]="!c.attempt.passed">
+                  {{ c.attempt.score }}%
+                </span>
+                <span *ngIf="!c.attempt" class="score-none">—</span>
+              </td>
+              <td><span class="badge" [ngClass]="candidateStatusClass(c)">{{ candidateStatus(c) }}</span></td>
+            </tr>
+            <tr *ngIf="candidates().length === 0">
+              <td colspan="3" class="empty-state">No candidates enrolled in this session.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Candidate detail -->
+      <div class="candidate-detail" *ngIf="selectedCandidate() as c">
+        <div class="panel-header">
+          <h2>{{ c.name }}</h2>
+          <button class="btn-close" (click)="closeCandidate()">✕</button>
+        </div>
+
+        <div class="detail-section">
+          <h3>Candidate</h3>
+          <div class="detail-row"><span class="lbl">Email</span><span class="val">{{ c.email || '—' }}</span></div>
+          <div class="detail-row"><span class="lbl">Phone</span><span class="val">{{ c.phone || '— (no SMS possible)' }}</span></div>
+          <div class="detail-row"><span class="lbl">Enrolled</span><span class="val">{{ c.enrolledAt | toDate | date: 'short' }}</span></div>
+          <div class="detail-row"><span class="lbl">Identity verified</span>
+            <span class="val">{{ (c.verified || c.examCompleted) ? '✓ Yes' : '✗ No' }}
+              <ng-container *ngIf="c.verifiedAt"> ({{ c.verifiedAt | toDate | date: 'short' }})</ng-container>
+            </span>
+          </div>
+          <div class="detail-row"><span class="lbl">Rules agreement</span>
+            <span class="val" *ngIf="c.agreement">✓ Accepted ({{ c.agreement.language === 'fr' ? 'Français' : 'English' }}, station {{ c.agreement.stationId || '?' }}, {{ c.agreement.agreedAt | toDate | date: 'short' }})</span>
+            <span class="val" *ngIf="!c.agreement">—</span>
+          </div>
+          <div class="detail-row" *ngIf="c.applicationId">
+            <span class="lbl">Application</span>
+            <a class="val link" [routerLink]="['/manager/certification-candidate', c.applicationId]">Open full candidate file →</a>
+          </div>
+        </div>
+
+        <!-- Documents -->
+        <div class="detail-section">
+          <h3>Documents</h3>
+          <p class="muted" *ngIf="!c.documents.length">No documents submitted yet.</p>
+          <div class="doc-review-row" *ngFor="let d of c.documents">
+            <a class="link doc-name" [href]="d.url" target="_blank" rel="noopener">
+              📄 {{ docTypeLabel(d.type) }} — {{ d.name }}
+            </a>
+            <div class="doc-review-actions">
+              <span class="badge"
+                [class.badge-success]="d.status === 'approved'"
+                [class.badge-danger]="d.status === 'rejected'"
+                [class.badge-warning]="d.status === 'pending'"
+              >{{ d.status }}</span>
+              <button class="btn-mini approve" (click)="reviewDocument(c, d.id, 'approved')" [disabled]="busy() || d.status === 'approved'">✓</button>
+              <button class="btn-mini reject" (click)="reviewDocument(c, d.id, 'rejected')" [disabled]="busy() || d.status === 'rejected'">✗</button>
+            </div>
+          </div>
+
+          <!-- Candidacy authorization -->
+          <div class="candidacy-box" *ngIf="!c.examCompleted && !c.attempt">
+            <div class="candidacy-status">
+              <span class="lbl">Candidacy:</span>
+              <span class="badge"
+                [class.badge-success]="c.candidacyApproved === true"
+                [class.badge-danger]="c.candidacyApproved === false"
+                [class.badge-muted]="c.candidacyApproved === null"
+              >{{ c.candidacyApproved === true ? 'Approved' : c.candidacyApproved === false ? 'Rejected' : 'Pending decision' }}</span>
+            </div>
+            <div class="candidacy-actions">
+              <button
+                class="btn-success"
+                (click)="setCandidacy(c, true)"
+                [disabled]="busy() || c.candidacyApproved === true"
+                [title]="allDocsApproved(c) ? '' : 'Tip: approve all documents first'"
+              >✓ Authorize candidacy</button>
+              <button
+                class="btn-secondary"
+                (click)="setCandidacy(c, false)"
+                [disabled]="busy() || c.candidacyApproved === false"
+              >✗ Reject</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section" *ngIf="c.attempt as att">
+          <h3>Exam Result</h3>
+          <div class="score-banner" [class.banner-pass]="att.passed" [class.banner-fail]="!att.passed">
+            <span class="banner-score">{{ att.score }}%</span>
+            <span class="banner-status">{{ att.passed ? 'PASSED' : 'FAILED' }}</span>
+          </div>
+          <div class="detail-row"><span class="lbl">Correct answers</span><span class="val">{{ att.correctCount }} / {{ att.totalQuestions }}</span></div>
+          <div class="detail-row"><span class="lbl">Completed</span><span class="val">{{ att.completedAt | toDate | date: 'medium' }}</span></div>
+          <div class="detail-row"><span class="lbl">Result published</span>
+            <span class="val">{{ att.resultPublishedAt ? (att.resultPublishedAt | toDate | date: 'medium') : 'Not yet' }}</span>
+          </div>
+          <div class="detail-row" *ngIf="att.membershipNumber">
+            <span class="lbl">Membership card</span><span class="val mono">{{ att.membershipNumber }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section" *ngIf="!c.attempt">
+          <h3>Exam Result</h3>
+          <p class="muted">This candidate has not taken the exam yet.</p>
+        </div>
+
+        <!-- Actions -->
+        <div class="detail-actions" *ngIf="c.attempt as att">
+          <button
+            class="btn-primary"
+            (click)="publishResult(c)"
+            [disabled]="busy()"
+            *ngIf="!att.resultPublishedAt"
+          >
+            📣 Publish Result (email{{ c.phone ? ' + SMS' : '' }})
+          </button>
+          <button
+            class="btn-secondary"
+            (click)="publishResult(c)"
+            [disabled]="busy()"
+            *ngIf="att.resultPublishedAt"
+          >
+            ↻ Resend Result
+          </button>
+
+          <ng-container *ngIf="att.passed && !att.cardIssuedAt">
+            <button class="btn-success" (click)="openCardForm()" *ngIf="!cardFormOpen()" [disabled]="busy()">
+              🪪 Issue Card &amp; Deliver
+            </button>
+            <div class="card-form" *ngIf="cardFormOpen()">
+              <label>
+                Profession (shown on the card)
+                <input type="text" [(ngModel)]="cardForm.profession" placeholder="e.g. Registered Nurse" />
+              </label>
+              <label>
+                Membership number (leave blank to auto-generate)
+                <input type="text" [(ngModel)]="cardForm.membershipNumber" placeholder="MC-XXXX-XXXX" />
+              </label>
+              <button class="btn-success" (click)="issueCard(c)" [disabled]="busy()">
+                {{ busy() ? 'Issuing…' : '✓ Confirm — Issue & Send Card' }}
+              </button>
+            </div>
+          </ng-container>
+
+          <div class="issued-note" *ngIf="att.cardIssuedAt">
+            🪪 Card issued {{ att.cardIssuedAt | toDate | date: 'medium' }}
+            <a class="link" *ngIf="c.applicationId" [routerLink]="['/manager/certification-candidate', c.applicationId]">
+              View card &amp; certificate →
+            </a>
+            <button class="btn-secondary" (click)="emailCredentials(c)" [disabled]="busy()">
+              ✉ Email card &amp; certificate (PDF)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="candidate-detail candidate-detail-empty" *ngIf="!selectedCandidate()">
+        <p class="muted">Select a candidate to see details and take action.</p>
+      </div>
+    </div>
+  </ng-container>
+</div>

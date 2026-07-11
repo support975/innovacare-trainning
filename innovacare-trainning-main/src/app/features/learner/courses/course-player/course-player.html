@@ -1,10 +1,27 @@
 <div class="player container" [class.sidebar-collapsed]="!sidebarOpen">
   <div class="crumbs">
     <div class="crumbs-left">
-      <button class="btn soft" type="button" (click)="backToCourse()">‹ Back to course</button>
+      <button class="btn soft" type="button" (click)="backToCourse()">‹ {{ t('player.backToCourse') }}</button>
     </div>
 
     <div class="crumbs-right">
+      <div class="language-switch" role="group" aria-label="Language">
+        <button
+          type="button"
+          class="language-option"
+          [class.active]="languageCode() === 'en'"
+          (click)="setLanguage('en')">
+          {{ t('language.english') }}
+        </button>
+        <button
+          type="button"
+          class="language-option"
+          [class.active]="languageCode() === 'fr'"
+          (click)="setLanguage('fr')">
+          {{ t('language.french') }}
+        </button>
+      </div>
+
       <button
         class="btn soft icon"
         type="button"
@@ -12,7 +29,7 @@
         aria-controls="lessonSidebar"
         [attr.aria-expanded]="sidebarOpen"
       >
-        ☰ Lessons
+        ☰ {{ t('player.lessons') }}
       </button>
     </div>
   </div>
@@ -20,7 +37,7 @@
   <div class="backdrop" *ngIf="sidebarOpen" (click)="sidebarOpen = false" aria-hidden="true"></div>
 
   <header class="header">
-    <h1 class="title">{{ course().title || 'Course' }}</h1>
+    <h1 class="title">{{ course().title || t('player.courseFallback') }}</h1>
     <div class="muted">
       <span *ngIf="course().subtitle">{{ course().subtitle }}</span>
       <span *ngIf="course().durationMin"> · {{ course().durationMin }} min</span>
@@ -28,7 +45,16 @@
     </div>
   </header>
 
-  <section class="content grid">
+  <section class="domain-lock card" *ngIf="domainAccessDenied()">
+    <h2>Restricted course</h2>
+    <p>
+      This course is restricted to {{ allowedDomainLabel() }} accounts.
+      Sign in with your organization account to continue.
+    </p>
+    <button class="btn soft" type="button" (click)="backToCourse()">Back to course</button>
+  </section>
+
+  <section class="content grid" *ngIf="!domainAccessDenied()">
     <aside id="lessonSidebar"
        class="list card"
        [class.closed]="!sidebarOpen"
@@ -37,64 +63,201 @@
        (focusin)="pauseSidebarAutoClose()"
        (focusout)="onSidebarFocusOut($event)">
 
-  <div class="list-head">
-    <strong>Lessons</strong>
-    <span class="muted">({{ lessons().length }})</span>
+      <div class="list-head">
+        <strong>{{ t('player.courseMap') }}</strong>
+        <button class="btn soft icon list-close"
+                type="button"
+                (click)="sidebarOpen = false"
+                [attr.aria-label]="t('player.closeLessons')">
+          ✕
+        </button>
+      </div>
 
-    <button class="btn soft icon list-close"
-            type="button"
-            (click)="sidebarOpen = false"
-            aria-label="Close lessons list">
-      ✕
-    </button>
-  </div>
+      <div class="course-rail-card" *ngIf="course() as c">
+        <div class="course-rail-media" *ngIf="c.imageUrl">
+          <img [src]="c.imageUrl" [alt]="c.title || t('player.courseFallback')" />
+        </div>
+        <div class="course-rail-copy">
+          <div class="course-rail-kicker">{{ t('player.learnerView') }}</div>
+          <h2>{{ c.title || t('player.courseFallback') }}</h2>
+          <p class="muted" *ngIf="c.subtitle">{{ c.subtitle }}</p>
 
-  <div class="lesson-item"
-       *ngFor="let l of lessons(); let i = index"
-       [class.active]="i === activeIndex"
-       (click)="setActive(i)">
-
-    <div class="row-title">
-      <span class="title">{{ l.title }}</span>
-      <span class="chip" *ngIf="l.estMin">{{ l.estMin }} min</span>
-    </div>
-
-    <div class="row-sub muted">{{ l.sectionTitle }}</div>
-
-    <div class="row-right">
-      <span class="badge" [class.badge-done]="completedSet().has(l.id)">
-        {{ completedSet().has(l.id) ? 'Done' : 'Pending' }}
-      </span>
-    </div>
-  </div>
-
-  <p class="muted" *ngIf="!lessons().length">No lessons/sections configured.</p>
-</aside>
-
-    <article class="viewer card" *ngIf="current() as cur">
-      <div class="viewer-head">
-        <h2 class="viewer-title">{{ cur.title }}</h2>
-        <div class="viewer-meta muted">
-          {{ cur.sectionTitle }}
-          <span class="dot"> · </span>
-          Lesson {{ cur.index + 1 }} / {{ lessons().length }}
+          <div class="course-rail-progress">
+            <div class="course-rail-progress-bar" aria-hidden="true">
+              <span [style.width.%]="courseProgressPct()"></span>
+            </div>
+            <div class="course-rail-progress-meta">
+              <span>{{ t('player.completePct', { pct: courseProgressPct() }) }}</span>
+              <span>{{ t('player.completedLessons', { done: completedLessonsCount(), total: lessons().length }) }}</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="viewer-body">
-        <div class="course-html" role="document" aria-label="Lesson content">
+      <div class="section-group" *ngFor="let group of groupedLessons()">
+        <div class="section-group-head">
+          <span>{{ group.title }}</span>
+          <span class="muted">{{ group.lessons.length }}</span>
+        </div>
+
+        <button
+          type="button"
+          class="lesson-item"
+          *ngFor="let l of group.lessons"
+          [class.active]="l.index === activeIndex"
+          [class.done]="completedSet().has(l.id)"
+          (click)="setActive(l.index)">
+
+          <div class="lesson-status-dot" [class.done]="completedSet().has(l.id)">
+            <span *ngIf="completedSet().has(l.id)">✓</span>
+            <span *ngIf="!completedSet().has(l.id)">{{ l.index + 1 }}</span>
+          </div>
+
+          <div class="lesson-copy">
+            <div class="row-title">
+              <span class="title">{{ l.title }}</span>
+              <span class="chip" *ngIf="l.estMin">{{ l.estMin }} min</span>
+            </div>
+
+            <div class="row-sub muted">{{ completedSet().has(l.id) ? t('player.completed') : t('player.inProgress') }}</div>
+            <div class="lesson-gate muted" *ngIf="l.index === activeIndex && !completedSet().has(l.id) && lessonAdvanceHint(l)">
+              {{ lessonAdvanceHint(l) }}
+            </div>
+          </div>
+        </button>
+      </div>
+
+      <p class="muted" *ngIf="!lessons().length">{{ t('player.noLessonsConfigured') }}</p>
+    </aside>
+
+    <article class="viewer card" *ngIf="current() as cur">
+      <div class="viewer-head">
+        <div>
+          <div class="viewer-kicker">{{ cur.sectionTitle }}</div>
+          <h2 class="viewer-title">{{ cur.title }}</h2>
+        </div>
+
+        <div class="viewer-meta">
+          <span class="viewer-pill">{{ t('player.lessonCounter', { current: cur.index + 1, total: lessons().length }) }}</span>
+          <span class="viewer-pill" *ngIf="cur.estMin">{{ cur.estMin }} min</span>
+          <span class="viewer-pill" *ngIf="lessonInteractionProgressLabel(cur) !== t('player.noTrackedInteractions')">
+            {{ lessonInteractionProgressLabel(cur) }}
+          </span>
+        </div>
+      </div>
+
+      <div class="viewer-body" #viewerBodyHost (click)="onViewerClick($event)" (toggle)="onViewerToggle($event)">
+        <div class="course-html content-transition" role="document" aria-label="Lesson content">
           <ng-container *ngFor="let b of cur.blocks; let bi = index; trackBy: trackByBlock">
 
   <!-- Heading / Text / Image / Audio / Callout -->
   <div class="block"
-       *ngIf="b.type !== 'quiz' && b.type !== 'video'"
+      *ngIf="b.type !== 'quiz' && b.type !== 'video' && b.type !== 'slideDeck' && b.type !== 'cardStack' && b.type !== 'accordion' && b.type !== 'tabs'"
        [innerHTML]="blockHtml(b)">
+  </div>
+
+  <!-- Accordion -->
+  <section class="block accordion-block" *ngIf="b.type === 'accordion'">
+    <h3 *ngIf="b.title">{{ b.title }}</h3>
+    <div *ngIf="b.introHtml" [innerHTML]="slideNotesHtml(b.introHtml)"></div>
+
+    <details
+      class="native-accordion-item"
+      data-track="false"
+      *ngFor="let item of accordionItems(b); let itemIndex = index"
+      (toggle)="onAccordionToggle($event, cur.id, bi, item, itemIndex)"
+    >
+      <summary>
+        <span>{{ item.title || t('player.sectionFallback', { number: itemIndex + 1 }) }}</span>
+      </summary>
+      <div class="native-accordion-body">
+        <div *ngIf="hasAccordionItemContent(item); else emptyAccordionContentTpl" [innerHTML]="accordionItemContentHtml(item)"></div>
+        <ng-template #emptyAccordionContentTpl>
+          <p class="muted">No content configured for this item.</p>
+        </ng-template>
+      </div>
+    </details>
+  </section>
+
+  <!-- Tabs -->
+  <section class="block tabs-block" *ngIf="b.type === 'tabs'">
+    <div class="tabs-block__head" *ngIf="b.title || b.introHtml">
+      <h3 *ngIf="b.title">{{ b.title }}</h3>
+      <div *ngIf="b.introHtml" [innerHTML]="slideNotesHtml(b.introHtml)"></div>
+    </div>
+
+    <div class="tabs-block__tabs" role="tablist">
+      <button
+        type="button"
+        class="tabs-block__tab"
+        role="tab"
+        *ngFor="let tab of tabItems(b)"
+        [class.active]="activeTabId(cur.id, bi, b) === tab.id"
+        [attr.aria-selected]="activeTabId(cur.id, bi, b) === tab.id"
+        (click)="setActiveTab(cur.id, bi, tab)"
+      >
+        {{ tab.label }}
+      </button>
+    </div>
+
+    <div class="tabs-block__panel" role="tabpanel" *ngIf="activeTab(cur.id, bi, b) as tab">
+      <div class="tabs-block__copy">
+        <h4 *ngIf="tab.title">{{ tab.title }}</h4>
+        <div *ngIf="tab.bodyHtml" [innerHTML]="slideNotesHtml(tab.bodyHtml)"></div>
+      </div>
+      <img *ngIf="tab.imageUrl" [src]="tab.imageUrl" [alt]="tab.imageAlt || tab.title || tab.label" />
+    </div>
+  </section>
+
+  <!-- Card stack -->
+  <div class="block interactive-stack" *ngIf="b.type === 'cardStack'">
+    <div class="interactive-stack__head">
+      <h3 *ngIf="b.title">{{ b.title }}</h3>
+      <div *ngIf="b.introHtml" [innerHTML]="slideNotesHtml(b.introHtml)"></div>
+    </div>
+
+    <div class="interactive-stack__grid">
+      <button
+        type="button"
+        class="interactive-stack__card track-interaction"
+        data-track-interaction="true"
+        *ngFor="let card of cardStackCards(b); let cardIndex = index"
+        [attr.data-track-id]="'card-stack-' + bi + '-' + card.id"
+        [class.revealed]="isCardStackCardRevealed(cur.id, bi, card.id)"
+        [class.locked]="!canRevealCardStackCard(cur.id, bi, b, card.id)"
+        [disabled]="!canRevealCardStackCard(cur.id, bi, b, card.id)"
+        (click)="toggleCardStackCard(cur.id, bi, b, card.id)"
+      >
+        <div class="interactive-stack__card-media" *ngIf="card.imageUrl">
+          <img [src]="card.imageUrl" [alt]="card.title" />
+        </div>
+        <div class="interactive-stack__card-body">
+          <div class="interactive-stack__eyebrow">{{ (b.variant || 'flip') === 'gated' ? t('player.gatedCard') : t('player.flipCard') }}</div>
+          <div class="interactive-stack__title">{{ card.title }}</div>
+          <div class="interactive-stack__teaser" *ngIf="card.teaser">{{ card.teaser }}</div>
+          <div class="interactive-stack__hint" *ngIf="(b.variant || 'flip') === 'gated' && !canRevealCardStackCard(cur.id, bi, b, card.id)">
+            {{ t('player.openPreviousCards') }}
+          </div>
+        </div>
+      </button>
+    </div>
+
+    <div class="interactive-stack__reveals">
+      <div
+        class="interactive-stack__reveal"
+        *ngFor="let card of cardStackCards(b)"
+        [class.active]="isCardStackCardRevealed(cur.id, bi, card.id)"
+      >
+        <h4>{{ card.title }}</h4>
+        <div *ngIf="card.bodyHtml" [innerHTML]="slideNotesHtml(card.bodyHtml)"></div>
+      </div>
+    </div>
   </div>
 
   <!-- Video block: native render to preserve state better -->
   <div class="block video-block-shell" *ngIf="b.type === 'video'">
     <div class="video-loading-note muted" *ngIf="isDirectVideoUrl(b.url)">
-      Loading video...
+      {{ t('player.loadingVideo') }}
     </div>
 
     <div class="video">
@@ -132,14 +295,160 @@
       </video>
 
       <details *ngIf="b.transcript">
-        <summary>Transcript</summary>
+        <summary>{{ t('player.transcript') }}</summary>
         <pre>{{ b.transcript }}</pre>
       </details>
     </div>
   </div>
 
+  <!-- Slide deck -->
+  <div class="block slide-deck-shell" *ngIf="b.type === 'slideDeck'">
+    <div class="slide-deck" [class.slide-deck--focus]="b.theme === 'focus'" *ngIf="activeSlide(cur.id, bi, b) as slide; else emptySlidesTpl">
+      <div class="slide-deck__topbar">
+        <div>
+          <div class="slide-deck__eyebrow">{{ t('player.audioLesson') }}</div>
+          <h3>{{ slide.title || cur.title }}</h3>
+        </div>
+        <div class="slide-deck__topmeta">
+          <div class="slide-deck__counter">
+            {{ t('player.slideCounter', { current: slideDeckIndex(cur.id, bi, b) + 1, total: slideDeckSlides(b).length }) }}
+          </div>
+          <div class="slide-deck__reviewed">
+            {{ t('player.reviewed', { done: slideDeckVisitedCount(cur.id, bi, b), total: slideDeckSlides(b).length }) }}
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-deck__progress" aria-hidden="true">
+        <span [style.width.%]="slideDeckProgressPct(cur.id, bi, b)"></span>
+      </div>
+
+      <div class="slide-deck__grid">
+        <div class="slide-deck__media">
+          <img
+            *ngIf="slide.imageUrl; else missingSlideVisualTpl"
+            [src]="slide.imageUrl"
+            [alt]="slide.title || cur.title"
+          />
+
+          <button
+            type="button"
+            class="slide-deck__hotspot"
+            *ngFor="let card of slideHotspotCardsFor(cur.id, bi, b)"
+            [ngStyle]="interactiveCardHotspotStyle(card)"
+            [class.revealed]="isInteractiveCardRevealed(cur.id, bi, card.id)"
+            [disabled]="!canRevealInteractiveCard(cur.id, bi, b, card.id)"
+            (click)="revealInteractiveCard(cur.id, bi, b, card.id)"
+          >
+            <span>{{ card.title }}</span>
+          </button>
+        </div>
+
+        <div class="slide-deck__panel">
+          <audio
+            *ngIf="slide.audioUrl"
+            controls
+            preload="metadata"
+            [src]="slide.audioUrl"
+            (ended)="onSlideAudioEnded(cur.id, bi, b)">
+          </audio>
+
+          <div class="slide-deck__notes" *ngIf="slide.notesHtml" [innerHTML]="slideNotesHtml(slide.notesHtml)"></div>
+
+          <div class="slide-deck__interactive" *ngIf="slideInteractiveCardsFor(cur.id, bi, b).length">
+            <div class="slide-deck__interactive-head">
+              <strong>{{ t('player.exploreTopics') }}</strong>
+              <span>
+                {{ t('player.discovered', { done: revealedInteractiveCardsCount(cur.id, bi, b), total: slideInteractiveCardsFor(cur.id, bi, b).length }) }}
+              </span>
+            </div>
+
+            <div class="slide-deck__cards" *ngIf="slidePanelCardsFor(cur.id, bi, b).length">
+              <button
+                type="button"
+                class="slide-deck__card"
+                *ngFor="let card of slidePanelCardsFor(cur.id, bi, b)"
+                [class.revealed]="isInteractiveCardRevealed(cur.id, bi, card.id)"
+                [class.flip]="card.variant === 'flip'"
+                [class.sequence]="card.variant === 'sequence'"
+                [disabled]="!canRevealInteractiveCard(cur.id, bi, b, card.id)"
+                (click)="revealInteractiveCard(cur.id, bi, b, card.id)"
+              >
+                <div class="slide-deck__card-media" *ngIf="card.imageUrl">
+                  <img [src]="card.imageUrl" [alt]="card.title" />
+                </div>
+                <div class="slide-deck__card-copy">
+                  <div class="slide-deck__card-badge">{{ interactiveCardVariantLabel(card) }}</div>
+                  <div class="slide-deck__card-title">{{ card.title }}</div>
+                  <div class="slide-deck__card-teaser" *ngIf="card.teaser">{{ card.teaser }}</div>
+                  <div class="slide-deck__card-hint" *ngIf="card.variant === 'sequence' && !canRevealInteractiveCard(cur.id, bi, b, card.id)">
+                    {{ t('player.sequenceHint') }}
+                  </div>
+                </div>
+              </button>
+            </div>
+
+            <div class="slide-deck__reveals">
+              <div
+                class="slide-deck__reveal"
+                *ngFor="let card of slideInteractiveCardsFor(cur.id, bi, b)"
+                [class.active]="isInteractiveCardRevealed(cur.id, bi, card.id)"
+                [class.flip]="card.variant === 'flip'"
+              >
+                <h4>{{ card.title }}</h4>
+                <div *ngIf="card.bodyHtml" [innerHTML]="slideNotesHtml(card.bodyHtml)"></div>
+              </div>
+            </div>
+          </div>
+
+          <details *ngIf="slide.transcript">
+            <summary>{{ t('player.transcript') }}</summary>
+            <pre>{{ slide.transcript }}</pre>
+          </details>
+
+          <p class="muted" *ngIf="!slide.audioUrl && !slide.notesHtml && !slide.transcript">
+            {{ t('player.noSlideContent') }}
+          </p>
+        </div>
+      </div>
+
+      <div class="slide-deck__actions" *ngIf="slideDeckSlides(b).length > 1">
+        <button
+          class="btn soft"
+          type="button"
+          (click)="prevSlide(cur.id, bi, b)"
+          [disabled]="slideDeckIndex(cur.id, bi, b) === 0"
+        >
+          ← {{ t('player.previousSlide') }}
+        </button>
+
+        <button
+          class="btn soft"
+          type="button"
+          (click)="nextSlide(cur.id, bi, b)"
+          [disabled]="slideDeckIndex(cur.id, bi, b) >= slideDeckSlides(b).length - 1"
+        >
+          {{ t('player.nextSlide') }} →
+        </button>
+      </div>
+
+      <div class="slide-deck__rail" *ngIf="slideDeckSlides(b).length > 1">
+        <button
+          type="button"
+          *ngFor="let deckSlide of slideDeckSlides(b); let slideIndex = index"
+          class="slide-deck__dot"
+          [class.active]="slideDeckIndex(cur.id, bi, b) === slideIndex"
+          (click)="setActiveSlide(cur.id, bi, b, slideIndex)"
+          [attr.aria-label]="t('player.showSlide', { number: slideIndex + 1 })"
+        >
+          {{ slideIndex + 1 }}
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Quiz -->
-  <div class="block quiz-ui" *ngIf="b.type === 'quiz'">
+  <div class="block quiz-ui" *ngIf="b.type === 'quiz' && isValidQuiz(b)">
     <div class="quiz card">
       <div class="quiz-q">{{ b.question || 'Section Review' }}</div>
 
@@ -174,15 +483,15 @@
           type="button"
           (click)="submitQuiz(cur.id, bi, b)"
           [disabled]="isQuizLocked(cur.id, bi)">
-          Submit
+          {{ t('player.submit') }}
         </button>
 
-        <span class="quiz-result ok" *ngIf="quizStatus(cur.id, bi) === 'passed'">Passed</span>
-        <span class="quiz-result bad" *ngIf="quizStatus(cur.id, bi) === 'failed'">Try again</span>
+        <span class="quiz-result ok" *ngIf="quizStatus(cur.id, bi) === 'passed'">{{ t('player.passed') }}</span>
+        <span class="quiz-result bad" *ngIf="quizStatus(cur.id, bi) === 'failed'">{{ t('player.tryAgain') }}</span>
       </div>
 
       <p class="muted quiz-hint" *ngIf="quizStatus(cur.id, bi) !== 'passed'">
-        Select your answer then submit.
+        {{ t('player.quizHint') }}
       </p>
     </div>
   </div>
@@ -191,37 +500,52 @@
         </div>
       </div>
 
-      <div class="viewer-actions">
-        <button
-          class="btn primary"
-          type="button"
-          (click)="completeLesson(cur.id)"
-          [disabled]="completedSet().has(cur.id) || busyId === cur.id"
-        >
-          {{ completedSet().has(cur.id) ? 'Completed' : (busyId === cur.id ? 'Saving…' : 'Mark complete') }}
-        </button>
+      <ng-template #emptySlidesTpl>
+        <div class="slide-deck slide-deck--empty">
+          <p class="muted">{{ t('player.noSlides') }}</p>
+        </div>
+      </ng-template>
 
+      <ng-template #missingSlideVisualTpl>
+        <div class="slide-deck__placeholder">
+          <span>{{ t('player.noSlideImage') }}</span>
+        </div>
+      </ng-template>
+
+      <div class="viewer-actions">
         <button
           class="btn soft"
           type="button"
-          (click)="next(cur.index)"
-          [disabled]="cur.index === lessons().length - 1"
+          *ngIf="cur.index > 0"
+          (click)="setActive(cur.index - 1)"
         >
-          Next →
+          ← {{ t('player.previous') }}
+        </button>
+
+        <button
+          class="btn primary"
+          type="button"
+          (click)="continueLesson(cur)"
+          [disabled]="busyId === cur.id || lessonAdvanceBlocked(cur)"
+        >
+          {{ busyId === cur.id ? t('player.saving') : (isLastLesson(cur.index) ? t('player.finishLesson') : t('player.continue')) }}
         </button>
 
         <button class="btn danger" type="button" *ngIf="isLastLesson(cur.index)" (click)="endCourse()">
-          End course
+          {{ t('player.endCourse') }}
         </button>
       </div>
 
+      <p class="note warn" *ngIf="lessonAdvanceBlocked(cur) && lessonAdvanceHint(cur)">
+        {{ lessonAdvanceHint(cur) }}
+      </p>
       <p class="note info" *ngIf="notice">{{ notice }}</p>
       <div class="viewer-footer" aria-hidden="true"></div>
     </article>
 
     <article class="viewer card" *ngIf="!current()">
-      <h2 class="viewer-title">No lesson selected</h2>
-      <p class="muted">Please select a lesson from the lessons list.</p>
+      <h2 class="viewer-title">{{ t('player.noLessonSelected') }}</h2>
+      <p class="muted">{{ t('player.selectLesson') }}</p>
     </article>
   </section>
 </div>

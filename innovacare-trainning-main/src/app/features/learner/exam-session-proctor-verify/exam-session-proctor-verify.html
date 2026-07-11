@@ -1,0 +1,95 @@
+<div class="proctor-verify">
+  <div class="verify-container">
+    <div class="verify-header">
+      <h1>📸 Proctor Identity Verification</h1>
+      <p class="subtitle">Capture learner photo for identity verification</p>
+    </div>
+
+    <div *ngIf="error()" class="error-alert">
+      {{ error() }}
+    </div>
+
+    <!-- Learner Information -->
+    <div *ngIf="learnerInfo() as learner" class="learner-info">
+      <h3>Candidate Information</h3>
+      <p><strong>Email:</strong> {{ learnerEmail }}</p>
+      <p *ngIf="learner.displayName"><strong>Name:</strong> {{ learner.displayName }}</p>
+      <p class="instruction">🔍 Please verify this is the correct candidate</p>
+    </div>
+
+    <!-- Camera & Photo Capture -->
+    <div class="camera-section">
+      <div *ngIf="!photoTaken()" class="camera-container">
+        <video
+          #videoElement
+          [hidden]="!cameraActive()"
+          autoplay
+          playsinline
+          muted
+          width="400"
+          height="300"
+        ></video>
+        <canvas
+          #canvasElement
+          hidden
+          width="400"
+          height="300"
+        ></canvas>
+
+        <div *ngIf="!cameraActive()" class="camera-error">
+          <p>Camera not accessible. Check browser permissions.</p>
+        </div>
+      </div>
+
+      <div *ngIf="photoTaken()" class="photo-preview">
+        <img [src]="photoDataUrl()" alt="Captured photo" />
+      </div>
+
+      <!-- Buttons -->
+      <div class="button-group">
+        <button
+          *ngIf="!photoTaken()"
+          type="button"
+          class="btn-capture"
+          (click)="capturePhoto()"
+          [disabled]="!cameraActive() || loading()"
+        >
+          📷 Capture Photo
+        </button>
+
+        <button
+          *ngIf="photoTaken()"
+          type="button"
+          class="btn-retake"
+          (click)="retakePhoto()"
+          [disabled]="loading()"
+        >
+          🔄 Retake Photo
+        </button>
+
+        <button
+          *ngIf="photoTaken()"
+          type="button"
+          class="btn-verify"
+          (click)="verifyIdentity()"
+          [disabled]="loading()"
+        >
+          {{ loading() ? 'Verifying...' : '✓ Identity Verified' }}
+        </button>
+
+        <button
+          type="button"
+          class="btn-reject"
+          (click)="rejectIdentity()"
+          [disabled]="loading()"
+        >
+          ✕ Reject & Return
+        </button>
+      </div>
+    </div>
+
+    <div class="verify-footer">
+      <p>⚠️ Photo will be stored for exam security audit trail</p>
+    </div>
+  </div>
+</div>

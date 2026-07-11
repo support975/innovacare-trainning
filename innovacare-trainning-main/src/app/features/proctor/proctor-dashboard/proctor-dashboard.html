@@ -1,0 +1,162 @@
+<div class="proctor-dashboard">
+  <header>
+    <button class="btn-back" (click)="goBack()">← Back</button>
+    <h1>Proctor Dashboard - Identity Verification</h1>
+    <div class="session-info" *ngIf="session() as s">
+      <p><strong>Exam:</strong> {{ getExamName(s.examId) }}</p>
+      <p><strong>Session Date:</strong> {{ formatTime(s.sessionDate) }}</p>
+      <p *ngIf="center() as c"><strong>Center:</strong> {{ c.name }}, {{ c.city }}</p>
+      <p><strong>Status:</strong> {{ s.status }}</p>
+      <p><strong>Verified:</strong> {{ verifiedCount() }} / {{ candidates().length }}</p>
+    </div>
+  </header>
+
+  <div class="notice" *ngIf="notice()" [class.success]="notice().includes('✓')">
+    {{ notice() }}
+  </div>
+
+  <section class="candidates-section">
+    <div class="section-header">
+      <h2>Candidates for Verification</h2>
+      <button class="btn-primary" (click)="openEnrollmentModal()" [disabled]="busy()">+ Add Candidate</button>
+    </div>
+    <table class="candidates-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let cand of candidates()" [class.verified]="verificationStatus()[cand.uid] === true">
+          <td>{{ cand.name }}</td>
+          <td>{{ cand.email }}</td>
+          <td class="status-cell" [class.verified]="verificationStatus()[cand.uid] === true" [class.rejected]="verificationStatus()[cand.uid] === false">
+            {{ verificationLabel()(cand.uid) }}
+          </td>
+          <td>
+            <button
+              (click)="openVerificationModal(cand.uid, cand.name)"
+              [disabled]="busy()"
+              class="btn-verify"
+            >
+              Verify ID
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Verification Modal -->
+  <div class="modal" *ngIf="modalOpen()" [class.open]="modalOpen()">
+    <div class="modal-content">
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+      <h2>Verify {{ selectedCandidateName() }}</h2>
+
+      <div class="photo-grid">
+        <div class="photo-section">
+          <label>ID Document Photo</label>
+          <div class="photo-preview" *ngIf="idPhotoUrl()">
+            <img [src]="idPhotoUrl()" alt="ID Photo" />
+          </div>
+          <input type="file" accept="image/*" (change)="onIdPhotoSelected($event)" [disabled]="busy()" />
+        </div>
+
+        <div class="photo-section">
+          <label>Candidate Photo (for comparison)</label>
+          <div class="photo-preview" *ngIf="verifyPhotoUrl()">
+            <img [src]="verifyPhotoUrl()" alt="Verify Photo" />
+          </div>
+          <input type="file" accept="image/*" (change)="onVerifyPhotoSelected($event)" [disabled]="busy()" />
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button
+          (click)="submitVerification(true)"
+          [disabled]="busy() || (!idPhotoUrl() && !verifyPhotoUrl())"
+          class="btn-approve"
+        >
+          ✓ Approve & Unlock Access
+        </button>
+        <button
+          (click)="submitVerification(false)"
+          [disabled]="busy()"
+          class="btn-reject"
+        >
+          ✗ Reject Verification
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enrollment Modal -->
+  <div class="modal" *ngIf="enrollmentModalOpen()" [class.open]="enrollmentModalOpen()">
+    <div class="modal-content">
+      <button class="close-btn" (click)="closeEnrollmentModal()">&times;</button>
+      <h2>Enroll Candidate for Exam</h2>
+
+      <form (ngSubmit)="enrollCandidate()">
+        <label class="field">
+          <span>Candidate Email *</span>
+          <input
+            type="email"
+            [(ngModel)]="enrollmentForm.email"
+            name="email"
+            placeholder="candidate@example.com"
+            required
+            [disabled]="busy()"
+          />
+        </label>
+
+        <label class="field">
+          <span>Full Name *</span>
+          <input
+            type="text"
+            [(ngModel)]="enrollmentForm.name"
+            name="name"
+            placeholder="John Doe"
+            required
+            [disabled]="busy()"
+          />
+        </label>
+
+        <label class="field">
+          <span>Phone (for SMS notifications)</span>
+          <input
+            type="tel"
+            [(ngModel)]="enrollmentForm.phone"
+            name="phone"
+            placeholder="+237 6XX XXX XXX"
+            [disabled]="busy()"
+          />
+        </label>
+
+        <div class="modal-actions">
+          <button type="submit" [disabled]="busy()" class="btn-approve">
+            {{ busy() ? 'Enrolling...' : 'Enroll Candidate' }}
+          </button>
+          <button type="button" (click)="closeEnrollmentModal()" [disabled]="busy()" class="btn-ghost">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Audit Log -->
+  <section class="audit-section">
+    <h2>Verification Audit Log</h2>
+    <div class="audit-log">
+      <div *ngIf="auditLogs().length === 0" class="empty-log">No actions yet</div>
+      <div *ngFor="let log of auditLogs()" class="log-entry" [class.action-verified]="log.action === 'verified'">
+        <span class="timestamp">{{ formatTime(log.timestamp) }}</span>
+        <span class="action" [class]="'action-' + log.action">{{ log.action }}</span>
+        <span class="detail">{{ log.details }}</span>
+      </div>
+    </div>
+  </section>
+</div>

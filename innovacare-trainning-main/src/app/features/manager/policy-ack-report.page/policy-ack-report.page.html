@@ -1,0 +1,133 @@
+<div class="report-page">
+  <header class="page-header">
+    <div>
+      <p class="page-eyebrow">Compliance · Acknowledgements</p>
+      <h1>Policy Acknowledgements Report</h1>
+      <p>Track assigned learners, missing acknowledgements, evidence dates, and policy versions.</p>
+    </div>
+    <button class="btn-ghost" type="button" (click)="exportCsv()" [disabled]="!filteredRows().length">
+      Export CSV
+    </button>
+  </header>
+
+  <div *ngIf="notice()" [class]="'notice' + (isError() ? ' notice--error' : '')">
+    {{ notice() }}
+  </div>
+
+  <section class="controls-panel">
+    <label class="field">
+      <span>Policy</span>
+      <select
+        [ngModel]="selectedPolicyId()"
+        (ngModelChange)="selectedPolicyId.set($event); run()"
+      >
+        <option value="">Select policy...</option>
+        <option *ngFor="let policy of policies()" [value]="policy.id">
+          {{ policy.title }} · v{{ policy.version || '-' }}
+        </option>
+      </select>
+    </label>
+
+    <label class="field">
+      <span>Status</span>
+      <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
+        <option value="all">All statuses</option>
+        <option value="missing">Missing</option>
+        <option value="acknowledged">Acknowledged</option>
+      </select>
+    </label>
+
+    <label class="field field--search">
+      <span>Search</span>
+      <input
+        type="text"
+        placeholder="Search name, email, role..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+      />
+    </label>
+
+    <button class="btn-primary" type="button" (click)="run()" [disabled]="busy() || !selectedPolicyId()">
+      {{ busy() ? 'Loading...' : 'Refresh report' }}
+    </button>
+  </section>
+
+  <div class="loading-bar" *ngIf="busy()">
+    <span></span>
+  </div>
+
+  <section class="stats-grid">
+    <article>
+      <strong>{{ summary().assigned }}</strong>
+      <span>Assigned learners</span>
+    </article>
+    <article>
+      <strong>{{ summary().acknowledged }}</strong>
+      <span>Acknowledged</span>
+    </article>
+    <article>
+      <strong>{{ summary().missing }}</strong>
+      <span>Missing</span>
+    </article>
+    <article>
+      <strong>{{ summary().completionPct }}%</strong>
+      <span>Completion</span>
+    </article>
+  </section>
+
+  <section class="report-panel">
+    <div class="report-head">
+      <div>
+        <h2>{{ selectedPolicy()?.title || 'Select a policy' }}</h2>
+        <p *ngIf="selectedPolicy() as policy">
+          Version {{ policy.version || '-' }} · {{ policy.category || 'Uncategorized' }}
+        </p>
+      </div>
+      <span class="result-count">{{ filteredRows().length }} row{{ filteredRows().length === 1 ? '' : 's' }}</span>
+    </div>
+
+    <div class="table-wrap" *ngIf="filteredRows().length; else emptyReport">
+      <table>
+        <thead>
+          <tr>
+            <th>Learner</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Version</th>
+            <th>Acknowledged at</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of filteredRows()" [class.row--missing]="row.status === 'missing'">
+            <td>
+              <strong>{{ row.userName }}</strong>
+              <small *ngIf="row.assignmentState === 'acknowledged_without_assignment'">
+                acknowledged without active assignment
+              </small>
+            </td>
+            <td>{{ row.userEmail || '-' }}</td>
+            <td>{{ row.userRole || '-' }}</td>
+            <td>
+              <span [class]="'status status--' + row.status">
+                {{ row.status === 'acknowledged' ? 'Acknowledged' : 'Missing' }}
+              </span>
+            </td>
+            <td>{{ row.policyVersion || '-' }}</td>
+            <td>{{ row.acknowledgedAt }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #emptyReport>
+      <div class="empty-state">
+        <div class="empty-state__icon">□</div>
+        <strong>{{ loaded() ? 'No matching rows' : 'No report loaded yet' }}</strong>
+        <span>
+          {{ loaded() ? 'Adjust filters or assign the policy to learners.' : 'Select a policy to build the acknowledgement report.' }}
+        </span>
+      </div>
+    </ng-template>
+  </section>
+</div>

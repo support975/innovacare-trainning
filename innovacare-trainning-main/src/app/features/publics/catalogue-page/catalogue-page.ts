@@ -1,4 +1,4 @@
-import { Component, computed, ElementRef, HostListener, inject, QueryList, signal, ViewChildren } from '@angular/core';
+import { Component, computed, ElementRef, inject, QueryList, signal, ViewChildren } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -15,6 +15,8 @@ import { CourseCatalogService } from '../catalogue-page';
 import { Course } from '../../../data/models';
 import { MatDialog } from '@angular/material/dialog';
 import { DemoRequestDialog } from '../demo-request-dialog/demo-request-dialog';
+import { PublicSiteNavComponent } from '../../../shared/components/public-site-nav/public-site-nav';
+import { PublicTranslateDirective } from '../../../shared/directives/public-translate.directive';
 
 
 interface HeroHighlight {
@@ -87,6 +89,8 @@ interface FaqItem {
     MatSelectModule,
     MatSnackBarModule,
     RouterModule,
+    PublicSiteNavComponent,
+    PublicTranslateDirective,
   ],
   templateUrl: './catalogue-page.html',
   styleUrl: './catalogue-page.css',
@@ -97,8 +101,6 @@ export class CataloguePage  {
 
   private readonly dialog = inject(MatDialog);
 
-  mobileMenuOpen = false;
-  headerScrolled = false;
   activeCategory = 2;
   activeTestimonial = 0;
 
@@ -329,7 +331,9 @@ export class CataloguePage  {
 
   ngAfterViewInit(): void {
     this.initRevealObserver();
-    this.startTestimonialsAutoplay();
+    if (!this.prefersReducedMotionOrSmallScreen()) {
+      this.startTestimonialsAutoplay();
+    }
   }
 
   ngOnDestroy(): void {
@@ -337,19 +341,6 @@ export class CataloguePage  {
     if (this.testimonialInterval) {
       clearInterval(this.testimonialInterval);
     }
-  }
-
-  @HostListener('window:scroll')
-  onWindowScroll(): void {
-    this.headerScrolled = window.scrollY > 10;
-  }
-
-  toggleMobileMenu(): void {
-    this.mobileMenuOpen = !this.mobileMenuOpen;
-  }
-
-  closeMobileMenu(): void {
-    this.mobileMenuOpen = false;
   }
 
   openDemoDialog(): void {
@@ -391,6 +382,13 @@ export class CataloguePage  {
   }
 
   private initRevealObserver(): void {
+    if (typeof IntersectionObserver === 'undefined' || this.prefersReducedMotionOrSmallScreen()) {
+      queueMicrotask(() => {
+        this.revealElements.forEach((item) => item.nativeElement.classList.add('is-visible'));
+      });
+      return;
+    }
+
     this.revealObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -412,6 +410,8 @@ export class CataloguePage  {
   }
 
   private startTestimonialsAutoplay(): void {
+    if (this.prefersReducedMotionOrSmallScreen()) return;
+
     this.testimonialInterval = setInterval(() => {
       this.nextTestimonial();
     }, 5000);
@@ -423,9 +423,18 @@ export class CataloguePage  {
     }
     this.startTestimonialsAutoplay();
   }
+
+  private prefersReducedMotionOrSmallScreen(): boolean {
+    if (typeof window === 'undefined' || !window.matchMedia) return false;
+
+    return (
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      window.matchMedia('(max-width: 768px)').matches
+    );
+  }
+
   login(): void {
-    // Redirige vers la page de connexion
-    window.location.href = '/login';
+    void this.router.navigate(['/login']);
   }
   private readonly courseService = inject(CourseCatalogService);
   private readonly snackBar = inject(MatSnackBar);

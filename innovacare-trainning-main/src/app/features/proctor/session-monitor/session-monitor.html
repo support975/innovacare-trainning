@@ -1,0 +1,116 @@
+<div class="session-monitor">
+  <header class="monitor-header">
+    <h1>🎪 Exam Session Monitoring</h1>
+    <div *ngIf="session() as s" class="session-info">
+      <span><strong>Course:</strong> {{ s.courseId }}</span>
+      <span><strong>Date:</strong> {{ s.sessionDate }}</span>
+      <span><strong>Status:</strong> {{ s.status }}</span>
+    </div>
+  </header>
+
+  <div *ngIf="error()" class="error-alert">
+    {{ error() }}
+  </div>
+
+  <div *ngIf="loading()" class="loading">
+    Loading session monitoring...
+  </div>
+
+  <div *ngIf="!loading()" class="monitor-container">
+    <!-- Summary Stats -->
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-number">{{ totalCandidates() }}</div>
+        <div class="stat-label">Total Candidates</div>
+      </div>
+
+      <div class="stat-box">
+        <div class="stat-number">{{ inExam() }}</div>
+        <div class="stat-label">Currently Testing</div>
+      </div>
+
+      <div class="stat-box">
+        <div class="stat-number">{{ completed() }}</div>
+        <div class="stat-label">Completed</div>
+      </div>
+
+      <div class="stat-box">
+        <div class="stat-number">{{ waiting() }}</div>
+        <div class="stat-label">Waiting to Start</div>
+      </div>
+    </div>
+
+    <!-- Learner Status Grid -->
+    <div class="learners-grid">
+      <div *ngFor="let learner of learners()" class="learner-card" [style.border-left-color]="getStatusColor(learner.status)">
+        <!-- Header with Name & Status -->
+        <div class="card-header">
+          <h3>{{ learner.name }}</h3>
+          <span class="status-badge" [style.background-color]="getStatusColor(learner.status)">
+            {{ getStatusLabel(learner.status) }}
+          </span>
+        </div>
+
+        <!-- Exam Progress (if in exam) -->
+        <div *ngIf="learner.status === 'in-exam'" class="card-content">
+          <!-- Timer -->
+          <div class="timer-box" [class.warning]="isTimeWarning(learner)" [class.critical]="isTimeCritical(learner)">
+            <div class="timer-label">Time Remaining</div>
+            <div class="timer-value">{{ learner.formattedTime }}</div>
+          </div>
+
+          <!-- Question Progress -->
+          <div class="progress-section">
+            <div class="progress-label">
+              {{ learner.currentQuestion }} / {{ learner.totalQuestions }}
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="getProgressPercent(learner)"></div>
+            </div>
+          </div>
+
+          <!-- Current Question Info -->
+          <div class="info-box">
+            <span class="info-label">Progress:</span>
+            <span class="info-value">{{ getProgressPercent(learner) }}%</span>
+          </div>
+        </div>
+
+        <!-- Status Message -->
+        <div class="card-footer">
+          <span class="status-message">
+            <span *ngIf="learner.status === 'waiting'">🏁 Ready to start</span>
+            <span *ngIf="learner.status === 'consent'">📋 Reviewing exam terms</span>
+            <span *ngIf="learner.status === 'in-exam'">✍️ Currently testing</span>
+            <span *ngIf="learner.status === 'submitted'">⏳ Awaiting grading</span>
+            <span *ngIf="learner.status === 'viewing-results'">✓ Test completed</span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="legend-item">
+        <span class="legend-color" style="background-color: #999;"></span>
+        <span>Waiting</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background-color: #ff9800;"></span>
+        <span>Reviewing Terms</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background-color: #2196f3;"></span>
+        <span>In Exam</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background-color: #ffc107;"></span>
+        <span>Submitted</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background-color: #4caf50;"></span>
+        <span>Results</span>
+      </div>
+    </div>
+  </div>
+</div>

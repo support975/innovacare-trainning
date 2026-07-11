@@ -1,0 +1,82 @@
+<div class="launcher-container">
+  <div class="launcher-card">
+    <div class="card-header">
+      <h1>Ready to Start Exam?</h1>
+      <p class="subtitle">Please wait for proctor verification</p>
+    </div>
+
+    <div *ngIf="error()" class="error-message">
+      {{ error() }}
+    </div>
+
+    <div class="learner-info" *ngIf="learnerInfo() as info">
+      <div class="info-row">
+        <span class="label">Candidate:</span>
+        <span class="value">{{ info.displayName || info.name || 'Candidate' }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Email:</span>
+        <span class="value">{{ info.email || learnerEmail }}</span>
+      </div>
+    </div>
+
+    <div class="session-info" *ngIf="session() as s">
+      <div class="info-row">
+        <span class="label">Session Date:</span>
+        <span class="value">{{ s.sessionDate | toDate | date: 'MMM d, y HH:mm' }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Duration:</span>
+        <span class="value">{{ s.durationMinutes }} minutes</span>
+      </div>
+    </div>
+
+    <div class="verification-status">
+      <div class="status-indicator" [class]="'status-' + verificationStatus()">
+        <div class="status-dot"></div>
+        <div class="status-text">
+          <span *ngIf="verificationStatus() === 'pending'" class="pending">
+            ⏳ Waiting for proctor verification...
+          </span>
+          <span *ngIf="verificationStatus() === 'verified'" class="verified">
+            ✓ Identity verified
+          </span>
+          <span *ngIf="verificationStatus() === 'rejected'" class="rejected">
+            ✗ Verification rejected
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button
+        *ngIf="verificationStatus() === 'verified'"
+        class="btn-start"
+        (click)="startExam()"
+      >
+        🚀 Start Exam
+      </button>
+      <button
+        *ngIf="verificationStatus() === 'pending'"
+        class="btn-waiting"
+        disabled
+      >
+        Waiting for verification...
+      </button>
+      <button
+        *ngIf="verificationStatus() === 'rejected'"
+        class="btn-back"
+        (click)="goBack()"
+      >
+        ← Back to Login
+      </button>
+    </div>
+
+    <div class="info-box">
+      <p>
+        <strong>Important:</strong> Once you start the exam, you will enter a secure, locked browser mode.
+        You cannot leave, minimize, or switch tabs. Make sure you are ready before starting.
+      </p>
+    </div>
+  </div>
+</div>

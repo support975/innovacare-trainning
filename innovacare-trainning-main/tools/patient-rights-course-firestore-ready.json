@@ -1,0 +1,632 @@
+{
+  "docPath": "courses/course-patient-rights-001",
+  "docId": "course-patient-rights-001",
+  "docData": {
+    "id": "course-patient-rights-001",
+    "title": "Patient Rights and Responsibilities",
+    "subtitle": "Respect, informed choice, privacy, safety, and advocacy in every care setting",
+    "description": "A practical course that helps healthcare personnel recognize, protect, document, and escalate patient-rights concerns. Content is educational and must be applied with current organizational policy and applicable federal and state requirements.",
+    "lang": "EN",
+    "durationMin": 75,
+    "ceCredit": 1,
+    "active": true,
+    "tags": [
+      "patient rights",
+      "informed consent",
+      "privacy",
+      "advocacy",
+      "compliance",
+      "healthcare ethics"
+    ],
+    "imageUrl": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1400&q=80",
+    "kind": "Course",
+    "url": "patient-rights-and-responsibilities",
+    "sections": [
+      {
+        "id": "section-rights-foundations",
+        "title": "1. Foundations of Patient Rights",
+        "order": 0,
+        "lessons": [
+          {
+            "id": "lesson-dignity-respect",
+            "title": "Dignity, Respect, and Non-Discrimination",
+            "estMin": 10,
+            "order": 0,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "id": "hero-dignity",
+                "type": "hero",
+                "title": "Every patient is a person first",
+                "bodyHtml": "<p>Patient rights begin with dignity. Care must respect the patient's identity, values, beliefs, privacy, preferences, and personal goals without discrimination or retaliation.</p>",
+                "imageUrl": "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=1400&q=80",
+                "buttonLabel": "Begin lesson",
+                "required": true
+              },
+              {
+                "id": "accordion-core-rights",
+                "type": "accordion",
+                "title": "Core protections",
+                "introHtml": "<p>Open each item to review how these protections appear in daily care.</p>",
+                "required": true,
+                "items": [
+                  {
+                    "id": "right-respect",
+                    "title": "Respectful treatment",
+                    "bodyHtml": "<p>Use the patient's preferred name and respectful language. Protect modesty and explain care before touching or repositioning the patient.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "right-nondiscrimination",
+                    "title": "Non-discrimination",
+                    "bodyHtml": "<p>Care decisions must not be reduced or delayed because of race, color, national origin, religion, sex, age, disability, sexual orientation, gender identity, diagnosis, payment source, or another protected characteristic.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "right-cultural",
+                    "title": "Cultural and spiritual preferences",
+                    "bodyHtml": "<p>Ask rather than assume. Accommodate cultural, spiritual, and personal practices when they can be supported safely.</p>",
+                    "required": true
+                  }
+                ]
+              },
+              {
+                "id": "quiz-dignity",
+                "type": "quiz",
+                "mode": "single",
+                "question": "Which action best demonstrates respect for patient dignity?",
+                "required": true,
+                "choices": [
+                  {
+                    "id": "dignity-a",
+                    "text": "Discuss the patient's condition in a public hallway",
+                    "correct": false
+                  },
+                  {
+                    "id": "dignity-b",
+                    "text": "Explain the procedure, protect privacy, and ask permission before beginning",
+                    "correct": true
+                  },
+                  {
+                    "id": "dignity-c",
+                    "text": "Use a nickname without asking because it is faster",
+                    "correct": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "lesson-communication-access",
+            "title": "Communication and Meaningful Access",
+            "estMin": 8,
+            "order": 1,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "id": "heading-communication",
+                "type": "heading",
+                "level": 2,
+                "text": "Information must be understandable",
+                "required": true
+              },
+              {
+                "id": "text-communication",
+                "type": "text",
+                "html": "<p>Patients have the right to receive information in a way they can understand. Use plain language, qualified language assistance when needed, accessible formats, and communication aids. Do not rely on a child or unqualified companion to interpret clinical information except where an emergency policy specifically permits it.</p><p>Use teach-back: ask the patient to explain the plan in their own words. Teach-back checks the clarity of the explanation; it is not a test of the patient.</p>",
+                "required": true
+              },
+              {
+                "id": "callout-access",
+                "type": "callout",
+                "style": "info",
+                "html": "<p><strong>Practice point:</strong> Document the language or accessibility service used and any remaining communication barrier requiring follow-up.</p>",
+                "required": true
+              },
+              {
+                "id": "quiz-communication",
+                "type": "quiz",
+                "mode": "single",
+                "question": "A patient has limited English proficiency. What is the safest routine response?",
+                "required": true,
+                "choices": [
+                  {
+                    "id": "communication-a",
+                    "text": "Use a qualified interpreter and speak directly to the patient",
+                    "correct": true
+                  },
+                  {
+                    "id": "communication-b",
+                    "text": "Ask another patient to translate",
+                    "correct": false
+                  },
+                  {
+                    "id": "communication-c",
+                    "text": "Skip the explanation if the procedure is common",
+                    "correct": false
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "section-informed-participation",
+        "title": "2. Informed Participation in Care",
+        "order": 1,
+        "lessons": [
+          {
+            "id": "lesson-consent-refusal",
+            "title": "Informed Consent and the Right to Refuse",
+            "estMin": 12,
+            "order": 0,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "id": "heading-consent",
+                "type": "heading",
+                "level": 2,
+                "text": "Consent is a process, not only a signature",
+                "required": true
+              },
+              {
+                "id": "cardstack-consent",
+                "type": "cardStack",
+                "title": "Elements of informed participation",
+                "introHtml": "<p>Review each element before continuing.</p>",
+                "variant": "gated",
+                "required": true,
+                "cards": [
+                  {
+                    "id": "consent-disclosure",
+                    "title": "Clear disclosure",
+                    "teaser": "What does the patient need to know?",
+                    "bodyHtml": "<p>Explain the purpose, expected benefits, material risks, reasonable alternatives, and likely consequences of declining, within the responsibilities of your role.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "consent-understanding",
+                    "title": "Understanding",
+                    "teaser": "Confirm comprehension",
+                    "bodyHtml": "<p>Invite questions and use teach-back. Address communication, cognitive, sensory, and health-literacy needs.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "consent-voluntary",
+                    "title": "Voluntary decision",
+                    "teaser": "Avoid pressure",
+                    "bodyHtml": "<p>The choice must be free from coercion. A capable adult may refuse care even when the team disagrees with the decision.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "consent-documentation",
+                    "title": "Documentation and escalation",
+                    "teaser": "Record the process",
+                    "bodyHtml": "<p>Document the discussion and decision according to policy. Escalate concerns about capacity, emergency authority, or disagreement to the appropriate clinician or supervisor.</p>",
+                    "required": true
+                  }
+                ]
+              },
+              {
+                "id": "callout-consent",
+                "type": "callout",
+                "style": "warn",
+                "html": "<p><strong>Never:</strong> threaten, shame, mislead, or withhold routine care because a patient asks questions or refuses a recommended intervention.</p>",
+                "required": true
+              },
+              {
+                "id": "quiz-consent",
+                "type": "quiz",
+                "mode": "caseStudy",
+                "question": "A capable adult refuses a recommended dressing change after risks and alternatives are explained. What should the team do?",
+                "required": true,
+                "choices": [
+                  {
+                    "id": "consent-a",
+                    "text": "Respect the refusal, document it, notify the responsible clinician, and continue appropriate care",
+                    "correct": true
+                  },
+                  {
+                    "id": "consent-b",
+                    "text": "Proceed because the intervention is clinically recommended",
+                    "correct": false
+                  },
+                  {
+                    "id": "consent-c",
+                    "text": "Discharge the patient immediately for noncompliance",
+                    "correct": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "lesson-directives-representatives",
+            "title": "Advance Directives and Patient Representatives",
+            "estMin": 8,
+            "order": 1,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "id": "text-directives",
+                "type": "text",
+                "html": "<p>Patients may communicate future care preferences through advance directives and may identify an authorized representative. Staff must follow the organization's process for locating, validating, documenting, and communicating these instructions.</p>",
+                "required": true
+              },
+              {
+                "id": "accordion-directives",
+                "type": "accordion",
+                "title": "When questions arise",
+                "introHtml": "<p>Use the established chain of command rather than making legal assumptions.</p>",
+                "required": true,
+                "items": [
+                  {
+                    "id": "directive-capacity",
+                    "title": "Decision-making capacity is questioned",
+                    "bodyHtml": "<p>Notify the responsible licensed clinician. Capacity is decision-specific and must be evaluated by an authorized professional under policy.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "directive-conflict",
+                    "title": "Family members disagree",
+                    "bodyHtml": "<p>Maintain safety, identify the legally authorized decision-maker, and escalate through clinical leadership, ethics, risk, or legal resources as policy directs.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "directive-unavailable",
+                    "title": "A directive cannot be located",
+                    "bodyHtml": "<p>Document the concern and promptly notify the responsible clinician. Do not invent or infer instructions from incomplete information.</p>",
+                    "required": true
+                  }
+                ]
+              },
+              {
+                "id": "quiz-directives",
+                "type": "quiz",
+                "mode": "single",
+                "question": "What is the correct response when family members disagree about a patient's documented wishes?",
+                "required": true,
+                "choices": [
+                  {
+                    "id": "directives-a",
+                    "text": "Choose the family member who speaks most confidently",
+                    "correct": false
+                  },
+                  {
+                    "id": "directives-b",
+                    "text": "Follow the chain of command and involve the authorized clinical and organizational resources",
+                    "correct": true
+                  },
+                  {
+                    "id": "directives-c",
+                    "text": "Ignore the directive until the family reaches agreement",
+                    "correct": false
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "section-privacy-safety",
+        "title": "3. Privacy, Confidentiality, and Safety",
+        "order": 2,
+        "lessons": [
+          {
+            "id": "lesson-privacy-confidentiality",
+            "title": "Privacy and Confidentiality",
+            "estMin": 10,
+            "order": 0,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "id": "heading-privacy",
+                "type": "heading",
+                "level": 2,
+                "text": "Access only what your work requires",
+                "required": true
+              },
+              {
+                "id": "text-privacy",
+                "type": "text",
+                "html": "<p>Protect visual, verbal, written, and electronic information. Access records only for an authorized work purpose, verify recipients, use approved communication systems, secure screens and documents, and discuss care only in appropriate settings.</p>",
+                "required": true
+              },
+              {
+                "id": "callout-privacy",
+                "type": "callout",
+                "style": "warn",
+                "html": "<p>If information is sent to the wrong person, a device is lost, or unauthorized access is suspected, preserve evidence and report the event immediately through the privacy or incident process. Do not attempt to hide or independently resolve the breach.</p>",
+                "required": true
+              },
+              {
+                "id": "quiz-privacy",
+                "type": "quiz",
+                "mode": "single",
+                "question": "Which action best protects confidentiality?",
+                "required": true,
+                "choices": [
+                  {
+                    "id": "privacy-a",
+                    "text": "Open a relative's chart because you are concerned",
+                    "correct": false
+                  },
+                  {
+                    "id": "privacy-b",
+                    "text": "Verify the recipient and use an approved secure channel",
+                    "correct": true
+                  },
+                  {
+                    "id": "privacy-c",
+                    "text": "Photograph a record on a personal phone for convenience",
+                    "correct": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "lesson-safe-care",
+            "title": "Safe Care, Freedom from Abuse, and Least Restrictive Practice",
+            "estMin": 10,
+            "order": 1,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "id": "text-safe-care",
+                "type": "text",
+                "html": "<p>Patients have the right to care in an environment that protects them from abuse, neglect, exploitation, harassment, unnecessary restraint, and avoidable harm. Restrictions must never be used for convenience, punishment, retaliation, or staffing shortages.</p>",
+                "required": true
+              },
+              {
+                "id": "cardstack-safety-response",
+                "type": "cardStack",
+                "title": "Responding to a safety concern",
+                "introHtml": "<p>Follow these steps within your role and organizational policy.</p>",
+                "variant": "gated",
+                "required": true,
+                "cards": [
+                  {
+                    "id": "safety-immediate",
+                    "title": "1. Protect immediate safety",
+                    "teaser": "Address urgent danger",
+                    "bodyHtml": "<p>Call emergency assistance or follow the immediate safety protocol when the patient or another person is at imminent risk.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "safety-report",
+                    "title": "2. Report promptly",
+                    "teaser": "Activate the correct pathway",
+                    "bodyHtml": "<p>Notify the supervisor and required safeguarding, clinical, compliance, or external reporting resources without delaying for personal investigation.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "safety-document",
+                    "title": "3. Document objectively",
+                    "teaser": "Record facts",
+                    "bodyHtml": "<p>Record direct observations, the patient's own words when relevant, actions taken, and notifications made. Avoid conclusions outside your role.</p>",
+                    "required": true
+                  }
+                ]
+              },
+              {
+                "id": "quiz-safety",
+                "type": "quiz",
+                "mode": "caseStudy",
+                "question": "A patient says a caregiver struck them. What is the best initial response?",
+                "required": true,
+                "choices": [
+                  {
+                    "id": "safety-a",
+                    "text": "Ensure immediate safety, listen without leading, and activate the required reporting process",
+                    "correct": true
+                  },
+                  {
+                    "id": "safety-b",
+                    "text": "Confront the caregiver alone before telling anyone",
+                    "correct": false
+                  },
+                  {
+                    "id": "safety-c",
+                    "text": "Wait for visible injury before documenting the concern",
+                    "correct": false
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "section-advocacy-accountability",
+        "title": "4. Advocacy, Complaints, and Accountability",
+        "order": 3,
+        "lessons": [
+          {
+            "id": "lesson-grievances",
+            "title": "Complaints, Grievances, and Freedom from Retaliation",
+            "estMin": 8,
+            "order": 0,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "id": "heading-grievances",
+                "type": "heading",
+                "level": 2,
+                "text": "A complaint is an opportunity to protect the patient",
+                "required": true
+              },
+              {
+                "id": "text-grievances",
+                "type": "text",
+                "html": "<p>Patients and representatives may voice concerns, request review, and use grievance processes without retaliation or disruption of appropriate care. Staff should listen, address immediate needs, explain the next step, and route the concern to the responsible department.</p>",
+                "required": true
+              },
+              {
+                "id": "callout-grievances",
+                "type": "callout",
+                "style": "success",
+                "html": "<p><strong>Recommended language:</strong> “Thank you for telling me. I will document your concern, address any immediate safety issue, and connect you with the person responsible for follow-up.”</p>",
+                "required": true
+              },
+              {
+                "id": "quiz-grievances",
+                "type": "quiz",
+                "mode": "single",
+                "question": "A patient complains about delayed care. Which response is appropriate?",
+                "required": true,
+                "choices": [
+                  {
+                    "id": "grievance-a",
+                    "text": "Tell the patient complaints may affect future services",
+                    "correct": false
+                  },
+                  {
+                    "id": "grievance-b",
+                    "text": "Listen, address urgent needs, explain the process, and route the concern",
+                    "correct": true
+                  },
+                  {
+                    "id": "grievance-c",
+                    "text": "Refuse to document a verbal complaint",
+                    "correct": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "lesson-final-assessment",
+            "title": "Integrated Practice and Final Knowledge Check",
+            "estMin": 9,
+            "order": 1,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "id": "quiz-intro-final",
+                "type": "quizIntro",
+                "title": "Final knowledge check",
+                "bodyHtml": "<p>Apply the patient-rights principles from this course. A passing score of 80% is required. Review organizational policy whenever a situation exceeds your role or authority.</p>",
+                "buttonLabel": "Start final check",
+                "passPct": 80,
+                "required": true
+              },
+              {
+                "id": "quiz-final-1",
+                "type": "quiz",
+                "mode": "caseStudy",
+                "question": "A patient asks for an interpreter, refuses one treatment, and wants to file a complaint. Which response protects all three rights?",
+                "required": true,
+                "choices": [
+                  {
+                    "id": "final-1-a",
+                    "text": "Arrange qualified language assistance, support informed refusal, and explain the complaint process without retaliation",
+                    "correct": true
+                  },
+                  {
+                    "id": "final-1-b",
+                    "text": "Delay the interpreter until the patient accepts treatment",
+                    "correct": false
+                  },
+                  {
+                    "id": "final-1-c",
+                    "text": "Ask the family to decide whether the complaint is necessary",
+                    "correct": false
+                  }
+                ]
+              },
+              {
+                "id": "quiz-final-2",
+                "type": "quiz",
+                "mode": "multi",
+                "question": "Which actions are appropriate when a patient-rights concern is identified? Select all that apply.",
+                "required": true,
+                "choices": [
+                  {
+                    "id": "final-2-a",
+                    "text": "Address immediate safety needs",
+                    "correct": true
+                  },
+                  {
+                    "id": "final-2-b",
+                    "text": "Document objective facts and actions taken",
+                    "correct": true
+                  },
+                  {
+                    "id": "final-2-c",
+                    "text": "Use the designated escalation or reporting process",
+                    "correct": true
+                  },
+                  {
+                    "id": "final-2-d",
+                    "text": "Hide the event if no injury occurred",
+                    "correct": false
+                  }
+                ]
+              },
+              {
+                "id": "callout-completion",
+                "type": "callout",
+                "style": "success",
+                "html": "<p><strong>Completion commitment:</strong> Protect dignity, explain choices, verify understanding, respect lawful decisions, safeguard information, respond to danger, document objectively, and escalate promptly.</p>",
+                "required": true
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "lecturer": "Innovacare Clinical Education",
+    "disclosures": [
+      "No commercial support or product endorsement.",
+      "This course provides general education and does not replace organizational policy or legal advice."
+    ],
+    "targetAudience": [
+      "Nurses",
+      "Nursing assistants",
+      "Therapists",
+      "Home health personnel",
+      "Care coordinators",
+      "Administrative and support staff"
+    ],
+    "prerequisites": [
+      "General organizational orientation"
+    ],
+    "requirements": [
+      "Review the current patient-rights and grievance policies for your organization",
+      "Complete all required lessons and knowledge checks"
+    ],
+    "accomodations": "Contact the training administrator for language assistance, captions, screen-reader compatible material, or another reasonable accommodation.",
+    "orgId": null,
+    "orgType": "health",
+    "healthMeta": {
+      "specialty": "Compliance and Patient Safety",
+      "careSetting": [
+        "HomeHealth",
+        "Hospital",
+        "LongTermCare",
+        "Outpatient"
+      ],
+      "clinicalTopics": [
+        "Patient Rights",
+        "Informed Consent",
+        "Privacy and Confidentiality",
+        "Abuse and Neglect Prevention",
+        "Grievances"
+      ]
+    },
+    "releaseAt": null,
+    "publishedAt": null,
+    "isPublic": false,
+    "passingScore": 80,
+    "lockedSequence": true,
+    "exipirationDate": null,
+    "confirmAt": null,
+    "confirmBy": "",
+    "confirmMessage": "",
+    "type": "Health",
+    "level": "Beginner"
+  }
+}

@@ -1,11 +1,12 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
 import { Auth, authState } from '@angular/fire/auth';
-import { Firestore, collection, collectionData, doc, docData } from '@angular/fire/firestore';
+import { Firestore, collection, collectionData, doc, docData, query, where } from '@angular/fire/firestore';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { combineLatest, map, of, switchMap } from 'rxjs';
+import { AuthService } from '../../../core/auth';
 
 type DueStats = { overdue: number; in7: number; in30: number; in90: number };
 type EnrollmentStatus = 'assigned' | 'started' | 'completed';
@@ -40,6 +41,26 @@ interface RecentItem {
   ts: number;
 }
 
+interface LearnerNextAction {
+  courseId: string;
+  title: string;
+  status: EnrollmentStatus;
+  kind: string;
+  duration: string;
+  due: string;
+  dueTs: number;
+  isOverdue: boolean;
+  cta: string;
+}
+
+type CompletionSummary = {
+  total: number;
+  completed: number;
+  active: number;
+  assigned: number;
+  percent: number;
+};
+
 // ---- Helpers ----
 const DAY = 24 * 60 * 60 * 1000;
 const DEFAULT_DUE_DAYS = 30;
@@ -56,6 +77,23 @@ function firstDefined<T>(...vals: (T | undefined | null)[]): T | undefined {
   return undefined;
 }
 
+function courseDurationLabel(course: CourseDoc): string {
+  const durationMin = course.durationMin ?? 0;
+  const hrs = Math.floor(durationMin / 60);
+  const mins = durationMin % 60;
+  return hrs > 0 ? `${hrs}h ${mins}min` : `${mins}min`;
+}
+
+function dueTimestamp(enr: EnrollmentDoc, course: CourseDoc): number {
+  const now = Date.now();
+  const assignedTs = epochMs(enr.assignedAt) ?? now;
+  return firstDefined(
+    epochMs(enr.dueDate),
+    epochMs(course?.dueDate),
+    assignedTs + DEFAULT_DUE_DAYS * DAY
+  ) ?? assignedTs + DEFAULT_DUE_DAYS * DAY;
+}
+
 @Component({
   standalone: true,
   selector: 'app-learner-dashboard',
@@ -65,7 +103,13 @@ function firstDefined<T>(...vals: (T | undefined | null)[]): T | undefined {
 })
 export class LearnerDashboardComponent {
   private auth = inject(Auth);
+  private authService = inject(AuthService);
   private afs = inject(Firestore);
+  private profile = toSignal(this.authService.profile$, { initialValue: null });
+  readonly isIndividualLearner = computed(() => {
+    const p = this.profile();
+    return p?.accountType === 'individual' && !p?.orgId;
+  });
 
   // ---------------- Display name ----------------
   private auth$ = authState(this.auth);
@@ -135,6 +179,54 @@ export class LearnerDashboardComponent {
   );
   due = toSignal(this.dueStats$, { initialValue: { overdue: 0, in7: 0, in30: 0, in90: 0 } });
 
+  private completionSummary$ = this.rows$.pipe(
+    map(rows => {
+      const total = rows.length;
+      const completed = rows.filter(({ enr }) => enr.status === 'completed').length;
+      const active = rows.filter(({ enr }) => enr.status === 'started').length;
+      const assigned = rows.filter(({ enr }) => enr.status === 'assigned').length;
+      const percent = total ? Math.round((completed / total) * 100) : 0;
+      return { total, completed, active, assigned, percent } satisfies CompletionSummary;
+    })
+  );
+  completionSummary = toSignal(this.completionSummary$, {
+    initialValue: { total: 0, completed: 0, active: 0, assigned: 0, percent: 0 } as CompletionSummary,
+  });
+
+  private focusQueue$ = this.rows$.pipe(
+    map(rows => {
+      const now = Date.now();
+      return rows
+        .filter(({ enr }) => enr.status !== 'completed')
+        .map(({ enr, course }) => {
+          const dueTs = dueTimestamp(enr, course);
+          const courseId = course.id ?? enr.courseId;
+          const item: LearnerNextAction = {
+            courseId,
+            title: course.title ?? '(Untitled course)',
+            status: enr.status,
+            kind: course.kind ?? 'Course',
+            duration: courseDurationLabel(course),
+            due: this.dueLabel(enr, course),
+            dueTs,
+            isOverdue: dueTs < now,
+            cta: enr.status === 'started' ? 'Resume' : 'Start',
+          };
+          return item;
+        })
+        .sort((a, b) => {
+          if (a.isOverdue !== b.isOverdue) return a.isOverdue ? -1 : 1;
+          if (a.status !== b.status) return a.status === 'started' ? -1 : 1;
+          return a.dueTs - b.dueTs;
+        });
+    })
+  );
+  focusQueue = toSignal(this.focusQueue$, { initialValue: [] as LearnerNextAction[] });
+  nextAction = toSignal(
+    this.focusQueue$.pipe(map<LearnerNextAction[], LearnerNextAction | null>(items => items[0] ?? null)),
+    { initialValue: null as LearnerNextAction | null }
+  );
+
   // ---------------- Recent activity (top 5) ----------------
   private recent$ = this.rows$.pipe(
     map(rows => {
@@ -147,15 +239,10 @@ export class LearnerDashboardComponent {
           epochMs(enr.assignedAt) ??
           Date.now();
 
-        const durationMin = course.durationMin ?? 0;
-        const hrs = Math.floor(durationMin / 60);
-        const mins = durationMin % 60;
-        const duration = hrs > 0 ? `${hrs}h ${mins}min` : `${mins}min`;
-
         items.push({
           title: course.title ?? '(Untitled course)',
           type: course.kind ?? 'Course',
-          duration,
+          duration: courseDurationLabel(course),
           date: new Date(ts).toLocaleDateString(),
           link: `/learner/courses/${course.id ?? ''}`,
           ts
@@ -167,8 +254,28 @@ export class LearnerDashboardComponent {
   );
   recent = toSignal(this.recent$, { initialValue: [] as RecentItem[] });
 
+  // ---------------- Official exam results (onsite/kiosk attempts) ----------------
+  private examAttempts$ = this.auth$.pipe(
+    switchMap(user => {
+      if (!user) return of([] as any[]);
+      const q = query(collection(this.afs, 'examAttempts'), where('candidateUid', '==', user.uid));
+      return collectionData(q, { idField: 'id' });
+    }),
+    map(list =>
+      [...(list as any[])].sort(
+        (a, b) => (epochMs(b['completedAt']) ?? 0) - (epochMs(a['completedAt']) ?? 0)
+      )
+    )
+  );
+  examAttempts = toSignal(this.examAttempts$, { initialValue: [] as any[] });
+
+  examAttemptDate(a: any): string {
+    const ms = epochMs(a?.completedAt);
+    return ms ? new Date(ms).toLocaleDateString() : '';
+  }
+
   // ---------------- Static links/resources ----------------
-  links = [
+  private allLinks = [
     { label: 'Home', path: '/learner', active: true },
     { label: 'Assignments', path: '/learner/assignments' },
     { label: 'Licenses & Certifications', path: '/learner/certifications' },
@@ -177,13 +284,76 @@ export class LearnerDashboardComponent {
     { label: 'Rewards', path: '/learner/rewards' },
   ];
 
-  resources = [
-    { label: 'Policies & Procedures', path: '/resources/policies' },
-  ];
+  links = computed(() =>
+    this.isIndividualLearner()
+      ? this.allLinks.filter((link) =>
+          ['/learner', '/learner/assignments', '/learner/transcript', '/learner/rewards']
+            .includes(link.path)
+        )
+      : this.allLinks
+  );
 
-  // learner-dashboard.ts (ajoute ces deux blocs à la fin de ta classe)
-rows = toSignal(
-  this.rows$, { initialValue: [] as Array<{ enr: EnrollmentDoc; course: CourseDoc }> }
+  resources = computed(() => this.isIndividualLearner() ? [] : [
+    { label: 'Policies & Procedures', path: '/resources/policies' },
+  ]);
+
+  // -------- User profile stats (badges, points, level) --------
+  private userStats$ = this.auth$.pipe(
+    switchMap(user => {
+      if (!user) return of(null);
+      const uref = doc(this.afs, `users/${user.uid}`);
+      return docData(uref);
+    })
+  );
+  userStats = toSignal(this.userStats$, { initialValue: null as any });
+
+  // -------- Gamification level from points --------
+  levelFromPoints = computed(() => {
+    const stats = this.userStats();
+    const points = stats?.points || 0;
+    if (points >= 5000) return { name: 'Legend 🏆', level: 5, color: '#FFD700' };
+    if (points >= 3000) return { name: 'Platinum 💎', level: 4, color: '#E5E4E2' };
+    if (points >= 1500) return { name: 'Gold 🥇', level: 3, color: '#FFD700' };
+    if (points >= 500) return { name: 'Silver 🥈', level: 2, color: '#C0C0C0' };
+    return { name: 'Bronze 🥉', level: 1, color: '#CD7F32' };
+  });
+
+  // -------- Learning stats: total hours, completion rate --------
+  learningStats = computed(() => {
+    const rows = this.rows();
+    const totalMinutes = rows.reduce((sum, r) => sum + (r.course.durationMin || 0), 0);
+    const totalHours = Math.round(totalMinutes / 60);
+    const completed = rows.filter(r => r.enr.status === 'completed').length;
+    const total = rows.length || 1;
+    const completionRate = Math.round((completed / total) * 100);
+    return { totalHours, completed, total, completionRate };
+  });
+
+  // -------- Recent badges earned --------
+  badges = computed(() => {
+    const stats = this.userStats();
+    return stats?.badges || [];
+  });
+
+  // -------- Points progress to next level --------
+  pointsProgress = computed(() => {
+    const stats = this.userStats();
+    const points = stats?.points || 0;
+    const level = this.levelFromPoints();
+    const levels = [0, 500, 1500, 3000, 5000];
+    const currentIdx = level.level - 1;
+    const nextIdx = currentIdx + 1;
+    const currentThreshold = levels[currentIdx];
+    const nextThreshold = levels[nextIdx] || 5000;
+    const progressInBand = Math.max(0, Math.min(nextThreshold - currentThreshold, points - currentThreshold));
+    const bandWidth = nextThreshold - currentThreshold;
+    const percent = Math.round((progressInBand / bandWidth) * 100);
+    const pointsToNext = Math.max(0, nextThreshold - points);
+    return { percent, pointsToNext, nextThreshold };
+  });
+
+  rows = toSignal(
+    this.rows$, { initialValue: [] as Array<{ enr: EnrollmentDoc; course: CourseDoc }> }
 );
 
 // petit helper d’affichage

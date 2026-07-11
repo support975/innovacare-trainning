@@ -1,142 +1,371 @@
-   <!-- CONTENT -->
-   <main class="content">
-    <!-- Hero -->
-    <section class="hero">
-      <div class="hero-art"></div>
-      <div class="hero-text">
-        <h1>Welcome back, {{ managerName() }}</h1>
-        <p class="muted">Assign trainings, track completion, and review results.</p>
-      </div>
-      <div class="hero-help card">
-        <h3>Quick links</h3>
-        <ul>
+<div class="dash">
 
-          <button class="btn outline" (click)="onCreateNotification()">Create Notification</button>
-          <button class="btn outline" (click)="onCreateAssign()">Create Assignment</button>
-          <button class="btn outline" (click)="onCreateCourse()">Add a Course</button>
-          <button class="btn outline" (click)="onCreateReport()">Open Reports</button>
-          <button class="btn outline" (click)="onCreateWounds()">Add Wounds</button>
-          <button class="btn outline" (click)="onCreatePolicy()">Create Policy</button>
-          <button class="btn outline" (click)="onPolicyReport()">Open Policy Report</button>
+  <!-- PAGE HEADER -->
+  <header class="dash-header">
+    <div class="dash-header__left">
+      <div class="dash-header__eyebrow">Enterprise Manager Hub</div>
+      <h1 class="dash-header__title">Welcome back, {{ managerName() }}</h1>
+      <p class="dash-header__sub">
+        Pilot assignments, audit readiness, policies and learner risk for {{ orgName() }}.
+      </p>
+    </div>
+    <div class="dash-header__actions">
+      <button class="btn-primary" (click)="onAssignTraining()">
+        <span class="btn-icon">+</span> Assign Training
+      </button>
+      <button class="btn-ghost" (click)="onOpenAudit()">Open Audit Center</button>
+    </div>
+  </header>
 
-        </ul>
-      </div>
-    </section>
+  <!-- NOTICE TOAST -->
+  <div class="toast" *ngIf="notice" (click)="clearNotice()">
+    {{ notice }} <span class="toast-close">✕</span>
+  </div>
 
-    <!-- KPIs -->
-    <section class="kpis">
-      <div class="card kpi">
-        <div class="kpi-title">Completion (last 30 days)</div>
-        <div class="kpi-number primary">{{ kpi().completion30 }}</div>
+  <!-- KPI CARDS -->
+  <section class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-card__icon kpi-card__icon--teal">◎</div>
+      <div class="kpi-card__body">
+        <div class="kpi-card__label">Completion Rate (30d)</div>
+        <div class="kpi-card__value">{{ kpi().completion30 }}</div>
+        <div class="kpi-card__sub">of assigned & started</div>
       </div>
-      <div class="card kpi">
-        <div class="kpi-title">Overdue</div>
-        <div class="kpi-number warn">{{ kpi().overdue }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-card__icon kpi-card__icon--orange">⚠</div>
+      <div class="kpi-card__body">
+        <div class="kpi-card__label">Overdue</div>
+        <div class="kpi-card__value kpi-card__value--warn">{{ kpi().overdue }}</div>
+        <div class="kpi-card__sub">learners past due date</div>
       </div>
-      <div class="card kpi">
-        <div class="kpi-title">Average Score</div>
-        <div class="kpi-number success">{{ kpi().avgScore }}%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-card__icon kpi-card__icon--navy">✦</div>
+      <div class="kpi-card__body">
+        <div class="kpi-card__label">Average Score</div>
+        <div class="kpi-card__value">{{ kpi().avgScore }}%</div>
+        <div class="kpi-card__sub">across all completions</div>
       </div>
+    </div>
+    <div class="kpi-card kpi-card--action">
+      <div class="kpi-card__label">Manager Actions</div>
+      <div class="quick-actions">
+        <button class="qa-btn" (click)="onCreateNotification()">Notify</button>
+        <button class="qa-btn" (click)="onOpenPolicyLibrary()">Policies</button>
+        <button class="qa-btn" (click)="onOpenAudit()">Audit</button>
+        <button class="qa-btn" [routerLink]="['/manager/exam-sessions']">🖥️ Kiosk</button>
+        <button class="qa-btn" (click)="onOpenLibrary()">Library</button>
+        <button class="qa-btn" (click)="onViewLearners()">Learners</button>
+        <button class="qa-btn" (click)="onExportCSV()">Export</button>
+      </div>
+    </div>
+  </section>
 
-      <div class="note info" *ngIf="notice" (click)="clearNotice()">
-        {{ notice }} (click to dismiss)
+  <!-- CERTIFICATION AUTHORITY KPIs -->
+  <section class="kpi-row" *ngIf="certificationAuthorityEnabled()">
+    <div class="kpi-card">
+      <div class="kpi-card__icon kpi-card__icon--navy">◆</div>
+      <div class="kpi-card__body">
+        <div class="kpi-card__label">Total Candidates</div>
+        <div class="kpi-card__value">{{ certKpis().totalCandidates }}</div>
+        <div class="kpi-card__sub">official certification applications</div>
       </div>
-      
-      <section class="panel" *ngIf="overdueAlerts().length">
-        <div class="section-head">
-          <h2>Overdue Alerts</h2>
-          <span class="muted">Top {{ overdueAlerts().length }}</span>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-card__icon kpi-card__icon--orange">◷</div>
+      <div class="kpi-card__body">
+        <div class="kpi-card__label">Pending Review</div>
+        <div class="kpi-card__value kpi-card__value--warn">{{ certKpis().pendingReview }}</div>
+        <div class="kpi-card__sub">documents/eligibility awaiting decision</div>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-card__icon kpi-card__icon--teal">✎</div>
+      <div class="kpi-card__body">
+        <div class="kpi-card__label">Exam Completed</div>
+        <div class="kpi-card__value">{{ certKpis().examCompleted }}</div>
+        <div class="kpi-card__sub">awaiting jury/certification decision</div>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-card__icon kpi-card__icon--teal">✓</div>
+      <div class="kpi-card__body">
+        <div class="kpi-card__label">Certified</div>
+        <div class="kpi-card__value">{{ certKpis().passed }}</div>
+        <div class="kpi-card__sub">membership card &amp; certificate issued</div>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-card__icon kpi-card__icon--navy">◎</div>
+      <div class="kpi-card__body">
+        <div class="kpi-card__label">Active Memberships</div>
+        <div class="kpi-card__value">{{ certKpis().activeMemberships }}</div>
+        <div class="kpi-card__sub">valid, more than 30 days remaining</div>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-card__icon kpi-card__icon--orange">⚠</div>
+      <div class="kpi-card__body">
+        <div class="kpi-card__label">Expiring Soon</div>
+        <div class="kpi-card__value kpi-card__value--warn">{{ certKpis().expiringSoon }}</div>
+        <div class="kpi-card__sub">membership expires within 30 days</div>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-card__icon kpi-card__icon--orange">✕</div>
+      <div class="kpi-card__body">
+        <div class="kpi-card__label">Expired</div>
+        <div class="kpi-card__value kpi-card__value--warn">{{ certKpis().expired }}</div>
+        <div class="kpi-card__sub">renewal required</div>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-card__icon kpi-card__icon--navy">✗</div>
+      <div class="kpi-card__body">
+        <div class="kpi-card__label">Rejected</div>
+        <div class="kpi-card__value">{{ certKpis().rejected }}</div>
+        <div class="kpi-card__sub">applications not approved</div>
+      </div>
+    </div>
+    <div class="kpi-card kpi-card--action">
+      <div class="kpi-card__label">Certification Authority</div>
+      <div class="quick-actions">
+        <button class="qa-btn" [routerLink]="['/manager/official-certifications']">Applications</button>
+        <button class="qa-btn" [routerLink]="['/manager/exam-blueprint-center']">Blueprints</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="action-center">
+    <div class="action-center__head">
+      <div>
+        <div class="dash-header__eyebrow">Action Center</div>
+        <h2>What needs attention now</h2>
+      </div>
+      <button class="btn-ghost" (click)="onExportCSV()">Export snapshot</button>
+    </div>
+
+    <div class="action-grid">
+      <article class="action-card" *ngFor="let action of managerActions()" [ngClass]="'action-card--' + action.tone">
+        <div class="action-card__top">
+          <span class="action-card__label">{{ action.label }}</span>
+          <strong>{{ action.value }}</strong>
         </div>
-        <div class="card">
-          <table class="table">
-            <thead>
-            <tr>
-              <th>Learner</th><th>Email</th><th>Course</th><th>Due</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr *ngFor="let o of overdueAlerts()">
-              <td>{{ o.user }}</td>
-              <td>{{ o.email || '—' }}</td>
-              <td>{{ o.course }}</td>
-              <td><span class="badge badge-warn">{{ o.due }}</span></td>
-            </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-      
-      <div class="card actions">
-        <div class="card-title">Actions</div>
-        <div class="actions-row">
-          <button class="btn" (click)="onAddCourse()">Add Course</button>
-          <button class="btn outline" (click)="onAssignTraining()">Assign Training</button>
-          <button class="btn ghost" (click)="onExportCSV()">Export CSV</button>
-        </div>
-      </div>
-    </section>
+        <p>{{ action.detail }}</p>
+        <a [routerLink]="action.route" class="action-card__link">{{ action.cta }} →</a>
+      </article>
+    </div>
+  </section>
 
-    <!-- Open Assignments -->
-    <section class="panel">
-      <div class="section-head">
-        <h2>Open Assignments</h2>
-        <a routerLink="/manager/assign" class="muted">View all</a>
+  <section class="readiness-row">
+    <article class="readiness-card">
+      <div class="readiness-card__label">Learners in scope</div>
+      <div class="readiness-card__value">{{ readiness().learnerCount }}</div>
+      <div class="readiness-card__sub">people managed in your organization</div>
+    </article>
+    <article class="readiness-card">
+      <div class="readiness-card__label">Active assignments</div>
+      <div class="readiness-card__value">{{ readiness().activeAssignments }}</div>
+      <div class="readiness-card__sub">assigned or started training items</div>
+    </article>
+    <article class="readiness-card">
+      <div class="readiness-card__label">In progress</div>
+      <div class="readiness-card__value">{{ readiness().inProgress }}</div>
+      <div class="readiness-card__sub">learners currently advancing in content</div>
+    </article>
+    <article class="readiness-card">
+      <div class="readiness-card__label">Approved courses used</div>
+      <div class="readiness-card__value">{{ readiness().uniqueCourses }}</div>
+      <div class="readiness-card__sub">programs currently assigned to your org</div>
+    </article>
+  </section>
+
+  <section class="ops-grid">
+    <article class="ops-card ops-card--teal">
+      <div class="ops-card__eyebrow">Assignment Operations</div>
+      <h2 class="ops-card__title">Run organization-wide training campaigns</h2>
+      <p class="ops-card__copy">Launch bulk assignments, monitor due dates and follow completion risk from one place.</p>
+      <div class="ops-card__meta">{{ readiness().activeAssignments }} active items across {{ readiness().learnerCount }} learners</div>
+      <div class="ops-card__actions">
+        <button class="btn-primary" (click)="onAssignTraining()">Open Assignment Center</button>
+        <button class="btn-ghost" (click)="onViewLearners()">View Learners</button>
       </div>
-      <div class="card">
-        <table class="table">
-          <thead>
+    </article>
+
+    <article class="ops-card ops-card--navy">
+      <div class="ops-card__eyebrow">Audit & Compliance</div>
+      <h2 class="ops-card__title">Keep evidence ready for review</h2>
+      <p class="ops-card__copy">Track acknowledgements, overdue learning and export operational evidence for audits or leadership reviews.</p>
+      <div class="ops-card__meta">{{ overdueAlerts().length }} overdue learner{{ overdueAlerts().length !== 1 ? 's' : '' }} currently flagged</div>
+      <div class="ops-card__actions">
+        <button class="btn-primary" (click)="onOpenAudit()">Open Audit Center</button>
+        <button class="btn-ghost" (click)="onExportCSV()">Export Evidence</button>
+      </div>
+    </article>
+
+    <article class="ops-card ops-card--orange">
+      <div class="ops-card__eyebrow">Policy Governance</div>
+      <h2 class="ops-card__title">Create and govern required policy workflows</h2>
+      <p class="ops-card__copy">Publish policy acknowledgements, route learners to the right requirements and verify completions.</p>
+      <div class="ops-card__meta">Use policy workflows with notifications to close compliance gaps faster</div>
+      <div class="ops-card__actions">
+        <button class="btn-primary" (click)="onOpenPolicyLibrary()">Open Policy Library</button>
+        <button class="btn-ghost" (click)="onPolicyReport()">View Policy Report</button>
+      </div>
+    </article>
+  </section>
+
+  <section class="service-grid">
+    <article class="service-card">
+      <div class="service-card__head">
+        <span class="panel-badge panel-badge--teal">Communications</span>
+        <h2 class="panel-title">Manager service lanes</h2>
+      </div>
+      <div class="service-list">
+        <button class="service-link" (click)="onCreateNotification()">
+          <span class="service-link__title">Notifications</span>
+          <span class="service-link__copy">Push reminders, updates and urgent manager broadcasts.</span>
+        </button>
+        <button class="service-link" (click)="onOpenSettings()">
+          <span class="service-link__title">Governance Settings</span>
+          <span class="service-link__copy">Review portal defaults, workflow rules and manager controls.</span>
+        </button>
+        <button class="service-link" (click)="onOpenLibrary()">
+          <span class="service-link__title">Approved Course Library</span>
+          <span class="service-link__copy">Browse the super-admin validated catalogue before assigning.</span>
+        </button>
+      </div>
+    </article>
+
+    <article class="service-card">
+      <div class="service-card__head">
+        <span class="panel-badge">Practice & Reference</span>
+        <h2 class="panel-title">Specialized tools</h2>
+      </div>
+      <div class="service-list">
+        <button class="service-link" (click)="onCreateWounds()">
+          <span class="service-link__title">Quick Practice Zone</span>
+          <span class="service-link__copy">Maintain internal quick sheets, task refreshers and job aids.</span>
+        </button>
+        <button class="service-link" (click)="onPolicyReport()">
+          <span class="service-link__title">Acknowledgement Reporting</span>
+          <span class="service-link__copy">Review completion evidence for policy-driven compliance work.</span>
+        </button>
+      </div>
+    </article>
+  </section>
+
+  <!-- OVERDUE ALERTS -->
+  <section class="panel" *ngIf="overdueAlerts().length">
+    <div class="panel-head">
+      <div class="panel-head__left">
+        <span class="panel-badge panel-badge--warn">⚠ Overdue</span>
+        <h2 class="panel-title">Overdue Alerts</h2>
+      </div>
+      <span class="panel-meta">{{ overdueAlerts().length }} learner{{ overdueAlerts().length !== 1 ? 's' : '' }} past due</span>
+    </div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
           <tr>
-            <th>ID</th><th>Course</th><th>Audience</th><th>Due</th><th>Status</th><th></th>
+            <th>Learner</th>
+            <th>Email</th>
+            <th>Course</th>
+            <th>Due Date</th>
           </tr>
-          </thead>
-          <tbody>
+        </thead>
+        <tbody>
+          <tr *ngFor="let o of overdueAlerts()">
+            <td><span class="learner-name">{{ o.user }}</span></td>
+            <td class="muted">{{ o.email || '—' }}</td>
+            <td>{{ o.course }}</td>
+            <td><span class="badge badge-warn">{{ o.due }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- OPEN ASSIGNMENTS -->
+  <section class="panel">
+    <div class="panel-head">
+      <div class="panel-head__left">
+        <span class="panel-badge">◷ Active</span>
+        <h2 class="panel-title">Open Assignments</h2>
+      </div>
+      <a routerLink="/manager/assign" class="panel-link">View all →</a>
+    </div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Course</th>
+            <th>Audience</th>
+            <th>Due Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
           <tr *ngFor="let a of openAssignments()">
-            <td>{{ a.id }}</td>
-            <td>{{ a.course }}</td>
-            <td>{{ a.audience }}</td>
-            <td>{{ a.due }}</td>
-            <td><span class="badge" [class.badge-warn]="a.status==='Closed'">{{ a.status }}</span></td>
+            <td class="cell-main">{{ a.course }}</td>
             <td>
-              <button class="btn outline" type="button" (click)="openAssignment(a.id)">
-                Open
-              </button>
-            </td>            
+              <span class="audience-chip">{{ a.audience }}</span>
+            </td>
+            <td [class.text-warn]="a.isOverdue">{{ a.due }}</td>
+            <td>
+              <span class="badge" [class.badge-warn]="a.isOverdue">
+                {{ a.isOverdue ? 'Overdue' : 'Active' }}
+              </span>
+            </td>
           </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+          <tr *ngIf="!openAssignments().length">
+            <td colspan="4" class="empty-row">No open assignments — all caught up!</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-    <!-- Recent Results -->
-    <section class="panel">
-      <div class="section-head">
-        <h2>Recent Results</h2>
-        <a routerLink="/manager/reports" class="muted">Open reports</a>
+  <!-- RECENT RESULTS -->
+  <section class="panel">
+    <div class="panel-head">
+      <div class="panel-head__left">
+        <span class="panel-badge panel-badge--teal">✓ Results</span>
+        <h2 class="panel-title">Recent Completions</h2>
       </div>
-      <div class="card">
-        <table class="table">
-          <thead>
+      <a routerLink="/manager/learners" class="panel-link">Open learners -></a>
+    </div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
           <tr>
-            <th>Learner</th><th>Course</th><th>Score</th><th>Date</th><th></th>
+            <th>Learner</th>
+            <th>Course</th>
+            <th>Score</th>
+            <th>Date</th>
           </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let r of recentResults()">
-              <td>
-                {{ r.userName }}
-                <div class="muted" style="font-size:.85rem" *ngIf="r.userEmail">{{ r.userEmail }}</div>
-              </td>
-              <td>{{ r.course }}</td>
-              <td><span class="score" [class.low]="r.score < 80">{{ r.score }}%</span></td>
-              <td>{{ r.date }}</td>
-              <td>
-                <button class="btn outline" type="button" (click)="openResultDetails(r.uid)">
-                  Details
-                </button>
-              </td>
-            </tr>            
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </main>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of recentResults()">
+            <td>
+              <span class="learner-name">{{ r.userName }}</span>
+              <div class="muted small" *ngIf="r.userEmail">{{ r.userEmail }}</div>
+            </td>
+            <td>{{ r.course }}</td>
+            <td>
+              <span class="score-pill" [class.score-pill--low]="r.score < 70" [class.score-pill--mid]="r.score >= 70 && r.score < 85" [class.score-pill--high]="r.score >= 85">
+                {{ r.score }}%
+              </span>
+            </td>
+            <td class="muted">{{ r.date }}</td>
+          </tr>
+          <tr *ngIf="!recentResults().length">
+            <td colspan="4" class="empty-row">No completions recorded yet.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>

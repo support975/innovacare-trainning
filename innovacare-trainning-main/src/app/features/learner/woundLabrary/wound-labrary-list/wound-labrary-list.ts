@@ -1,15 +1,10 @@
 // src/app/features/learner/woundLabrary/wound-labrary-table/wound-labrary-table.component.ts
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 
-import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatInputModule } from '@angular/material/input';
-// removed: import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { WoundType } from '../../../manager/wound.model';
@@ -22,138 +17,407 @@ import { WoundService } from '../../../manager/services/wound-service';
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
-    // Material
-    MatTableModule,
-    MatPaginatorModule,
-    MatInputModule,
-    // MatChipsModule removed
     MatIconModule,
-    MatButtonModule,
     MatProgressSpinnerModule
   ],
   template: `
-  <div class="container">
-    <h1>Wound Library</h1>
+  <div class="resources-page">
+    <header class="page-header">
+      <div>
+        <p class="page-eyebrow">Organization resources</p>
+        <h1 class="page-title">Quick Practice Zone</h1>
+        <p class="page-sub">
+          Internal quick sheets for recurring tasks, refreshers and practical reminders. Only people in your organization can access these resources.
+        </p>
+      </div>
+      <span class="resource-count">{{ filteredItems.length }} shown</span>
+    </header>
 
-    <div class="toolbar">
-      <mat-form-field appearance="outline" class="search">
-        <mat-icon matPrefix>search</mat-icon>
-        <input matInput [formControl]="searchControl" placeholder="Search wound types, tags or characteristics">
-      </mat-form-field>
-    </div>
+    <section class="resource-panel">
+      <div class="search-row">
+        <div class="search-box">
+          <mat-icon>search</mat-icon>
+          <input [formControl]="searchControl" type="search" placeholder="Search quick sheets, tasks, tags or reminders" />
+          <button *ngIf="searchControl.value" type="button" class="clear-search" (click)="searchControl.setValue('')" aria-label="Clear search">×</button>
+        </div>
+      </div>
 
-    <div class="table-wrap" *ngIf="!loading; else loadingTpl">
-      <table mat-table [dataSource]="dataSource" class="mat-elevation-z1" matSort>
+      <div class="category-strip" aria-label="Resource categories">
+        <span class="category-chip category-chip--active">Org quick sheets</span>
+        <span class="category-chip">Created by your organization</span>
+      </div>
 
-        <!-- Thumbnail Column -->
-        <ng-container matColumnDef="thumb">
-          <th mat-header-cell *matHeaderCellDef> </th>
-          <td mat-cell *matCellDef="let element">
-            <img class="thumb" [src]="element.images?.[0] || placeholder" (error)="onImgError($event)" />
-          </td>
-        </ng-container>
+      <div *ngIf="loading; else resourcesTpl" class="loading">
+        <mat-progress-spinner diameter="36" mode="indeterminate"></mat-progress-spinner>
+      </div>
 
-        <!-- Name -->
-        <ng-container matColumnDef="name">
-          <th mat-header-cell *matHeaderCellDef> Name </th>
-          <td mat-cell *matCellDef="let element"> <strong>{{ element.name }}</strong> </td>
-        </ng-container>
-
-        <!-- Category -->
-        <ng-container matColumnDef="category">
-          <th mat-header-cell *matHeaderCellDef> Category </th>
-          <td mat-cell *matCellDef="let element"> {{ element.category || '-' }} </td>
-        </ng-container>
-
-        <!-- Tags (replaced mat-chips with simple spans) -->
-        <ng-container matColumnDef="tags">
-          <th mat-header-cell *matHeaderCellDef> Tags </th>
-          <td mat-cell *matCellDef="let element">
-            <div class="tags" *ngIf="element.tags?.length">
-              <span class="tag"  *ngFor="let t of element.tags">{{ t }}</span>
+      <ng-template #resourcesTpl>
+        <div class="resource-grid" *ngIf="filteredItems.length; else emptyTpl">
+          <article class="resource-card" *ngFor="let item of filteredItems; trackBy: trackById">
+            <div class="resource-card__image" [class.resource-card__image--empty]="!item.images?.length">
+              <img *ngIf="item.images?.length" [src]="item.images?.[0]" [alt]="item.name" (error)="onImgError($event)" />
+              <mat-icon *ngIf="!item.images?.length">medical_services</mat-icon>
             </div>
-          </td>
-        </ng-container>
 
-        <!-- Short description -->
-        <ng-container matColumnDef="shortDescription">
-          <th mat-header-cell *matHeaderCellDef> Summary </th>
-          <td mat-cell *matCellDef="let element"> {{ element.shortDescription || '-' }} </td>
-        </ng-container>
+            <div class="resource-card__body">
+              <div class="resource-card__meta">
+                <span>{{ item.category || 'Quick practice' }}</span>
+              </div>
+              <h2>{{ item.name }}</h2>
+              <p>{{ item.shortDescription || item.fullDescription || 'Quick sheet details are available in the overview.' }}</p>
 
-        <!-- Actions -->
-        <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef> </th>
-          <td mat-cell *matCellDef="let element">
-            <button mat-stroked-button color="primary" (click)="openDetail(element.woundId)" >Overview</button>
-          </td>
-        </ng-container>
+              <div class="tags" *ngIf="item.tags?.length || item.characteristics?.length">
+                <span class="tag" *ngFor="let t of visibleLabels(item)">{{ t }}</span>
+              </div>
+            </div>
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-      </table>
+            <button class="btn-primary" type="button" (click)="openDetail(item.woundId)">
+              Open quick sheet
+            </button>
+          </article>
+        </div>
 
-      <mat-paginator #paginator [pageSize]="10" [pageSizeOptions]="[5,10,25]"></mat-paginator>
-      <div *ngIf="dataSource.data.length === 0" class="empty">No wound types found.</div>
-    </div>
-
-    <ng-template #loadingTpl>
-      <div class="loading"><mat-progress-spinner mode="indeterminate"></mat-progress-spinner></div>
-    </ng-template>
+        <ng-template #emptyTpl>
+          <div class="empty-state">
+            <div class="empty-state__icon"><mat-icon>menu_book</mat-icon></div>
+            <h2>No quick sheets found</h2>
+            <p>Try a different search, or ask your administrator to publish quick practice content for your organization.</p>
+          </div>
+        </ng-template>
+      </ng-template>
+    </section>
   </div>
   `,
   styles: [`
-    .container { max-width:1100px; margin: 20px auto; padding: 8px; }
-    h1 { margin-bottom: 12px; }
-    .toolbar { display:flex; justify-content:flex-end; margin-bottom:12px; }
-    .search { width: 360px; }
-    .table-wrap { overflow: auto; }
-    table { width: 100%; min-width: 800px; }
-    .thumb { height:48px; width:auto; border-radius:4px; border:1px solid #ddd; }
-    /* tag styles replacing mat-chips */
-    .tags { display:flex; flex-wrap:wrap; gap:6px; }
-    .tag {
-      display:inline-block;
-      background:#e0e7ff;
-      color:#1f2a8a;
-      padding:4px 8px;
-      border-radius:12px;
-      font-size:0.8rem;
-      line-height:1;
-      border: 1px solid rgba(31,42,138,0.08);
+    :host { display: block; }
+
+    .resources-page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px clamp(14px, 3vw, 32px);
+      display: grid;
+      gap: 22px;
     }
-    .chip { margin-right:4px; } /* kept if any older styles reference it */
-    .empty { text-align:center; color:#666; padding:12px 0; }
-    .loading { display:flex; justify-content:center; padding:40px 0; }
-    @media (max-width: 900px) {
-      .search { width: 100%; }
-      table { min-width: 700px; }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .page-eyebrow {
+      margin: 0 0 6px;
+      color: #00a79d;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .page-title {
+      margin: 0 0 6px;
+      color: #1a3f6f;
+      font-size: 28px;
+      font-weight: 900;
+      line-height: 1.15;
+    }
+
+    .page-sub {
+      max-width: 760px;
+      margin: 0;
+      color: #5a6a7e;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .resource-count {
+      flex: 0 0 auto;
+      padding: 6px 12px;
+      border: 1px solid #c8d8f0;
+      border-radius: 999px;
+      background: #e8f0fb;
+      color: #1a3f6f;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .resource-panel {
+      overflow: hidden;
+      border: 1px solid #e4ecf7;
+      border-radius: 14px;
+      background: #ffffff;
+      box-shadow: 0 2px 12px rgba(26, 63, 111, 0.06);
+    }
+
+    .search-row {
+      padding: 18px 20px;
+      border-bottom: 1px solid #e4ecf7;
+      background: #f8faff;
+    }
+
+    .search-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+      max-width: 620px;
+    }
+
+    .search-box mat-icon {
+      position: absolute;
+      left: 12px;
+      color: #8ea0b8;
+      pointer-events: none;
+    }
+
+    .search-box input {
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 40px 9px 40px;
+      border: 1px solid #d6e1f0;
+      border-radius: 10px;
+      outline: none;
+      background: #ffffff;
+      color: #1a2b4a;
+      font: inherit;
+      font-size: 14px;
+    }
+
+    .search-box input:focus {
+      border-color: #00a79d;
+      box-shadow: 0 0 0 3px rgba(0, 167, 157, 0.12);
+    }
+
+    .clear-search {
+      position: absolute;
+      right: 9px;
+      width: 26px;
+      height: 26px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: #8ea0b8;
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .clear-search:hover {
+      background: #e8f0fb;
+      color: #1a3f6f;
+    }
+
+    .category-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 14px 20px;
+      border-bottom: 1px solid #e4ecf7;
+    }
+
+    .category-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 4px 10px;
+      border: 1px solid #e4ecf7;
+      border-radius: 999px;
+      background: #ffffff;
+      color: #5a6a7e;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .category-chip--active {
+      border-color: #9ae6d6;
+      background: #e8f5f5;
+      color: #00797a;
+    }
+
+    .resource-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+      padding: 18px 20px 20px;
+    }
+
+    .resource-card {
+      display: flex;
+      min-width: 0;
+      min-height: 100%;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid #e4ecf7;
+      border-radius: 12px;
+      background: #ffffff;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .resource-card:hover {
+      border-color: #c8d8f0;
+      box-shadow: 0 6px 18px rgba(26, 63, 111, 0.08);
+    }
+
+    .resource-card__image {
+      height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: #f4f7fb;
+      color: #8ea0b8;
+    }
+
+    .resource-card__image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .resource-card__image--empty {
+      border-bottom: 1px dashed #d6e1f0;
+    }
+
+    .resource-card__body {
+      flex: 1;
+      padding: 14px;
+      min-width: 0;
+    }
+
+    .resource-card__meta {
+      margin-bottom: 6px;
+      color: #00797a;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .resource-card h2 {
+      margin: 0 0 8px;
+      color: #1a3f6f;
+      font-size: 17px;
+      font-weight: 900;
+      line-height: 1.25;
+    }
+
+    .resource-card p {
+      margin: 0;
+      color: #5a6a7e;
+      font-size: 13px;
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .tag {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      border: 1px solid #e4ecf7;
+      border-radius: 999px;
+      background: #f4f7fb;
+      color: #5a6a7e;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .btn-primary {
+      margin: 0 14px 14px;
+      min-height: 38px;
+      border: 0;
+      border-radius: 8px;
+      background: #1a3f6f;
+      color: #ffffff;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover {
+      background: #0d2240;
+    }
+
+    .loading {
+      display: flex;
+      justify-content: center;
+      padding: 56px 20px;
+    }
+
+    .empty-state {
+      display: grid;
+      justify-items: center;
+      gap: 8px;
+      padding: 56px 20px;
+      text-align: center;
+      color: #5a6a7e;
+    }
+
+    .empty-state__icon {
+      display: grid;
+      place-items: center;
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      background: #e8f0fb;
+      color: #1a3f6f;
+    }
+
+    .empty-state h2 {
+      margin: 4px 0 0;
+      color: #1a3f6f;
+      font-size: 18px;
+    }
+
+    .empty-state p {
+      max-width: 420px;
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 760px) {
+      .resources-page {
+        padding: 16px;
+      }
+
+      .page-header {
+        flex-direction: column;
+      }
+
+      .resource-grid {
+        grid-template-columns: 1fr;
+        padding: 14px;
+      }
+
+      .search-row,
+      .category-strip {
+        padding-inline: 14px;
+      }
     }
   `]
 })
 export class WoundLabraryTableComponent implements OnInit {
-  displayedColumns: string[] = ['thumb', 'name', 'category', 'tags', 'shortDescription', 'actions'];
-  dataSource = new MatTableDataSource<WoundType>([]);
+  items: WoundType[] = [];
+  filteredItems: WoundType[] = [];
   loading = false;
-  placeholder = 'assets/wound-placeholder.png';
   searchControl = new FormControl('');
-
-  @ViewChild(MatPaginator, { static: true }) paginator!: MatPaginator;
 
   constructor(private svc: WoundService, private router: Router,private route: ActivatedRoute) {}
   ngOnInit(): void {
-    this.dataSource.paginator = this.paginator;
     this.load();
-
-    // set up filter to search name, summary, tags, characteristics
-    this.dataSource.filterPredicate = (data: WoundType, filter: string) => {
-      const term = filter.trim().toLowerCase();
-      const inName = (data.name || '').toLowerCase().includes(term);
-      const inShort = (data.shortDescription || '').toLowerCase().includes(term);
-      const inTags = (data.tags || []).some(t => t.toLowerCase().includes(term));
-      const inChars = (data.characteristics || []).some(c => c.toLowerCase().includes(term));
-      return inName || inShort || inTags || inChars;
-    };
 
     this.searchControl.valueChanges.subscribe(q => {
       this.applyFilter(q);
@@ -165,19 +429,44 @@ export class WoundLabraryTableComponent implements OnInit {
     try {
       const list = await this.svc.listWoundTypes();
       const active = list.filter(w => w.isActive !== false);
-      this.dataSource.data = active;
+      this.items = active;
+      this.applyFilter(this.searchControl.value);
     } catch (err) {
       console.error('Failed to load wound library', err);
-      this.dataSource.data = [];
+      this.items = [];
+      this.filteredItems = [];
     } finally {
       this.loading = false;
     }
   }
 
   applyFilter(q: string | null) {
-    this.dataSource.filter = (q || '').trim().toLowerCase();
-    // reset to first page after filter
-    if (this.dataSource.paginator) this.dataSource.paginator.firstPage();
+    const term = (q || '').trim().toLowerCase();
+    if (!term) {
+      this.filteredItems = [...this.items];
+      return;
+    }
+
+    this.filteredItems = this.items.filter((item) => {
+      const haystack = [
+        item.name,
+        item.category,
+        item.shortDescription,
+        item.fullDescription,
+        ...(item.tags || []),
+        ...(item.characteristics || [])
+      ].join(' ').toLowerCase();
+
+      return haystack.includes(term);
+    });
+  }
+
+  visibleLabels(item: WoundType): string[] {
+    return [...(item.tags || []), ...(item.characteristics || [])].filter(Boolean).slice(0, 4);
+  }
+
+  trackById(_: number, item: WoundType) {
+    return item.woundId || item.name;
   }
 
   openDetail(woundId?: string | undefined) {

@@ -1,36 +1,93 @@
-<div class="shell" [class.side-hidden]="!sidebarOpen()">
+<div class="shell" [class.nav-open]="sidebarOpen()">
+  <aside class="sidebar" [class.open]="sidebarOpen()" [attr.aria-hidden]="isMobile() && !sidebarOpen()">
+    <div class="sidebar-header">
+      <a class="brand" routerLink="/super-admin/dashboard" (click)="onNavClick()" aria-label="Innovacare admin dashboard">
+        <img class="brand-mark" src="/logo.png" alt="Innovacare" />
+        <span class="brand-copy">
+          <strong>Innovacare</strong>
+          <span>Training Admin</span>
+        </span>
+      </a>
+
+      <button class="icon-button close-button" type="button" (click)="closeSidebar()" aria-label="Close navigation">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="workspace-panel" aria-label="Current workspace">
+      <span class="workspace-status"></span>
+      <div>
+        <span>Workspace</span>
+        <strong>Super Admin</strong>
+      </div>
+    </div>
+
+    <nav class="side-nav" aria-label="Super admin navigation">
+      <section class="nav-section" *ngFor="let section of sections">
+        <div class="nav-section-label">{{ section.label }}</div>
+
+        <a
+          class="nav-link"
+          *ngFor="let item of section.items"
+          [routerLink]="item.path"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: item.exact === true }"
+          (click)="onNavClick()">
+          <svg class="nav-link-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path [attr.d]="item.icon" />
+          </svg>
+          <span class="nav-link-label">{{ item.label }}</span>
+        </a>
+      </section>
+    </nav>
+
+    <div class="sidebar-footer">
+      <img class="footer-mark" src="/logo.png" alt="Innovacare" />
+      <div>
+        <strong>Innovacare Training</strong>
+        <span>Admin Console</span>
+      </div>
+    </div>
+  </aside>
+
   <header class="topbar">
     <button
-      class="menu-toggle"
+      class="icon-button menu-button"
       type="button"
       (click)="toggleSidebar()"
       [attr.aria-expanded]="sidebarOpen()"
-      aria-label="Toggle menu">
-      ☰
+      aria-label="Open navigation">
+      <span class="menu-lines" aria-hidden="true"></span>
     </button>
 
-    <div class="brand">
-      <strong>INNOVACARE SUPER ADMIN</strong>
+    <div class="topbar-title">
+      <span>Administration</span>
+      <strong>Super Admin Console</strong>
     </div>
 
-    <div class="top-actions">
-      <span class="role">Super Admin</span>
-      <button class="btn logout" type="button" (click)="logout()">Logout</button>
+    <div class="topbar-actions">
+      <div class="status-pill">
+        <span></span>
+        Production
+      </div>
+
+      <div class="account-chip" aria-label="Current role">
+        <span>SA</span>
+        <strong>Super Admin</strong>
+      </div>
+
+      <button class="logout-button" type="button" (click)="logout()">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M10 6H6v12h4m3-9 3 3-3 3m-7-3h10" />
+        </svg>
+        <span>Sign out</span>
+      </button>
     </div>
   </header>
 
-  <aside class="sidebar" [class.open]="sidebarOpen()">
-    <nav class="menu">
-      <a
-        *ngFor="let item of nav"
-        [routerLink]="item.path"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: item.path === '/super-admin' }"
-        class="menu-item">
-        {{ item.label }}
-      </a>
-    </nav>
-  </aside>
+  <div class="backdrop" *ngIf="isMobile() && sidebarOpen()" (click)="closeSidebar()" aria-hidden="true"></div>
 
   <main class="content">
     <router-outlet></router-outlet>

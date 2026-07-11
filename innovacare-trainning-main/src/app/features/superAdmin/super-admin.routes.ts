@@ -37,6 +37,11 @@ export const SUPER_ADMIN_ROUTES: Routes = [
           import('./billing/billing').then(m => m.Billing),
       },
       {
+        path: 'demo-requests',
+        loadComponent: () =>
+          import('./demo-requests/demo-requests').then(m => m.DemoRequestsComponent),
+      },
+      {
         path: 'logs',
         loadComponent: () =>
           import('./log/log').then(m => m.Log),
@@ -70,6 +75,33 @@ export const SUPER_ADMIN_ROUTES: Routes = [
         path: 'course-assignments',
         loadComponent: () =>
           import('./organizationsPage/course-assign/course-assign').then(m => m.CourseAssign),
+      },
+      {
+        path: 'learning-paths',
+        loadComponent: () =>
+          import('./learning-paths/learning-paths').then(m => m.LearningPathsComponent),
+      },
+      {
+        path: 'exam-authoring',
+        loadComponent: () =>
+          import('./exam-authoring/exam-authoring').then(m => m.ExamAuthoringComponent),
+      },
+      {
+        path: 'policy-assignments',
+        loadComponent: () =>
+          import('./policy-assignments/policy-assignments').then(
+            m => m.SuperAdminPolicyAssignmentsComponent
+          ),
+      },
+      {
+        path: 'courses',
+        loadComponent: () =>
+          import('../manager/courses/courses').then(m => m.Courses),
+      },
+      {
+        path: 'courses/:id/extras',
+        loadComponent: () =>
+          import('../manager/courses-editor/courses-editor').then(m => m.CoursesEditor),
       },
       {
         path: '**',

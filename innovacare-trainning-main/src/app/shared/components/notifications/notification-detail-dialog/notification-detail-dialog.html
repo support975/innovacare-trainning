@@ -14,7 +14,7 @@
           {{ n()?.severity || 'info' }}
         </span>
 
-        <span *ngIf="n()?.createdAt as ts">• {{ ts | date:'medium' }}</span>
+        <span *ngIf="n()?.createdAt as ts">• {{ ts | toDate | date:'medium' }}</span>
       </div>
     </div>
 

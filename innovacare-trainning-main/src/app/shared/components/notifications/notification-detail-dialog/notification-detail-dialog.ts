@@ -4,10 +4,11 @@ import {Router} from "@angular/router";
 import { NotificationService } from "../../../services/notification";
 
 
+import { ToDatePipe } from '../../../pipes/to-date.pipe';
 @Component({
   standalone: true,
   selector: "app-notification-detail-dialog",
-  imports: [CommonModule, DatePipe],
+  imports: [CommonModule, DatePipe, ToDatePipe],
   templateUrl: "./notification-detail-dialog.html",
   styleUrls: ["./notification-detail-dialog.css"],
 })

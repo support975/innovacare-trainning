@@ -1,0 +1,145 @@
+{
+  "id": "sales-ethics-client-communication",
+  "title": "Sales Ethics and Client Communication",
+  "subtitle": "Sell with accuracy, transparency, and trust",
+  "description": "Guide sales and business development teams on ethical selling, accurate claims, client documentation, follow-up, and relationship management.",
+  "lang": "EN",
+  "durationMin": 45,
+  "ceCredit": 0,
+  "sortOrder": 109,
+  "active": true,
+  "isPublic": true,
+  "kind": "Course",
+  "type": "Hr",
+  "level": "Beginner",
+  "url": "/catalogue/sales-ethics-client-communication",
+  "imageUrl": "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1200&q=80",
+  "tags": [
+    "enterprise",
+    "sales",
+    "ethics",
+    "client-communication",
+    "business-development"
+  ],
+  "lecturer": "Innovacare Training Sales Enablement Faculty",
+  "disclosures": [
+    "This course should be paired with the organization's sales policies, pricing rules, and contract approval process."
+  ],
+  "targetAudience": [
+    "Sales teams",
+    "Account managers",
+    "Business development",
+    "Customer success teams"
+  ],
+  "prerequisites": [
+    "None"
+  ],
+  "requirements": [
+    "Complete all lessons",
+    "Pass the sales ethics quiz"
+  ],
+  "accomodations": "Accessibility accommodations may be requested through the organization administrator.",
+  "orgId": null,
+  "assignedOrgIds": [],
+  "passingScore": 80,
+  "lockedSequence": true,
+  "sections": [
+    {
+      "id": "ethical-selling",
+      "title": "Ethical Selling",
+      "order": 1,
+      "estMin": 22,
+      "lessons": [
+        {
+          "id": "accuracy",
+          "title": "Use Accurate Claims",
+          "order": 1,
+          "estMin": 11,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Sales communication should be accurate, clear, and supported by approved materials. Avoid promises the company cannot deliver.</p>",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "transparency",
+          "title": "Transparency Builds Trust",
+          "order": 2,
+          "estMin": 11,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Be clear about pricing, limitations, timelines, support, and contract terms. Escalate custom commitments before making promises.</p>",
+              "required": true
+            },
+            {
+              "id": "quiz",
+              "type": "quiz",
+              "mode": "single",
+              "question": "What should a salesperson do before promising a custom feature or discount?",
+              "required": true,
+              "choices": [
+                {
+                  "id": "a",
+                  "text": "Promise it immediately to close the deal",
+                  "correct": false
+                },
+                {
+                  "id": "b",
+                  "text": "Confirm approval through the correct internal process",
+                  "correct": true
+                },
+                {
+                  "id": "c",
+                  "text": "Avoid documenting it",
+                  "correct": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "client-communication",
+      "title": "Client Communication",
+      "order": 2,
+      "estMin": 23,
+      "lessons": [
+        {
+          "id": "follow-up",
+          "title": "Professional Follow-Up",
+          "order": 1,
+          "estMin": 11,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Strong follow-up is timely, concise, and documents decisions, owners, and next steps.</p>",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "records",
+          "title": "Keep Clear Sales Records",
+          "order": 2,
+          "estMin": 12,
+          "blocks": [
+            {
+              "id": "callout",
+              "type": "callout",
+              "style": "info",
+              "html": "<p>Use the approved CRM or tracking system. Good records protect the client and the company.</p>",
+              "required": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

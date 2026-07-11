@@ -83,13 +83,17 @@
             *ngIf="!enrollment(); else enrolledBtns"
             class="btn primary"
             (click)="assignToMe(courseId!)"
-            [disabled]="busy"
+            [disabled]="busy || domainAccessPending() || domainAccessDenied()"
           >
-            {{ busy ? 'Assigning…' : 'Assign to me' }}
+            {{
+              busy
+                ? (course().isPublic ? 'Assigning…' : 'Requesting…')
+                : (course().isPublic ? 'Assign to me' : 'Request access')
+            }}
           </button>
 
           <ng-template #enrolledBtns>
-            <button class="btn primary" (click)="startCourse()" [disabled]="isOverdueNow()">
+            <button class="btn primary" (click)="startCourse()" [disabled]="isOverdueNow() || domainAccessPending() || domainAccessDenied()">
               {{ enrollment()?.status === 'started' ? 'Resume course' : 'Start course' }}
             </button>
 
@@ -104,6 +108,9 @@
 
         <p *ngIf="isOverdueNow()" class="note warning">
           This course is overdue. Please contact support to extend your deadline.
+        </p>
+        <p *ngIf="domainAccessDenied()" class="note warning">
+          This course is restricted to {{ allowedDomainLabel() }} accounts. Sign in with your organization account to continue.
         </p>
         <p *ngIf="notice" class="note info">{{ notice }}</p>
       </section>

@@ -1,0 +1,124 @@
+<main class="matrix-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Manager · Compliance</p>
+      <h1>Training Compliance Matrix</h1>
+      <p class="sub">Track every learner against every organization-required course, including missing assignments.</p>
+    </div>
+    <div class="page-actions">
+      <a class="btn-ghost" routerLink="/manager/assign">Assign Training</a>
+      <button class="btn-primary" type="button" (click)="exportCsv()">Export CSV</button>
+    </div>
+  </header>
+
+  <section class="summary-grid">
+    <article class="summary-card">
+      <span class="summary-label">Organization compliance</span>
+      <strong>{{ summary().compliancePct }}%</strong>
+      <small>{{ summary().completed }} completed requirements</small>
+    </article>
+    <article class="summary-card">
+      <span class="summary-label">Learners</span>
+      <strong>{{ summary().learners }}</strong>
+      <small>in your organization</small>
+    </article>
+    <article class="summary-card">
+      <span class="summary-label">Required courses</span>
+      <strong>{{ summary().requirements }}</strong>
+      <small>assigned to this organization</small>
+    </article>
+    <article class="summary-card summary-card--warn">
+      <span class="summary-label">Open gaps</span>
+      <strong>{{ summary().missing + summary().overdue }}</strong>
+      <small>{{ summary().missing }} missing · {{ summary().overdue }} overdue</small>
+    </article>
+  </section>
+
+  <section class="toolbar">
+    <label class="search-field">
+      <span>Search learners</span>
+      <input
+        type="search"
+        placeholder="Name or email"
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+      />
+    </label>
+
+    <label class="filter-field">
+      <span>Status</span>
+      <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
+        <option value="all">All learners</option>
+        <option value="noncompliant">Non-compliant only</option>
+        <option value="missing">Missing requirement</option>
+        <option value="overdue">Overdue</option>
+        <option value="started">Started</option>
+        <option value="assigned">Assigned</option>
+        <option value="completed">Completed</option>
+      </select>
+    </label>
+
+    <button class="btn-ghost" type="button" (click)="clearFilters()">Clear</button>
+  </section>
+
+  <section class="matrix-panel">
+    <div class="matrix-scroll" *ngIf="requirements().length && filteredRows().length; else emptyMatrix">
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th class="sticky-col learner-col">Learner</th>
+            <th class="metric-col">Compliance</th>
+            <th class="metric-col">Gaps</th>
+            <th *ngFor="let requirement of requirements(); trackBy: trackCourse" class="course-col">
+              <span>{{ requirement.title }}</span>
+              <small>
+                {{ requirement.kind }} · {{ requirement.durationMin }} min
+                <ng-container *ngIf="requirement.pathTitles.length">
+                  · {{ requirement.pathTitles[0] }}
+                </ng-container>
+              </small>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of filteredRows(); trackBy: trackRow" [class.row-risk]="row.missing || row.overdue">
+            <th class="sticky-col learner-col">
+              <strong>{{ row.learnerName }}</strong>
+              <small>{{ row.email || 'No email' }}</small>
+            </th>
+            <td class="metric-cell">
+              <span class="pct" [class.pct--low]="row.compliancePct < 80">{{ row.compliancePct }}%</span>
+              <small>{{ row.completed }} / {{ requirements().length }}</small>
+            </td>
+            <td class="metric-cell">
+              <span class="gap-pill" [class.gap-pill--warn]="row.missing + row.overdue > 0">
+                {{ row.missing + row.overdue }}
+              </span>
+              <small>{{ row.missing }} missing · {{ row.overdue }} overdue</small>
+            </td>
+            <td *ngFor="let cell of row.cells" class="status-cell">
+              <span class="status-pill"
+                    [class.status-pill--completed]="cell.status === 'completed'"
+                    [class.status-pill--started]="cell.status === 'started'"
+                    [class.status-pill--assigned]="cell.status === 'assigned'"
+                    [class.status-pill--overdue]="cell.status === 'overdue'"
+                    [class.status-pill--missing]="cell.status === 'missing'">
+                {{ cell.label }}
+              </span>
+              <small>{{ cell.scoreLabel || cell.dueLabel }}</small>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #emptyMatrix>
+      <div class="empty-state">
+        <h2>No matrix rows yet</h2>
+        <p *ngIf="!requirements().length">Assign courses or learning paths to this organization first.</p>
+        <p *ngIf="requirements().length && !filteredRows().length">No learners match the current filters.</p>
+        <a class="btn-primary" routerLink="/manager/assign">Open Assignment Center</a>
+      </div>
+    </ng-template>
+  </section>
+</main>

@@ -1,38 +1,12 @@
-<header class="landing-header" [class.scrolled]="headerScrolled">
-  <div class="container header-inner">
-    <a class="brand" href="#top" (click)="closeMobileMenu()">
-      <span>Innovacare</span>
-      <strong>Training</strong>
-    </a>
+<app-public-site-nav
+  page="home"
+  contextLabel="Parcours santé"
+  contextValue="Onboarding, conformité et pilotage"
+  mobileMetaLabel="Plateforme LMS santé"
+  mobileMetaValue="Accédez aux pages publiques sans liens cassés"
+></app-public-site-nav>
 
-    <button class="menu-toggle" type="button" (click)="toggleMobileMenu()" aria-label="Ouvrir le menu">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
-
-    <nav class="nav" [class.open]="mobileMenuOpen">
-      <a  routerLink="/fonctionnalites" (click)="closeMobileMenu()">Fonctionnalités</a>
-      <a  routerLink="/categories" (click)="closeMobileMenu()">Catégories</a>
-      <a  routerLink="/catalogue" (click)="closeMobileMenu()">Cours</a>
-      <a  routerLink="/temoignages" (click)="closeMobileMenu()">Témoignages</a>
-      <a  routerLink="/faq" (click)="closeMobileMenu()">FAQ</a>
-      <button class="nav-cta mobile-only" type="button" (click)="openDemoDialog(); closeMobileMenu()">
-        Demander une démo
-      </button>
-    </nav>
-
-    <button class="nav-cta desktop-only" type="button" (click)="openDemoDialog()">
-      Demo
-    </button>
-    <button class="nav-cta desktop-only" type="button" (click)="login()">
-      Connexion
-    </button>
-    <button class="nav-cta desktop-only" type="button"  routerLink="/pricing">Pricing</button>
-  </div>
-</header>
-
-<main id="top" class="landing-page">
+<main id="top" class="landing-page" appPublicTranslate>
   <section class="hero-section">
     <div class="hero-orb hero-orb-one"></div>
     <div class="hero-orb hero-orb-two"></div>
@@ -65,13 +39,44 @@
       <div class="hero-visual reveal reveal-delay-2" #revealRef>
         <div class="hero-visual__perspective">
           <img 
-            src="https://res.cloudinary.com/dtdpx59sc/image/upload/v1774998911/ChatGPT_Image_31_mars_2026_19_13_12_pogn1o.png" 
+            src="https://res.cloudinary.com/dtdpx59sc/image/upload/f_auto,q_auto,w_700/v1774998911/ChatGPT_Image_31_mars_2026_19_13_12_pogn1o.png"
+            srcset="
+              https://res.cloudinary.com/dtdpx59sc/image/upload/f_auto,q_auto,w_480/v1774998911/ChatGPT_Image_31_mars_2026_19_13_12_pogn1o.png 480w,
+              https://res.cloudinary.com/dtdpx59sc/image/upload/f_auto,q_auto,w_700/v1774998911/ChatGPT_Image_31_mars_2026_19_13_12_pogn1o.png 700w,
+              https://res.cloudinary.com/dtdpx59sc/image/upload/f_auto,q_auto,w_960/v1774998911/ChatGPT_Image_31_mars_2026_19_13_12_pogn1o.png 960w
+            "
+            sizes="(max-width: 768px) 92vw, 560px"
             alt="Innovacare Training Dashboard" 
             class="hero-visual__image"
-            style="max-width: 1200%; width: 700px; height: 700px; border-radius: 20px; box-shadow: 0 18px 30px rgba(0, 0, 0, 0.2); clip-path: polygon(10% 0%, 90% 0%, 100% 10%, 100% 0%, 80% 100%, 10% 100%, 0% 80%, 0% 10%); display: block; margin: 0 auto;"
+            width="700"
+            height="700"
+            decoding="async"
+            fetchpriority="high"
           />
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- Stats Band — Relias style -->
+  <section class="stats-band">
+    <div class="container stats-grid">
+      <article class="stat-item">
+        <strong>+500</strong>
+        <span>Modules de formation</span>
+      </article>
+      <article class="stat-item">
+        <strong>98%</strong>
+        <span>Taux de satisfaction</span>
+      </article>
+      <article class="stat-item">
+        <strong>+50</strong>
+        <span>Organisations clientes</span>
+      </article>
+      <article class="stat-item">
+        <strong>HIPAA</strong>
+        <span>Conforme & sécurisé</span>
+      </article>
     </div>
   </section>
 

@@ -1,0 +1,174 @@
+<div class="kiosk-login-container">
+  <div class="kiosk-login-card">
+    <!-- Header -->
+    <div class="login-header">
+      <div class="logo">📋</div>
+      <h1>Exam Station</h1>
+      <p class="station-info" *ngIf="stationNumber">
+        Station {{ stationNumber }}
+      </p>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="error()" class="error-message">
+      <span class="error-icon">⚠️</span>
+      {{ error() }}
+    </div>
+
+    <!-- Session Info -->
+    <div class="session-info-box" *ngIf="session() as s">
+      <div class="info-item">
+        <span class="label">Session:</span>
+        <span class="value">{{ s.sessionDate | toDate | date: 'MMM d, y' }}</span>
+      </div>
+    </div>
+
+    <!-- Exam Rules Disclaimer -->
+    <div *ngIf="disclaimerVisible()" class="disclaimer">
+      <!-- Language Tabs -->
+      <div class="disclaimer-tabs">
+        <button
+          type="button"
+          class="disclaimer-tab"
+          [class.active]="disclaimerLang() === 'en'"
+          (click)="setDisclaimerLang('en')"
+        >
+          🇬🇧 English
+        </button>
+        <button
+          type="button"
+          class="disclaimer-tab"
+          [class.active]="disclaimerLang() === 'fr'"
+          (click)="setDisclaimerLang('fr')"
+        >
+          🇫🇷 Français
+        </button>
+      </div>
+
+      <!-- English version -->
+      <ng-container *ngIf="disclaimerLang() === 'en'">
+        <h2>⚠️ Exam Rules &amp; Agreement</h2>
+        <p class="disclaimer-intro">
+          Before starting your exam, you must read and accept the following rules:
+        </p>
+        <ul class="disclaimer-rules">
+          <li>🔒 <strong>Confidentiality:</strong> Do not share, discuss, or disclose any exam material, questions, or answers with anyone — during or after the exam.</li>
+          <li>📵 <strong>No copying:</strong> Do not copy, photograph, write down, or record any exam question or content in any form.</li>
+          <li>🚫 <strong>No navigation:</strong> Do not use the browser Back or Forward buttons, refresh the page, or close the window. Doing so may end your exam and your attempt will be lost.</li>
+          <li>👤 <strong>Individual work:</strong> Complete the exam alone, without assistance, notes, or unauthorized devices.</li>
+          <li>⏱️ <strong>Timing:</strong> The exam is timed. When time runs out, your answers are submitted automatically.</li>
+          <li>✅ <strong>One attempt:</strong> You have a single attempt. Once submitted, you cannot re-enter the exam.</li>
+        </ul>
+        <p class="disclaimer-warning">
+          Violation of these rules may result in disqualification and invalidation of your results.
+        </p>
+
+        <label class="disclaimer-agree">
+          <input type="checkbox" [(ngModel)]="agreed" name="agreed" />
+          <span>I have read, understood, and agree to comply with all the exam rules above.</span>
+        </label>
+
+        <button type="button" class="btn-login" (click)="startExam()" [disabled]="!agreed || loading()">
+          <span *ngIf="!loading()">✅ I Agree — Start Exam</span>
+          <span *ngIf="loading()">Starting exam...</span>
+        </button>
+        <button type="button" class="btn-clear" (click)="declineDisclaimer()" [disabled]="loading()">
+          Cancel
+        </button>
+      </ng-container>
+
+      <!-- French version -->
+      <ng-container *ngIf="disclaimerLang() === 'fr'">
+        <h2>⚠️ Règlement de l'examen &amp; Engagement</h2>
+        <p class="disclaimer-intro">
+          Avant de commencer votre examen, vous devez lire et accepter les règles suivantes :
+        </p>
+        <ul class="disclaimer-rules">
+          <li>🔒 <strong>Confidentialité :</strong> Ne partagez, ne discutez et ne divulguez aucun contenu d'examen, question ou réponse avec qui que ce soit — pendant ou après l'examen.</li>
+          <li>📵 <strong>Interdiction de copier :</strong> Ne copiez, ne photographiez, ne notez et n'enregistrez aucune question ni aucun contenu de l'examen, sous quelque forme que ce soit.</li>
+          <li>🚫 <strong>Navigation interdite :</strong> N'utilisez pas les boutons Précédent ou Suivant du navigateur, n'actualisez pas la page et ne fermez pas la fenêtre. Cela peut mettre fin à votre examen et votre tentative sera perdue.</li>
+          <li>👤 <strong>Travail individuel :</strong> Passez l'examen seul(e), sans aide, sans notes et sans appareil non autorisé.</li>
+          <li>⏱️ <strong>Durée limitée :</strong> L'examen est chronométré. À la fin du temps imparti, vos réponses sont soumises automatiquement.</li>
+          <li>✅ <strong>Une seule tentative :</strong> Vous disposez d'une seule tentative. Une fois l'examen soumis, vous ne pouvez plus y accéder.</li>
+        </ul>
+        <p class="disclaimer-warning">
+          Toute violation de ces règles peut entraîner votre disqualification et l'annulation de vos résultats.
+        </p>
+
+        <label class="disclaimer-agree">
+          <input type="checkbox" [(ngModel)]="agreed" name="agreed" />
+          <span>J'ai lu, compris et j'accepte de respecter toutes les règles de l'examen ci-dessus.</span>
+        </label>
+
+        <button type="button" class="btn-login" (click)="startExam()" [disabled]="!agreed || loading()">
+          <span *ngIf="!loading()">✅ J'accepte — Commencer l'examen</span>
+          <span *ngIf="loading()">Démarrage de l'examen...</span>
+        </button>
+        <button type="button" class="btn-clear" (click)="declineDisclaimer()" [disabled]="loading()">
+          Annuler
+        </button>
+      </ng-container>
+    </div>
+
+    <!-- Login Form -->
+    <form *ngIf="!disclaimerVisible()" (ngSubmit)="login()" class="login-form">
+      <div class="form-group">
+        <label for="email">Email Address *</label>
+        <input
+          id="email"
+          type="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="your@email.com"
+          required
+          [disabled]="loading()"
+          autocomplete="off"
+          class="form-input"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password *</label>
+        <input
+          id="password"
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="Enter your password"
+          required
+          [disabled]="loading()"
+          autocomplete="off"
+          class="form-input"
+        />
+      </div>
+
+      <button type="submit" class="btn-login" [disabled]="loading()">
+        <span *ngIf="!loading()">🔓 Login to Exam</span>
+        <span *ngIf="loading()">Logging in...</span>
+      </button>
+
+      <button type="button" class="btn-clear" (click)="clearForm()" [disabled]="loading()">
+        Clear
+      </button>
+    </form>
+
+    <!-- Instructions -->
+    <div class="instructions" *ngIf="!disclaimerVisible()">
+      <h3>Instructions:</h3>
+      <ol>
+        <li>Enter your email address</li>
+        <li>Enter your exam password</li>
+        <li>Click "Login to Exam"</li>
+        <li>Follow the exam instructions</li>
+      </ol>
+    </div>
+
+    <!-- Footer -->
+    <div class="kiosk-footer">
+      <p>If you need assistance, please raise your hand and contact the proctor.</p>
+    </div>
+  </div>
+
+  <!-- Screensaver Background -->
+  <div class="screensaver-bg"></div>
+</div>

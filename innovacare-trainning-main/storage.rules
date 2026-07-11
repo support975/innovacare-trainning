@@ -5,6 +5,40 @@ rules_version = '2';
 //    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
 service firebase.storage {
   match /b/{bucket}/o {
+
+    // Candidate certification application documents & payment receipts.
+    // Owner of the application or org certification-authority staff/admin may read/write.
+    match /candidateApplications/{applicationId}/{fileName} {
+      allow read: if request.auth != null
+        && firestore.exists(/databases/(default)/documents/candidateApplications/$(applicationId))
+        && (
+          firestore.get(/databases/(default)/documents/candidateApplications/$(applicationId)).data.candidateUserId == request.auth.uid
+          || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['admin', 'manager', 'super_admin']
+        );
+
+      allow write: if request.auth != null
+        && firestore.exists(/databases/(default)/documents/candidateApplications/$(applicationId))
+        && (
+          firestore.get(/databases/(default)/documents/candidateApplications/$(applicationId)).data.candidateUserId == request.auth.uid
+          || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['admin', 'manager', 'super_admin']
+        );
+    }
+
+    // Onsite exam candidate documents (ID, diploma, payment proof).
+    // The candidate uploads/views their own files; staff review them.
+    match /onsiteExamDocs/{sessionId}/{uid}/{fileName} {
+      allow read, write: if request.auth != null
+        && (request.auth.uid == uid
+          || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['proctor', 'admin', 'manager', 'super_admin']);
+    }
+
+    // Proctor identity-verification photos (ID + live photo).
+    // Proctors, managers and admins may upload and view them.
+    match /proctorVerifications/{sessionId}/{fileName} {
+      allow read, write: if request.auth != null
+        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['proctor', 'admin', 'manager', 'super_admin'];
+    }
+
     match /{allPaths=**} {
       allow read, write: if false;
     }

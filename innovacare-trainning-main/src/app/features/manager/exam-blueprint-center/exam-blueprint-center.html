@@ -1,0 +1,435 @@
+<div class="blueprint-center">
+  <!-- Header -->
+  <div class="center-header">
+    <h1>Exam Blueprint Center</h1>
+    <p class="subtitle">Create and manage certification exam blueprints for your sessions</p>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading()">
+    <div class="spinner"></div>
+    <p>Loading certification sessions...</p>
+  </div>
+
+  <!-- Messages -->
+  <div class="message success-message" *ngIf="success()">
+    <span class="icon">✓</span>
+    {{ success() }}
+  </div>
+
+  <div class="message error-message" *ngIf="error()">
+    <span class="icon">✕</span>
+    {{ error() }}
+  </div>
+
+  <!-- Main Content -->
+  <div class="blueprint-content" *ngIf="!loading()">
+    <div class="sessions-panel">
+      <h2>Certification Sessions</h2>
+      <p class="panel-subtitle">Select a session to manage its exam blueprints</p>
+
+      <div class="sessions-list">
+        <div
+          *ngFor="let session of sessions()"
+          class="session-item"
+          [class.active]="selectedSession()?.id === session.id"
+          (click)="selectSession(session)">
+          <div class="session-header">
+            <h3>{{ session.name }}</h3>
+            <span class="session-badge">
+              {{ session.linkedCourseIds?.length || 0 }} course(s)
+            </span>
+          </div>
+          <p class="session-dates">
+            {{ session.applicationStartDate | toDate | date: 'MMM dd' }} -
+            {{ session.applicationEndDate | toDate | date: 'MMM dd' }}
+          </p>
+        </div>
+
+        <div *ngIf="sessions().length === 0" class="empty-state">
+          <p>No certification sessions found</p>
+          <small>Create a certification session first to add exam blueprints</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Blueprints Panel -->
+    <div class="blueprints-panel" *ngIf="selectedSession()">
+      <div class="panel-header">
+        <h2>Exam Blueprints</h2>
+        <button
+          class="btn btn-primary"
+          (click)="openBlueprintForm()"
+          [disabled]="busy()">
+          + Create Blueprint
+        </button>
+      </div>
+
+      <!-- Blueprints List -->
+      <div class="blueprints-list">
+        <div
+          *ngFor="let bp of blueprints()"
+          class="blueprint-card"
+          [class.active]="selectedBlueprint()?.id === bp.id"
+          (click)="selectBlueprint(bp)">
+          <div class="blueprint-title">{{ bp.title }}</div>
+          <div class="blueprint-meta">
+            <span class="badge" [class]="'status-' + bp.status">{{ bp.status }}</span>
+            <span class="questions-count">{{ bp.totalQuestions || 0 }} questions</span>
+          </div>
+        </div>
+
+        <div *ngIf="blueprints().length === 0" class="empty-state">
+          <p>No blueprints created yet</p>
+          <small>Click "Create Blueprint" to get started</small>
+        </div>
+      </div>
+
+      <!-- Blueprint Form -->
+      <div class="panel-form" *ngIf="showBlueprintForm()">
+        <h3>Create New Blueprint</h3>
+        <div class="form-group">
+          <label>Blueprint Title *</label>
+          <input
+            type="text"
+            [(ngModel)]="blueprintForm.title"
+            placeholder="e.g., Certification Final Exam"
+            class="form-input" />
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea
+            [(ngModel)]="blueprintForm.description"
+            placeholder="Exam description and instructions"
+            rows="3"
+            class="form-input"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Points per Question</label>
+            <input
+              type="number"
+              [(ngModel)]="blueprintForm.pointsPerQuestion"
+              min="1"
+              class="form-input" />
+          </div>
+
+          <div class="form-group">
+            <label>Passing Score (%)</label>
+            <input
+              type="number"
+              [(ngModel)]="blueprintForm.passingScore"
+              min="0"
+              max="100"
+              class="form-input" />
+          </div>
+
+          <div class="form-group">
+            <label>Duration (minutes)</label>
+            <input
+              type="number"
+              [(ngModel)]="blueprintForm.durationMinutes"
+              min="1"
+              class="form-input" />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button
+            class="btn btn-success"
+            (click)="saveBlueprintForm()"
+            [disabled]="busy()">
+            {{ busy() ? 'Creating...' : 'Create Blueprint' }}
+          </button>
+          <button
+            class="btn btn-secondary"
+            (click)="showBlueprintForm.set(false)">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Blueprint Details Panel -->
+    <div class="blueprint-details" *ngIf="selectedBlueprint()">
+      <div class="details-header">
+        <h2>{{ selectedBlueprint()?.title }}</h2>
+        <div class="details-actions">
+          <button
+            class="btn btn-small"
+            *ngIf="selectedBlueprint()?.status === 'draft'"
+            (click)="publishBlueprint()"
+            [disabled]="busy()">
+            📤 Publish
+          </button>
+          <button
+            class="btn btn-danger btn-small"
+            (click)="deleteBlueprint(selectedBlueprint()?.id || '')"
+            [disabled]="busy()">
+            🗑️ Delete
+          </button>
+        </div>
+      </div>
+
+      <!-- Blueprint Info -->
+      <div class="blueprint-info">
+        <div class="info-row">
+          <span class="label">Status:</span>
+          <span class="value badge" [class]="'status-' + selectedBlueprint()?.status">
+            {{ selectedBlueprint()?.status }}
+          </span>
+        </div>
+        <div class="info-row">
+          <span class="label">Total Questions:</span>
+          <span class="value">{{ selectedBlueprint()?.totalQuestions || 0 }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Points per Question:</span>
+          <span class="value">{{ selectedBlueprint()?.pointsPerQuestion }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Passing Score:</span>
+          <span class="value">{{ selectedBlueprint()?.passingScore }}%</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Duration:</span>
+          <span class="value">{{ selectedBlueprint()?.durationMinutes }} minutes</span>
+        </div>
+      </div>
+
+      <!-- Renewal Requirements -->
+      <div class="renewal-section">
+        <div class="section-header">
+          <h3>Renewal Requirements</h3>
+          <button
+            class="btn btn-secondary btn-small"
+            (click)="showRenewalForm.set(!showRenewalForm())">
+            {{ showRenewalForm() ? 'Close' : (selectedBlueprint()?.renewalCourseIds?.length ? 'Edit' : '+ Configure Renewal') }}
+          </button>
+        </div>
+
+        <p class="section-hint">
+          Courses a certified candidate must complete to renew their membership card and
+          certificate once expired (or nearing expiry).
+        </p>
+
+        <!-- Current requirements summary -->
+        <div class="renewal-summary" *ngIf="!showRenewalForm() && selectedBlueprint()?.renewalCourseIds?.length">
+          <div class="renewal-course-chip" *ngFor="let cid of selectedBlueprint()?.renewalCourseIds">
+            {{ courseTitle(cid) }}
+          </div>
+          <div class="renewal-points-chip" *ngIf="selectedBlueprint()?.renewalRequiredPoints">
+            Min. {{ selectedBlueprint()?.renewalRequiredPoints }} pts
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="!showRenewalForm() && !selectedBlueprint()?.renewalCourseIds?.length">
+          <p>No renewal courses configured yet</p>
+        </div>
+
+        <!-- Renewal Form -->
+        <div class="renewal-form" *ngIf="showRenewalForm()">
+          <div class="form-group">
+            <label>Required Courses</label>
+            <div class="renewal-course-list">
+              <label class="renewal-course-option" *ngFor="let course of allCourses()">
+                <input
+                  type="checkbox"
+                  [checked]="isRenewalCourseSelected(course.id!)"
+                  (change)="toggleRenewalCourse(course.id!)" />
+                <span>{{ course.title }}</span>
+              </label>
+              <p class="empty-hint" *ngIf="allCourses().length === 0">No active courses available.</p>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Minimum Points Required (optional)</label>
+            <input
+              type="number"
+              [(ngModel)]="renewalForm.requiredPoints"
+              min="0"
+              class="form-input" />
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn-success" (click)="saveRenewalRequirements()" [disabled]="busy()">
+              {{ busy() ? 'Saving...' : 'Save Renewal Requirements' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Questions Section -->
+      <div class="questions-section">
+        <div class="section-header">
+          <h3>Exam Questions</h3>
+          <button
+            class="btn btn-primary btn-small"
+            (click)="openQuestionForm()"
+            [disabled]="selectedBlueprint()?.status === 'published' || busy()">
+            + Add Question
+          </button>
+        </div>
+
+        <!-- Questions List -->
+        <div class="questions-list">
+          <div
+            *ngFor="let question of selectedBlueprint()?.questions; let i = index"
+            class="question-card">
+            <div class="question-number">Q{{ i + 1 }}</div>
+            <div class="question-content">
+              <p class="question-text">{{ question.prompt }}</p>
+              <div class="options-preview">
+                <div *ngFor="let opt of question.options" class="option-preview">
+                  <span
+                    class="option-check"
+                    [class.correct]="question.correctAnswers.includes(opt.id)">
+                    {{ question.correctAnswers.includes(opt.id) ? '✓' : '○' }}
+                  </span>
+                  {{ opt.text }}
+                </div>
+              </div>
+              <div class="question-meta">
+                <span class="mode-badge">{{ question.mode }}</span>
+                <span class="points-badge">{{ question.points || 'N/A' }} pts</span>
+              </div>
+            </div>
+            <div class="question-actions">
+              <button
+                class="btn-small btn-edit"
+                (click)="editQuestion(question)"
+                [disabled]="selectedBlueprint()?.status === 'published' || busy()">
+                ✏️ Edit
+              </button>
+              <button
+                class="btn-small btn-delete"
+                (click)="deleteQuestion(question.id || '')"
+                [disabled]="selectedBlueprint()?.status === 'published' || busy()">
+                🗑️ Delete
+              </button>
+            </div>
+          </div>
+
+          <div *ngIf="(!selectedBlueprint()?.questions || selectedBlueprint()?.questions?.length === 0)" class="empty-state">
+            <p>No questions added yet</p>
+            <small>Add questions to build the exam blueprint</small>
+          </div>
+        </div>
+
+        <!-- Import Button -->
+        <div class="import-section" *ngIf="selectedBlueprint()">
+          <button
+            class="btn btn-import"
+            (click)="openImportDialog()"
+            [disabled]="selectedBlueprint()?.status === 'published' || busy()">
+            📥 Import Questions
+          </button>
+          <small class="import-hint">Import from JSON, Word (DOCX), or PDF files</small>
+        </div>
+
+        <!-- Question Form -->
+        <div class="question-form" *ngIf="showQuestionForm()">
+          <h3>{{ editingQuestion() ? 'Edit Question' : 'Add Question' }}</h3>
+
+          <div class="form-group">
+            <label>Question Text *</label>
+            <textarea
+              [(ngModel)]="questionForm.prompt"
+              placeholder="Enter the question text"
+              rows="3"
+              class="form-input"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Question Type *</label>
+              <select [(ngModel)]="questionForm.mode" class="form-input">
+                <option value="single">Single Answer</option>
+                <option value="multi">Multiple Answers</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Points</label>
+              <input
+                type="number"
+                [(ngModel)]="questionForm.points"
+                min="1"
+                class="form-input" />
+            </div>
+          </div>
+
+          <!-- Options -->
+          <div class="form-group">
+            <label>Answer Options *</label>
+            <div class="options-input">
+              <div
+                *ngFor="let opt of questionForm.options; let i = index"
+                class="option-input">
+                <input
+                  type="text"
+                  [(ngModel)]="opt.text"
+                  placeholder="Option text"
+                  class="form-input" />
+                <button
+                  type="button"
+                  class="btn-toggle-correct"
+                  [class.selected]="questionForm.correctAnswers.includes(opt.id)"
+                  (click)="toggleCorrectAnswer(opt.id)">
+                  {{ questionForm.correctAnswers.includes(opt.id) ? '✓ Correct' : '○ Incorrect' }}
+                </button>
+                <button
+                  type="button"
+                  *ngIf="questionForm.options.length > 2"
+                  class="btn-remove"
+                  (click)="removeOptionField(i)">
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="btn btn-secondary btn-small"
+              (click)="addOptionField()">
+              + Add Option
+            </button>
+          </div>
+
+          <div class="form-group">
+            <label>Explanation (optional)</label>
+            <textarea
+              [(ngModel)]="questionForm.explanation"
+              placeholder="Explanation for the correct answer"
+              rows="2"
+              class="form-input"></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button
+              class="btn btn-success"
+              (click)="saveQuestionForm()"
+              [disabled]="busy()">
+              {{ busy() ? 'Saving...' : 'Save Question' }}
+            </button>
+            <button
+              class="btn btn-secondary"
+              (click)="showQuestionForm.set(false)">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Dialog -->
+  <app-question-import-dialog
+    *ngIf="showImportDialog()"
+    (closeClicked)="showImportDialog.set(false)"
+    (questionsImported)="onQuestionsImported($event)">
+  </app-question-import-dialog>
+</div>

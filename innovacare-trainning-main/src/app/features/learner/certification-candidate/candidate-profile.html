@@ -1,0 +1,332 @@
+<div class="candidate-profile">
+  <!-- Header -->
+  <div class="profile-header">
+    <h1>Certification Application</h1>
+    <p class="subtitle">Manage your documents, payment, and application status</p>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading()">
+    <div class="spinner"></div>
+    <p>Loading application...</p>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-banner" *ngIf="error()">
+    <span class="error-icon">❌</span>
+    <p>{{ error() }}</p>
+  </div>
+
+  <!-- Success State -->
+  <div class="success-banner" *ngIf="success()">
+    <span class="success-icon">✓</span>
+    <p>{{ success() }}</p>
+  </div>
+
+  <!-- Content -->
+  <div class="profile-content" *ngIf="!loading() && candidate() as app">
+    <!-- Application Status -->
+    <section class="section status-section">
+      <h2 class="section-title">Application Status</h2>
+      <div class="status-card">
+        <div class="status-row" *ngIf="candidateDisplayName">
+          <span class="label">Candidate</span>
+          <span class="value">{{ candidateDisplayName }}</span>
+        </div>
+        <div class="status-row">
+          <span class="label">Status</span>
+          <span [class]="'badge ' + getStatusBadgeClass(app.status)">
+            {{ app.status | titlecase }}
+          </span>
+        </div>
+        <div class="status-row">
+          <span class="label">Application Date</span>
+          <span class="value">{{ asDate(app.createdAt) | date: 'short' }}</span>
+        </div>
+        <div class="status-row" *ngIf="app.reviewerNotes">
+          <span class="label">Reviewer Notes</span>
+          <span class="value">{{ app.reviewerNotes }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Documents Upload -->
+    <section class="section documents-section">
+      <h2 class="section-title">Required Documents</h2>
+      <p class="section-subtitle">Upload supporting documents for your application</p>
+
+      <div class="document-types">
+        <div *ngFor="let docType of documentTypes" class="document-type">
+          <label class="upload-label">
+            <div class="upload-box">
+              <span class="upload-icon">📄</span>
+              <span class="upload-text">{{ docType.label }}</span>
+              <span class="upload-hint">Click to upload</span>
+            </div>
+            <input
+              type="file"
+              hidden
+              (change)="uploadDocument($event, docType.value)"
+              [disabled]="uploadingFile()"
+            />
+          </label>
+        </div>
+      </div>
+
+      <!-- Uploaded Documents -->
+      <div class="uploaded-documents" *ngIf="otherDocuments.length > 0">
+        <h3 class="uploaded-title">Your Documents</h3>
+        <div class="document-list">
+          <div *ngFor="let doc of otherDocuments" class="document-item">
+            <div class="document-info">
+              <span class="document-icon">📎</span>
+              <div class="document-details">
+                <div class="document-name">{{ getDocumentLabel(doc.type) }}</div>
+                <div class="document-date">Uploaded: {{ asDate(doc.uploadedAt) | date: 'short' }}</div>
+              </div>
+            </div>
+            <div class="document-status">
+              <span [class]="'status-badge ' + getStatusBadgeClass(doc.status)">
+                {{ doc.status | titlecase }}
+              </span>
+            </div>
+            <a [href]="doc.fileUrl" target="_blank" class="download-btn">View</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="otherDocuments.length === 0">
+        <p>No documents uploaded yet</p>
+      </div>
+    </section>
+
+    <!-- Payment Section -->
+    <section class="section payment-section">
+      <h2 class="section-title">Payment Information</h2>
+
+      <div class="payment-card">
+        <div class="payment-row">
+          <span class="label">Payment Status</span>
+          <span [class]="'badge ' + getStatusBadgeClass(app.paymentStatus || 'not_started')">
+            {{ (app.paymentStatus || 'not_started') | titlecase }}
+          </span>
+        </div>
+
+        <!-- Receipt Upload -->
+        <div class="receipt-section">
+          <h3 class="receipt-title">Upload Payment Receipt</h3>
+          <label class="upload-label">
+            <div class="upload-box">
+              <span class="upload-icon">🧾</span>
+              <span class="upload-text">Payment Receipt</span>
+              <span class="upload-hint">Click to upload receipt</span>
+            </div>
+            <input
+              type="file"
+              hidden
+              (change)="uploadPaymentReceipt($event)"
+              [disabled]="uploadingFile()"
+            />
+          </label>
+
+          <div class="receipt-info" *ngIf="paymentDocument as receipt">
+            <p class="receipt-label">
+              Latest receipt uploaded
+              <span [class]="'status-badge ' + getStatusBadgeClass(receipt.status)">
+                {{ receipt.status | titlecase }}
+              </span>
+            </p>
+            <a [href]="receipt.fileUrl" target="_blank" class="receipt-link">
+              View Receipt
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Exam Result -->
+    <section class="section" *ngIf="app.examResult as result">
+      <h2 class="section-title">Official Exam Result</h2>
+      <div class="status-card">
+        <div class="status-row">
+          <span class="label">Score</span>
+          <span class="value">{{ result.percent }}% ({{ result.correct }}/{{ result.total }})</span>
+        </div>
+        <div class="status-row">
+          <span class="label">Result</span>
+          <span class="badge" [ngClass]="result.passed ? 'badge-success' : 'badge-danger'">
+            {{ result.passed ? 'Passed' : 'Below passing score' }}
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Digital Credentials -->
+    <section class="section" *ngIf="app.membershipCard as card">
+      <h2 class="section-title">Digital Credentials</h2>
+      <div class="credentials-grid">
+        <div class="credential-card" id="learner-membership-card">
+          <div class="credential-card__header">
+            <span class="credential-card__label">Membership Card</span>
+          </div>
+          <div class="credential-card__name" [title]="candidateDisplayName">{{ candidateDisplayName }}</div>
+          <div class="credential-card__profession" *ngIf="app.profileSnapshot?.['profession']">
+            {{ app.profileSnapshot?.['profession'] }}
+          </div>
+          <div class="credential-card__org" *ngIf="organizationName()">{{ organizationName() }}</div>
+          <div class="credential-card__number">{{ card.number }}</div>
+          <div class="credential-card__dates">
+            <span>Issued: {{ asDate(card.issuedAt) | date: 'mediumDate' }}</span>
+            <span>Expires: {{ asDate(card.expiresAt) | date: 'mediumDate' }}</span>
+          </div>
+        </div>
+
+        <div class="credential-card" id="learner-certificate-card" *ngIf="app.certificate as cert">
+          <div class="credential-card__header">
+            <span class="credential-card__label">Certificate of Good Standing</span>
+          </div>
+          <div class="credential-card__name" [title]="candidateDisplayName">{{ candidateDisplayName }}</div>
+          <div class="credential-card__profession" *ngIf="app.profileSnapshot?.['profession']">
+            {{ app.profileSnapshot?.['profession'] }}
+          </div>
+          <div class="credential-card__org" *ngIf="organizationName()">{{ organizationName() }}</div>
+          <div class="credential-card__number">{{ cert.number }}</div>
+          <div class="credential-card__dates">
+            <span>Issued: {{ asDate(cert.issuedAt) | date: 'mediumDate' }}</span>
+            <span>Expires: {{ asDate(cert.expiresAt) | date: 'mediumDate' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="credential-download-actions">
+        <button class="btn btn-primary" (click)="downloadCredential('learner-membership-card', 'membership-card')">
+          ⬇ Download Membership Card
+        </button>
+        <button class="btn btn-primary" *ngIf="app.certificate" (click)="downloadCredential('learner-certificate-card', 'certificate')">
+          ⬇ Download Certificate
+        </button>
+      </div>
+
+      <div class="renewal-banner" *ngIf="isMembershipExpired || isMembershipExpiringSoon">
+        <span class="renewal-banner__icon">{{ isMembershipExpired ? '⚠️' : '⏰' }}</span>
+        <span>
+          {{ isMembershipExpired
+            ? 'Your membership has expired. Complete the renewal requirements below to reactivate it.'
+            : 'Your membership expires soon. Complete the renewal requirements below to keep it active.' }}
+        </span>
+      </div>
+    </section>
+
+    <!-- Contact Phone (for SMS notifications) -->
+    <section class="section">
+      <h2 class="section-title">Contact Phone</h2>
+      <p class="section-subtitle">Used to send you SMS updates about your certification.</p>
+      <div class="phone-row">
+        <input
+          type="tel"
+          class="phone-input"
+          [(ngModel)]="phoneInput"
+          placeholder="+1 555 000 1234" />
+        <button class="btn btn-primary" (click)="savePhone()" [disabled]="savingPhone() || !phoneInput.trim()">
+          {{ savingPhone() ? 'Saving...' : 'Save Phone' }}
+        </button>
+      </div>
+    </section>
+
+    <!-- Renewal -->
+    <section class="section" *ngIf="app.membershipCard && (isMembershipExpired || isMembershipExpiringSoon)">
+      <h2 class="section-title">Membership Renewal</h2>
+
+      <div class="loading-state" *ngIf="loadingRenewal()">
+        <div class="spinner"></div>
+        <p>Loading renewal requirements...</p>
+      </div>
+
+      <ng-container *ngIf="!loadingRenewal()">
+        <div class="empty-state" *ngIf="renewalCourses().length === 0">
+          <p>No renewal courses have been configured for your certification yet. Please contact your certification authority.</p>
+        </div>
+
+        <div class="renewal-progress" *ngIf="renewalCourses().length > 0">
+          <div class="renewal-points">
+            <strong>{{ renewalTotalPointsEarned }}</strong> / {{ renewalRequiredPoints() }} points earned
+          </div>
+
+          <div class="document-list">
+            <div class="document-item" *ngFor="let course of renewalCourses()">
+              <div class="document-info">
+                <span class="document-icon">{{ course.completed ? '✅' : '📘' }}</span>
+                <div class="document-details">
+                  <div class="document-name">{{ course.title }}</div>
+                  <div class="document-date" *ngIf="course.ceCredit">{{ course.ceCredit }} pts</div>
+                </div>
+              </div>
+              <div class="document-status">
+                <span class="status-badge" [ngClass]="course.completed ? 'badge-success' : 'badge-warning'">
+                  {{ course.completed ? 'Completed' : 'Not started / In progress' }}
+                </span>
+              </div>
+              <a [routerLink]="['/learner/courses', course.courseId]" class="download-btn">
+                {{ course.completed ? 'Review' : 'Start course' }}
+              </a>
+            </div>
+          </div>
+
+          <div class="renewal-actions">
+            <button
+              class="btn btn-primary"
+              [disabled]="!renewalReady || submittingRenewal() || app.renewalStatus === 'ready'"
+              (click)="submitForRenewal()">
+              {{ app.renewalStatus === 'ready' ? 'Submitted — awaiting validation' : (submittingRenewal() ? 'Submitting...' : 'Submit for Renewal') }}
+            </button>
+            <p class="renewal-hint" *ngIf="!renewalReady && app.renewalStatus !== 'ready'">
+              Complete all courses and reach the required points to submit your renewal.
+            </p>
+          </div>
+        </div>
+      </ng-container>
+    </section>
+
+    <!-- Application Timeline -->
+    <section class="section timeline-section">
+      <h2 class="section-title">Application Timeline</h2>
+      <div class="timeline">
+        <div class="timeline-item completed">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <div class="timeline-title">Application Created</div>
+            <div class="timeline-date">{{ asDate(app.createdAt) | date: 'short' }}</div>
+          </div>
+        </div>
+
+        <div class="timeline-item" [ngClass]="otherDocuments.length > 0 ? 'completed' : 'pending'">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <div class="timeline-title">Documents Submitted</div>
+          </div>
+        </div>
+
+        <div class="timeline-item" [ngClass]="app.paymentStatus === 'paid' ? 'completed' : 'pending'">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <div class="timeline-title">Payment Confirmed</div>
+          </div>
+        </div>
+
+        <div class="timeline-item" [ngClass]="app.status === 'eligible' || app.status === 'approved_for_exam' ? 'completed' : 'pending'">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <div class="timeline-title">Application Approved</div>
+          </div>
+        </div>
+
+        <div class="timeline-item" [ngClass]="app.status === 'exam_completed' ? 'completed' : 'pending'">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <div class="timeline-title">Exam Completed</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

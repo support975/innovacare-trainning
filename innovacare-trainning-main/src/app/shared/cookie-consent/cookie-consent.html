@@ -1,0 +1,62 @@
+<div class="cookie-banner" *ngIf="visible" role="dialog" aria-label="Cookie consent">
+  <div class="cookie-inner">
+
+    <div class="cookie-top">
+      <div class="cookie-icon">🍪</div>
+      <div class="cookie-text">
+        <p class="cookie-title">Innovacare Training uses cookies</p>
+        <p class="cookie-desc">
+          By using this site, you consent to our cookie policy under our
+          <a href="#" class="cookie-link">privacy policy</a>.
+        </p>
+      </div>
+    </div>
+
+    <div class="cookie-details" *ngIf="showDetails">
+      <div class="consent-row">
+        <label class="consent-label">
+          <input type="checkbox" [checked]="consent.necessary" disabled />
+          <span class="consent-name">Necessary</span>
+          <span class="consent-badge required">Always active</span>
+        </label>
+        <p class="consent-desc">Required for the site to function. Cannot be disabled.</p>
+      </div>
+
+      <div class="consent-row">
+        <label class="consent-label">
+          <input type="checkbox" [(ngModel)]="consent.preferences" />
+          <span class="consent-name">Preferences</span>
+        </label>
+        <p class="consent-desc">Allows us to remember your settings and personalisation choices.</p>
+      </div>
+
+      <div class="consent-row">
+        <label class="consent-label">
+          <input type="checkbox" [(ngModel)]="consent.statistics" />
+          <span class="consent-name">Statistics</span>
+        </label>
+        <p class="consent-desc">Helps us understand how visitors interact with the site anonymously.</p>
+      </div>
+
+      <div class="consent-row">
+        <label class="consent-label">
+          <input type="checkbox" [(ngModel)]="consent.marketing" />
+          <span class="consent-name">Marketing</span>
+        </label>
+        <p class="consent-desc">Used to deliver relevant advertising across networks.</p>
+      </div>
+    </div>
+
+    <div class="cookie-actions">
+      <button class="btn-details" (click)="toggleDetails()">
+        {{ showDetails ? 'Hide details' : 'Show details' }}
+        <span class="chevron" [class.open]="showDetails">›</span>
+      </button>
+      <div class="btn-group">
+        <button class="btn-selected" (click)="acceptSelected()">Accept selected</button>
+        <button class="btn-all" (click)="acceptAll()">Accept all</button>
+      </div>
+    </div>
+
+  </div>
+</div>

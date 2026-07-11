@@ -1,0 +1,145 @@
+{
+  "id": "workplace-safety-essentials",
+  "title": "Workplace Safety Essentials",
+  "subtitle": "Core safety habits for office, field, and operational teams",
+  "description": "Introduce hazard awareness, incident reporting, emergency response, slips/trips/falls prevention, and safe daily work habits.",
+  "lang": "EN",
+  "durationMin": 50,
+  "ceCredit": 0,
+  "sortOrder": 102,
+  "active": true,
+  "isPublic": true,
+  "kind": "Course",
+  "type": "safety",
+  "level": "Beginner",
+  "url": "/catalogue/workplace-safety-essentials",
+  "imageUrl": "https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?auto=format&fit=crop&w=1200&q=80",
+  "tags": [
+    "enterprise",
+    "safety",
+    "incident-reporting",
+    "osha",
+    "risk"
+  ],
+  "lecturer": "Innovacare Training Safety Faculty",
+  "disclosures": [
+    "This course does not replace site-specific safety training or legal compliance review."
+  ],
+  "targetAudience": [
+    "All employees",
+    "Supervisors",
+    "Field teams",
+    "Operations teams"
+  ],
+  "prerequisites": [
+    "None"
+  ],
+  "requirements": [
+    "Review safety procedures",
+    "Pass the knowledge check"
+  ],
+  "accomodations": "Accessibility accommodations may be requested through the organization administrator.",
+  "orgId": null,
+  "assignedOrgIds": [],
+  "passingScore": 80,
+  "lockedSequence": true,
+  "sections": [
+    {
+      "id": "hazard-awareness",
+      "title": "Hazard Awareness",
+      "order": 1,
+      "estMin": 25,
+      "lessons": [
+        {
+          "id": "recognize-hazards",
+          "title": "Recognize Common Hazards",
+          "order": 1,
+          "estMin": 12,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Hazards can include wet floors, blocked exits, poor lighting, unsafe equipment, exposed cords, heavy lifting, chemical exposure, and workplace violence risks.</p><p>Employees should pause, identify risks, and follow the reporting process before a hazard becomes an incident.</p>",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "prevent-injuries",
+          "title": "Prevent Common Injuries",
+          "order": 2,
+          "estMin": 13,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<ul><li>Keep walkways clear.</li><li>Use proper lifting technique.</li><li>Report damaged equipment.</li><li>Wear required protective equipment.</li><li>Follow lockout or access rules where applicable.</li></ul>",
+              "required": true
+            },
+            {
+              "id": "quiz",
+              "type": "quiz",
+              "mode": "single",
+              "question": "What should an employee do when a hazard is found?",
+              "required": true,
+              "choices": [
+                {
+                  "id": "a",
+                  "text": "Ignore it if nobody was injured",
+                  "correct": false
+                },
+                {
+                  "id": "b",
+                  "text": "Report it using the approved process",
+                  "correct": true
+                },
+                {
+                  "id": "c",
+                  "text": "Post about it publicly",
+                  "correct": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "emergency-response",
+      "title": "Emergency Response and Reporting",
+      "order": 2,
+      "estMin": 25,
+      "lessons": [
+        {
+          "id": "incident-reporting",
+          "title": "Incident and Near-Miss Reporting",
+          "order": 1,
+          "estMin": 12,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>A near miss is a warning sign. Reporting near misses helps the organization correct hazards before a serious injury occurs.</p>",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "emergency-basics",
+          "title": "Emergency Basics",
+          "order": 2,
+          "estMin": 13,
+          "blocks": [
+            {
+              "id": "callout",
+              "type": "callout",
+              "style": "warn",
+              "html": "<p>Know evacuation routes, assembly points, emergency contacts, and when to call emergency services.</p>",
+              "required": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+<section class="access-admin">
+  <header class="access-admin__header">
+    <div>
+      <p class="eyebrow">Individual learners</p>
+      <h1>Organization course access requests</h1>
+    </div>
+  </header>
+
+  <div class="notice notice--locked" *ngIf="!canManage()">
+    Admin access is required to approve course requests and grant paid access.
+  </div>
+
+  <div class="notice notice--error" *ngIf="loadError()">
+    {{ loadError() }}
+  </div>
+
+  <ng-container *ngIf="canManage()">
+    <div class="empty" *ngIf="!requests().length">
+      No course access requests yet.
+    </div>
+
+    <article class="request-card" *ngFor="let req of requests()">
+      <div class="request-card__main">
+        <div class="request-card__topline">
+          <span
+            class="status"
+            [class.status--pending]="req.status === 'pending_approval'"
+            [class.status--payment]="req.status === 'approved_pending_payment'"
+            [class.status--granted]="req.status === 'granted'"
+            [class.status--rejected]="req.status === 'rejected'"
+          >
+            {{ statusLabel(req) }}
+          </span>
+          <span class="date">Updated {{ formatDate(req.updatedAt || req.createdAt) }}</span>
+        </div>
+
+        <h2>{{ req.courseTitle || ('Course ' + req.courseId) }}</h2>
+
+        <dl class="meta-grid">
+          <div>
+            <dt>Learner</dt>
+            <dd>{{ req.userName || req.userEmail || req.uid }}</dd>
+          </div>
+          <div>
+            <dt>Email</dt>
+            <dd>{{ req.userEmail || 'Not provided' }}</dd>
+          </div>
+          <div>
+            <dt>Course ID</dt>
+            <dd>{{ req.courseId }}</dd>
+          </div>
+          <div>
+            <dt>Payment</dt>
+            <dd>{{ req.paymentStatus || 'not_started' }}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="request-card__actions">
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="approve(req)"
+          [disabled]="busyId() === req.id || req.status !== 'pending_approval'"
+        >
+          Approve
+        </button>
+        <button
+          type="button"
+          class="btn btn-success"
+          (click)="markPaidAndGrant(req)"
+          [disabled]="busyId() === req.id || req.status !== 'approved_pending_payment'"
+        >
+          Mark paid & grant
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger"
+          (click)="reject(req)"
+          [disabled]="busyId() === req.id || req.status === 'granted' || req.status === 'rejected'"
+        >
+          Reject
+        </button>
+      </div>
+    </article>
+  </ng-container>
+</section>

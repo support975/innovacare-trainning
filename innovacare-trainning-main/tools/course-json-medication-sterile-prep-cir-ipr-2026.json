@@ -1,0 +1,317 @@
+{
+  "docPath": "courses/medication-sterile-prep-cir-ipr-2026",
+  "docId": "medication-sterile-prep-cir-ipr-2026",
+  "docData": {
+    "title": "Medication Sterile Prep (CIR-IPR 2026)",
+    "subtitle": "Sterile medication preparation process review",
+    "description": "Structured training course covering sterile medication preparation policies, monitoring, recalls, responsibilities, and process expectations.",
+    "lang": "EN",
+    "durationMin": 45,
+    "ceCredit": 0,
+    "active": false,
+    "kind": "Course",
+    "type": "Health",
+    "level": "Intermediate",
+    "imageUrl": "",
+    "url": "https://selectmedical.csod.com/content/selectmedical/publications/16617/scormcontent/index.html#/",
+    "lecturer": "Innovacare Training",
+    "disclosures": [],
+    "targetAudience": ["Clinical staff", "Medication preparation staff"],
+    "prerequisites": [],
+    "requirements": ["Complete all required interactions", "Pass the quiz"],
+    "accomodations": "",
+    "passingScore": 80,
+    "lockedSequence": true,
+    "isPublic": false,
+    "tags": ["medication", "sterile prep", "infection prevention", "CIR-IPR 2026"],
+    "sections": [
+      {
+        "id": "med-sterile-prep-main",
+        "title": "Medication Sterile Prep",
+        "order": 0,
+        "lessons": [
+          {
+            "id": "course-objectives",
+            "title": "Course Objectives",
+            "estMin": 4,
+            "order": 0,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "hero",
+                "title": "Medication Sterile Prep",
+                "bodyHtml": "<p>Review the required medication sterile preparation process and the policies that support safe practice.</p>",
+                "buttonLabel": "Start lesson",
+                "required": true
+              },
+              {
+                "type": "accordion",
+                "title": "Objectives",
+                "introHtml": "<p>Open each objective before continuing.</p>",
+                "required": true,
+                "items": [
+                  {
+                    "id": "objective-policy",
+                    "title": "Recognize policy expectations",
+                    "bodyHtml": "<p>Identify the key sterile medication preparation policy expectations and when they apply.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "objective-monitoring",
+                    "title": "Understand monitoring and reporting",
+                    "bodyHtml": "<p>Review monitoring, adverse event reporting, recalls, and escalation expectations.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "objective-process",
+                    "title": "Follow preparation processes",
+                    "bodyHtml": "<p>Apply the required process steps consistently when preparing medications.</p>",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "policy-key-points",
+            "title": "Policy I03-P and I01-G Key Points",
+            "estMin": 7,
+            "order": 1,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "tabs",
+                "title": "Policy Key Points",
+                "introHtml": "<p>Select each tab to review the policy focus area.</p>",
+                "required": true,
+                "tabs": [
+                  {
+                    "id": "policy-i03-p",
+                    "label": "I03-P",
+                    "title": "Policy I03-P",
+                    "bodyHtml": "<p>Use this tab for the sterile medication preparation policy summary, required documentation, and escalation points.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "policy-i01-g",
+                    "label": "I01-G",
+                    "title": "Policy I01-G",
+                    "bodyHtml": "<p>Use this tab for general medication handling expectations and safety principles that apply to preparation workflows.</p>",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "monitoring-reporting-recalls",
+            "title": "Monitoring, Adverse Event Reporting, and Recalls",
+            "estMin": 7,
+            "order": 2,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "cardStack",
+                "title": "Monitoring Workflow",
+                "introHtml": "<p>Open each card in order.</p>",
+                "variant": "gated",
+                "required": true,
+                "cards": [
+                  {
+                    "id": "monitor",
+                    "title": "Monitor",
+                    "teaser": "Observe the medication process",
+                    "bodyHtml": "<p>Monitor the preparation process and identify deviations from expected practice.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "report",
+                    "title": "Report",
+                    "teaser": "Escalate adverse events",
+                    "bodyHtml": "<p>Report adverse events through the approved process and notify the appropriate leader.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "recall",
+                    "title": "Recall",
+                    "teaser": "Respond to recalls",
+                    "bodyHtml": "<p>Follow recall instructions and remove affected medication or supplies from use.</p>",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "complaint-handling",
+            "title": "Complaint Handling",
+            "estMin": 5,
+            "order": 3,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "accordion",
+                "title": "Complaint Handling Steps",
+                "introHtml": "<p>Open each step.</p>",
+                "required": true,
+                "items": [
+                  {
+                    "id": "receive",
+                    "title": "Receive and document",
+                    "bodyHtml": "<p>Capture the complaint details objectively and promptly.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "escalate",
+                    "title": "Escalate",
+                    "bodyHtml": "<p>Notify the responsible leader or department according to policy.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "follow-up",
+                    "title": "Follow up",
+                    "bodyHtml": "<p>Support investigation, resolution, and required follow-up documentation.</p>",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "responsibilities",
+            "title": "Responsibilities Associated with Sterile Med Prep",
+            "estMin": 6,
+            "order": 4,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "tabs",
+                "title": "Responsibilities",
+                "introHtml": "<p>Review responsibilities by role.</p>",
+                "required": true,
+                "tabs": [
+                  {
+                    "id": "staff",
+                    "label": "Staff",
+                    "title": "Staff Responsibilities",
+                    "bodyHtml": "<p>Follow policy, maintain clean technique, document required checks, and report concerns.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "leader",
+                    "label": "Leader",
+                    "title": "Leader Responsibilities",
+                    "bodyHtml": "<p>Provide oversight, support remediation, and verify process compliance.</p>",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "sterile-prep-process",
+            "title": "Follow Medication Sterile Preparation Processes",
+            "estMin": 8,
+            "order": 5,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "slideDeck",
+                "theme": "focus",
+                "required": true,
+                "slides": [
+                  {
+                    "id": "process-hotspots",
+                    "title": "Sterile Preparation Process",
+                    "imageUrl": "",
+                    "notesHtml": "<p>Add a process diagram image, then position each hotspot over the matching process step.</p>",
+                    "interactiveCards": [
+                      {
+                        "id": "verify-order",
+                        "title": "Verify order",
+                        "teaser": "Confirm right order",
+                        "bodyHtml": "<p>Verify the medication order and preparation requirements before beginning.</p>",
+                        "variant": "hotspot",
+                        "hotspotX": 20,
+                        "hotspotY": 35
+                      },
+                      {
+                        "id": "prepare-area",
+                        "title": "Prepare area",
+                        "teaser": "Clean and organize",
+                        "bodyHtml": "<p>Prepare the workspace and supplies according to sterile preparation expectations.</p>",
+                        "variant": "hotspot",
+                        "hotspotX": 50,
+                        "hotspotY": 45
+                      },
+                      {
+                        "id": "final-check",
+                        "title": "Final check",
+                        "teaser": "Verify before administration",
+                        "bodyHtml": "<p>Complete the required final verification before the medication is released or administered.</p>",
+                        "variant": "hotspot",
+                        "hotspotX": 78,
+                        "hotspotY": 60
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "six-rights",
+            "title": "Six Rights of Medication Administration",
+            "estMin": 5,
+            "order": 6,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "accordion",
+                "title": "Six Rights",
+                "introHtml": "<p>Open each medication right.</p>",
+                "required": true,
+                "items": [
+                  { "id": "right-patient", "title": "Right patient", "bodyHtml": "<p>Confirm the patient using approved identifiers.</p>", "required": true },
+                  { "id": "right-medication", "title": "Right medication", "bodyHtml": "<p>Confirm the medication matches the order.</p>", "required": true },
+                  { "id": "right-dose", "title": "Right dose", "bodyHtml": "<p>Confirm the correct dose.</p>", "required": true },
+                  { "id": "right-route", "title": "Right route", "bodyHtml": "<p>Confirm the approved route.</p>", "required": true },
+                  { "id": "right-time", "title": "Right time", "bodyHtml": "<p>Confirm timing expectations.</p>", "required": true },
+                  { "id": "right-documentation", "title": "Right documentation", "bodyHtml": "<p>Document accurately according to policy.</p>", "required": true }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "quiz",
+            "title": "Quiz",
+            "estMin": 5,
+            "order": 7,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "quizIntro",
+                "title": "Knowledge Check",
+                "bodyHtml": "<p>Complete the quiz to finish this course.</p>",
+                "buttonLabel": "Start quiz",
+                "passPct": 80,
+                "required": true
+              },
+              {
+                "type": "quiz",
+                "mode": "single",
+                "question": "What should staff do when a sterile preparation concern is identified?",
+                "required": true,
+                "choices": [
+                  { "id": "ignore", "text": "Ignore it if no harm occurred", "correct": false },
+                  { "id": "report", "text": "Report and escalate according to policy", "correct": true },
+                  { "id": "wait", "text": "Wait until the next routine meeting", "correct": false }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

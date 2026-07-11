@@ -39,9 +39,10 @@ type NotificationRead = {id: string; readAt?: any};
 export class NotificationService {
   private afs = inject(Firestore);
   private auth = inject(Auth);
+  private currentUser$ = authUser$(this.auth);
 
   /** User profile (role) */
-  readonly userRole$: Observable<UserRole | null> = authUser$(this.auth).pipe(
+  readonly userRole$: Observable<UserRole | null> = this.currentUser$.pipe(
     switchMap((u) => {
       if (!u) return of(null);
       return docData(doc(this.afs, `users/${u.uid}`)) as Observable<any>;
@@ -51,17 +52,22 @@ export class NotificationService {
 
   /** Notifications globales (limité pour performance) */
   notifications$(max = 50): Observable<AppNotification[]> {
-    const q = query(
-      collection(this.afs, "notifications"),
-      orderBy("createdAt", "desc"),
-      limit(max),
+    return this.currentUser$.pipe(
+      switchMap((u) => {
+        if (!u) return of([] as AppNotification[]);
+        const q = query(
+          collection(this.afs, "notifications"),
+          orderBy("createdAt", "desc"),
+          limit(max),
+        );
+        return collectionData(q, {idField: "id"}) as Observable<AppNotification[]>;
+      }),
     );
-    return collectionData(q, {idField: "id"}) as Observable<AppNotification[]>;
   }
 
   /** Reads du user courant (limité) */
   reads$(max = 200): Observable<NotificationRead[]> {
-    return authUser$(this.auth).pipe(
+    return this.currentUser$.pipe(
       switchMap((u) => {
         if (!u) return of([]);
         const q = query(
@@ -77,7 +83,7 @@ export class NotificationService {
   /** Filtrage exact par audience (role / user / all) */
   visibleNotifications$(max = 50): Observable<AppNotification[]> {
     return combineLatest([
-      authUser$(this.auth),
+      this.currentUser$,
       this.userRole$,
       this.notifications$(max),
     ]).pipe(

@@ -1,20 +1,23 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, Injector, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { SuperAdminOrganizationsService } from '../services/super-admin-organizations';
 import { OrgType } from '../../../data/models';
 import { PlanType } from '../models/super-admin.models';
+import { entitlementsForPlan } from '../../../shared/billing/plan-entitlements';
 
 @Component({
   selector: 'app-organizations',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './organizations.html',
   styleUrl: './organizations.css'
 })
 export class Organizations {
   private orgSvc = inject(SuperAdminOrganizationsService);
+  private injector = inject(Injector);
 
   search = signal('');
   typeFilter = signal<OrgType | 'all'>('all');
@@ -37,6 +40,19 @@ export class Organizations {
 
   };
 
+  planOptions = [
+    { value: 'free' as const, label: 'Starter', hint: 'Up to 25 learners' },
+    { value: 'pro' as const, label: 'Growth', hint: 'Up to 100 learners' },
+    { value: 'enterprise' as const, label: 'Enterprise', hint: 'Custom learner capacity' },
+  ];
+
+  planLabel(plan: PlanType | string | undefined): string {
+    if (plan === 'free') return 'Starter';
+    if (plan === 'pro') return 'Growth';
+    if (plan === 'enterprise') return 'Enterprise';
+    return plan || '—';
+  }
+
   result = toSignal(
     this.orgSvc.listPage(
       this.search(),
@@ -45,7 +61,7 @@ export class Organizations {
       this.page(),
       this.pageSize
     ),
-    { initialValue: { total: 0, items: [] } }
+    { initialValue: { total: 0, items: [] }, injector: this.injector }
   );
 
   applyFilters() {
@@ -58,7 +74,7 @@ export class Organizations {
         this.page(),
         this.pageSize
       ),
-      { initialValue: { total: 0, items: [] } }
+      { initialValue: { total: 0, items: [] }, injector: this.injector }
     );
   }
 
@@ -88,6 +104,7 @@ export class Organizations {
           name: this.newOrg.name,
           type: this.newOrg.type,
           plan: this.newOrg.plan,
+          learnerLimit: entitlementsForPlan(this.newOrg.plan).learnerLimit,
           active: true,
           orgId: this.newOrg.orgId || undefined,
         },

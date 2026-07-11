@@ -1,0 +1,144 @@
+{
+  "id": "customer-service-excellence",
+  "title": "Customer Service Excellence",
+  "subtitle": "Build trust through clear, respectful service",
+  "description": "Train employees on professional tone, listening skills, de-escalation, service recovery, and consistent customer communication.",
+  "lang": "EN",
+  "durationMin": 45,
+  "ceCredit": 0,
+  "sortOrder": 105,
+  "active": true,
+  "isPublic": true,
+  "kind": "Course",
+  "type": "Hr",
+  "level": "Beginner",
+  "url": "/catalogue/customer-service-excellence",
+  "imageUrl": "https://images.unsplash.com/photo-1556745757-8d76bdb6984b?auto=format&fit=crop&w=1200&q=80",
+  "tags": [
+    "enterprise",
+    "customer-service",
+    "communication",
+    "de-escalation"
+  ],
+  "lecturer": "Innovacare Training Customer Experience Faculty",
+  "disclosures": [
+    "This course should be adapted to each organization's customer service standards."
+  ],
+  "targetAudience": [
+    "Customer service teams",
+    "Reception staff",
+    "Sales teams",
+    "Managers"
+  ],
+  "prerequisites": [
+    "None"
+  ],
+  "requirements": [
+    "Complete lessons",
+    "Pass the service scenario quiz"
+  ],
+  "accomodations": "Accessibility accommodations may be requested through the organization administrator.",
+  "orgId": null,
+  "assignedOrgIds": [],
+  "passingScore": 80,
+  "lockedSequence": true,
+  "sections": [
+    {
+      "id": "service-foundations",
+      "title": "Service Foundations",
+      "order": 1,
+      "estMin": 22,
+      "lessons": [
+        {
+          "id": "trust",
+          "title": "Create Trust in Every Interaction",
+          "order": 1,
+          "estMin": 10,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Customers judge service by responsiveness, clarity, respect, and follow-through. A calm and professional tone can change the outcome of a difficult interaction.</p>",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "listen-clarify",
+          "title": "Listen, Clarify, Confirm",
+          "order": 2,
+          "estMin": 12,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Use active listening: let the customer finish, summarize the concern, ask clarifying questions, and confirm the next step.</p>",
+              "required": true
+            },
+            {
+              "id": "quiz",
+              "type": "quiz",
+              "mode": "single",
+              "question": "What is the best response when a customer is upset?",
+              "required": true,
+              "choices": [
+                {
+                  "id": "a",
+                  "text": "Interrupt and defend the company",
+                  "correct": false
+                },
+                {
+                  "id": "b",
+                  "text": "Listen, acknowledge, clarify, and explain the next step",
+                  "correct": true
+                },
+                {
+                  "id": "c",
+                  "text": "End the conversation immediately",
+                  "correct": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "service-recovery",
+      "title": "Service Recovery",
+      "order": 2,
+      "estMin": 23,
+      "lessons": [
+        {
+          "id": "de-escalation",
+          "title": "De-escalation Basics",
+          "order": 1,
+          "estMin": 12,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Stay calm, avoid blame, use respectful language, and focus on what can be done next.</p>",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "follow-through",
+          "title": "Close the Loop",
+          "order": 2,
+          "estMin": 11,
+          "blocks": [
+            {
+              "id": "callout",
+              "type": "callout",
+              "style": "success",
+              "html": "<p>Good service recovery ends with ownership: document the issue, communicate the next step, and follow through.</p>",
+              "required": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

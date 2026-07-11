@@ -4,12 +4,14 @@ export interface SuperAdminOrganization {
   type: OrgType;
   orgId?: string;
   plan: PlanType;
+  learnerLimit?: number | null;
   branding?: {
     logoUrl?: string;
     primaryColor?: string;
   };
   active?: boolean;
   ownerUid?: string | null;
+  certificationAuthorityEnabled?: boolean;
   createdAt?: any;
   updatedAt?: any;
 }
@@ -45,6 +47,7 @@ export interface SuperAdminBillingRecord {
   orgId: string;
   orgName?: string;
   plan: PlanType;
+  learnerLimit?: number | null;
   status: 'active' | 'trial' | 'past_due' | 'cancelled';
   amount?: number;
   currency?: string;
@@ -79,6 +82,7 @@ export interface SuperAdminOrganization {
   name: string;
   type: OrgType;
   plan: PlanType;
+  learnerLimit?: number | null;
   branding?: {
     logoUrl?: string;
     primaryColor?: string;
@@ -86,6 +90,7 @@ export interface SuperAdminOrganization {
   active?: boolean;
   ownerUid?: string | null;
   ownerEmail?: string | null;
+  certificationAuthorityEnabled?: boolean;
   createdAt?: any;
   updatedAt?: any;
 }
@@ -121,6 +126,7 @@ export interface SuperAdminBillingRecord {
   orgId: string;
   orgName?: string;
   plan: PlanType;
+  learnerLimit?: number | null;
   status: 'active' | 'trial' | 'past_due' | 'cancelled';
   amount?: number;
   currency?: string;

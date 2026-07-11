@@ -48,6 +48,7 @@ export class CoursesEditor {
   private router = inject(Router);
   private afs = inject(Firestore);
   private fb = inject(FormBuilder);
+  readonly isSuperAdmin = this.router.url.startsWith('/super-admin');
 
   // Type-safe trackBy for optional ids
 trackByCert = (index: number, item: Certification) => item.id ?? String(index);
@@ -190,6 +191,8 @@ trackByExam = (index: number, item: Exam) => item.id ?? String(index);
     await deleteDoc(ref as unknown as DocumentReference);
   }
 
-  backToCourses() { this.router.navigate(['/manager/courses']); }
+  backToCourses() {
+    this.router.navigate([this.isSuperAdmin ? '/super-admin/courses' : '/manager/courses']);
+  }
   trackById = (_: number, x: {id:string}) => x.id;
 }

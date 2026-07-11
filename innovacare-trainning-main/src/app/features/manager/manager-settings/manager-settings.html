@@ -1,1 +1,336 @@
-<p>manager-settings works!</p>
+<div class="settings-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <p class="page-eyebrow">Manager · Governance</p>
+      <h1 class="page-title">Governance Settings</h1>
+      <p class="page-sub">Configure program defaults, compliance rules, and notification preferences for your organization.</p>
+    </div>
+    <button class="btn-primary" (click)="save()">Save Changes</button>
+  </div>
+
+  <!-- Notice Banner -->
+  <div *ngIf="notice()" class="notice-banner" [class.notice-banner--error]="isError()" role="alert">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+    <span>{{ notice() }}</span>
+    <button class="notice-banner__close" (click)="clearNotice()">&#10005;</button>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tab-nav">
+    <button
+      [class]="'tab-btn' + (activeTab() === 'program' ? ' tab-btn--active' : '')"
+      (click)="activeTab.set('program')"
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+      </svg>
+      Program
+    </button>
+    <button
+      [class]="'tab-btn' + (activeTab() === 'compliance' ? ' tab-btn--active' : '')"
+      (click)="activeTab.set('compliance')"
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      Compliance
+    </button>
+    <button
+      [class]="'tab-btn' + (activeTab() === 'notifications' ? ' tab-btn--active' : '')"
+      (click)="activeTab.set('notifications')"
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+      Notifications
+    </button>
+  </div>
+
+  <!-- Program Settings -->
+  <div *ngIf="activeTab() === 'program'" class="settings-panel">
+    <div class="panel-section">
+      <div class="section-head">
+        <div class="section-title">Assignment Defaults</div>
+        <div class="section-desc">Configure how training assignments behave when created for your organization.</div>
+      </div>
+      <div class="fields-grid">
+        <div class="field-group">
+          <label class="field-label">Default due date (days from assignment)</label>
+          <input class="field-input" type="number" [(ngModel)]="program.defaultDueDays" min="1" max="365" />
+          <div class="field-hint">Learners will have this many days to complete an assigned course.</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Auto-remind before due date (days)</label>
+          <input class="field-input" type="number" [(ngModel)]="program.autoRemindDays" min="1" max="30" />
+          <div class="field-hint">Learners receive an automatic reminder this many days before their due date.</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Passing score (%)</label>
+          <input class="field-input" type="number" [(ngModel)]="program.passingScore" min="0" max="100" />
+          <div class="field-hint">Minimum score required to mark a course as passed.</div>
+        </div>
+      </div>
+
+      <div class="toggles-grid">
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Require minimum score</div>
+            <div class="toggle-desc">Learners must meet the passing score to receive a completion certificate.</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="program.requireScore" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Lock course sequence</div>
+            <div class="toggle-desc">Learners must complete sections in order before advancing.</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="program.lockSequence" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Allow self-enrollment</div>
+            <div class="toggle-desc">Learners can enroll themselves in available courses from the catalogue.</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="program.allowSelfEnroll" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Show completion certificates</div>
+            <div class="toggle-desc">Learners receive a certificate upon successful course completion.</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="program.showCertificates" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Compliance Settings -->
+  <div *ngIf="activeTab() === 'compliance'" class="settings-panel">
+    <div class="panel-section">
+      <div class="section-head">
+        <div class="section-title">Policy & Acknowledgement</div>
+        <div class="section-desc">Control how policies are enforced and acknowledged within your organization.</div>
+      </div>
+      <div class="fields-grid">
+        <div class="field-group">
+          <label class="field-label">Policy reminder window (days before expiry)</label>
+          <input class="field-input" type="number" [(ngModel)]="compliance.policyReminderDays" min="1" max="90" />
+          <div class="field-hint">Learners are reminded this many days before their policy acknowledgement expires.</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Overdue flag threshold (days past due)</label>
+          <input class="field-input" type="number" [(ngModel)]="compliance.overdueThresholdDays" min="1" max="30" />
+          <div class="field-hint">Learners are flagged as overdue after this many days past their due date.</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Data retention (months)</label>
+          <input class="field-input" type="number" [(ngModel)]="compliance.retentionMonths" min="6" max="120" />
+          <div class="field-hint">How long completed enrollment records are kept for audit purposes.</div>
+        </div>
+      </div>
+
+      <div class="field-group" style="margin-bottom: 16px;">
+        <label class="field-label">Export format</label>
+        <select class="field-input" [(ngModel)]="compliance.exportFormat">
+          <option value="csv">CSV — spreadsheet-compatible</option>
+          <option value="pdf">PDF — formatted report</option>
+        </select>
+      </div>
+
+      <div class="toggles-grid">
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Require policy acknowledgement</div>
+            <div class="toggle-desc">Learners must acknowledge active required policies before accessing content.</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="compliance.requirePolicyAck" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Auto-flag overdue learners</div>
+            <div class="toggle-desc">Automatically mark learners as at-risk when they exceed the overdue threshold.</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="compliance.autoFlagOverdue" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Include scores in exports</div>
+            <div class="toggle-desc">Add quiz scores and passing status to audit evidence exports.</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="compliance.includeScoreInExport" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Settings -->
+  <div *ngIf="activeTab() === 'notifications'" class="settings-panel">
+    <div class="panel-section">
+      <div class="section-head">
+        <div class="section-title">Automated Notifications</div>
+        <div class="section-desc">Control which system-generated emails and in-app notifications are sent to learners.</div>
+      </div>
+
+      <div class="toggles-grid">
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Smart reminder engine</div>
+            <div class="toggle-desc">Automatically scan training gaps and send learner reminders using the rules below.</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="smartReminders.enabled" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Welcome message</div>
+            <div class="toggle-desc">Send a welcome notification when a learner is first added to your organization.</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="notifications.sendWelcome" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Assignment notification</div>
+            <div class="toggle-desc">Notify learners immediately when a new course is assigned to them.</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="notifications.sendAssignment" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Due-date reminder</div>
+            <div class="toggle-desc">Send a reminder before a course due date.</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="notifications.sendReminder" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Overdue alert</div>
+            <div class="toggle-desc">Notify learners (and manager) when a course passes its due date.</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="notifications.sendOverdue" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Inactive learner nudge</div>
+            <div class="toggle-desc">Notify learners and managers when a learner has not been active recently.</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="smartReminders.inactiveEnabled" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Manager escalation</div>
+            <div class="toggle-desc">Send managers a daily summary when overdue or inactive learners need intervention.</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="smartReminders.managerEscalationEnabled" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Completion confirmation</div>
+            <div class="toggle-desc">Confirm with learners when a course is marked as successfully completed.</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="notifications.sendCompletion" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">Weekly digest mode</div>
+            <div class="toggle-desc">Batch notifications into a weekly summary instead of sending individually.</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="notifications.digestMode" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="fields-grid" style="margin-top: 16px;">
+        <div class="field-group" *ngIf="notifications.sendReminder">
+          <label class="field-label">Reminder days before due date</label>
+          <input class="field-input" type="number" [(ngModel)]="notifications.reminderDays" min="1" max="30" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Default due date if missing</label>
+          <input class="field-input" type="number" [(ngModel)]="smartReminders.defaultDueDays" min="1" max="365" />
+          <div class="field-hint">Used when an enrollment has no explicit due date.</div>
+        </div>
+        <div class="field-group" *ngIf="smartReminders.inactiveEnabled">
+          <label class="field-label">Inactive after days</label>
+          <input class="field-input" type="number" [(ngModel)]="smartReminders.inactiveDays" min="1" max="90" />
+        </div>
+        <div class="field-group" *ngIf="notifications.digestMode">
+          <label class="field-label">Digest delivery day</label>
+          <select class="field-input" [(ngModel)]="notifications.digestDay">
+            <option value="monday">Monday</option>
+            <option value="wednesday">Wednesday</option>
+            <option value="friday">Friday</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="automation-card">
+        <div>
+          <div class="automation-title">Run automation now</div>
+          <div class="automation-desc">Scans upcoming due courses, overdue courses, and inactive learners for this organization.</div>
+        </div>
+        <button class="btn-secondary" type="button" [disabled]="scanBusy()" (click)="runSmartScanNow()">
+          {{ scanBusy() ? 'Scanning...' : 'Run Smart Scan' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Actions -->
+  <div class="footer-actions">
+    <button class="btn-primary" (click)="save()">Save Changes</button>
+    <span class="footer-hint">Changes apply to new assignments. Existing enrollments are not retroactively updated.</span>
+  </div>
+
+</div>

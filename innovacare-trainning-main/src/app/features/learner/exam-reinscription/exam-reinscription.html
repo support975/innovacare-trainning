@@ -1,0 +1,148 @@
+<div class="reinscription-container">
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading re-inscription information...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error() && !loading()" class="error-state">
+    <h2>⚠️ Error</h2>
+    <p>{{ error() }}</p>
+    <button (click)="backToDashboard()" class="btn-primary">Back to Dashboard</button>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="blueprint() && !loading() && !error()" class="reinscription-content">
+    <!-- Header -->
+    <div class="reinscription-header">
+      <div class="icon">📚</div>
+      <h1>Re-inscription Pathway</h1>
+      <p>Complete the required courses below to be eligible for exam retake</p>
+    </div>
+
+    <!-- Renewal Courses Section -->
+    <div class="section">
+      <div class="section-header">
+        <h2>📖 Required Renewal Courses</h2>
+        <p class="section-subtitle">
+          Complete these courses to renew your eligibility for exam retake
+        </p>
+      </div>
+
+      <div *ngIf="renewalCourses().length > 0" class="courses-grid">
+        <div *ngFor="let course of renewalCourses()" class="course-card">
+          <div class="course-header">
+            <h3>{{ course.title }}</h3>
+            <div
+              [ngClass]="
+                'course-status ' + (isEnrolledInCourse(course.id) ? 'enrolled' : 'not-enrolled')
+              "
+            >
+              {{
+                isEnrolledInCourse(course.id)
+                  ? '✓ Enrolled (' + getEnrollmentStatus(course.id) + ')'
+                  : 'Not Started'
+              }}
+            </div>
+          </div>
+
+          <p class="course-description">{{ course.description }}</p>
+
+          <div class="course-meta">
+            <span *ngIf="course.durationMin" class="meta-item">
+              ⏱️ {{ course.durationMin }} min
+            </span>
+            <span *ngIf="course.passingScore" class="meta-item">
+              📊 {{ course.passingScore }}% to pass
+            </span>
+          </div>
+
+          <button
+            (click)="startCourse(course.id)"
+            [ngClass]="'btn-course ' + (isEnrolledInCourse(course.id) ? 'btn-continue' : 'btn-enroll')"
+          >
+            {{
+              isEnrolledInCourse(course.id)
+                ? '→ Continue Course'
+                : '+ Enroll in Course'
+            }}
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="renewalCourses().length === 0" class="empty-state">
+        <p>No renewal courses required for this exam.</p>
+        <p style="font-size: 0.9rem; color: #666; margin-top: 0.5rem;">
+          You may be eligible for immediate retake.
+        </p>
+      </div>
+    </div>
+
+    <!-- Completion Checklist -->
+    <div class="section checklist-section">
+      <div class="section-header">
+        <h2>✓ Completion Checklist</h2>
+      </div>
+
+      <div class="checklist">
+        <div class="checklist-item">
+          <div
+            [ngClass]="'checkbox ' + (renewalCourses().length === 0 ? 'completed' : 'pending')"
+          >
+            {{ renewalCourses().length === 0 ? '✓' : '○' }}
+          </div>
+          <div class="checklist-content">
+            <p class="checklist-title">Complete Required Courses</p>
+            <p class="checklist-desc">
+              {{
+                renewalCourses().length > 0
+                  ? 'Complete ' + renewalCourses().length + ' required renewal course(s)'
+                  : 'No renewal courses required'
+              }}
+            </p>
+          </div>
+        </div>
+
+        <div class="checklist-item">
+          <div class="checkbox pending">○</div>
+          <div class="checklist-content">
+            <p class="checklist-title">Schedule Exam Retake</p>
+            <p class="checklist-desc">
+              Once courses are complete, schedule your exam retake at your exam center
+            </p>
+          </div>
+        </div>
+
+        <div class="checklist-item">
+          <div class="checkbox pending">○</div>
+          <div class="checklist-content">
+            <p class="checklist-title">Retake Exam</p>
+            <p class="checklist-desc">
+              Take the exam and achieve the passing score ({{ blueprint().passingScore }}%)
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="actions">
+      <button (click)="backToDashboard()" class="btn-secondary">
+        ← Back to Dashboard
+      </button>
+
+      <button (click)="scheduleRetake()" class="btn-primary" [disabled]="renewalCourses().length > 0">
+        📝 Schedule Exam Retake
+      </button>
+    </div>
+
+    <!-- Info Box -->
+    <div class="info-box">
+      <p>
+        <strong>💡 Tip:</strong> You can start renewal courses immediately. Once all courses are
+        completed, visit the kiosk exam center to schedule your retake.
+      </p>
+    </div>
+  </div>
+</div>

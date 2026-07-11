@@ -1,11 +1,16 @@
-import { Component, ElementRef, HostListener, inject, QueryList, ViewChildren } from '@angular/core';
+import { Component, ElementRef, inject, QueryList, ViewChildren } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { DemoRequestDialog } from '../demo-request-dialog/demo-request-dialog';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { PublicSiteNavComponent } from '../../../shared/components/public-site-nav/public-site-nav';
+import { PublicTranslateDirective } from '../../../shared/directives/public-translate.directive';
+import { LanguageService } from '../../../shared/services/language';
+import { CheckoutPlanId, StripeCheckoutService } from '../payments/stripe-checkout.service';
 
 interface HeroHighlight {
   icon: string;
@@ -62,6 +67,7 @@ interface FaqItem {
 }
 
 interface PricingTier {
+  planId?: CheckoutPlanId | 'enterprise';
   name: string;
   badge?: string;
   price: string;
@@ -82,19 +88,32 @@ interface ComparisonRow {
 @Component({
   selector: 'app-pricing-page',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatChipsModule, MatDialogModule, RouterModule],
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatIconModule,
+    MatChipsModule,
+    MatDialogModule,
+    MatSnackBarModule,
+    RouterModule,
+    PublicSiteNavComponent,
+    PublicTranslateDirective,
+  ],
   templateUrl: './pricing-page.html',
   styleUrls: ['./pricing-page.css'],
 })
 export class PricingPage {
   yearly = true;
+  checkoutBusyPlan: string | null = null;
   
-   @ViewChildren('revealRef') revealElements!: QueryList<ElementRef<HTMLElement>>;
+  @ViewChildren('revealRef') revealElements!: QueryList<ElementRef<HTMLElement>>;
 
   private readonly dialog = inject(MatDialog);
+  private readonly router = inject(Router);
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly stripeCheckout = inject(StripeCheckoutService);
+  private readonly language = inject(LanguageService);
 
-  mobileMenuOpen = false;
-  headerScrolled = false;
   activeCategory = 2;
   activeTestimonial = 0;
 
@@ -324,8 +343,11 @@ export class PricingPage {
   ];
 
   ngAfterViewInit(): void {
+    this.showCheckoutReturnStatus();
     this.initRevealObserver();
-    this.startTestimonialsAutoplay();
+    if (!this.prefersReducedMotionOrSmallScreen()) {
+      this.startTestimonialsAutoplay();
+    }
   }
 
   ngOnDestroy(): void {
@@ -333,19 +355,6 @@ export class PricingPage {
     if (this.testimonialInterval) {
       clearInterval(this.testimonialInterval);
     }
-  }
-
-  @HostListener('window:scroll')
-  onWindowScroll(): void {
-    this.headerScrolled = window.scrollY > 10;
-  }
-
-  toggleMobileMenu(): void {
-    this.mobileMenuOpen = !this.mobileMenuOpen;
-  }
-
-  closeMobileMenu(): void {
-    this.mobileMenuOpen = false;
   }
 
   openDemoDialog(): void {
@@ -387,6 +396,13 @@ export class PricingPage {
   }
 
   private initRevealObserver(): void {
+    if (typeof IntersectionObserver === 'undefined' || this.prefersReducedMotionOrSmallScreen()) {
+      queueMicrotask(() => {
+        this.revealElements.forEach((item) => item.nativeElement.classList.add('is-visible'));
+      });
+      return;
+    }
+
     this.revealObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -408,6 +424,8 @@ export class PricingPage {
   }
 
   private startTestimonialsAutoplay(): void {
+    if (this.prefersReducedMotionOrSmallScreen()) return;
+
     this.testimonialInterval = setInterval(() => {
       this.nextTestimonial();
     }, 5000);
@@ -419,13 +437,23 @@ export class PricingPage {
     }
     this.startTestimonialsAutoplay();
   }
+
+  private prefersReducedMotionOrSmallScreen(): boolean {
+    if (typeof window === 'undefined' || !window.matchMedia) return false;
+
+    return (
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      window.matchMedia('(max-width: 768px)').matches
+    );
+  }
+
   login(): void {
-    // Redirige vers la page de connexion
-    window.location.href = '/login';
+    void this.router.navigate(['/login']);
   }
 
   readonly tiers: PricingTier[] = [
     {
+      planId: 'starter',
       name: 'Starter',
       badge: 'Pour petites équipes',
       price: '$49',
@@ -441,6 +469,7 @@ export class PricingPage {
       ],
     },
     {
+      planId: 'growth',
       name: 'Growth',
       badge: 'Le plus populaire',
       price: '$129',
@@ -458,6 +487,7 @@ export class PricingPage {
       ],
     },
     {
+      planId: 'enterprise',
       name: 'Enterprise',
       badge: 'Multi-organisation',
       price: 'Custom',
@@ -524,6 +554,43 @@ export class PricingPage {
     this.yearly = !this.yearly;
   }
 
+  paymentButtonLabel(tier: PricingTier): string {
+    if (tier.planId === 'enterprise') return tier.cta;
+    return this.yearly ? 'Payer annuellement' : 'Payer mensuellement';
+  }
+
+  async startPlanCheckout(tier: PricingTier): Promise<void> {
+    if (tier.planId === 'enterprise' || !tier.planId) {
+      this.openDemoDialogPlan(tier.name);
+      return;
+    }
+
+    this.checkoutBusyPlan = tier.name;
+
+    try {
+      const session = await this.stripeCheckout.createCheckoutSession({
+        planId: tier.planId,
+        billingInterval: this.yearly ? 'yearly' : 'monthly',
+      });
+
+      if (!session.url) {
+        throw new Error('Stripe Checkout did not return a redirect URL.');
+      }
+
+      window.location.assign(session.url);
+    } catch (error) {
+      console.error('Unable to start Stripe Checkout', error);
+      this.snackBar.open(
+        this.publicText('Paiement en ligne indisponible. Nous pouvons vous envoyer un lien sécurisé.'),
+        this.publicText('Fermer'),
+        { duration: 7000 },
+      );
+      this.openDemoDialogPlan(tier.name);
+    } finally {
+      this.checkoutBusyPlan = null;
+    }
+  }
+
    openDemoDialogPlan(plan?: string): void {
     this.dialog.open(DemoRequestDialog, {
       width: '100%',
@@ -536,5 +603,30 @@ export class PricingPage {
         selectedPlan: plan ?? null,
       },
     });
+  }
+
+  private showCheckoutReturnStatus(): void {
+    if (typeof window === 'undefined') return;
+
+    const checkoutStatus = new URLSearchParams(window.location.search).get('checkout');
+    if (checkoutStatus === 'success') {
+      this.snackBar.open(
+        this.publicText('Paiement reçu. Votre abonnement sera vérifié automatiquement.'),
+        this.publicText('Fermer'),
+        { duration: 7000 },
+      );
+    }
+
+    if (checkoutStatus === 'cancelled') {
+      this.snackBar.open(
+        this.publicText('Paiement annulé. Vous pouvez reprendre quand vous êtes prêt.'),
+        this.publicText('Fermer'),
+        { duration: 6000 },
+      );
+    }
+  }
+
+  private publicText(value: string): string {
+    return this.language.publicText(value);
   }
 }

@@ -262,14 +262,8 @@ export class Transcript {
     this.fPlan.set('');
   }
 
-  // ✅ Certificate route (your learnerRoutes: /learner/certifications?courseId=...)
   getCertificate(row: TranscriptRow) {
     this.router.navigate(['/learner/certifications'], {
-      queryParams: { courseId: row.courseId }
-    });
-  }
-  getCourse(row: TranscriptRow){
-    this.router.navigate(['/learner/courses', this.courseId=row.courseId],{
       queryParams: { courseId: row.courseId }
     });
   }

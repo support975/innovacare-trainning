@@ -1,11 +1,13 @@
-import { Component, ElementRef, HostListener, inject, QueryList, ViewChildren } from '@angular/core';
+import { Component, ElementRef, inject, QueryList, ViewChildren } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatDialog } from '@angular/material/dialog';
 import { DemoRequestDialog } from '../demo-request-dialog/demo-request-dialog';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { PublicSiteNavComponent } from '../../../shared/components/public-site-nav/public-site-nav';
+import { PublicTranslateDirective } from '../../../shared/directives/public-translate.directive';
 
 interface HeroHighlight {
   icon: string;
@@ -88,18 +90,17 @@ interface AudienceBlock {
 @Component({
   selector: 'app-features-page',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatChipsModule, RouterModule],
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatChipsModule, RouterModule, PublicSiteNavComponent, PublicTranslateDirective],
   templateUrl: './features-page.html',
   styleUrls: ['./features-page.css'],
 })
 export class FeaturesPage {
 
-   @ViewChildren('revealRef') revealElements!: QueryList<ElementRef<HTMLElement>>;
+  @ViewChildren('revealRef') revealElements!: QueryList<ElementRef<HTMLElement>>;
 
   private readonly dialog = inject(MatDialog);
+  private readonly router = inject(Router);
 
-  mobileMenuOpen = false;
-  headerScrolled = false;
   activeCategory = 2;
   activeTestimonial = 0;
 
@@ -329,7 +330,9 @@ readonly heroHighlights: HeroHighlight[] = [
 
   ngAfterViewInit(): void {
     this.initRevealObserver();
-    this.startTestimonialsAutoplay();
+    if (!this.prefersReducedMotionOrSmallScreen()) {
+      this.startTestimonialsAutoplay();
+    }
   }
 
   ngOnDestroy(): void {
@@ -337,19 +340,6 @@ readonly heroHighlights: HeroHighlight[] = [
     if (this.testimonialInterval) {
       clearInterval(this.testimonialInterval);
     }
-  }
-
-  @HostListener('window:scroll')
-  onWindowScroll(): void {
-    this.headerScrolled = window.scrollY > 10;
-  }
-
-  toggleMobileMenu(): void {
-    this.mobileMenuOpen = !this.mobileMenuOpen;
-  }
-
-  closeMobileMenu(): void {
-    this.mobileMenuOpen = false;
   }
 
   openDemoDialog(): void {
@@ -391,6 +381,13 @@ readonly heroHighlights: HeroHighlight[] = [
   }
 
   private initRevealObserver(): void {
+    if (typeof IntersectionObserver === 'undefined' || this.prefersReducedMotionOrSmallScreen()) {
+      queueMicrotask(() => {
+        this.revealElements.forEach((item) => item.nativeElement.classList.add('is-visible'));
+      });
+      return;
+    }
+
     this.revealObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -412,6 +409,8 @@ readonly heroHighlights: HeroHighlight[] = [
   }
 
   private startTestimonialsAutoplay(): void {
+    if (this.prefersReducedMotionOrSmallScreen()) return;
+
     this.testimonialInterval = setInterval(() => {
       this.nextTestimonial();
     }, 5000);
@@ -423,9 +422,18 @@ readonly heroHighlights: HeroHighlight[] = [
     }
     this.startTestimonialsAutoplay();
   }
+
+  private prefersReducedMotionOrSmallScreen(): boolean {
+    if (typeof window === 'undefined' || !window.matchMedia) return false;
+
+    return (
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      window.matchMedia('(max-width: 768px)').matches
+    );
+  }
+
   login(): void {
-    // Redirige vers la page de connexion
-    window.location.href = '/login';
+    void this.router.navigate(['/login']);
   }
 
 

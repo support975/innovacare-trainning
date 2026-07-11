@@ -1,132 +1,134 @@
-<!-- src/app/features/learner/rewards/rewards/rewards.html -->
-<div class="page">
-  <header class="head">
-    <div class="left">
-      <h1>Rewards</h1>
-      <div class="sub muted">Certificates, badges, earned hours, and points.</div>
-    </div>
-
-    <div class="right card summary">
-      <div class="kpi">
-        <div class="kpi-label">Total points</div>
-        <div class="kpi-value">{{ wallet().totalPoints || 0 }}</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Items</div>
-        <div class="kpi-value">{{ totalShown() }} / {{ totalAll() }}</div>
-      </div>
+<div class="rewards-page">
+  <!-- Header -->
+  <header class="page-head">
+    <div>
+      <h1>{{ t('rewards.title') }}</h1>
+      <p class="subtitle">{{ t('rewards.subtitle') }}</p>
     </div>
   </header>
 
-  <section class="filters card">
-    <div class="grid">
-      <div class="field">
-        <label>Search</label>
-        <input
-          type="search"
-          [value]="search()"
-          (input)="search.set(($any($event.target).value || '').toString())"
-          placeholder="Course, honor, certificate #..."
-        />
+  <!-- Hero: points + level -->
+  <section class="hero" *ngIf="levelInfo() as lvl">
+    <div class="hero-points">
+      <div class="points-value">{{ wallet().totalPoints || 0 }}</div>
+      <div class="points-label">{{ t('rewards.totalPoints') }}</div>
+    </div>
+
+    <div class="hero-level">
+      <div class="level-row">
+        <span class="level-icon">{{ lvl.current.icon }}</span>
+        <div>
+          <div class="level-label">{{ t('rewards.level') }}</div>
+          <div class="level-name">{{ t(lvl.current.labelKey) }}</div>
+        </div>
       </div>
 
-      <div class="field">
-        <label>Type</label>
-        <select [value]="typeFilter()" (change)="typeFilter.set($any($event.target).value)">
-          <option value="all">All</option>
-          <option value="certificate">Certificate</option>
-          <option value="badge">Badge</option>
-          <option value="credit_hours">Hours</option>
-          <option value="points">Points</option>
-        </select>
+      <div class="level-progress" *ngIf="lvl.next; else maxLevel">
+        <div class="progress-head">
+          <span>{{ t('rewards.progressTo', { level: t(lvl.next.labelKey) }) }}</span>
+          <span class="to-go">{{ t('rewards.pointsToNext', { points: lvl.pointsToNext }) }}</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" [style.width.%]="lvl.percent"></div>
+        </div>
       </div>
+      <ng-template #maxLevel>
+        <div class="max-level">{{ t('rewards.maxLevel') }}</div>
+      </ng-template>
+    </div>
 
-      <div class="field">
-        <label>From</label>
-        <input type="date" [value]="fromDate()" (change)="fromDate.set($any($event.target).value)" />
+    <div class="hero-kpis">
+      <div class="kpi">
+        <span class="kpi-value">{{ badgesEarnedCount() }}</span>
+        <span class="kpi-label">{{ t('rewards.badgesEarned') }}</span>
       </div>
-
-      <div class="field">
-        <label>To</label>
-        <input type="date" [value]="toDate()" (change)="toDate.set($any($event.target).value)" />
-      </div>
-
-      <div class="actions">
-        <button class="btn outline" type="button" (click)="reset()">Reset</button>
+      <div class="kpi">
+        <span class="kpi-value">{{ coursesRewarded() }}</span>
+        <span class="kpi-label">{{ t('rewards.coursesRewarded') }}</span>
       </div>
     </div>
   </section>
 
-  <section class="card table-wrap">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Type</th>
-          <th>Course</th>
-          <th>Title</th>
-          <th class="right">Score</th>
-          <th>Honor</th>
-          <th class="right">Hours</th>
-          <th class="right">Points</th>
-          <th class="right">Action</th>
-        </tr>
-      </thead>
+  <!-- Badges -->
+  <section class="badges-section">
+    <h2>{{ t('rewards.badges') }}</h2>
+    <div class="badges-grid">
+      <div class="badge-card" *ngFor="let b of badges()" [class.locked]="!b.earned">
+        <div class="badge-icon">{{ b.earned ? b.icon : '🔒' }}</div>
+        <div class="badge-name">{{ b.name }}</div>
+        <div class="badge-desc">{{ b.earned ? b.desc : t('rewards.badgeLocked') }}</div>
+      </div>
+    </div>
+  </section>
 
-      <tbody>
-        <tr *ngFor="let r of view()">
-          <td class="muted">{{ fmtDate(r.issuedAtMs) }}</td>
+  <!-- History -->
+  <section class="history-section">
+    <div class="history-head">
+      <h2>{{ t('rewards.history') }}</h2>
+      <span class="muted">{{ t('rewards.showing', { shown: totalShown(), total: totalAll() }) }}</span>
+    </div>
 
-          <td>
-            <span class="pill" [class.pill-cert]="r.type==='certificate'"
-                              [class.pill-badge]="r.type==='badge'"
-                              [class.pill-hours]="r.type==='credit_hours'"
-                              [class.pill-points]="r.type==='points'">
-              {{ labelType(r.type) }}
-            </span>
-          </td>
+    <div class="filters">
+      <input
+        class="f-search"
+        type="search"
+        [placeholder]="t('rewards.searchPlaceholder')"
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+      />
+      <select class="f-select" [ngModel]="typeFilter()" (ngModelChange)="typeFilter.set($event)">
+        <option value="all">{{ t('rewards.filterAll') }}</option>
+        <option value="points">{{ t('rewards.typePoints') }}</option>
+        <option value="badge">{{ t('rewards.typeBadge') }}</option>
+        <option value="certificate">{{ t('rewards.typeCertificate') }}</option>
+        <option value="credit_hours">{{ t('rewards.typeHours') }}</option>
+      </select>
+      <label class="f-date">
+        {{ t('rewards.from') }}
+        <input type="date" [ngModel]="fromDate()" (ngModelChange)="fromDate.set($event)" />
+      </label>
+      <label class="f-date">
+        {{ t('rewards.to') }}
+        <input type="date" [ngModel]="toDate()" (ngModelChange)="toDate.set($event)" />
+      </label>
+      <button class="btn-outline" (click)="reset()">{{ t('rewards.reset') }}</button>
+    </div>
 
-          <td>
-            <div class="main">{{ r.courseTitle }}</div>
-            <div class="muted small" *ngIf="r.certificateNo"># {{ r.certificateNo }}</div>
-          </td>
+    <div class="empty-state" *ngIf="!view().length">
+      {{ t('rewards.empty') }}
+    </div>
 
-          <td class="muted">{{ r.title || '—' }}</td>
-
-          <td class="right">
-            <span *ngIf="r.score !== undefined; else dash">{{ r.score }}%</span>
-            <ng-template #dash>—</ng-template>
-          </td>
-
-          <td class="muted">{{ r.honor || '—' }}</td>
-
-          <td class="right">
-            <span *ngIf="r.hours !== undefined; else dash2">{{ r.hours }} {{ r.creditUnit || 'hrs' }}</span>
-            <ng-template #dash2>—</ng-template>
-          </td>
-
-          <td class="right">
-            <span *ngIf="r.points !== undefined; else dash3">{{ r.points }}</span>
-            <ng-template #dash3>—</ng-template>
-          </td>
-
-          <td class="right">
-            <button
-              *ngIf="r.type==='certificate' || r.certificateId"
-              class="btn tiny"
-              type="button"
-              (click)="openCertificate(r)"
-            >
-              Download certificate
-            </button>
-            <span *ngIf="!(r.type==='certificate' || r.certificateId)" class="muted">—</span>
-          </td>
-        </tr>
-
-        <tr *ngIf="view().length === 0">
-          <td colspan="9" class="empty muted">No rewards found for the selected filters.</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="history-table-wrap" *ngIf="view().length">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>{{ t('rewards.colDate') }}</th>
+            <th>{{ t('rewards.colType') }}</th>
+            <th>{{ t('rewards.colTitle') }}</th>
+            <th>{{ t('rewards.colCourse') }}</th>
+            <th class="right">{{ t('rewards.colValue') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of view()">
+            <td class="muted">{{ fmtDate(r.issuedAtMs) }}</td>
+            <td>
+              <span class="type-chip" [ngClass]="'type-' + r.type">{{ labelType(r.type) }}</span>
+            </td>
+            <td class="title-cell">{{ rewardDisplayTitle(r) }}</td>
+            <td class="muted">{{ r.courseTitle !== '—' && r.courseId ? r.courseTitle : '—' }}</td>
+            <td class="right value-cell">
+              <span *ngIf="r.points">+{{ r.points }} pts</span>
+              <span *ngIf="r.hours">{{ r.hours }} {{ r.creditUnit || 'h' }}</span>
+              <button
+                *ngIf="r.type === 'certificate'"
+                class="btn-link"
+                (click)="openCertificate(r)"
+              >{{ t('rewards.typeCertificate') }} →</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </section>
 </div>

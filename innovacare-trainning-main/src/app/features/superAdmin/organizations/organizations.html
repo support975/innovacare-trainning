@@ -1,88 +1,144 @@
-<section class="page">
-  <div class="page-head">
-    <h1>Organizations</h1>
-    <p>Manage tenant organizations, owner users, filters, and pagination.</p>
+<div class="sa-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <p class="page-eyebrow">Super Admin · Organizations</p>
+      <h1 class="page-title">Organizations</h1>
+      <p class="page-sub">Manage tenant organizations, billing plans, and owner accounts.</p>
+    </div>
+    <a class="btn-primary" routerLink="/super-admin/organizations/create">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      New Organization
+    </a>
   </div>
 
-  <div class="panel form-panel">
-    <h2>Create organization + owner</h2>
+  <!-- Notice Banner -->
+  <div *ngIf="notice()" class="notice-banner notice-banner--error">
+    <span class="notice-banner__text">{{ notice() }}</span>
+  </div>
 
-    <div class="form-grid">
-      <input [(ngModel)]="newOrg.name" placeholder="Organization name" />
-      <input [(ngModel)]="newOrg.orgId" placeholder="Organization ID" />
-      <select [(ngModel)]="newOrg.type">
+  <!-- Main Panel -->
+  <div class="panel">
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <span class="search-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </span>
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Search name, email, or ID..."
+          [value]="search()"
+          (input)="search.set($any($event.target).value)"
+        />
+      </div>
+      <select
+        class="filter-select"
+        [value]="typeFilter()"
+        (change)="typeFilter.set($any($event.target).value)"
+      >
+        <option value="all">All Types</option>
         <option value="health">Health</option>
         <option value="IT">IT</option>
         <option value="school">School</option>
       </select>
-      <select [(ngModel)]="newOrg.plan">
-        <option value="free">Free</option>
-        <option value="pro">Pro</option>
+      <select
+        class="filter-select"
+        [value]="planFilter()"
+        (change)="planFilter.set($any($event.target).value)"
+      >
+        <option value="all">All Plans</option>
+        <option value="free">Starter</option>
+        <option value="pro">Growth</option>
         <option value="enterprise">Enterprise</option>
       </select>
-
-      <input [(ngModel)]="newOrg.ownerUid" placeholder="Owner UID" />
-      <input [(ngModel)]="newOrg.ownerEmail" placeholder="Owner email" />
-      <input [(ngModel)]="newOrg.ownerDisplayName" placeholder="Owner display name" />
+      <button class="btn-primary" (click)="applyFilters()">Apply</button>
     </div>
 
-    <div class="actions">
-      <button class="btn primary" (click)="createWithOwner()" [disabled]="loading()">
-        {{ loading() ? 'Creating…' : 'Create organization' }}
+    <!-- Loading -->
+    <div *ngIf="loading()" class="org-loading">
+      <div class="org-spinner"></div>
+      <span>Loading organizations...</span>
+    </div>
+
+    <!-- Table -->
+    <div *ngIf="!loading()">
+      <div *ngIf="result().items.length > 0; else emptyOrgs">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Plan</th>
+              <th>Owner Email</th>
+              <th>Status</th>
+              <th>Certifications</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let org of result().items">
+              <td>
+                <div class="org-name">{{ org.name }}</div>
+                <div class="org-id">{{ org.id }}</div>
+              </td>
+              <td>
+                <span [class]="'badge badge--' + (org.type === 'health' ? 'info' : org.type === 'IT' ? 'pro' : 'trial')">{{ org.type }}</span>
+              </td>
+              <td>
+                <span [class]="'badge badge--' + org.plan">{{ planLabel(org.plan) }}</span>
+              </td>
+              <td class="org-owner">{{ org.ownerEmail || '—' }}</td>
+              <td>
+                <span [class]="'badge badge--' + (org.active ? 'active' : 'inactive')">{{ org.active ? 'Active' : 'Inactive' }}</span>
+              </td>
+              <td>
+                <span *ngIf="org.certificationAuthorityEnabled" class="badge badge--success">Enabled</span>
+                <span *ngIf="!org.certificationAuthorityEnabled" class="badge badge--inactive">Disabled</span>
+              </td>
+              <td>
+                <div class="org-actions">
+                  <a class="action-link action-link--view" [routerLink]="['/super-admin/organizations', org.id]">View</a>
+                  <a class="action-link action-link--edit" [routerLink]="['/super-admin/organizations', org.id, 'edit']">Edit</a>
+                  <a class="action-link action-link--delete" [routerLink]="['/super-admin/organizations', org.id, 'delete']">Delete</a>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #emptyOrgs>
+        <div class="empty-state">
+          <div class="empty-state__icon">&#127970;</div>
+          <strong>No organizations found</strong>
+          <span>Try adjusting your filters or create a new organization.</span>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="!loading() && result().total > 0">
+      <button class="btn-ghost btn-sm" (click)="prevPage()" [disabled]="page() <= 1">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        Prev
+      </button>
+      <span class="pagination__label">Page {{ page() }}</span>
+      <button class="btn-ghost btn-sm" (click)="nextPage()" [disabled]="result().items.length < pageSize">
+        Next
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
       </button>
     </div>
-
-    <p class="notice" *ngIf="notice()">{{ notice() }}</p>
   </div>
 
-  <div class="panel">
-    <h2>Search & filters</h2>
-
-    <div class="filters">
-      <input [ngModel]="search()" (ngModelChange)="search.set($event)" placeholder="Search name / email / id" />
-      <select [ngModel]="typeFilter()" (ngModelChange)="typeFilter.set($event)">
-        <option value="all">All types</option>
-        <option value="health">Health</option>
-        <option value="IT">IT</option>
-        <option value="school">School</option>
-      </select>
-      <select [ngModel]="planFilter()" (ngModelChange)="planFilter.set($event)">
-        <option value="all">All plans</option>
-        <option value="free">Free</option>
-        <option value="pro">Pro</option>
-        <option value="enterprise">Enterprise</option>
-      </select>
-      <button class="btn" (click)="applyFilters()">Apply</button>
-    </div>
-  </div>
-
-  <div class="panel">
-    <h2>Organizations ({{ result().total }})</h2>
-
-    <div class="table">
-      <div class="thead">
-        <div>ID</div>
-        <div>Name</div>
-        <div>Type</div>
-        <div>Plan</div>
-        <div>Owner</div>
-      </div>
-
-      <div class="tbody">
-        <div class="tr" *ngFor="let org of result().items">
-          <div>{{ org.id }}</div>
-          <div>{{ org.name }}</div>
-          <div>{{ org.type }}</div>
-          <div>{{ org.plan }}</div>
-          <div>{{ org.ownerEmail || '—' }}</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="pager">
-      <button class="btn" (click)="prevPage()" [disabled]="page() <= 1">Previous</button>
-      <span>Page {{ page() }}</span>
-      <button class="btn" (click)="nextPage()" [disabled]="result().items.length < pageSize">Next</button>
-    </div>
-  </div>
-</section>
+</div>

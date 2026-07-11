@@ -1,4 +1,189 @@
-<section class="page-card">
-  <h1>Settings</h1>
-  <p>Configure global platform defaults, security policies, and system preferences.</p>
-</section>
+<div class="sa-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <p class="page-eyebrow">Super Admin · Settings</p>
+      <h1 class="page-title">Platform Settings</h1>
+      <p class="page-sub">Configure global platform defaults, security policies, and notification preferences.</p>
+    </div>
+  </div>
+
+  <!-- Notice Banner -->
+  <div *ngIf="notice()" [class]="'notice-banner' + (isError() ? ' notice-banner--error' : '')">
+    <span class="notice-banner__text">{{ notice() }}</span>
+    <button class="notice-banner__close" (click)="clearNotice()">&#10005;</button>
+  </div>
+
+  <!-- General Settings Panel -->
+  <div class="panel">
+    <div class="panel__head">
+      <div>
+        <div class="panel__title">General</div>
+        <div class="panel__sub">Basic platform information and localization.</div>
+      </div>
+    </div>
+    <div class="settings-form">
+      <div class="settings-form__grid">
+        <div class="field">
+          <label class="field__label" for="platformName">Platform Name</label>
+          <input
+            id="platformName"
+            class="field__input"
+            type="text"
+            [(ngModel)]="general.platformName"
+            placeholder="e.g. InnovaCare Training"
+          />
+          <span class="field__hint">Displayed in emails and the browser title bar.</span>
+        </div>
+        <div class="field">
+          <label class="field__label" for="supportEmail">Support Email</label>
+          <input
+            id="supportEmail"
+            class="field__input"
+            type="email"
+            [(ngModel)]="general.supportEmail"
+            placeholder="support@example.com"
+          />
+          <span class="field__hint">Used for outbound system notifications.</span>
+        </div>
+        <div class="field">
+          <label class="field__label" for="defaultLanguage">Default Language</label>
+          <select id="defaultLanguage" class="field__select" [(ngModel)]="general.defaultLanguage">
+            <option value="en">English</option>
+            <option value="fr">French</option>
+            <option value="es">Spanish</option>
+          </select>
+          <span class="field__hint">Default locale for new users.</span>
+        </div>
+      </div>
+      <div class="settings-form__footer">
+        <button class="btn-primary" (click)="save()">
+          <span *ngIf="saved()" class="settings-saved-icon">&#10003;</span>
+          Save General Settings
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Security Settings Panel -->
+  <div class="panel">
+    <div class="panel__head">
+      <div>
+        <div class="panel__title">Security</div>
+        <div class="panel__sub">Authentication rules, session management, and password policies.</div>
+      </div>
+    </div>
+    <div class="settings-form">
+      <div class="settings-form__grid">
+        <div class="field">
+          <label class="field__label" for="sessionTimeout">Session Timeout (minutes)</label>
+          <input
+            id="sessionTimeout"
+            class="field__input"
+            type="number"
+            min="5"
+            max="1440"
+            [(ngModel)]="security.sessionTimeoutMin"
+            placeholder="60"
+          />
+          <span class="field__hint">Users will be logged out after this period of inactivity.</span>
+        </div>
+        <div class="field">
+          <label class="field__label" for="passwordMinLength">Minimum Password Length</label>
+          <input
+            id="passwordMinLength"
+            class="field__input"
+            type="number"
+            min="6"
+            max="64"
+            [(ngModel)]="security.passwordMinLength"
+            placeholder="8"
+          />
+          <span class="field__hint">Passwords shorter than this will be rejected.</span>
+        </div>
+        <div class="field field--full">
+          <label class="toggle-field">
+            <span class="field__label toggle-field__label">Require Multi-Factor Authentication (MFA)</span>
+            <span class="toggle-wrap">
+              <input
+                type="checkbox"
+                class="toggle-input"
+                id="mfaRequired"
+                [(ngModel)]="security.mfaRequired"
+              />
+              <label class="toggle-slider" for="mfaRequired"></label>
+            </span>
+          </label>
+          <span class="field__hint">When enabled, all users must complete MFA setup before accessing the platform.</span>
+        </div>
+      </div>
+      <div class="settings-form__footer">
+        <button class="btn-primary" (click)="save()">Save Security Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Settings Panel -->
+  <div class="panel">
+    <div class="panel__head">
+      <div>
+        <div class="panel__title">Notifications</div>
+        <div class="panel__sub">Configure automated email notifications sent to learners and managers.</div>
+      </div>
+    </div>
+    <div class="settings-form">
+      <div class="settings-notif-list">
+        <label class="toggle-field toggle-field--row">
+          <div class="toggle-field__info">
+            <span class="toggle-field__label">Email on Enrollment</span>
+            <span class="toggle-field__desc">Send a welcome email when a learner is enrolled in a course.</span>
+          </div>
+          <span class="toggle-wrap">
+            <input
+              type="checkbox"
+              class="toggle-input"
+              id="emailOnEnrollment"
+              [(ngModel)]="notifications.emailOnEnrollment"
+            />
+            <label class="toggle-slider" for="emailOnEnrollment"></label>
+          </span>
+        </label>
+        <label class="toggle-field toggle-field--row">
+          <div class="toggle-field__info">
+            <span class="toggle-field__label">Email on Completion</span>
+            <span class="toggle-field__desc">Notify learners and managers when a course is completed.</span>
+          </div>
+          <span class="toggle-wrap">
+            <input
+              type="checkbox"
+              class="toggle-input"
+              id="emailOnCompletion"
+              [(ngModel)]="notifications.emailOnCompletion"
+            />
+            <label class="toggle-slider" for="emailOnCompletion"></label>
+          </span>
+        </label>
+        <label class="toggle-field toggle-field--row">
+          <div class="toggle-field__info">
+            <span class="toggle-field__label">Email on Overdue</span>
+            <span class="toggle-field__desc">Alert learners when assigned courses are past their due date.</span>
+          </div>
+          <span class="toggle-wrap">
+            <input
+              type="checkbox"
+              class="toggle-input"
+              id="emailOnOverdue"
+              [(ngModel)]="notifications.emailOnOverdue"
+            />
+            <label class="toggle-slider" for="emailOnOverdue"></label>
+          </span>
+        </label>
+      </div>
+      <div class="settings-form__footer">
+        <button class="btn-primary" (click)="save()">Save Notification Settings</button>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,1 +1,294 @@
-<p>learners works!</p>
+<div class="learners-page">
+
+  <!-- PAGE HEADER -->
+  <header class="page-header">
+    <div class="page-header__left">
+      <div class="page-eyebrow">Manager · Learners</div>
+      <h1 class="page-title">Learner Management</h1>
+      <p class="page-sub">View progress, scores, and enrollment status for all learners in your organization.</p>
+    </div>
+    <div class="page-header__actions">
+      <button class="btn-primary" routerLink="/manager/assign">+ Assign Training</button>
+      <button class="btn-ghost" routerLink="/manager/notify">Send Notification</button>
+    </div>
+  </header>
+
+  <section class="panel add-user-panel">
+    <div class="add-user-copy">
+      <div class="add-user-title">Create an organization user</div>
+      <div class="add-user-sub">The new learner or manager is automatically linked to your organization.</div>
+    </div>
+    <form class="add-user-form" (ngSubmit)="createOrganizationUser()">
+      <input class="add-user-input" name="displayName" [(ngModel)]="createUserForm.displayName" placeholder="Full name" />
+      <input class="add-user-input" name="email" type="email" [(ngModel)]="createUserForm.email" placeholder="Email address" required />
+      <select class="sort-select" name="role" [(ngModel)]="createUserForm.role">
+        <option value="learner">Learner</option>
+        <option value="manager">Manager</option>
+      </select>
+      <button class="btn-primary" type="submit" [disabled]="creatingUser()">
+        {{ creatingUser() ? 'Creating…' : 'Create User' }}
+      </button>
+    </form>
+    <div class="create-user-notice" *ngIf="createUserNotice()" [class.create-user-notice--error]="createUserError()">
+      {{ createUserNotice() }}
+    </div>
+    <div class="temporary-password" *ngIf="createdUser() as created">
+      <span>Temporary password for {{ created.email }}</span>
+      <strong>{{ created.temporaryPassword }}</strong>
+      <small>Copy it now. The user should reset it after the first sign-in.</small>
+    </div>
+  </section>
+
+  <!-- STAT CARDS -->
+  <section class="stat-row">
+    <div class="stat-card">
+      <div class="stat-card__icon stat-icon--navy">◎</div>
+      <div>
+        <div class="stat-card__value">{{ stats().total }}</div>
+        <div class="stat-card__label">Total Learners</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card__icon stat-icon--teal">✓</div>
+      <div>
+        <div class="stat-card__value">{{ stats().active }}</div>
+        <div class="stat-card__label">Active</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card__icon stat-icon--orange">✦</div>
+      <div>
+        <div class="stat-card__value">{{ stats().totalCompleted }}</div>
+        <div class="stat-card__label">Total Completions</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card__icon stat-icon--purple">◉</div>
+      <div>
+        <div class="stat-card__value">{{ stats().platformAvg !== null ? stats().platformAvg + '%' : '—' }}</div>
+        <div class="stat-card__label">Org Avg Score</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card__icon stat-icon--blue">◷</div>
+      <div>
+        <div class="stat-card__value">{{ formatStudyTime(stats().totalStudyMinutes) }}</div>
+        <div class="stat-card__label">Estimated Study</div>
+      </div>
+    </div>
+    <div class="stat-card stat-card--risk">
+      <div class="stat-card__icon stat-icon--risk">⚠</div>
+      <div>
+        <div class="stat-card__value">{{ stats().atRisk }}</div>
+        <div class="stat-card__label">Learners At Risk</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="risk-panel panel" *ngIf="riskRows().length">
+    <div class="risk-panel__head">
+      <div>
+        <div class="risk-panel__eyebrow">Priority Queue</div>
+        <h2 class="risk-panel__title">Learner risk table</h2>
+      </div>
+      <div class="risk-panel__actions">
+        <button class="btn-ghost" type="button" (click)="bulkAssignRiskLearners()" [disabled]="selectedRiskCount() === 0">Bulk assign</button>
+        <button class="btn-ghost" type="button" (click)="bulkSendReminder()" [disabled]="selectedRiskCount() === 0">Reminder</button>
+        <button class="btn-ghost" type="button" (click)="bulkPolicyFollowUp()" [disabled]="selectedRiskCount() === 0">Policy follow-up</button>
+        <a class="btn-ghost" routerLink="/manager/audit">Open Audit Center</a>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="th-center">
+              <input
+                type="checkbox"
+                [checked]="selectedRiskCount() === riskRows().length && riskRows().length > 0"
+                (change)="toggleAllRiskLearners($any($event.target).checked)"
+              />
+            </th>
+            <th>Learner</th>
+            <th class="th-center">Overdue</th>
+            <th class="th-center">Policy Missing</th>
+            <th class="th-center">Avg Score</th>
+            <th>Risk</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of riskRows()">
+            <td class="td-center">
+              <input type="checkbox" [checked]="selectedRiskLearners().has(r.id)" (change)="toggleRiskLearner(r.id, $any($event.target).checked)" />
+            </td>
+            <td>
+              <div class="learner-cell">
+                <div class="avatar">{{ r.initials }}</div>
+                <div class="learner-info">
+                  <div class="learner-name">{{ r.displayName || '(no name)' }}</div>
+                  <div class="learner-email">{{ r.email || '—' }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="td-center">{{ r.overdue }}</td>
+            <td class="td-center">{{ r.missingPolicies }}</td>
+            <td class="td-center">{{ r.avgScore !== null ? r.avgScore + '%' : '—' }}</td>
+            <td>
+              <span class="risk-badge" [class.risk-badge--high]="r.riskLabel === 'High'" [class.risk-badge--medium]="r.riskLabel === 'Medium'">
+                {{ r.riskLabel }} · {{ r.riskScore }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input
+        class="search-input"
+        type="text"
+        placeholder="Search by name or email…"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+      />
+      <button class="search-clear" *ngIf="searchTerm()" (click)="clearSearch()">✕</button>
+    </div>
+
+    <div class="filter-tabs">
+      <button class="filter-tab" [class.active]="statusFilter() === 'all'"      (click)="statusFilter.set('all')">All ({{ stats().total }})</button>
+      <button class="filter-tab" [class.active]="statusFilter() === 'active'"   (click)="statusFilter.set('active')">Active ({{ stats().active }})</button>
+      <button class="filter-tab" [class.active]="statusFilter() === 'inactive'" (click)="statusFilter.set('inactive')">Inactive ({{ stats().inactive }})</button>
+    </div>
+
+    <div class="sort-wrap">
+      <label class="sort-label">Sort by</label>
+      <select class="sort-select" [ngModel]="sortField()" (ngModelChange)="sortField.set($event)">
+        <option value="name">Name</option>
+        <option value="completed">Most Completed</option>
+        <option value="avgScore">Highest Score</option>
+        <option value="risk">Highest Risk</option>
+        <option value="progress">Highest Progress</option>
+        <option value="studyTime">Most Study Time</option>
+        <option value="lastConnection">Recent Connection</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- LEARNER TABLE -->
+  <section class="panel">
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Learner</th>
+            <th>Analytics</th>
+            <th class="th-center">Assigned</th>
+            <th class="th-center">In Progress</th>
+            <th class="th-center">Completed</th>
+            <th class="th-center">Avg Score</th>
+            <th class="th-center">Risk</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- DATA ROWS -->
+          <tr *ngFor="let r of filteredRows()">
+            <td>
+              <div class="learner-cell">
+                <div class="avatar">{{ r.initials }}</div>
+                <div class="learner-info">
+                  <div class="learner-name">{{ r.displayName || '(no name)' }}</div>
+                  <div class="learner-email">{{ r.email || '—' }}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="analytics-cell">
+                <div class="analytics-top">
+                  <span class="analytics-pill analytics-pill--navy">
+                    Progress {{ r.averageProgress !== null ? r.averageProgress + '%' : '—' }}
+                  </span>
+                  <span class="analytics-pill analytics-pill--teal">
+                    Study {{ formatStudyTime(r.estimatedStudyMinutes) }}
+                  </span>
+                  <span class="analytics-pill analytics-pill--blue">
+                    App {{ formatStudyTime(r.totalAppMinutes) }}
+                  </span>
+                </div>
+                <div class="analytics-meta">
+                  <span>Connection {{ formatLastSeen(r.lastConnectionAt) }}</span>
+                  <span>Study activity {{ formatLastSeen(r.lastStudyAt) }}</span>
+                  <span>{{ r.inProgress }} active · {{ r.completed }} completed</span>
+                </div>
+              </div>
+            </td>
+            <td class="td-center">
+              <span class="count-chip count-chip--neutral">{{ r.assigned }}</span>
+            </td>
+            <td class="td-center">
+              <span class="count-chip count-chip--blue" *ngIf="r.inProgress > 0">{{ r.inProgress }}</span>
+              <span class="muted" *ngIf="r.inProgress === 0">—</span>
+            </td>
+            <td class="td-center">
+              <span class="count-chip count-chip--green" *ngIf="r.completed > 0">{{ r.completed }}</span>
+              <span class="muted" *ngIf="r.completed === 0">—</span>
+            </td>
+            <td class="td-center">
+              <span *ngIf="r.avgScore !== null"
+                class="score-pill"
+                [class.score-pill--high]="r.avgScore >= 85"
+                [class.score-pill--mid]="r.avgScore >= 70 && r.avgScore < 85"
+                [class.score-pill--low]="r.avgScore < 70">
+                {{ r.avgScore }}%
+              </span>
+              <span class="muted" *ngIf="r.avgScore === null">—</span>
+            </td>
+            <td class="td-center">
+              <span class="risk-badge" [class.risk-badge--high]="r.riskLabel === 'High'" [class.risk-badge--medium]="r.riskLabel === 'Medium'">
+                {{ r.riskLabel }}
+              </span>
+              <div class="muted small" *ngIf="r.riskScore > 0">{{ r.overdue }} overdue · {{ r.missingPolicies }} policy</div>
+            </td>
+            <td>
+              <span class="status-badge" [class.status-badge--active]="r.active !== false" [class.status-badge--inactive]="r.active === false">
+                {{ r.active !== false ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td class="td-actions">
+              <button class="action-btn" (click)="assignTo(r.id)" title="Assign training">Assign</button>
+            </td>
+          </tr>
+
+          <!-- EMPTY STATE -->
+          <tr *ngIf="filteredRows().length === 0 && allRows().length > 0">
+            <td colspan="9" class="empty-row">
+              No learners match your search. <button class="link-btn" (click)="clearSearch()">Clear filter</button>
+            </td>
+          </tr>
+
+          <!-- NO LEARNERS YET -->
+          <tr *ngIf="allRows().length === 0">
+            <td colspan="9" class="empty-row">
+              <div class="empty-state">
+                <div class="empty-state__icon">◎</div>
+                <div class="empty-state__title">No learners yet</div>
+                <div class="empty-state__sub">Learners with <code>role: learner</code> in your organization will appear here.</div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- TABLE FOOTER -->
+    <div class="panel-footer" *ngIf="filteredRows().length > 0">
+      Showing <strong>{{ filteredRows().length }}</strong> of <strong>{{ allRows().length }}</strong> learners
+    </div>
+  </section>
+
+</div>

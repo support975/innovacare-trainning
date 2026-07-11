@@ -567,6 +567,39 @@
   font-size: 1.1rem;
 }
 
+.access-request-card {
+  max-width: 680px;
+  margin: 4rem auto;
+  padding: 2rem;
+  background: #ffffff;
+  border: 1px solid #e0e7ef;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.access-request-card h2 {
+  margin: 0 0 0.75rem;
+  color: #1a2b4a;
+  font-size: 1.5rem;
+}
+
+.access-request-card p {
+  margin: 0 0 1.25rem;
+  color: #5a6a7e;
+  line-height: 1.55;
+}
+
+.access-request-card button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-right: 1rem;
+}
+
+.access-request-card__back {
+  margin: 1rem 0 0;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .hero-content {

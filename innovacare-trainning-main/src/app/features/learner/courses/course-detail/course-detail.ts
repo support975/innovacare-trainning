@@ -1,11 +1,24 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { Firestore, doc, docData, collection, collectionData } from '@angular/fire/firestore';
+import {
+  Firestore,
+  doc,
+  docData,
+  collection,
+  collectionData,
+  serverTimestamp,
+  setDoc,
+} from '@angular/fire/firestore';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Observable, firstValueFrom, map, of, switchMap } from 'rxjs';
 import { Auth, authState } from '@angular/fire/auth';
 import { EnrollmentService } from '../../../../shared/services/enrollement';
+import {
+  canAccessCourseByEmail,
+  hasCourseEmailDomainRestriction,
+  normalizedAllowedEmailDomains,
+} from '../../../../shared/course-domain-access';
 
 /** ---- Models ---- */
 export type Lang = 'EN' | 'FR' | 'ES';
@@ -46,6 +59,7 @@ export interface Course {
   releaseAt?: any;
   publishedAt?: any;
   isPublic?: boolean;
+  allowedEmailDomains?: string[];
   passingScore: number;
   lockedSequence: boolean;
   exipirationDate?: any;
@@ -97,6 +111,7 @@ export class CourseDetail {
   private enrollSvc = inject(EnrollmentService);
   private auth = inject(Auth);
   private uid$ = authState(this.auth).pipe(map((u) => u?.uid ?? null));
+  private currentUser = toSignal(authState(this.auth), { initialValue: undefined as any });
 
   notice = '';
   busy = false;
@@ -141,6 +156,7 @@ export class CourseDetail {
         passingScore: 80,
         lockedSequence: false,
         isPublic: false,
+        allowedEmailDomains: [],
         sections: [],
       },
     }
@@ -169,6 +185,20 @@ export class CourseDetail {
     } catch {
       return false;
     }
+  }
+
+  domainAccessPending(): boolean {
+    return hasCourseEmailDomainRestriction(this.course()) && this.currentUser() === undefined;
+  }
+
+  domainAccessDenied(): boolean {
+    const user = this.currentUser();
+    if (user === undefined) return false;
+    return !canAccessCourseByEmail(this.course(), user?.email ?? '');
+  }
+
+  allowedDomainLabel(): string {
+    return normalizedAllowedEmailDomains(this.course()).join(', ');
   }
 
   formatDate(v: any): string {
@@ -237,6 +267,10 @@ export class CourseDetail {
       this.notice = 'Please sign in first.';
       return;
     }
+    if (!canAccessCourseByEmail(this.course(), user.email ?? '')) {
+      this.notice = `This course is restricted to ${this.allowedDomainLabel()} accounts.`;
+      return;
+    }
 
     const enr: any = await this.enrollSvc.getEnrollment(user.uid, this.courseId);
     if (!enr) {
@@ -297,11 +331,40 @@ export class CourseDetail {
         this.notice = 'Please sign in first.';
         return;
       }
-      await this.enrollSvc.ensureEnrollment(user.uid, courseId, 'self');
-      this.notice = 'Course assigned to your account.';
+      if (!canAccessCourseByEmail(this.course(), user.email ?? '')) {
+        this.notice = `This course is restricted to ${this.allowedDomainLabel()} accounts.`;
+        return;
+      }
+
+      if (this.course().isPublic === true) {
+        await this.enrollSvc.ensureEnrollment(user.uid, courseId, 'self');
+        this.notice = 'Course assigned to your account.';
+        return;
+      }
+
+      const requestId = `${user.uid}_${courseId}`.replace(/[^\w-]/g, '_');
+      await setDoc(
+        doc(this.afs, `courseAccessRequests/${requestId}`),
+        {
+          uid: user.uid,
+          userEmail: user.email ?? '',
+          userName: user.displayName ?? '',
+          courseId,
+          courseTitle: this.course().title || courseId,
+          status: 'pending_approval',
+          paymentStatus: 'not_started',
+          source: 'learner-course-detail',
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        },
+        { merge: false }
+      );
+      this.notice = 'Access request submitted for administrator approval.';
     } catch (e: any) {
-      console.error('Enrollment write failed:', e);
-      this.notice = e?.message || 'Failed to assign course.';
+      console.error('Course access action failed:', e);
+      this.notice = this.course().isPublic
+        ? (e?.message || 'Failed to assign course.')
+        : 'An access request already exists or this course is unavailable.';
     } finally {
       this.busy = false;
     }

@@ -1,0 +1,145 @@
+{
+  "id": "remote-work-productivity-communication",
+  "title": "Remote Work Productivity and Communication",
+  "subtitle": "Work effectively across locations and time zones",
+  "description": "Train remote and hybrid employees on expectations, communication rhythm, meetings, cybersecurity habits, documentation, and accountability.",
+  "lang": "EN",
+  "durationMin": 45,
+  "ceCredit": 0,
+  "sortOrder": 110,
+  "active": true,
+  "isPublic": true,
+  "kind": "Course",
+  "type": "Hr",
+  "level": "Beginner",
+  "url": "/catalogue/remote-work-productivity-communication",
+  "imageUrl": "https://images.unsplash.com/photo-1587614382346-4ec70e388b28?auto=format&fit=crop&w=1200&q=80",
+  "tags": [
+    "enterprise",
+    "remote-work",
+    "hybrid-work",
+    "communication",
+    "productivity"
+  ],
+  "lecturer": "Innovacare Training Workplace Performance Faculty",
+  "disclosures": [
+    "This course should be aligned with each organization's remote work policy."
+  ],
+  "targetAudience": [
+    "Remote employees",
+    "Hybrid teams",
+    "Managers",
+    "Administrative teams"
+  ],
+  "prerequisites": [
+    "Basic computer and collaboration tool use"
+  ],
+  "requirements": [
+    "Complete all lessons",
+    "Pass the remote work quiz"
+  ],
+  "accomodations": "Accessibility accommodations may be requested through the organization administrator.",
+  "orgId": null,
+  "assignedOrgIds": [],
+  "passingScore": 80,
+  "lockedSequence": true,
+  "sections": [
+    {
+      "id": "remote-expectations",
+      "title": "Remote Work Expectations",
+      "order": 1,
+      "estMin": 22,
+      "lessons": [
+        {
+          "id": "availability",
+          "title": "Availability and Responsiveness",
+          "order": 1,
+          "estMin": 10,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Remote work requires clear availability, timely responses, documented priorities, and respect for schedules across locations.</p>",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "meetings",
+          "title": "Better Remote Meetings",
+          "order": 2,
+          "estMin": 12,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Effective remote meetings have a purpose, agenda, owner, decisions, and documented next steps.</p>",
+              "required": true
+            },
+            {
+              "id": "quiz",
+              "type": "quiz",
+              "mode": "single",
+              "question": "What makes a remote meeting more effective?",
+              "required": true,
+              "choices": [
+                {
+                  "id": "a",
+                  "text": "No agenda and no follow-up",
+                  "correct": false
+                },
+                {
+                  "id": "b",
+                  "text": "Clear purpose, owner, decisions, and next steps",
+                  "correct": true
+                },
+                {
+                  "id": "c",
+                  "text": "Inviting everyone to every meeting",
+                  "correct": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "remote-accountability",
+      "title": "Remote Accountability",
+      "order": 2,
+      "estMin": 23,
+      "lessons": [
+        {
+          "id": "documentation",
+          "title": "Document Work Clearly",
+          "order": 1,
+          "estMin": 11,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Remote teams work better when tasks, deadlines, decisions, and blockers are visible in approved tools.</p>",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "secure-remote-work",
+          "title": "Secure Remote Work Habits",
+          "order": 2,
+          "estMin": 12,
+          "blocks": [
+            {
+              "id": "callout",
+              "type": "callout",
+              "style": "info",
+              "html": "<p>Use approved devices, secure networks, password protection, and private spaces when handling company information remotely.</p>",
+              "required": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

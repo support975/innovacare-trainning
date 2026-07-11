@@ -1,3 +1,5 @@
+/* eslint max-len: ["error", { "code": 120, "ignoreUrls": true, "ignoreStrings": true }] */
+/* eslint-disable require-jsdoc */
 import * as admin from "firebase-admin";
 import sgMail from "@sendgrid/mail";
 
@@ -18,7 +20,12 @@ export interface EmailNotification {
 export interface InAppNotification {
   id?: string;
   learnerId: string;
-  type: "course_assigned" | "course_completed" | "course_overdue" | "transcript" | "reward";
+  type:
+    | "course_assigned"
+    | "course_completed"
+    | "course_overdue"
+    | "transcript"
+    | "reward";
   title: string;
   message: string;
   icon: string;

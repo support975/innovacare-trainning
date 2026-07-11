@@ -1,0 +1,118 @@
+<div class="auth-container">
+  <div class="auth-wrapper">
+    <div class="card auth-card">
+      <div class="card-header">
+        <div class="logo-section">
+          <h1 class="title">Create Learner Profile</h1>
+          <p class="subtitle">INDIVIDUAL PUBLIC COURSE ACCESS</p>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="course-note" *ngIf="selectedCourseId()">
+          <ng-container *ngIf="requestAccess(); else publicCourseNote">
+            Organization-only courses require admin approval and payment before access.
+          </ng-container>
+          <ng-template #publicCourseNote>
+            This profile is for public courses. If the course is organization-only, we will submit an access request for admin approval.
+          </ng-template>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="submit()" class="form">
+          <div class="form-group">
+            <label class="label" for="displayName">Full name</label>
+            <div class="input-wrapper">
+              <span class="input-icon">ID</span>
+              <input
+                id="displayName"
+                class="input"
+                type="text"
+                formControlName="displayName"
+                autocomplete="name"
+                placeholder="Your full name"
+              />
+            </div>
+            <small class="help error-text" *ngIf="form.controls.displayName.invalid && form.controls.displayName.touched">
+              Full name is required.
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label class="label" for="email">Email address</label>
+            <div class="input-wrapper">
+              <span class="input-icon">@</span>
+              <input
+                id="email"
+                class="input"
+                type="email"
+                formControlName="email"
+                autocomplete="email"
+                placeholder="you@example.com"
+              />
+            </div>
+            <small class="help error-text" *ngIf="form.controls.email.invalid && form.controls.email.touched">
+              Valid email address required.
+            </small>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="label" for="password">Password</label>
+              <div class="input-wrapper">
+                <span class="input-icon">PW</span>
+                <input
+                  id="password"
+                  class="input"
+                  type="password"
+                  formControlName="password"
+                  autocomplete="new-password"
+                  placeholder="At least 8 characters"
+                />
+              </div>
+              <small class="help error-text" *ngIf="form.controls.password.invalid && form.controls.password.touched">
+                Minimum 8 characters required.
+              </small>
+            </div>
+
+            <div class="form-group">
+              <label class="label" for="confirmPassword">Confirm password</label>
+              <div class="input-wrapper">
+                <span class="input-icon">OK</span>
+                <input
+                  id="confirmPassword"
+                  class="input"
+                  type="password"
+                  formControlName="confirmPassword"
+                  autocomplete="new-password"
+                  placeholder="Repeat password"
+                />
+              </div>
+              <small class="help error-text" *ngIf="passwordMismatch && form.controls.confirmPassword.touched">
+                Passwords must match.
+              </small>
+            </div>
+          </div>
+
+          <div class="error-alert" *ngIf="error()">
+            <span class="error-icon">!</span>
+            <p class="error">{{ error() }}</p>
+          </div>
+
+          <button class="btn btn-primary" type="submit" [disabled]="loading()" [class.loading]="loading()">
+            <span *ngIf="!loading()">Create profile</span>
+            <span *ngIf="loading()">Creating profile...</span>
+          </button>
+        </form>
+
+        <div class="footer-links">
+          <p class="forgot-password">
+            Already have an account? <a routerLink="/login" class="link">Sign in</a>
+          </p>
+          <button routerLink="/catalogue" class="btn btn-link" type="button">
+            Back to catalogue
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

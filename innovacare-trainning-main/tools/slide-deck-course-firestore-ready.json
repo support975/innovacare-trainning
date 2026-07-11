@@ -1,0 +1,197 @@
+{
+  "docPath": "courses/course-sud-foundations-001",
+  "docId": "course-sud-foundations-001",
+  "docData": {
+    "id": "course-sud-foundations-001",
+    "title": "Substance Use Disorder Foundations",
+    "subtitle": "Audio-guided slide lesson for learner playback",
+    "description": "Firestore-ready example aligned with the current course schema and the slideDeck block used by the manager builder and learner player.",
+    "lang": "EN",
+    "durationMin": 18,
+    "ceCredit": 1,
+    "active": true,
+    "tags": [
+      "SUD",
+      "behavioral health",
+      "clinical orientation"
+    ],
+    "imageUrl": "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1200&q=80",
+    "createdAt": null,
+    "updatedAt": null,
+    "kind": "Course",
+    "url": "substance-use-disorder-foundations",
+    "sections": [
+      {
+        "id": "section-sud-basics",
+        "title": "SUD Basics",
+        "lessons": [
+          {
+            "id": "lesson-sud-overview",
+            "title": "Understanding the Care Context",
+            "estMin": 8,
+            "blocks": [
+              {
+                "type": "heading",
+                "level": 2,
+                "text": "Substance Use Disorder Overview"
+              },
+              {
+                "type": "text",
+                "html": "<p>This lesson introduces the care setting, the patient journey and the responsibilities of the care team.</p>"
+              },
+              {
+                "type": "slideDeck",
+                "theme": "focus",
+                "slides": [
+                  {
+                    "id": "slide-01",
+                    "title": "Why this training matters",
+                    "imageUrl": "https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=1200&q=80",
+                    "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+                    "transcript": "Welcome to the training. In this first slide, we explain why standardized substance use disorder education matters for patient safety and continuity of care.",
+                    "notesHtml": "<p><strong>Key point:</strong> Every learner should understand the basics of screening, response and escalation pathways.</p>",
+                    "interactiveCards": [
+                      {
+                        "id": "slide-01-card-01",
+                        "title": "Patient safety impact",
+                        "teaser": "Why consistency changes outcomes",
+                        "bodyHtml": "<p>Consistent screening and escalation reduce missed warning signs and improve handoff quality.</p>",
+                        "variant": "default"
+                      },
+                      {
+                        "id": "slide-01-card-02",
+                        "title": "Flip: care team role",
+                        "teaser": "Tap to reveal the team expectation",
+                        "bodyHtml": "<p>Every team member is expected to document observations and escalate according to protocol.</p>",
+                        "variant": "flip"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "slide-02",
+                    "title": "Recognizing patient risk factors",
+                    "imageUrl": "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1200&q=80",
+                    "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+                    "transcript": "Risk factors may include prior misuse history, unstable access to medication, co-occurring behavioral health needs and social stressors.",
+                    "notesHtml": "<ul><li>Review the chart before the visit</li><li>Watch for changes in affect and orientation</li><li>Document concerns promptly</li></ul>",
+                    "interactiveCards": [
+                      {
+                        "id": "slide-02-card-01",
+                        "title": "Medication history",
+                        "teaser": "Hotspot near the chart area",
+                        "bodyHtml": "<p>Look for refill gaps, dose changes and recent emergency visits related to medication access.</p>",
+                        "variant": "hotspot",
+                        "hotspotX": 28,
+                        "hotspotY": 34
+                      },
+                      {
+                        "id": "slide-02-card-02",
+                        "title": "Behavioral cues",
+                        "teaser": "Hotspot near the patient interaction zone",
+                        "bodyHtml": "<p>Changes in affect, confusion and withdrawal can signal increased risk and need for escalation.</p>",
+                        "variant": "hotspot",
+                        "hotspotX": 70,
+                        "hotspotY": 58
+                      }
+                    ]
+                  },
+                  {
+                    "id": "slide-03",
+                    "title": "Coordinating the response",
+                    "imageUrl": "https://images.unsplash.com/photo-1527613426441-4da17471b66d?auto=format&fit=crop&w=1200&q=80",
+                    "audioUrl": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+                    "transcript": "A safe response relies on communication between the clinician, supervisor, care coordinator and the rest of the multidisciplinary team.",
+                    "notesHtml": "<p>Document observations, follow internal protocol and escalate according to role-based guidance.</p>",
+                    "interactiveCards": [
+                      {
+                        "id": "slide-03-card-01",
+                        "title": "Step 1: Document",
+                        "teaser": "Start the sequence",
+                        "bodyHtml": "<p>Capture the observation clearly, objectively and in the correct system of record.</p>",
+                        "variant": "sequence"
+                      },
+                      {
+                        "id": "slide-03-card-02",
+                        "title": "Step 2: Notify",
+                        "teaser": "Unlocks after step 1",
+                        "bodyHtml": "<p>Notify the right clinician or supervisor using the escalation path defined by policy.</p>",
+                        "variant": "sequence"
+                      },
+                      {
+                        "id": "slide-03-card-03",
+                        "title": "Step 3: Confirm handoff",
+                        "teaser": "Unlocks after step 2",
+                        "bodyHtml": "<p>Confirm the handoff was received and any immediate follow-up action is assigned.</p>",
+                        "variant": "sequence"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "quiz",
+                "mode": "single",
+                "question": "Which action best supports safe SUD care coordination?",
+                "choices": [
+                  {
+                    "id": "choice-a",
+                    "text": "Wait until the end of the week to document concerns",
+                    "correct": false
+                  },
+                  {
+                    "id": "choice-b",
+                    "text": "Use the care protocol and escalate observations promptly",
+                    "correct": true
+                  },
+                  {
+                    "id": "choice-c",
+                    "text": "Rely only on memory rather than standardized notes",
+                    "correct": false
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "lecturer": "Innovacare Clinical Education",
+    "disclosures": [],
+    "targetAudience": [
+      "Nurses",
+      "Care coordinators",
+      "Managers"
+    ],
+    "prerequisites": [
+      "Basic orientation completed"
+    ],
+    "requirements": [
+      "Audio enabled device"
+    ],
+    "accomodations": "Contact your training administrator for alternative formats.",
+    "orgId": null,
+    "orgType": "health",
+    "healthMeta": {
+      "specialty": "Behavioral Health",
+      "careSetting": [
+        "HomeHealth",
+        "Hospital"
+      ],
+      "clinicalTopics": [
+        "Substance Use Disorder",
+        "Care Coordination"
+      ]
+    },
+    "releaseAt": null,
+    "publishedAt": null,
+    "isPublic": true,
+    "passingScore": 80,
+    "lockedSequence": false,
+    "exipirationDate": null,
+    "confirmAt": null,
+    "confirmBy": "",
+    "confirmMessage": "",
+    "type": "Health",
+    "level": "Beginner"
+  }
+}

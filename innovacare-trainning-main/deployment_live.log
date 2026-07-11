@@ -1,0 +1,85 @@
+
+[1m[37m===[39m Deploying to 'innovacare-training'...[22m
+
+[36m[1mi [22m[39m deploying [1mfirestore, functions, hosting[22m
+Running command: npm.cmd --prefix functions run lint
+
+> lint
+> eslint --ext .js,.ts .
+
+Running command: npm.cmd --prefix functions run build
+
+> build
+> tsc
+
+[32m[1m+ [22m[39m [32m[1mfunctions:[22m[39m Finished running [1mpredeploy[22m script.
+Running command: npm.cmd --prefix innovacare-training run lint
+
+> lint
+> eslint --ext .js,.ts .
+
+Running command: npm.cmd --prefix innovacare-training run build
+
+> build
+> tsc
+
+[32m[1m+ [22m[39m [32m[1mfunctions:[22m[39m Finished running [1mpredeploy[22m script.
+[36m[1mi  firestore:[22m[39m ensuring required API [1mfirestore.googleapis.com[22m is enabled...
+[36m[1mi  firestore:[22m[39m ensuring required API [1mfirestore.googleapis.com[22m is enabled...
+[36m[1mi [22m[39m [1m[36mfirestore:[39m[22m reading indexes from [1mfirestore.indexes.json[22m...
+[36m[1mi  cloud.firestore:[22m[39m checking [1mfirestore.rules[22m for compilation errors...
+[32m[1m+  cloud.firestore:[22m[39m rules file [1mfirestore.rules[22m compiled successfully
+[36m[1mi  functions:[22m[39m preparing codebase [1mdefault[22m for deployment
+[36m[1mi  functions:[22m[39m preparing codebase [1minnovacare-training[22m for deployment
+[36m[1mi  functions:[22m[39m ensuring required API [1mcloudfunctions.googleapis.com[22m is enabled...
+[36m[1mi  functions:[22m[39m ensuring required API [1mcloudbuild.googleapis.com[22m is enabled...
+[36m[1mi  artifactregistry:[22m[39m ensuring required API [1martifactregistry.googleapis.com[22m is enabled...
+[33m[1m! [22m[39m [1m[33mfunctions: [39m[22mpackage.json indicates an outdated version of firebase-functions. Please upgrade using [1mnpm install --save firebase-functions@latest[22m in your functions directory.
+[33m[1m! [22m[39m [1m[33mfunctions: [39m[22mPlease note that there will be breaking changes when you upgrade.
+[36m[1mi  functions:[22m[39m Loading and analyzing source code for codebase default to determine what to deploy
+Serving at port 8290
+
+[33m[1m! [22m[39m [1m[33mfunctions: [39m[22mpackage.json indicates an outdated version of firebase-functions. Please upgrade using [1mnpm install --save firebase-functions@latest[22m in your functions directory.
+[33m[1m! [22m[39m [1m[33mfunctions: [39m[22mPlease note that there will be breaking changes when you upgrade.
+[36m[1mi  functions:[22m[39m Loading and analyzing source code for codebase innovacare-training to determine what to deploy
+Serving at port 8014
+
+[36m[1mi  extensions:[22m[39m ensuring required API [1mfirebaseextensions.googleapis.com[22m is enabled...
+[36m[1mi  functions:[22m[39m preparing [1mfunctions[22m directory for uploading...
+[36m[1mi [22m[39m [36m[1mfunctions:[22m[39m packaged [1mC:\Users\Perry Home WoundCare\OneDrive\Desktop\Innovacare Architecture Pro\innovacare-trainning\innovacare-trainning-main\functions[22m (161.75 KB) for uploading
+[36m[1mi  functions:[22m[39m ensuring required API [1mcloudscheduler.googleapis.com[22m is enabled...
+[36m[1mi  functions:[22m[39m ensuring required API [1mrun.googleapis.com[22m is enabled...
+[36m[1mi  functions:[22m[39m ensuring required API [1meventarc.googleapis.com[22m is enabled...
+[36m[1mi  functions:[22m[39m ensuring required API [1mpubsub.googleapis.com[22m is enabled...
+[36m[1mi  functions:[22m[39m ensuring required API [1mstorage.googleapis.com[22m is enabled...
+[36m[1mi  functions:[22m[39m generating the service identity for [1mpubsub.googleapis.com[22m...
+[36m[1mi  functions:[22m[39m generating the service identity for [1meventarc.googleapis.com[22m...
+[36m[1mi  functions:[22m[39m ensuring required API [1msecretmanager.googleapis.com[22m is enabled...
+[36m[1mi  firestore:[22m[39m latest version of [1mfirestore.rules[22m already up to date, skipping upload...
+[36m[1mi [22m[39m [1m[36mfirestore: [39m[22mdeploying indexes...
+[36m[1mi  firestore:[22m[39m there are 5 indexes defined in your project that are not present in your firestore indexes file. To delete them, run this command with the --force flag.
+[32m[1m+ [22m[39m [1m[32mfirestore:[39m[22m deployed indexes in [1mfirestore.indexes.json[22m successfully for (default) database
+[32m[1m+  functions:[22m[39m [1mfunctions[22m source uploaded successfully
+[36m[1mi  hosting[innovacare-training]:[22m[39m beginning deploy...
+[36m[1mi  hosting[innovacare-training]:[22m[39m found 0 files in [1mdist/myapp/browser[22m
+[36m[1mi  hosting:[22m[39m hashing files [0/0] ([1m[32mNaN%[39m[22m)
+[32m[1m+  hosting[innovacare-training]:[22m[39m file upload complete
+[32m[1m+  firestore:[22m[39m released rules [1mfirestore.rules[22m to [1mcloud.firestore[22m
+
+[1m[31mError:[39m[22m The following functions are found in your project but do not exist in your local source code:
+	chatWithAI(us-central1)
+	createCheckoutSession(us-central1)
+	getMyCart(us-central1)
+	manualGrantPurchasedAccess(us-central1)
+	mergeLocalCart(us-central1)
+	publishCourseToMarketplace(us-central1)
+	upsertMyCart(us-central1)
+
+Aborting because deletion cannot proceed in non-interactive mode. To fix, manually delete the functions by running:
+[1m	firebase functions:delete chatWithAI --region us-central1
+	firebase functions:delete createCheckoutSession --region us-central1
+	firebase functions:delete getMyCart --region us-central1
+	firebase functions:delete manualGrantPurchasedAccess --region us-central1
+	firebase functions:delete mergeLocalCart --region us-central1
+	firebase functions:delete publishCourseToMarketplace --region us-central1
+	firebase functions:delete upsertMyCart --region us-central1[22m

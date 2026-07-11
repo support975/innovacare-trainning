@@ -1,0 +1,145 @@
+{
+  "id": "frontline-leadership-supervisors",
+  "title": "Frontline Leadership for Supervisors",
+  "subtitle": "Lead teams with clarity, fairness, and accountability",
+  "description": "Prepare supervisors to set expectations, coach employees, document performance, handle conflict, and communicate priorities.",
+  "lang": "EN",
+  "durationMin": 65,
+  "ceCredit": 0,
+  "sortOrder": 108,
+  "active": true,
+  "isPublic": true,
+  "kind": "Course",
+  "type": "Hr",
+  "level": "Intermediate",
+  "url": "/catalogue/frontline-leadership-supervisors",
+  "imageUrl": "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1200&q=80",
+  "tags": [
+    "enterprise",
+    "leadership",
+    "supervisor",
+    "management",
+    "coaching"
+  ],
+  "lecturer": "Innovacare Training Leadership Faculty",
+  "disclosures": [
+    "This course is general leadership training and should align with organization HR policies."
+  ],
+  "targetAudience": [
+    "Supervisors",
+    "Team leads",
+    "Managers",
+    "High-potential employees"
+  ],
+  "prerequisites": [
+    "Basic workplace experience"
+  ],
+  "requirements": [
+    "Complete all lessons",
+    "Pass the leadership scenario quiz"
+  ],
+  "accomodations": "Accessibility accommodations may be requested through the organization administrator.",
+  "orgId": null,
+  "assignedOrgIds": [],
+  "passingScore": 80,
+  "lockedSequence": true,
+  "sections": [
+    {
+      "id": "supervisor-role",
+      "title": "The Supervisor Role",
+      "order": 1,
+      "estMin": 30,
+      "lessons": [
+        {
+          "id": "expectations",
+          "title": "Set Clear Expectations",
+          "order": 1,
+          "estMin": 15,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Supervisors translate company goals into daily priorities. Clear expectations reduce confusion and make accountability fairer.</p>",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "coach-feedback",
+          "title": "Coach with Timely Feedback",
+          "order": 2,
+          "estMin": 15,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Effective coaching is specific, timely, respectful, and connected to observable behavior.</p>",
+              "required": true
+            },
+            {
+              "id": "quiz",
+              "type": "quiz",
+              "mode": "single",
+              "question": "Which feedback is most effective?",
+              "required": true,
+              "choices": [
+                {
+                  "id": "a",
+                  "text": "You always do this wrong",
+                  "correct": false
+                },
+                {
+                  "id": "b",
+                  "text": "In yesterday's report, two required fields were missing. Let's review the checklist.",
+                  "correct": true
+                },
+                {
+                  "id": "c",
+                  "text": "No feedback until annual review",
+                  "correct": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "accountability",
+      "title": "Accountability and Conflict",
+      "order": 2,
+      "estMin": 35,
+      "lessons": [
+        {
+          "id": "documentation",
+          "title": "Document Performance Fairly",
+          "order": 1,
+          "estMin": 17,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Performance documentation should be factual, timely, consistent, and aligned with policy.</p>",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "conflict",
+          "title": "Handle Conflict Professionally",
+          "order": 2,
+          "estMin": 18,
+          "blocks": [
+            {
+              "id": "callout",
+              "type": "callout",
+              "style": "info",
+              "html": "<p>Address conflict early. Focus on behavior, impact, expectations, and next steps.</p>",
+              "required": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

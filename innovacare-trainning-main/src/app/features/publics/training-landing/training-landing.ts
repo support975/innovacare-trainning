@@ -2,7 +2,6 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
-  HostListener,
   OnDestroy,
   QueryList,
   ViewChildren,
@@ -14,8 +13,9 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { DemoRequestDialog } from '../demo-request-dialog/demo-request-dialog';
 import { FormsModule } from '@angular/forms';
-import '@angular/compiler';
-import { RouterModule } from '@angular/router';
+import { Router } from '@angular/router';
+import { PublicSiteNavComponent } from '../../../shared/components/public-site-nav/public-site-nav';
+import { PublicTranslateDirective } from '../../../shared/directives/public-translate.directive';
 
 
 
@@ -76,7 +76,7 @@ interface FaqItem {
 @Component({
   selector: 'app-training-landing',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatDialogModule, MatIconModule, FormsModule,RouterModule],
+  imports: [CommonModule, MatButtonModule, MatDialogModule, MatIconModule, FormsModule, PublicSiteNavComponent, PublicTranslateDirective],
   templateUrl: './training-landing.html',
   styleUrls: ['./training-landing.css'],
 })
@@ -84,9 +84,8 @@ export class TrainingLandingComponent implements AfterViewInit, OnDestroy {
   @ViewChildren('revealRef') revealElements!: QueryList<ElementRef<HTMLElement>>;
 
   private readonly dialog = inject(MatDialog);
+  private readonly router = inject(Router);
 
-  mobileMenuOpen = false;
-  headerScrolled = false;
   activeCategory = 2;
   activeTestimonial = 0;
 
@@ -317,7 +316,9 @@ export class TrainingLandingComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.initRevealObserver();
-    this.startTestimonialsAutoplay();
+    if (!this.prefersReducedMotionOrSmallScreen()) {
+      this.startTestimonialsAutoplay();
+    }
   }
 
   ngOnDestroy(): void {
@@ -325,19 +326,6 @@ export class TrainingLandingComponent implements AfterViewInit, OnDestroy {
     if (this.testimonialInterval) {
       clearInterval(this.testimonialInterval);
     }
-  }
-
-  @HostListener('window:scroll')
-  onWindowScroll(): void {
-    this.headerScrolled = window.scrollY > 10;
-  }
-
-  toggleMobileMenu(): void {
-    this.mobileMenuOpen = !this.mobileMenuOpen;
-  }
-
-  closeMobileMenu(): void {
-    this.mobileMenuOpen = false;
   }
 
   openDemoDialog(): void {
@@ -379,6 +367,13 @@ export class TrainingLandingComponent implements AfterViewInit, OnDestroy {
   }
 
   private initRevealObserver(): void {
+    if (typeof IntersectionObserver === 'undefined' || this.prefersReducedMotionOrSmallScreen()) {
+      queueMicrotask(() => {
+        this.revealElements.forEach((item) => item.nativeElement.classList.add('is-visible'));
+      });
+      return;
+    }
+
     this.revealObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -400,6 +395,8 @@ export class TrainingLandingComponent implements AfterViewInit, OnDestroy {
   }
 
   private startTestimonialsAutoplay(): void {
+    if (this.prefersReducedMotionOrSmallScreen()) return;
+
     this.testimonialInterval = setInterval(() => {
       this.nextTestimonial();
     }, 5000);
@@ -411,8 +408,17 @@ export class TrainingLandingComponent implements AfterViewInit, OnDestroy {
     }
     this.startTestimonialsAutoplay();
   }
+
+  private prefersReducedMotionOrSmallScreen(): boolean {
+    if (typeof window === 'undefined' || !window.matchMedia) return false;
+
+    return (
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      window.matchMedia('(max-width: 768px)').matches
+    );
+  }
+
   login(): void {
-    // Redirige vers la page de connexion
-    window.location.href = '/login';
+    void this.router.navigate(['/login']);
   }
 }

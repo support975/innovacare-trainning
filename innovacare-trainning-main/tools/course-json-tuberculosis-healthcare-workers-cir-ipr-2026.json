@@ -1,0 +1,332 @@
+{
+  "docPath": "courses/tuberculosis-healthcare-workers-cir-ipr-2026",
+  "docId": "tuberculosis-healthcare-workers-cir-ipr-2026",
+  "docData": {
+    "title": "Tuberculosis for Healthcare Workers (CIR-IPR 2026)",
+    "subtitle": "TB basics, risk factors, symptoms, and workplace safety practices",
+    "description": "Healthcare worker training covering tuberculosis basics, risk factors, signs and symptoms, safety policies, and acknowledgement.",
+    "lang": "EN",
+    "durationMin": 20,
+    "ceCredit": 0,
+    "active": false,
+    "kind": "Course",
+    "type": "Health",
+    "level": "Beginner",
+    "imageUrl": "",
+    "url": "https://selectmedical.csod.com/content/selectmedical/publications/16091/scormcontent/index.html#/",
+    "lecturer": "Innovacare Training",
+    "disclosures": [],
+    "targetAudience": ["Healthcare workers", "Clinical staff", "Support staff"],
+    "prerequisites": [],
+    "requirements": ["Review all lessons", "Complete the knowledge check", "Complete acknowledgement"],
+    "accomodations": "",
+    "passingScore": 80,
+    "lockedSequence": true,
+    "isPublic": false,
+    "tags": ["tuberculosis", "TB", "infection prevention", "healthcare workers", "CIR-IPR 2026"],
+    "sections": [
+      {
+        "id": "tb-basics",
+        "title": "TB Basics",
+        "order": 0,
+        "lessons": [
+          {
+            "id": "what-is-tuberculosis",
+            "title": "What is Tuberculosis (TB)?",
+            "estMin": 5,
+            "order": 0,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "hero",
+                "title": "What is Tuberculosis (TB)?",
+                "bodyHtml": "<p>Tuberculosis is a disease caused by bacteria called <em>Mycobacterium tuberculosis</em>. TB most often affects the lungs, but it can affect other parts of the body.</p>",
+                "buttonLabel": "Start lesson",
+                "required": true
+              },
+              {
+                "type": "tabs",
+                "title": "TB Basics",
+                "introHtml": "<p>Select each tab to review the core concepts.</p>",
+                "required": true,
+                "tabs": [
+                  {
+                    "id": "latent-tb",
+                    "label": "Latent TB",
+                    "title": "Latent TB Infection",
+                    "bodyHtml": "<p>People with latent TB infection have TB bacteria in the body, but they are not sick and cannot spread TB bacteria to others.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "active-tb",
+                    "label": "Active TB",
+                    "title": "Active TB Disease",
+                    "bodyHtml": "<p>People with active TB disease may feel sick and may spread TB bacteria to others when infectious pulmonary or laryngeal TB is present.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "transmission",
+                    "label": "Transmission",
+                    "title": "How TB Spreads",
+                    "bodyHtml": "<p>TB bacteria can spread through the air when a person with infectious TB disease coughs, speaks, or sings.</p>",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "risk-factors",
+            "title": "Risk Factors",
+            "estMin": 5,
+            "order": 1,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "accordion",
+                "title": "TB Risk Factors",
+                "introHtml": "<p>Select each item to learn more.</p>",
+                "required": true,
+                "items": [
+                  {
+                    "id": "exposure-risk",
+                    "title": "Exposure risk",
+                    "bodyText": "Risk increases after close contact with someone who has infectious TB disease.",
+                    "bulletsText": "Household or close contact\nWorkplace exposure without appropriate controls\nTravel or residence in areas where TB is more common",
+                    "required": true
+                  },
+                  {
+                    "id": "medical-risk",
+                    "title": "Medical risk",
+                    "bodyText": "Some medical conditions or treatments can increase the risk that latent TB infection progresses to active TB disease.",
+                    "bulletsText": "Weakened immune system\nCertain immunosuppressive medications\nOther high-risk clinical conditions",
+                    "required": true
+                  },
+                  {
+                    "id": "healthcare-risk",
+                    "title": "Healthcare setting risk",
+                    "bodyText": "Healthcare workers should follow screening, respiratory protection, and exposure response procedures required by policy.",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "signs-and-symptoms",
+            "title": "Signs and Symptoms",
+            "estMin": 5,
+            "order": 2,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "cardStack",
+                "title": "Possible TB Symptoms",
+                "introHtml": "<p>Open each card.</p>",
+                "variant": "gated",
+                "required": true,
+                "cards": [
+                  {
+                    "id": "cough",
+                    "title": "Persistent cough",
+                    "teaser": "Respiratory symptom",
+                    "bodyHtml": "<p>A cough lasting three weeks or longer can be a symptom of pulmonary TB disease.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "systemic",
+                    "title": "Systemic symptoms",
+                    "teaser": "Whole-body symptoms",
+                    "bodyHtml": "<p>Fever, night sweats, unexplained weight loss, fatigue, and loss of appetite may occur.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "blood",
+                    "title": "Coughing blood",
+                    "teaser": "Urgent symptom",
+                    "bodyHtml": "<p>Coughing up blood or sputum should be reported promptly according to policy.</p>",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "policies-procedures",
+        "title": "Our Policies and Procedures",
+        "order": 1,
+        "lessons": [
+          {
+            "id": "what-we-do-to-keep-you-safe",
+            "title": "What We Do To Keep You Safe",
+            "estMin": 5,
+            "order": 0,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "slideDeck",
+                "theme": "focus",
+                "required": true,
+                "slides": [
+                  {
+                    "id": "tb-safety-hotspots",
+                    "title": "TB Safety Practices",
+                    "imageUrl": "",
+                    "notesHtml": "<p>Add a local TB safety workflow image or diagram, then position each hotspot over the matching practice.</p>",
+                    "interactiveCards": [
+                      {
+                        "id": "screening",
+                        "title": "Screening",
+                        "teaser": "Identify risk early",
+                        "bodyHtml": "<p>Screening helps identify potential TB risk, symptoms, or exposure concerns early.</p>",
+                        "variant": "hotspot",
+                        "hotspotX": 22,
+                        "hotspotY": 38
+                      },
+                      {
+                        "id": "airborne-precautions",
+                        "title": "Airborne Precautions",
+                        "teaser": "Use required controls",
+                        "bodyHtml": "<p>Follow airborne precautions and local isolation procedures when TB is suspected or confirmed.</p>",
+                        "variant": "hotspot",
+                        "hotspotX": 50,
+                        "hotspotY": 42
+                      },
+                      {
+                        "id": "respiratory-protection",
+                        "title": "Respiratory Protection",
+                        "teaser": "Use fitted protection",
+                        "bodyHtml": "<p>Use required respiratory protection according to fit testing, training, and policy requirements.</p>",
+                        "variant": "hotspot",
+                        "hotspotX": 76,
+                        "hotspotY": 55
+                      },
+                      {
+                        "id": "reporting",
+                        "title": "Reporting",
+                        "teaser": "Escalate concerns",
+                        "bodyHtml": "<p>Report TB symptoms, exposure concerns, or process issues according to policy.</p>",
+                        "variant": "hotspot",
+                        "hotspotX": 46,
+                        "hotspotY": 76
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "accordion",
+                "title": "Safety Controls",
+                "introHtml": "<p>Open each control before continuing.</p>",
+                "required": true,
+                "items": [
+                  {
+                    "id": "administrative-controls",
+                    "title": "Administrative controls",
+                    "bodyHtml": "<p>Policies, screening, training, and reporting pathways help identify and manage TB risk.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "engineering-controls",
+                    "title": "Engineering controls",
+                    "bodyHtml": "<p>Engineering controls such as appropriate rooms or ventilation support airborne infection control when required.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "ppe-controls",
+                    "title": "Personal protective equipment",
+                    "bodyHtml": "<p>Respiratory protection is used according to policy and fit-testing requirements.</p>",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "knowledge-check",
+            "title": "Knowledge Check",
+            "estMin": 4,
+            "order": 1,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "quizIntro",
+                "title": "Knowledge Check",
+                "bodyHtml": "<p>Answer the question before continuing.</p>",
+                "buttonLabel": "Start quiz",
+                "passPct": 80,
+                "required": true
+              },
+              {
+                "type": "quiz",
+                "mode": "single",
+                "question": "Which statement best describes how infectious pulmonary TB can spread?",
+                "required": true,
+                "choices": [
+                  {
+                    "id": "air",
+                    "text": "Through the air when an infectious person coughs, speaks, or sings",
+                    "correct": true
+                  },
+                  {
+                    "id": "touch",
+                    "text": "Only through touching intact skin",
+                    "correct": false
+                  },
+                  {
+                    "id": "food",
+                    "text": "Only through food contamination",
+                    "correct": false
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "conclusion",
+        "title": "Conclusion",
+        "order": 2,
+        "lessons": [
+          {
+            "id": "acknowledgement",
+            "title": "Acknowledgement",
+            "estMin": 2,
+            "order": 0,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "quiz",
+                "mode": "single",
+                "question": "I understand that I should follow local TB screening, reporting, and airborne precaution procedures.",
+                "required": true,
+                "choices": [
+                  { "id": "ack", "text": "I acknowledge", "correct": true },
+                  { "id": "no-ack", "text": "I do not acknowledge", "correct": false }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "completion",
+            "title": "Completion",
+            "estMin": 1,
+            "order": 1,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "callout",
+                "style": "success",
+                "html": "<p>Course complete. Your completion can now be recorded.</p>",
+                "required": false
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,269 +1,384 @@
-/* src/app/features/learner/woundLabrary/wound-labrary-details/wound-labrary-details.component.css */
+:host {
+  display: block;
+}
 
-/* Fluid container that can truly go full-width on big screens */
-.container {
-  width: 100%;
-  /* keep minimal side padding; remove max-width cap to allow full screen */
-  padding: 16px clamp(12px, 3vw, 32px);
+.resource-detail {
+  max-width: 1180px;
   margin: 0 auto;
-}
-
-.loader { display:flex; justify-content:center; padding:40px 0; }
-
-/* Header card becomes a responsive grid (text + gallery) */
-.header-card {
+  padding: 24px clamp(14px, 3vw, 32px);
   display: grid;
-  gap: clamp(12px, 2vw, 24px);
-  padding: clamp(12px, 2vw, 20px);
-  align-items: start;
-  /* 1col on small, then 2col; text grows more than gallery on desktops */
-  grid-template-columns: 1fr;
-  background: var(--mat-card-background, #fff);
+  gap: 18px;
 }
 
-/* Left text area */
-.header-left { min-width: 0; } /* prevent overflow */
-.meta { margin: 8px 0; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-.tags { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.loader {
+  display: flex;
+  justify-content: center;
+  padding: 64px 20px;
+}
+
+.back-button {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 7px 12px;
+  border: 1px solid #d6e1f0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1a3f6f;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  border-color: #1a3f6f;
+  background: #f8faff;
+}
+
+.hero-panel,
+.info-panel {
+  border: 1px solid #e4ecf7;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 2px 12px rgba(26, 63, 111, 0.06);
+}
+
+.hero-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  gap: 20px;
+  padding: 22px;
+  align-items: start;
+}
+
+.hero-copy {
+  min-width: 0;
+}
+
+.page-eyebrow {
+  margin: 0 0 7px;
+  color: #00a79d;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero-copy h1 {
+  margin: 0 0 10px;
+  color: #1a3f6f;
+  font-size: clamp(26px, 4vw, 38px);
+  line-height: 1.12;
+  font-weight: 900;
+}
+
+.summary {
+  margin: 0;
+  color: #1a2b4a;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 16px;
+}
+
+.category,
+.tag {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  min-height: 26px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.category {
+  border: 1px solid #9ae6d6;
+  background: #e8f5f5;
+  color: #00797a;
+}
 
 .tag {
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 12px;
-  background: #eef2ff;
-  color: #23319b;
-  font-size: 0.85rem;
-  border: 1px solid rgba(35,49,155,0.08);
+  border: 1px solid #e4ecf7;
+  background: #f4f7fb;
+  color: #5a6a7e;
 }
 
-.category { font-size: 0.95rem; color: #444; }
-
-/* Gallery: fluid, adapts height with viewport */
-.gallery {
-  width: 100%;
-  max-width: 720px;             /* big but bounded on huge screens */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  margin-inline: auto;          /* center on narrow screens */
-}
-
-.gallery .main {
-  width: 100%;
-  /* responsive height: small on phones, tall on desktops */
-  height: clamp(220px, 45vh, 560px);
-  object-fit: cover;
+.support-note {
+  margin-top: 18px;
+  padding: 12px 14px;
+  border: 1px solid #fbd38d;
   border-radius: 10px;
-  border: 1px solid #ddd;
-  /* crisp edges on high DPI */
-  image-rendering: auto;
+  background: #fff8f0;
+  color: #7b341e;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.gallery,
+.no-image {
+  min-width: 0;
+}
+
+.gallery {
+  display: grid;
+  gap: 10px;
+}
+
+.main-image,
+.no-image {
+  width: 100%;
+  min-height: 280px;
+  max-height: 460px;
+  border-radius: 12px;
+  border: 1px solid #d6e1f0;
+  background: #f4f7fb;
+}
+
+.main-image {
+  display: block;
+  height: clamp(280px, 38vw, 460px);
+  object-fit: cover;
+}
+
+.no-image {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  color: #8ea0b8;
+  border-style: dashed;
+  font-weight: 800;
 }
 
 .thumbs {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
-  row-gap: 10px;
-  max-width: 100%;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding-bottom: 2px;
 }
 
-.thumbs img {
-  height: 64px;
-  width: auto;
-  cursor: pointer;
-  border-radius: 6px;
+.thumb-button {
+  flex: 0 0 72px;
+  width: 72px;
+  height: 56px;
+  overflow: hidden;
+  padding: 0;
   border: 2px solid transparent;
-  flex: 0 0 auto; /* keep size in horizontal scroll */
+  border-radius: 9px;
+  background: #ffffff;
+  cursor: pointer;
 }
 
-.thumbs img.active { border-color: #3f51b5; }
+.thumb-button.active {
+  border-color: #00a79d;
+}
 
-/* When no image, keep same footprint and scale with screen */
-.noimg {
+.thumb-button img {
   width: 100%;
-  height: clamp(220px, 40vh, 520px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f5f5f5;
-  color: #888;
-  border-radius: 10px;
-  border: 1px dashed #ddd;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 
-/* Content below: two columns that adapt */
-.two-col {
+.content-grid {
   display: grid;
-  gap: clamp(12px, 2vw, 20px);
-  margin-top: 16px;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.9fr);
+  gap: 16px;
 }
 
-/* Typography helpers */
-.muted { color: #666; font-size: 0.95rem; }
-
-/* --- Prevent grid children from overflowing on wide screens --- */
-.header-card > .header-left,
-.header-card > .gallery,
-.two-col > mat-card {
-  min-width: 0;           /* allow columns to shrink instead of overflowing */
+.secondary-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-/* Ensure cards don't clip their own content */
-.two-col > mat-card,
-.header-card {
-  overflow: visible;      /* Material cards can default to hidden; we want content visible */
+.video-panel {
+  display: grid;
+  gap: 14px;
 }
 
-/* Stronger wrapping for long lines/bullets on the right column */
-.two-col > mat-card * {
-  overflow-wrap: anywhere;
-  word-break: normal;
+.video-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
 }
 
-/* Give the right column a bit more breathing room on very large screens */
-@media (min-width: 1280px) {
-  .two-col {
-    grid-template-columns: minmax(0, 1.2fr) minmax(420px, 0.9fr);
-  }
-}
-@media (min-width: 1600px) {
-  .two-col {
-    grid-template-columns: minmax(0, 1.3fr) minmax(520px, 1fr);
-  }
+.video-card {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
 }
 
-/* Keep the big image immersive but avoid it pushing content awkwardly */
-.gallery .main {
-  height: clamp(260px, 42vh, 720px); /* slight tweak: a bit less tall than before */
+.video-frame {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 180px;
+  display: block;
+  border: 1px solid #d6e1f0;
+  border-radius: 12px;
+  background: #0d2240;
 }
 
+.video-link {
+  min-height: 180px;
+  aspect-ratio: 16 / 9;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  border: 1px dashed #9bb4d6;
+  border-radius: 12px;
+  background: #f8faff;
+  color: #1a3f6f;
+  font-size: 14px;
+  font-weight: 900;
+  text-decoration: none;
+}
 
-/* --- General safety: allow grid children to shrink/wrap --- */
-.header-card > .header-left,
-.header-card > .gallery,
-.two-col > mat-card { min-width: 0; }
+.video-link:hover {
+  border-color: #1a3f6f;
+  background: #e8f0fb;
+}
 
-/* --- Mobile-first fixes --- */
-@media (max-width: 600px) {
-  /* Container padding and full width */
-  .container {
-    padding: 12px 10px;
-    margin: 0 auto;
-    width: 100%;
-  }
+.video-caption {
+  color: #5a6a7e;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.35;
+}
 
-  /* Header becomes a single column */
-  .header-card {
-    display: grid;
+.info-panel {
+  min-width: 0;
+  padding: 20px;
+}
+
+.info-panel h2 {
+  margin: 0 0 12px;
+  color: #1a3f6f;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.info-panel h3 {
+  margin: 0 0 8px;
+  color: #1a2b4a;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.info-panel p,
+.info-panel li {
+  color: #5a6a7e;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.info-panel p {
+  margin: 0;
+}
+
+.info-panel ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.subsection {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid #e4ecf7;
+}
+
+.guidance-list {
+  display: grid;
+  gap: 10px;
+}
+
+.guidance-item {
+  padding: 12px;
+  border: 1px solid #e4ecf7;
+  border-radius: 10px;
+  background: #fbfcff;
+}
+
+.guidance-item strong {
+  display: block;
+  color: #1a3f6f;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.muted {
+  color: #7a8798;
+}
+
+.empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 56px 20px;
+  border: 1px solid #e4ecf7;
+  border-radius: 14px;
+  background: #ffffff;
+  text-align: center;
+}
+
+.empty-state__icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: #e8f0fb;
+  color: #1a3f6f;
+}
+
+.empty-state h1 {
+  margin: 0;
+  color: #1a3f6f;
+}
+
+.empty-state p {
+  margin: 0;
+  color: #5a6a7e;
+}
+
+@media (max-width: 900px) {
+  .hero-panel,
+  .content-grid,
+  .secondary-grid {
     grid-template-columns: 1fr;
-    padding: 12px;
-    gap: 12px;
   }
 
-  /* Gallery: full width, sensible height */
-  .gallery {
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-    align-items: stretch;
-  }
-  .gallery .main {
-    width: 100%;
-    height: clamp(200px, 52vw, 320px); /* scales with screen */
-    object-fit: cover;                 /* fill without distortion */
-    border-radius: 8px;
-  }
-
-  /* Thumbs: horizontal scroll + wrap when needed */
-  .thumbs {
-    display: flex;
-    gap: 6px;
-    overflow-x: auto;
-    padding: 2px 0 6px;
-  }
-  .thumbs img {
-    height: 48px;
-    flex: 0 0 auto;
-  }
-
-  /* No-image placeholder matches main image size */
-  .noimg {
-    width: 100%;
-    height: clamp(200px, 52vw, 320px);
-    border-radius: 8px;
-  }
-
-  /* Content below: single column */
-  .two-col {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 12px;
-    margin-top: 12px;
-  }
-
-  /* Long lines/words shouldn’t blow out the layout */
-  .two-col > mat-card,
-  .two-col > mat-card * {
-    overflow-wrap: anywhere;
-    word-break: normal;
-  }
-
-  /* Buttons & text spacing */
-  .header-left h1 { font-size: 1.25rem; line-height: 1.2; }
-  .tag { font-size: 0.8rem; padding: 3px 7px; }
-}
-
-/* Small tablets: stack, but give a taller image */
-@media (min-width: 601px) and (max-width: 960px) {
-  .header-card { grid-template-columns: 1fr; }
-  .gallery .main { height: clamp(240px, 40vw, 420px); }
-  .two-col { grid-template-columns: 1fr; }
-}
-
-/* Desktop refinements (keep from previous fix) */
-@media (min-width: 960px) {
-  .header-card { grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr); }
-  .two-col     { grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.8fr); }
-}
-
-
-/* --- Breakpoints --- */
-
-/* ≥ 960px: two columns in header and content */
-@media (min-width: 960px) {
-  .header-card {
-    grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
-  }
-
-  .two-col {
-    grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  .hero-panel {
+    padding: 16px;
   }
 }
 
-/* ≥ 1280px: make gallery larger and let layout breathe */
-@media (min-width: 1280px) {
-  .gallery { max-width: 880px; }
-  .gallery .main { height: clamp(360px, 48vh, 680px); }
-}
-
-/* ≥ 1600px: go truly "full screen" feel: larger image and wider columns */
-@media (min-width: 1600px) {
-  .header-card {
-    grid-template-columns: minmax(0, 1.5fr) minmax(520px, 1fr);
+@media (max-width: 560px) {
+  .resource-detail {
+    padding: 16px;
   }
-  .two-col {
-    grid-template-columns: minmax(0, 1.4fr) minmax(480px, 1fr);
-  }
-  .gallery { max-width: 1080px; }
-  .gallery .main { height: clamp(420px, 52vh, 820px); }
-}
 
-/* ≤ 960px: stack layout, images auto-fit width */
-@media (max-width: 960px) {
-  .header-card { grid-template-columns: 1fr; }
-  .gallery, .noimg { width: 100%; }
+  .hero-copy h1 {
+    font-size: 25px;
+  }
+
+  .main-image,
+  .no-image {
+    min-height: 220px;
+    height: 220px;
+  }
+
+  .info-panel {
+    padding: 16px;
+  }
 }

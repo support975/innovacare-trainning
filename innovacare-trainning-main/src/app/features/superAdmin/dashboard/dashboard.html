@@ -1,65 +1,179 @@
-<section class="page">
-  <div class="page-head">
-    <h1>Super Admin Dashboard</h1>
-    <p>Manage platform-wide setup, organizations, users, billing, and audit controls.</p>
+<div class="sadmin-dash">
+
+  <!-- PAGE HEADER -->
+  <header class="dash-header">
+    <div>
+      <div class="dash-eyebrow">Super Admin</div>
+      <h1 class="dash-title">Platform Overview</h1>
+      <p class="dash-sub">Monitor organizations, users, billing, and audit activity across the platform.</p>
+    </div>
+    <div class="dash-header-actions">
+      <a routerLink="/super-admin/organizations/create" class="btn-primary">+ New Organization</a>
+      <a routerLink="/super-admin/logs" class="btn-ghost">Audit Logs</a>
+    </div>
+  </header>
+
+  <!-- SKELETON while loading -->
+  <div class="skeleton-row" *ngIf="loading()">
+    <div class="skeleton-card" *ngFor="let _ of [1,2,3,4,5,6]"></div>
   </div>
 
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-value">{{ stats().organizations }}</div>
-      <div class="stat-label">Organizations</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value">{{ stats().users }}</div>
-      <div class="stat-label">Users</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value">{{ stats().activeOrganizations }}</div>
-      <div class="stat-label">Active Organizations</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value">{{ stats().activeUsers }}</div>
-      <div class="stat-label">Active Users</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value">{{ stats().billingActive }}</div>
-      <div class="stat-label">Billing Active</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-value">{{ stats().criticalLogs }}</div>
-      <div class="stat-label">Critical Logs</div>
-    </div>
-  </div>
+  <!-- KPI STATS -->
+  <section class="stats-row" *ngIf="!loading()">
 
-  <div class="grid">
-    <section class="card">
-      <h2>Platform overview</h2>
-      <p>Use this area to monitor global platform health, tenant onboarding, and course distribution.</p>
+    <div class="stat-card stat-card--navy">
+      <div class="stat-card__icon">🏢</div>
+      <div class="stat-card__body">
+        <div class="stat-card__value">{{ stats().organizations }}</div>
+        <div class="stat-card__label">Organizations</div>
+        <div class="stat-card__sub">{{ stats().activeOrganizations }} active</div>
+      </div>
+    </div>
+
+    <div class="stat-card stat-card--teal">
+      <div class="stat-card__icon">👥</div>
+      <div class="stat-card__body">
+        <div class="stat-card__value">{{ stats().users }}</div>
+        <div class="stat-card__label">Total Users</div>
+        <div class="stat-card__sub">{{ stats().activeUsers }} active</div>
+      </div>
+    </div>
+
+    <div class="stat-card stat-card--green">
+      <div class="stat-card__icon">✓</div>
+      <div class="stat-card__body">
+        <div class="stat-card__value">{{ stats().activeOrganizations }}</div>
+        <div class="stat-card__label">Active Orgs</div>
+        <div class="stat-card__sub">of {{ stats().organizations }} total</div>
+      </div>
+    </div>
+
+    <div class="stat-card stat-card--orange">
+      <div class="stat-card__icon">◎</div>
+      <div class="stat-card__body">
+        <div class="stat-card__value">{{ stats().activeUsers }}</div>
+        <div class="stat-card__label">Active Users</div>
+        <div class="stat-card__sub">of {{ stats().users }} total</div>
+      </div>
+    </div>
+
+    <div class="stat-card stat-card--purple">
+      <div class="stat-card__icon">💳</div>
+      <div class="stat-card__body">
+        <div class="stat-card__value">{{ stats().billingActive }}</div>
+        <div class="stat-card__label">Active Plans</div>
+        <div class="stat-card__sub">paid subscriptions</div>
+      </div>
+    </div>
+
+    <div class="stat-card" [class.stat-card--red]="stats().criticalLogs > 0" [class.stat-card--muted]="stats().criticalLogs === 0">
+      <div class="stat-card__icon">⚠</div>
+      <div class="stat-card__body">
+        <div class="stat-card__value">{{ stats().criticalLogs }}</div>
+        <div class="stat-card__label">Critical Logs</div>
+        <div class="stat-card__sub">{{ stats().criticalLogs > 0 ? 'requires attention' : 'all clear' }}</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- QUICK ACTIONS + PLATFORM HEALTH -->
+  <div class="two-col" *ngIf="!loading()">
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Quick Actions</h2>
+      </div>
+      <div class="actions-grid">
+        <a routerLink="/super-admin/organizations/create" class="action-card">
+          <div class="action-card__icon action-card__icon--navy">🏢</div>
+          <div class="action-card__label">Create Organization</div>
+          <div class="action-card__desc">Add a new tenant to the platform</div>
+        </a>
+        <a routerLink="/super-admin/course-assignments" class="action-card">
+          <div class="action-card__icon action-card__icon--teal">▤</div>
+          <div class="action-card__label">Assign Courses</div>
+          <div class="action-card__desc">Assign courses to organizations</div>
+        </a>
+        <a routerLink="/super-admin/billing" class="action-card">
+          <div class="action-card__icon action-card__icon--purple">💳</div>
+          <div class="action-card__label">Review Billing</div>
+          <div class="action-card__desc">Check subscription statuses</div>
+        </a>
+        <a routerLink="/super-admin/demo-requests" class="action-card">
+          <div class="action-card__icon action-card__icon--navy">✉</div>
+          <div class="action-card__label">Demo Requests</div>
+          <div class="action-card__desc">Qualify leads and respond</div>
+        </a>
+        <a routerLink="/super-admin/logs" class="action-card">
+          <div class="action-card__icon action-card__icon--orange">≣</div>
+          <div class="action-card__label">Audit Logs</div>
+          <div class="action-card__desc">Review platform-wide activity</div>
+        </a>
+        <a routerLink="/super-admin/users" class="action-card">
+          <div class="action-card__icon action-card__icon--green">👥</div>
+          <div class="action-card__label">Manage Users</div>
+          <div class="action-card__desc">Roles, access, and onboarding</div>
+        </a>
+        <a routerLink="/super-admin/settings" class="action-card">
+          <div class="action-card__icon action-card__icon--muted">⚙</div>
+          <div class="action-card__label">Platform Settings</div>
+          <div class="action-card__desc">Global configuration</div>
+        </a>
+      </div>
     </section>
 
-    <section class="card">
-      <h2>Quick actions</h2>
-      <ul>
-        <li> <a href="/super-admin/Organizations">Create organization</a></li>
-        <li>Assign courses to organization</li>
-        <li>Review billing status</li>
-        <li>Check audit logs</li>
-      </ul>
+    <section class="panel">
+      <div class="panel-head">
+        <h2 class="panel-title">Platform Health</h2>
+        <span class="panel-badge panel-badge--green">● Operational</span>
+      </div>
+      <div class="health-list">
+        <div class="health-row">
+          <span class="health-dot health-dot--green"></span>
+          <div class="health-info">
+            <div class="health-name">Authentication</div>
+            <div class="health-desc">Firebase Auth — active</div>
+          </div>
+          <span class="health-status">OK</span>
+        </div>
+        <div class="health-row">
+          <span class="health-dot health-dot--green"></span>
+          <div class="health-info">
+            <div class="health-name">Database</div>
+            <div class="health-desc">Firestore — connected</div>
+          </div>
+          <span class="health-status">OK</span>
+        </div>
+        <div class="health-row">
+          <span class="health-dot health-dot--green"></span>
+          <div class="health-info">
+            <div class="health-name">Hosting</div>
+            <div class="health-desc">Firebase Hosting — live</div>
+          </div>
+          <span class="health-status">OK</span>
+        </div>
+        <div class="health-row">
+          <span class="health-dot" [class.health-dot--red]="stats().criticalLogs > 0" [class.health-dot--green]="stats().criticalLogs === 0"></span>
+          <div class="health-info">
+            <div class="health-name">Audit Logs</div>
+            <div class="health-desc">{{ stats().criticalLogs }} critical event(s)</div>
+          </div>
+          <span class="health-status" [class.text-red]="stats().criticalLogs > 0">
+            {{ stats().criticalLogs > 0 ? 'Alert' : 'OK' }}
+          </span>
+        </div>
+        <div class="health-row">
+          <span class="health-dot health-dot--green"></span>
+          <div class="health-info">
+            <div class="health-name">Org Isolation</div>
+            <div class="health-desc">Data scoped by orgId — enforced</div>
+          </div>
+          <span class="health-status">Active</span>
+        </div>
+      </div>
     </section>
 
-     <div class="cards">
-    <article class="card" *ngFor="let c of cards">
-      <div class="label">{{ c.label }}</div>
-      <div class="value">{{ c.value }}</div>
-    </article>
   </div>
 
-  <div class="panel">
-    <h2>System Overview</h2>
-    <p>This area will host global KPIs, recent activity, alerts, and platform health.</p>
-  </div>
-  </div>
-
-  
-</section>
-
+</div>

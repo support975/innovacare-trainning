@@ -1,0 +1,151 @@
+<main class="paths-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Learning Paths</p>
+      <h1>Build role-based programs</h1>
+      <p class="sub">Bundle courses into onboarding, annual compliance, clinical, or department-specific tracks.</p>
+    </div>
+    <button class="btn-ghost" type="button" (click)="resetForm()">New path</button>
+  </header>
+
+  <div class="notice" *ngIf="notice()" [class.notice--error]="error()">
+    {{ notice() }}
+  </div>
+
+  <section class="workspace">
+    <form class="panel form-panel" (ngSubmit)="savePath()">
+      <div class="panel-head">
+        <div>
+          <h2>{{ form.id ? 'Edit learning path' : 'Create learning path' }}</h2>
+          <p>{{ selectedCourseIds().size }} course{{ selectedCourseIds().size !== 1 ? 's' : '' }} selected</p>
+        </div>
+        <span class="duration-pill">{{ durationLabel(selectedDuration()) }}</span>
+      </div>
+
+      <label class="field">
+        <span>Title</span>
+        <input name="title" [(ngModel)]="form.title" placeholder="CNA onboarding path" required />
+      </label>
+
+      <label class="field">
+        <span>Description</span>
+        <textarea name="description" [(ngModel)]="form.description" rows="3" placeholder="What this path prepares the learner to do."></textarea>
+      </label>
+
+      <div class="field-grid">
+        <label class="field">
+          <span>Category</span>
+          <input name="category" [(ngModel)]="form.category" placeholder="Onboarding" />
+        </label>
+        <label class="field">
+          <span>Target days</span>
+          <input name="durationDays" type="number" min="1" [(ngModel)]="form.durationDays" />
+        </label>
+      </div>
+
+      <label class="toggle-row">
+        <input type="checkbox" name="active" [(ngModel)]="form.active" />
+        <span>Active and available for assignment</span>
+      </label>
+
+      <div class="course-picker">
+        <div class="picker-head">
+          <div>
+            <h3>Courses</h3>
+            <p>{{ filteredCourses().length }} shown from {{ courses().length }} active courses</p>
+          </div>
+          <input
+            class="picker-search"
+            type="search"
+            placeholder="Search courses"
+            [ngModel]="courseQuery()"
+            name="courseQuery"
+            (ngModelChange)="courseQuery.set($event)"
+          />
+        </div>
+
+        <div class="course-list">
+          <label class="course-row" *ngFor="let course of filteredCourses()" [class.course-row--checked]="selectedCourseIds().has(course.id || '')">
+            <input
+              type="checkbox"
+              [checked]="selectedCourseIds().has(course.id || '')"
+              (change)="toggleCourse(course.id, $any($event.target).checked)"
+            />
+            <span class="course-row__body">
+              <strong>{{ course.title }}</strong>
+              <small>{{ course.kind || 'Course' }} · {{ course.durationMin || 0 }} min</small>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <button class="btn-primary" type="submit" [disabled]="busy()">
+        {{ busy() ? 'Saving...' : (form.id ? 'Save path' : 'Create path') }}
+      </button>
+    </form>
+
+    <section class="panel assign-panel">
+      <div class="panel-head">
+        <div>
+          <h2>Assign to organization</h2>
+          <p>Managers in that organization can assign the path to learners.</p>
+        </div>
+      </div>
+
+      <label class="field">
+        <span>Learning path</span>
+        <select name="pathId" [(ngModel)]="assignmentForm.pathId">
+          <option value="">Select path</option>
+          <option *ngFor="let path of paths()" [value]="path.id">{{ path.title }}</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Organization</span>
+        <select name="orgId" [(ngModel)]="assignmentForm.orgId">
+          <option value="">Select organization</option>
+          <option *ngFor="let org of organizations()" [value]="org.id">{{ org.name }}</option>
+        </select>
+      </label>
+
+      <button class="btn-primary" type="button" [disabled]="busy()" (click)="assignPath()">Assign path</button>
+    </section>
+  </section>
+
+  <section class="paths-list">
+    <article class="path-card" *ngFor="let path of paths()" [class.path-card--inactive]="path.active === false">
+      <div class="path-card__top">
+        <div>
+          <span class="category">{{ path.category || 'General' }}</span>
+          <h2>{{ path.title }}</h2>
+          <p>{{ path.description || 'No description yet.' }}</p>
+        </div>
+        <button class="btn-ghost" type="button" (click)="edit(path)">Edit</button>
+      </div>
+
+      <div class="path-stats">
+        <span>{{ path.courseIds.length }} courses</span>
+        <span>{{ path.durationDays || 0 }} target days</span>
+        <span>{{ pathAssignments(path.id).length }} organizations</span>
+        <span>{{ path.active === false ? 'Inactive' : 'Active' }}</span>
+      </div>
+
+      <div class="course-chips">
+        <span *ngFor="let courseId of path.courseIds.slice(0, 5)">{{ courseTitle(courseId) }}</span>
+        <span *ngIf="path.courseIds.length > 5">+{{ path.courseIds.length - 5 }} more</span>
+      </div>
+
+      <div class="org-chips" *ngIf="pathAssignments(path.id).length">
+        <span class="org-chip" *ngFor="let assignment of pathAssignments(path.id)">
+          {{ orgName(assignment.orgId) }}
+          <button type="button" [disabled]="busy()" (click)="removeAssignment(assignment)">x</button>
+        </span>
+      </div>
+    </article>
+
+    <div class="empty" *ngIf="!paths().length">
+      <h2>No learning paths yet</h2>
+      <p>Create the first path by selecting a title and courses.</p>
+    </div>
+  </section>
+</main>

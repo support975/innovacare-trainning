@@ -1,1 +1,144 @@
-<p>edit works!</p>
+<div class="sa-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <div class="back-link-wrap">
+        <a class="back-link" routerLink="/super-admin/organizations">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Organizations
+        </a>
+      </div>
+      <p class="page-eyebrow">Super Admin · Organizations</p>
+      <h1 class="page-title">Edit Organization</h1>
+      <p class="page-sub">Update organization details, plan, and ownership.</p>
+    </div>
+    <div class="header-id-badge" *ngIf="orgId">
+      <span class="header-id-label">ID</span>
+      <span class="header-id-value">{{ orgId }}</span>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading()">
+    <div class="loading-spinner"></div>
+    <span>Loading organization...</span>
+  </div>
+
+  <!-- Notice Banner -->
+  <div *ngIf="notice()" [class]="'notice-banner' + (isError() ? ' notice-banner--error' : '')">
+    <span class="notice-banner__text">{{ notice() }}</span>
+  </div>
+
+  <!-- Edit Form -->
+  <div *ngIf="!loading()">
+    <div class="panel">
+      <div class="panel__head">
+        <div>
+          <div class="panel__title">Organization Details</div>
+          <div class="panel__sub">Modify the organization's core settings.</div>
+        </div>
+      </div>
+      <div class="form-body">
+        <div class="form-grid">
+          <div class="field field--full">
+            <label class="field__label" for="editName">Organization Name</label>
+            <input
+              id="editName"
+              class="field__input"
+              type="text"
+              [(ngModel)]="form.name"
+              placeholder="Organization name"
+            />
+          </div>
+          <div class="field">
+            <label class="field__label" for="editType">Type</label>
+            <select id="editType" class="field__select" [(ngModel)]="form.type">
+              <option value="">Select type...</option>
+              <option value="health">Health</option>
+              <option value="IT">IT</option>
+              <option value="school">School</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field__label" for="editPlan">Billing Plan</label>
+            <select id="editPlan" class="field__select" [(ngModel)]="form.plan" (ngModelChange)="applyPlanDefaults()">
+              <option value="">Select plan...</option>
+              <option *ngFor="let option of planOptions" [value]="option.value">
+                {{ option.label }} · {{ option.hint }}
+              </option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field__label" for="learnerLimit">Learner Limit</label>
+            <input
+              id="learnerLimit"
+              class="field__input"
+              type="number"
+              min="0"
+              [(ngModel)]="form.learnerLimit"
+              placeholder="Blank for custom enterprise capacity"
+            />
+          </div>
+          <div class="field">
+            <label class="field__label" for="editOwnerEmail">Owner Email</label>
+            <input
+              id="editOwnerEmail"
+              class="field__input"
+              type="email"
+              [(ngModel)]="form.ownerEmail"
+              placeholder="owner@example.com"
+            />
+          </div>
+          <div class="field">
+            <label class="toggle-label">
+              <span class="field__label">Active</span>
+            </label>
+            <div class="active-toggle-row">
+              <span class="toggle-wrap">
+                <input
+                  type="checkbox"
+                  class="toggle-input"
+                  id="editActive"
+                  [(ngModel)]="form.active"
+                />
+                <label class="toggle-slider" for="editActive"></label>
+              </span>
+              <span class="active-toggle-status">{{ form.active ? 'Organization is active' : 'Organization is inactive' }}</span>
+            </div>
+          </div>
+          <div class="field field--full">
+            <label class="toggle-label">
+              <span class="field__label">Official Certifications</span>
+              <span class="field__hint">Enable official certification authority features for this organization</span>
+            </label>
+            <div class="active-toggle-row">
+              <span class="toggle-wrap">
+                <input
+                  type="checkbox"
+                  class="toggle-input"
+                  id="editCertificationAuthority"
+                  [(ngModel)]="form.certificationAuthorityEnabled"
+                />
+                <label class="toggle-slider" for="editCertificationAuthority"></label>
+              </span>
+              <span class="active-toggle-status">{{ form.certificationAuthorityEnabled ? 'Certification authority is enabled' : 'Certification authority is disabled' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="form-footer">
+      <a class="btn-ghost" routerLink="/super-admin/organizations">Cancel</a>
+      <button class="btn-primary" (click)="save()" [disabled]="busy()">
+        <span *ngIf="busy()" class="spinner"></span>
+        {{ busy() ? 'Saving...' : 'Save Changes' }}
+      </button>
+    </div>
+  </div>
+
+</div>

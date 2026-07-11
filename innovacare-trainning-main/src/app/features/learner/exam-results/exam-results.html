@@ -1,0 +1,85 @@
+<div class="results-container">
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading your exam results...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error() && !loading()" class="error-state">
+    <h2>Error</h2>
+    <p>{{ error() }}</p>
+    <button (click)="goToDashboard()" class="btn-primary">Back to Dashboard</button>
+  </div>
+
+  <!-- Results Display -->
+  <div *ngIf="attempt() && !loading() && !error()" class="results-display">
+    <!-- Header -->
+    <div [ngClass]="'results-header ' + (passed ? 'passed' : 'failed')">
+      <div class="status-icon">{{ passed ? '✓' : '✕' }}</div>
+      <h1>{{ passed ? 'EXAM PASSED' : 'EXAM NOT PASSED' }}</h1>
+      <p *ngIf="session() as session" class="exam-title">{{ session.examTitle || 'Exam' }}</p>
+    </div>
+
+    <!-- Score Card -->
+    <div class="score-card">
+      <div class="score-main">
+        <div class="score-number">{{ score }}%</div>
+        <div class="score-label">Your Score</div>
+      </div>
+
+      <div class="score-details">
+        <div class="detail-row">
+          <span class="label">Passing Score:</span>
+          <span class="value">{{ passingScore }}%</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Status:</span>
+          <span [ngClass]="'status ' + (passed ? 'status-passed' : 'status-failed')">
+            {{ passed ? 'PASSED' : 'FAILED' }}
+          </span>
+        </div>
+        <div class="detail-row" *ngIf="attempt() as att">
+          <span class="label">Date Taken:</span>
+          <span class="value">{{ att.completedAt | toDate | date: 'MMM dd, yyyy • HH:mm' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message -->
+    <div class="message-box">
+      <div *ngIf="passed" class="message passed-msg">
+        <h3>🎉 Congratulations!</h3>
+        <p>You have successfully passed the exam. Your results have been recorded and an email confirmation has been sent to you.</p>
+        <p style="font-size: 0.9rem; margin-top: 1rem; color: #666;">
+          A detailed results email will be sent in 8 hours with complete feedback and next steps.
+        </p>
+      </div>
+
+      <div *ngIf="!passed" class="message failed-msg">
+        <h3>📋 Result: Not Passed</h3>
+        <p>You did not achieve the passing score on this attempt. You are eligible to retake the exam.</p>
+        <p style="font-size: 0.9rem; margin-top: 1rem; color: #666;">
+          Please review the course materials and try again. A detailed results email with feedback will be sent in 8 hours.
+        </p>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button (click)="goToDashboard()" class="btn-primary">
+        ← Back to Dashboard
+      </button>
+
+      <button *ngIf="!passed" (click)="startRetake()" class="btn-secondary">
+        🔄 Schedule Retake
+      </button>
+    </div>
+
+    <!-- Learner Info -->
+    <div *ngIf="learner() as learner" class="learner-info">
+      <p><strong>Name:</strong> {{ learner.displayName || learner.email }}</p>
+      <p><strong>Email:</strong> {{ learner.email }}</p>
+    </div>
+  </div>
+</div>

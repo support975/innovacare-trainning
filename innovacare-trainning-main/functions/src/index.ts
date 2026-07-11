@@ -2929,9 +2929,12 @@ export const onExamCompleted = onDocumentCreated(
   }
 );
 
+/* eslint max-len: ["error", { "code": 120, "ignoreUrls": true }] */
 // ─────────── NOTIFICATION TRIGGERS ───────────
 
-// Trigger when enrollment is created (course assigned)
+/**
+ * Trigger when enrollment is created (course assigned)
+ */
 export const onEnrollmentCreated = onDocumentCreated(
   "organizations/{orgId}/enrollments/{enrollmentId}",
   async (event) => {
@@ -2952,14 +2955,19 @@ export const onEnrollmentCreated = onDocumentCreated(
       const learnerName = learner.displayName || learner.email || "Learner";
 
       // Get course info
-      const courseDoc = await db.collection("organizations").doc(orgId).collection("courses").doc(courseId).get();
+      const courseDocRef = db.collection("organizations").doc(orgId)
+        .collection("courses").doc(courseId);
+      const courseDoc = await courseDocRef.get();
       const course = courseDoc.data();
       const courseName = course?.title || "Course";
 
       // Calculate due date (default 30 days)
       const dueDate = new Date();
       dueDate.setDate(dueDate.getDate() + 30);
-      const dueDateStr = dueDate.toLocaleDateString("en-US", {year: "numeric", month: "long", day: "numeric"});
+      const dueDateStr = dueDate.toLocaleDateString(
+        "en-US",
+        {year: "numeric", month: "long", day: "numeric"},
+      );
 
       // Send email (requires SendGrid API key to be available)
       const sgApiKey = process.env.SENDGRID_API_KEY;
@@ -3000,7 +3008,9 @@ export const onEnrollmentCreated = onDocumentCreated(
   },
 );
 
-// Trigger when enrollment completion is marked
+/**
+ * Trigger when enrollment completion is marked
+ */
 export const onEnrollmentCompleted = onDocumentUpdated(
   "organizations/{orgId}/enrollments/{enrollmentId}",
   async (event) => {
@@ -3013,7 +3023,8 @@ export const onEnrollmentCompleted = onDocumentUpdated(
     const wasCompleted = beforeData.completedAt;
     const isCompleted = afterData.completedAt;
 
-    if (wasCompleted || !isCompleted) return; // Already was completed or still not completed
+    // Already completed or still not completed
+    if (wasCompleted || !isCompleted) return;
 
     const learnerId = afterData.learnerId as string;
     const courseId = afterData.courseId as string;
@@ -3030,7 +3041,9 @@ export const onEnrollmentCompleted = onDocumentUpdated(
       const learnerName = learner.displayName || learner.email || "Learner";
 
       // Get course info
-      const courseDoc = await db.collection("organizations").doc(orgId).collection("courses").doc(courseId).get();
+      const courseDocRef2 = db.collection("organizations").doc(orgId)
+        .collection("courses").doc(courseId);
+      const courseDoc = await courseDocRef2.get();
       const course = courseDoc.data();
       const courseName = course?.title || "Course";
 
@@ -3040,7 +3053,12 @@ export const onEnrollmentCompleted = onDocumentUpdated(
 
       if (sgApiKey && sgFromEmail) {
         sgMail.setApiKey(sgApiKey);
-        const template = getNotificationEmailTemplate("course_completed", learnerName, courseName, grade);
+        const template = getNotificationEmailTemplate(
+          "course_completed",
+          learnerName,
+          courseName,
+          grade,
+        );
 
         await sgMail.send({
           to: learnerEmail,
@@ -3051,11 +3069,12 @@ export const onEnrollmentCompleted = onDocumentUpdated(
       }
 
       // Create in-app notification
+      const msg = grade ? ` with grade ${grade}` : "";
       await db.collection("notifications/inapp").add({
         learnerId,
         type: "course_completed",
         title: "Course Completed",
-        message: `Congratulations! You've completed ${courseName}${grade ? ` with grade ${grade}` : ""}`,
+        message: `Congratulations! You've completed ${courseName}${msg}`,
         icon: "🎉",
         actionUrl: "/learner/certifications",
         read: false,
@@ -3068,7 +3087,14 @@ export const onEnrollmentCompleted = onDocumentUpdated(
   },
 );
 
-// Helper function for notification email templates
+/**
+ * Helper function for notification email templates.
+ * @param {string} type - The notification type
+ * @param {string} learnerName - The learner's name
+ * @param {string} courseName - The course name
+ * @param {string} param3 - Optional third parameter
+ * @returns {{subject: string; html: string}} Email template
+ */
 function getNotificationEmailTemplate(
   type: string,
   learnerName: string,

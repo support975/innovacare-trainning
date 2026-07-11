@@ -1,0 +1,158 @@
+{
+  "id": "enterprise-onboarding-culture",
+  "title": "Employee Onboarding and Company Culture",
+  "subtitle": "A structured start for new team members",
+  "description": "Help new employees understand the company mission, expectations, communication norms, tools, policies, and first-week priorities.",
+  "lang": "EN",
+  "durationMin": 45,
+  "ceCredit": 0,
+  "sortOrder": 101,
+  "active": true,
+  "isPublic": true,
+  "kind": "Course",
+  "type": "Hr",
+  "level": "Beginner",
+  "url": "/catalogue/enterprise-onboarding-culture",
+  "imageUrl": "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1200&q=80",
+  "tags": [
+    "enterprise",
+    "onboarding",
+    "culture",
+    "hr",
+    "new-hire"
+  ],
+  "lecturer": "Innovacare Training Business Faculty",
+  "disclosures": [
+    "This course is for general business training and should be adapted to each organization's internal policies."
+  ],
+  "targetAudience": [
+    "New employees",
+    "HR teams",
+    "Managers",
+    "Team leads"
+  ],
+  "prerequisites": [
+    "None"
+  ],
+  "requirements": [
+    "Complete all lessons",
+    "Pass the final knowledge check"
+  ],
+  "accomodations": "Learners may request accessibility accommodations from their organization administrator.",
+  "orgId": null,
+  "assignedOrgIds": [],
+  "passingScore": 80,
+  "lockedSequence": true,
+  "sections": [
+    {
+      "id": "welcome",
+      "title": "Welcome and First Priorities",
+      "order": 1,
+      "estMin": 20,
+      "lessons": [
+        {
+          "id": "mission-values",
+          "title": "Mission, Values, and Culture",
+          "order": 1,
+          "estMin": 10,
+          "continueMode": "guided",
+          "blocks": [
+            {
+              "id": "intro",
+              "type": "heading",
+              "level": 2,
+              "text": "Starting with clarity"
+            },
+            {
+              "id": "body",
+              "type": "text",
+              "html": "<p>Every organization has a way of working. New employees should understand the mission, service standards, communication expectations, and behaviors that define professional success.</p><p>Culture is not only a statement on a wall. It is reflected in how people communicate, solve problems, serve customers, and support one another.</p>",
+              "required": true
+            },
+            {
+              "id": "callout",
+              "type": "callout",
+              "style": "info",
+              "html": "<strong>Manager tip:</strong> Pair this course with a local checklist for tools, passwords, schedule, and first-week meetings."
+            }
+          ]
+        },
+        {
+          "id": "first-week-success",
+          "title": "First-Week Success Checklist",
+          "order": 2,
+          "estMin": 10,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>A strong first week gives the employee a map. Confirm the role, reporting line, required tools, safety expectations, training plan, and first deliverables.</p><ul><li>Know who to contact for support.</li><li>Understand daily attendance and communication rules.</li><li>Review required policies and training assignments.</li><li>Ask questions early instead of guessing.</li></ul>",
+              "required": true
+            },
+            {
+              "id": "quiz",
+              "type": "quiz",
+              "mode": "single",
+              "question": "What is the best first-week practice for a new employee?",
+              "required": true,
+              "choices": [
+                {
+                  "id": "a",
+                  "text": "Wait until the end of the month to ask questions",
+                  "correct": false
+                },
+                {
+                  "id": "b",
+                  "text": "Clarify expectations, tools, contacts, and training early",
+                  "correct": true
+                },
+                {
+                  "id": "c",
+                  "text": "Avoid manager check-ins",
+                  "correct": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "workplace-expectations",
+      "title": "Professional Expectations",
+      "order": 2,
+      "estMin": 25,
+      "lessons": [
+        {
+          "id": "conduct-communication",
+          "title": "Professional Conduct and Communication",
+          "order": 1,
+          "estMin": 15,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Professional communication should be clear, respectful, timely, and documented when needed. Employees should use approved channels and avoid sharing sensitive information casually.</p>",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "course-summary",
+          "title": "Course Summary",
+          "order": 2,
+          "estMin": 10,
+          "blocks": [
+            {
+              "id": "summary",
+              "type": "callout",
+              "style": "success",
+              "html": "<p>You are ready to begin with a clearer understanding of culture, conduct, first-week priorities, and support channels.</p>",
+              "required": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -169,8 +169,7 @@ export class PolicyAdminEditorPage implements OnInit {
 
   ngOnInit(): void {
     this.auth.profile$.subscribe(p => {
-      // ajuste selon ton profile
-      this.isAdmin = (p?.role === 'admin');
+      this.isAdmin = p?.role === 'admin' || p?.role === 'manager';
     });
 
     this.route.paramMap.pipe(
@@ -228,11 +227,11 @@ export class PolicyAdminEditorPage implements OnInit {
       };
 
       if (!this.policyId) {
-        const id = await this.policySvc.createPolicy(payload);
-        this.router.navigate(['/manager/dashboard']);
+        await this.policySvc.createPolicy(payload);
+        this.router.navigate(['/manager/policies']);
       } else {
         await this.policySvc.updatePolicy(this.policyId, payload);
-        this.router.navigate(['/manager/dashboard']);
+        this.router.navigate(['/manager/policies']);
       }
     } finally {
       this.busy = false;
@@ -244,13 +243,13 @@ export class PolicyAdminEditorPage implements OnInit {
     this.busy = true;
     try {
       await this.policySvc.deletePolicy(this.policyId);
-      this.router.navigate(['/compliance/policies']);
+      this.router.navigate(['/manager/policies']);
     } finally {
       this.busy = false;
     }
   }
 
   back() {
-    this.router.navigate(['/manager/dashboard']);
+    this.router.navigate(['/manager/policies']);
   }
 }

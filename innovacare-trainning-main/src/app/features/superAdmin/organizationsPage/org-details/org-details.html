@@ -1,1 +1,156 @@
-<p>org-details works!</p>
+<div class="sa-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <div class="back-link-wrap">
+        <a class="back-link" routerLink="/super-admin/organizations">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Organizations
+        </a>
+      </div>
+      <p class="page-eyebrow">Super Admin · Organizations</p>
+      <h1 class="page-title">{{ org()?.name || 'Organization' }}</h1>
+      <p class="page-sub">Organization profile, billing details, and member directory.</p>
+    </div>
+    <div class="header-actions" *ngIf="org()">
+      <a class="btn-ghost" [routerLink]="['/super-admin/organizations', orgId, 'edit']">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+        Edit
+      </a>
+      <a class="btn-danger-outline" [routerLink]="['/super-admin/organizations', orgId, 'delete']">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+          <path d="M10 11v6"/><path d="M14 11v6"/>
+        </svg>
+        Delete
+      </a>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading()">
+    <div class="loading-spinner"></div>
+    <span>Loading organization details...</span>
+  </div>
+
+  <!-- Details Layout -->
+  <div class="details-layout" *ngIf="!loading() && org()">
+
+    <!-- Left: Org Info Card -->
+    <div class="panel org-info-panel">
+      <div class="panel__head">
+        <div>
+          <div class="panel__title">Organization Info</div>
+          <div class="panel__sub">Core details and identifiers.</div>
+        </div>
+      </div>
+      <div class="org-info-body">
+        <div class="org-info-avatar">
+          {{ initials(org()!.name) }}
+        </div>
+        <div class="org-info-name">{{ org()!.name }}</div>
+        <div class="org-info-badges">
+          <span class="badge badge--info">{{ org()!.type }}</span>
+          <span [class]="'badge badge--' + org()!.plan">{{ planLabel(org()!.plan) }}</span>
+          <span [class]="'badge badge--' + (org()!.active ? 'active' : 'inactive')">{{ org()!.active ? 'Active' : 'Inactive' }}</span>
+          <span *ngIf="org()!.certificationAuthorityEnabled" class="badge badge--success">Certifications Enabled</span>
+        </div>
+        <div class="org-info-rows">
+          <div class="org-info-row">
+            <span class="org-info-row__key">Organization ID</span>
+            <span class="org-info-row__val org-info-row__val--mono">{{ org()!.id }}</span>
+          </div>
+          <div class="org-info-row">
+            <span class="org-info-row__key">Owner Email</span>
+            <span class="org-info-row__val">{{ org()!.ownerEmail || '—' }}</span>
+          </div>
+          <div class="org-info-row">
+            <span class="org-info-row__key">Type</span>
+            <span class="org-info-row__val">{{ org()!.type }}</span>
+          </div>
+          <div class="org-info-row">
+            <span class="org-info-row__key">Plan</span>
+            <span class="org-info-row__val">{{ planLabel(org()!.plan) }}</span>
+          </div>
+          <div class="org-info-row">
+            <span class="org-info-row__key">Learners</span>
+            <span class="org-info-row__val">{{ learnerCount() }} / {{ learnerLimit(org()!) }}</span>
+          </div>
+          <div class="org-info-row">
+            <span class="org-info-row__key">Official Certifications</span>
+            <span class="org-info-row__val">
+              <span [class]="'badge badge--' + (org()!.certificationAuthorityEnabled ? 'success' : 'inactive')">
+                {{ org()!.certificationAuthorityEnabled ? 'Enabled' : 'Disabled' }}
+              </span>
+            </span>
+          </div>
+          <div class="org-info-row" *ngIf="org()!.createdAt">
+            <span class="org-info-row__key">Created</span>
+            <span class="org-info-row__val">{{ formatDate(org()!.createdAt) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Members Panel -->
+    <div class="panel members-panel">
+      <div class="panel__head">
+        <div>
+          <div class="panel__title">Members</div>
+          <div class="panel__sub">{{ members().length }} member{{ members().length !== 1 ? 's' : '' }} in this organization.</div>
+        </div>
+      </div>
+
+      <!-- Members Table -->
+      <div *ngIf="members().length > 0; else emptyMembers">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Role</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of members()">
+              <td>
+                <div class="member-cell">
+                  <div class="avatar">{{ initials(m.displayName || m.email || '?') }}</div>
+                  <div class="member-info">
+                    <div class="member-name">{{ m.displayName || '—' }}</div>
+                    <div class="member-email">{{ m.email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span [class]="'badge badge--' + (m.role === 'admin' ? 'info' : m.role === 'manager' ? 'pro' : 'free')">{{ m.role }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #emptyMembers>
+        <div class="empty-state">
+          <div class="empty-state__icon">&#128100;</div>
+          <strong>No members yet</strong>
+          <span>This organization has no members.</span>
+        </div>
+      </ng-template>
+    </div>
+
+  </div>
+
+  <!-- Not Found -->
+  <div class="empty-state" *ngIf="!loading() && !org()">
+    <div class="empty-state__icon">&#10060;</div>
+    <strong>Organization not found</strong>
+    <span>This organization may have been deleted or the ID is invalid.</span>
+  </div>
+
+</div>

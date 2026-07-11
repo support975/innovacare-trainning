@@ -1,1 +1,94 @@
-<p>delete works!</p>
+<div class="sa-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <div class="back-link-wrap">
+        <a class="back-link" routerLink="/super-admin/organizations">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Organizations
+        </a>
+      </div>
+      <p class="page-eyebrow">Super Admin · Organizations</p>
+      <h1 class="page-title delete-title">Delete Organization</h1>
+      <p class="page-sub">Permanently remove this organization and its associated data.</p>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading()">
+    <div class="loading-spinner"></div>
+    <span>Loading organization...</span>
+  </div>
+
+  <!-- Delete Confirmation -->
+  <div *ngIf="!loading()">
+
+    <!-- Org Info Warning Card -->
+    <div class="danger-card" *ngIf="org()">
+      <div class="danger-card__icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div class="danger-card__body">
+        <div class="danger-card__headline">You are about to permanently delete:</div>
+        <div class="danger-card__org-name">{{ org()!.name }}</div>
+        <div class="danger-card__meta">
+          <span class="badge badge--info">{{ org()!.type }}</span>
+          <span [class]="'badge badge--' + org()!.plan">{{ org()!.plan }}</span>
+          <span [class]="'badge badge--' + (org()!.active ? 'active' : 'inactive')">{{ org()!.active ? 'Active' : 'Inactive' }}</span>
+        </div>
+        <div class="danger-card__id">ID: {{ org()!.id }}</div>
+      </div>
+    </div>
+
+    <!-- Warning Text -->
+    <div class="warning-panel" *ngIf="org()">
+      <div class="warning-panel__icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/>
+          <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <div class="warning-panel__text">
+        <strong>This action is permanent and cannot be undone.</strong>
+        All data linked to this organization will be affected, including users, enrollments, completions, and billing records.
+      </div>
+    </div>
+
+    <!-- Notice Banner -->
+    <div *ngIf="notice()" class="notice-banner notice-banner--error">
+      <span class="notice-banner__text">{{ notice() }}</span>
+    </div>
+
+    <!-- Not Found -->
+    <div class="empty-state" *ngIf="!org()">
+      <div class="empty-state__icon">&#10060;</div>
+      <strong>Organization not found</strong>
+      <span>This organization may have already been deleted.</span>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="delete-footer" *ngIf="org()">
+      <a class="btn-ghost" routerLink="/super-admin/organizations">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        Cancel
+      </a>
+      <button class="btn-danger" (click)="confirm()" [disabled]="busy()">
+        <span *ngIf="busy()" class="spinner-dark"></span>
+        <svg *ngIf="!busy()" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+          <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+        </svg>
+        {{ busy() ? 'Deleting...' : 'Delete Permanently' }}
+      </button>
+    </div>
+  </div>
+
+</div>

@@ -24,6 +24,7 @@ export class Certifications implements OnInit {
 
   notice = signal('');
   busy = signal(false);
+  certificateReady = signal(false);
 
   // Loaded
   userName = signal('Learner');
@@ -62,6 +63,7 @@ export class Certifications implements OnInit {
   private async loadAll() {
     this.busy.set(true);
     this.notice.set('');
+    this.certificateReady.set(false);
     try {
       const user = this.auth.currentUser;
       if (!user) {
@@ -83,6 +85,11 @@ export class Certifications implements OnInit {
       // OPTIONAL: score if stored on enrollment
       const eSnap = await getDoc(doc(this.afs, `users/${user.uid}/enrollments/${this.courseId}`) as any);
       const enr: any = eSnap.exists() ? eSnap.data() : {};
+      if (!eSnap.exists() || enr?.status !== 'completed') {
+        this.notice.set('Certificate of completion is available after this course is completed.');
+        return;
+      }
+
       const score = typeof enr?.score === 'number' ? enr.score : 0;
       this.percent.set(score);
 
@@ -97,6 +104,7 @@ export class Certifications implements OnInit {
       // certificate number (local deterministic-ish)
       this.certificateNo.set(this.makeCertNo(user.uid, this.courseId, completedAt));
       this.issuedOn.set(new Date().toLocaleDateString());
+      this.certificateReady.set(true);
     } catch (e: any) {
       this.notice.set(e?.message || 'Failed to load certificate data.');
     } finally {
@@ -114,6 +122,11 @@ export class Certifications implements OnInit {
   }
 
   print() {
+    if (!this.certificateReady()) {
+      this.notice.set('Certificate is not ready to print.');
+      return;
+    }
+
     window.print();
   }
 
@@ -126,6 +139,11 @@ export class Certifications implements OnInit {
     // If you want 1-click PDF, install:
     // npm i jspdf html2canvas
     // Then keep this code.
+
+    if (!this.certificateReady()) {
+      this.notice.set('Certificate is available after this course is completed.');
+      return;
+    }
 
     if (!this.certArea?.nativeElement) {
       this.notice.set('Certificate area not ready.');
@@ -171,6 +189,11 @@ export class Certifications implements OnInit {
    * - Recommended: Cloud Function sendCertificateEmail (stub below).
    */
   async sendEmail() {
+    if (!this.certificateReady()) {
+      this.notice.set('Certificate is available after this course is completed.');
+      return;
+    }
+
     const to = this.userEmail();
     if (!to) {
       this.notice.set('No user email found.');

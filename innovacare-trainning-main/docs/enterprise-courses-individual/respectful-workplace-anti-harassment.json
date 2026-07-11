@@ -1,0 +1,145 @@
+{
+  "id": "respectful-workplace-anti-harassment",
+  "title": "Respectful Workplace and Anti-Harassment",
+  "subtitle": "Promote professionalism, dignity, and safe reporting",
+  "description": "Help employees understand respectful conduct, harassment prevention, bystander responsibility, and internal reporting expectations.",
+  "lang": "EN",
+  "durationMin": 60,
+  "ceCredit": 0,
+  "sortOrder": 106,
+  "active": true,
+  "isPublic": true,
+  "kind": "Course",
+  "type": "Hr",
+  "level": "Beginner",
+  "url": "/catalogue/respectful-workplace-anti-harassment",
+  "imageUrl": "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1200&q=80",
+  "tags": [
+    "enterprise",
+    "hr",
+    "harassment-prevention",
+    "respect",
+    "compliance"
+  ],
+  "lecturer": "Innovacare Training HR Compliance Faculty",
+  "disclosures": [
+    "This course is general HR training and should be reviewed against local employment laws."
+  ],
+  "targetAudience": [
+    "All employees",
+    "Managers",
+    "HR staff",
+    "Supervisors"
+  ],
+  "prerequisites": [
+    "None"
+  ],
+  "requirements": [
+    "Complete all lessons",
+    "Pass the respectful workplace quiz"
+  ],
+  "accomodations": "Accessibility accommodations may be requested through the organization administrator.",
+  "orgId": null,
+  "assignedOrgIds": [],
+  "passingScore": 80,
+  "lockedSequence": true,
+  "sections": [
+    {
+      "id": "respect",
+      "title": "Respectful Conduct",
+      "order": 1,
+      "estMin": 30,
+      "lessons": [
+        {
+          "id": "professional-behavior",
+          "title": "Professional Behavior",
+          "order": 1,
+          "estMin": 15,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Respectful workplaces are built through professional language, fair treatment, boundaries, inclusion, and accountability.</p>",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "unacceptable-conduct",
+          "title": "Recognize Unacceptable Conduct",
+          "order": 2,
+          "estMin": 15,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Unacceptable conduct may include intimidation, insults, unwanted comments, retaliation, discriminatory behavior, or repeated disrespectful treatment.</p>",
+              "required": true
+            },
+            {
+              "id": "quiz",
+              "type": "quiz",
+              "mode": "single",
+              "question": "Which behavior supports a respectful workplace?",
+              "required": true,
+              "choices": [
+                {
+                  "id": "a",
+                  "text": "Retaliating against someone who reports a concern",
+                  "correct": false
+                },
+                {
+                  "id": "b",
+                  "text": "Using respectful communication and reporting concerns appropriately",
+                  "correct": true
+                },
+                {
+                  "id": "c",
+                  "text": "Ignoring repeated inappropriate comments",
+                  "correct": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reporting",
+      "title": "Reporting and Bystander Responsibility",
+      "order": 2,
+      "estMin": 30,
+      "lessons": [
+        {
+          "id": "bystander",
+          "title": "Bystander Responsibility",
+          "order": 1,
+          "estMin": 15,
+          "blocks": [
+            {
+              "id": "text",
+              "type": "text",
+              "html": "<p>Bystanders can support a respectful workplace by documenting concerns, checking on affected coworkers, and reporting through approved channels.</p>",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "no-retaliation",
+          "title": "No Retaliation",
+          "order": 2,
+          "estMin": 15,
+          "blocks": [
+            {
+              "id": "callout",
+              "type": "callout",
+              "style": "warn",
+              "html": "<p>Retaliation against someone who raises a good-faith concern should not be tolerated.</p>",
+              "required": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

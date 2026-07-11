@@ -1,25 +1,18 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { SuperAdminDashboardStats } from '../models/super-admin.models';
 import { SuperAdminDashboardService } from '../services/super-admin-facade';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [ CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css'],
 })
-export class Dashboard {
-
-  cards = [
-    { label: 'Organizations', value: 0 },
-    { label: 'Users', value: 0 },
-    { label: 'Courses', value: 0 },
-    { label: 'Active Plans', value: 0 },
-  ];
-
-   private dashboardSvc = inject(SuperAdminDashboardService);
+export class Dashboard implements OnInit {
+  private dashboardSvc = inject(SuperAdminDashboardService);
 
   loading = signal(true);
   stats = signal<SuperAdminDashboardStats>({
@@ -39,5 +32,4 @@ export class Dashboard {
       this.loading.set(false);
     }
   }
-
 }

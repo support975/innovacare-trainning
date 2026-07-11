@@ -57,6 +57,8 @@ export interface Reference {
 
 export interface WoundType {
   woundId?: string;
+  orgId?: string | null;
+  resourceKind?: 'quick_sheet' | 'wound_reference';
   name: string;
   synonyms?: string[];            // alternate names
   category?: string;              // e.g. "Pressure Ulcer"

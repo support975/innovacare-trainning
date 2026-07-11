@@ -1,0 +1,426 @@
+{
+  "docPath": "courses/equipment-cleaning-disinfection-cir-ipr-2026",
+  "docId": "equipment-cleaning-disinfection-cir-ipr-2026",
+  "docData": {
+    "title": "Equipment Cleaning and Disinfection (CIR-IPR 2026)",
+    "subtitle": "Cleaning, disinfection, Spaulding classification, and storage",
+    "description": "Interactive infection prevention course covering equipment cleaning, disinfection levels, healthcare worker safety, Spaulding classification, transportation, and storage.",
+    "lang": "EN",
+    "durationMin": 35,
+    "ceCredit": 0,
+    "active": false,
+    "kind": "Course",
+    "type": "Health",
+    "level": "Intermediate",
+    "imageUrl": "",
+    "url": "https://selectmedical.csod.com/content/selectmedical/publications/16175/scormcontent/index.html#/",
+    "lecturer": "Innovacare Training",
+    "disclosures": [],
+    "targetAudience": ["Clinical staff", "Rehab staff", "Equipment handling staff"],
+    "prerequisites": [],
+    "requirements": ["Review all lessons", "Open all hotspots and tabs", "Complete acknowledgement"],
+    "accomodations": "",
+    "passingScore": 80,
+    "lockedSequence": true,
+    "isPublic": false,
+    "tags": ["equipment cleaning", "disinfection", "infection prevention", "Spaulding", "CIR-IPR 2026"],
+    "sections": [
+      {
+        "id": "equipment-cleaning-main",
+        "title": "Equipment Cleaning and Disinfection",
+        "order": 0,
+        "lessons": [
+          {
+            "id": "course-objectives",
+            "title": "Course Objectives",
+            "estMin": 3,
+            "order": 0,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "hero",
+                "title": "Equipment Cleaning and Disinfection",
+                "bodyHtml": "<p>Review the expected process for safe equipment cleaning, disinfection, handling, and storage.</p>",
+                "buttonLabel": "Start lesson",
+                "required": true
+              },
+              {
+                "type": "accordion",
+                "title": "Course Objectives",
+                "introHtml": "<p>Open each objective before continuing.</p>",
+                "required": true,
+                "items": [
+                  {
+                    "id": "objective-risk",
+                    "title": "Recognize infection prevention risks",
+                    "bodyHtml": "<p>Identify how equipment can contribute to infection risk when cleaning and disinfection steps are missed.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "objective-classification",
+                    "title": "Apply classification principles",
+                    "bodyHtml": "<p>Use Spaulding classification to understand the required level of processing.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "objective-storage",
+                    "title": "Transport and store safely",
+                    "bodyHtml": "<p>Follow clean transport and storage practices to prevent recontamination.</p>",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "infection-control-considerations",
+            "title": "Infection Control Considerations",
+            "estMin": 6,
+            "order": 1,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "slideDeck",
+                "theme": "focus",
+                "required": true,
+                "slides": [
+                  {
+                    "id": "chain-of-infection",
+                    "title": "Chain of Infection",
+                    "imageUrl": "",
+                    "notesHtml": "<p>Replace this blank image URL with a chain-of-infection diagram. Position each hotspot over the matching diagram element.</p>",
+                    "interactiveCards": [
+                      {
+                        "id": "infectious-agent",
+                        "title": "Infectious Agent",
+                        "teaser": "Microorganism that can cause harm",
+                        "bodyHtml": "<p>This is a microorganism that can cause harmful infections and make you ill.</p><p>Microorganisms may include bacteria, viruses, fungi, and protozoa.</p>",
+                        "variant": "hotspot",
+                        "hotspotX": 37,
+                        "hotspotY": 18
+                      },
+                      {
+                        "id": "susceptible-host",
+                        "title": "Susceptible Host",
+                        "teaser": "Person at risk",
+                        "bodyHtml": "<p>A susceptible host is a person who can become infected when exposed to an infectious agent.</p>",
+                        "variant": "hotspot",
+                        "hotspotX": 23,
+                        "hotspotY": 42
+                      },
+                      {
+                        "id": "portal-entry",
+                        "title": "Portal of Entry",
+                        "teaser": "How organisms enter",
+                        "bodyHtml": "<p>A portal of entry is a route through which microorganisms enter the body, such as mucous membranes, open skin, or invasive devices.</p>",
+                        "variant": "hotspot",
+                        "hotspotX": 25,
+                        "hotspotY": 72
+                      },
+                      {
+                        "id": "means-transmission",
+                        "title": "Means of Transmission",
+                        "teaser": "How organisms spread",
+                        "bodyHtml": "<p>Transmission may occur through direct contact, indirect contact, contaminated equipment, droplets, or other routes.</p>",
+                        "variant": "hotspot",
+                        "hotspotX": 52,
+                        "hotspotY": 82
+                      },
+                      {
+                        "id": "portal-exit",
+                        "title": "Portal of Exit",
+                        "teaser": "How organisms leave",
+                        "bodyHtml": "<p>A portal of exit is the route by which microorganisms leave a reservoir and can spread to others.</p>",
+                        "variant": "hotspot",
+                        "hotspotX": 80,
+                        "hotspotY": 63
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "healthcare-worker-safety",
+            "title": "Healthcare Worker (HCW) Safety",
+            "estMin": 4,
+            "order": 2,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "cardStack",
+                "title": "HCW Safety Review",
+                "introHtml": "<p>Open each card.</p>",
+                "variant": "gated",
+                "required": true,
+                "cards": [
+                  {
+                    "id": "ppe",
+                    "title": "PPE",
+                    "teaser": "Use the right protection",
+                    "bodyHtml": "<p>Use the PPE required by policy and product instructions when cleaning or disinfecting equipment.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "chemical-safety",
+                    "title": "Chemical safety",
+                    "teaser": "Follow product instructions",
+                    "bodyHtml": "<p>Follow disinfectant instructions, contact time, dilution, ventilation, and storage requirements.</p>",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "prevention-hai",
+            "title": "Prevention of Hospital Acquired Infections",
+            "estMin": 4,
+            "order": 3,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "accordion",
+                "title": "Prevention Practices",
+                "introHtml": "<p>Open each prevention practice.</p>",
+                "required": true,
+                "items": [
+                  {
+                    "id": "clean-between",
+                    "title": "Clean between uses",
+                    "bodyHtml": "<p>Reusable equipment must be cleaned and disinfected between clients according to policy.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "avoid-recontamination",
+                    "title": "Avoid recontamination",
+                    "bodyHtml": "<p>Keep clean equipment separate from soiled equipment during transport and storage.</p>",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "cleaning-disinfection",
+            "title": "Cleaning & Disinfection",
+            "estMin": 6,
+            "order": 4,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "tabs",
+                "title": "Cleaning and Disinfection",
+                "introHtml": "<p>Select each tab to review the concept.</p>",
+                "required": true,
+                "tabs": [
+                  {
+                    "id": "cleaning",
+                    "label": "Cleaning",
+                    "title": "Cleaning",
+                    "bodyHtml": "<p>Cleaning removes visible soil and organic material from equipment. Cleaning is required before effective disinfection or sterilization.</p>",
+                    "imageUrl": "",
+                    "imageAlt": "Cleaning equipment",
+                    "required": true
+                  },
+                  {
+                    "id": "disinfection",
+                    "label": "Disinfection",
+                    "title": "Three Levels of Disinfection",
+                    "bodyHtml": "<ol><li><strong>Low-level disinfection</strong> kills most bacteria, some viruses, and some fungi, but not mycobacterium.</li><li><strong>Intermediate-level disinfection</strong> kills mycobacterium and all other vegetative bacteria, fungi, and most viruses.</li><li><strong>High-level disinfection</strong> kills all organisms except bacterial spores.</li></ol>",
+                    "imageUrl": "",
+                    "imageAlt": "Disinfection process",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "spaulding-classification",
+            "title": "Spaulding Classification System",
+            "estMin": 6,
+            "order": 5,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "slideDeck",
+                "theme": "focus",
+                "required": true,
+                "slides": [
+                  {
+                    "id": "spaulding-hotspots",
+                    "title": "Spaulding Classification System",
+                    "imageUrl": "",
+                    "notesHtml": "<p>Replace this blank image URL with a Spaulding classification diagram and position the hotspots over Non-Critical, Semi-Critical, and Critical.</p>",
+                    "interactiveCards": [
+                      {
+                        "id": "non-critical",
+                        "title": "Non-Critical",
+                        "teaser": "Touches intact skin",
+                        "bodyHtml": "<p><strong>Examples:</strong></p><ul><li>Blood pressure cuffs</li><li>Stethoscopes</li><li>Reusable items that contact intact skin only</li></ul><p><strong>Reprocessing Requirements:</strong> Cleaning followed by low-level or intermediate-level disinfection according to policy and product instructions.</p>",
+                        "variant": "hotspot",
+                        "hotspotX": 25,
+                        "hotspotY": 20
+                      },
+                      {
+                        "id": "semi-critical",
+                        "title": "Semi-Critical",
+                        "teaser": "Contacts mucous membranes",
+                        "bodyHtml": "<p><strong>Examples:</strong></p><ul><li>Reusable ear syringe nozzles</li><li>Trans-rectal probes</li><li>Vaginal, nasal, and rectal specula</li></ul><p><strong>Reprocessing Requirements:</strong> Cleaning followed by high-level disinfection at minimum; sterilization preferred when appropriate.</p>",
+                        "variant": "hotspot",
+                        "hotspotX": 56,
+                        "hotspotY": 48
+                      },
+                      {
+                        "id": "critical",
+                        "title": "Critical",
+                        "teaser": "Enters sterile tissue or bloodstream",
+                        "bodyHtml": "<p>Critical items enter sterile tissue or the vascular system and require sterilization before use.</p>",
+                        "variant": "hotspot",
+                        "hotspotX": 36,
+                        "hotspotY": 78
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "level-properties-disinfectant",
+            "title": "Level & Properties of Disinfectant",
+            "estMin": 4,
+            "order": 6,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "tabs",
+                "title": "Disinfectant Properties",
+                "introHtml": "<p>Review each property before continuing.</p>",
+                "required": true,
+                "tabs": [
+                  {
+                    "id": "contact-time",
+                    "label": "Contact Time",
+                    "title": "Contact Time",
+                    "bodyHtml": "<p>The surface must remain wet for the full contact time listed in the product instructions.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "compatibility",
+                    "label": "Compatibility",
+                    "title": "Compatibility",
+                    "bodyHtml": "<p>Use disinfectants that are compatible with the equipment and approved by policy.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "safety",
+                    "label": "Safety",
+                    "title": "Safety",
+                    "bodyHtml": "<p>Follow PPE, ventilation, dilution, and storage requirements.</p>",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "transportation-storage",
+            "title": "Transportation & Storage",
+            "estMin": 4,
+            "order": 7,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "accordion",
+                "title": "Transportation and Storage",
+                "introHtml": "<p>Open each section.</p>",
+                "required": true,
+                "items": [
+                  {
+                    "id": "transport",
+                    "title": "Transport",
+                    "bodyHtml": "<p>Transport clean and soiled equipment separately to prevent cross-contamination.</p>",
+                    "required": true
+                  },
+                  {
+                    "id": "storage",
+                    "title": "Storage",
+                    "bodyHtml": "<p>Store clean equipment in a clean, dry area according to policy.</p>",
+                    "required": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "conclusion",
+            "title": "Conclusion",
+            "estMin": 2,
+            "order": 8,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "callout",
+                "style": "success",
+                "html": "<p>You have reviewed the key practices for equipment cleaning, disinfection, classification, transportation, and storage.</p>",
+                "required": true
+              }
+            ]
+          },
+          {
+            "id": "questions",
+            "title": "Questions?",
+            "estMin": 2,
+            "order": 9,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "text",
+                "html": "<p>Contact your supervisor or infection prevention resource if you have questions about local equipment processing expectations.</p>",
+                "required": false
+              }
+            ]
+          },
+          {
+            "id": "acknowledgement",
+            "title": "Acknowledgement",
+            "estMin": 2,
+            "order": 10,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "quiz",
+                "mode": "single",
+                "question": "What must happen before equipment can be effectively disinfected?",
+                "required": true,
+                "choices": [
+                  { "id": "clean-first", "text": "Visible soil and organic material must be cleaned first", "correct": true },
+                  { "id": "skip", "text": "Cleaning can be skipped when disinfectant is used", "correct": false },
+                  { "id": "store-first", "text": "Equipment should be stored before cleaning", "correct": false }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "course-completion",
+            "title": "Course Completion",
+            "estMin": 1,
+            "order": 11,
+            "continueMode": "guided",
+            "blocks": [
+              {
+                "type": "callout",
+                "style": "success",
+                "html": "<p>Course complete. Your completion can now be recorded.</p>",
+                "required": false
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

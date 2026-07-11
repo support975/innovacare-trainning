@@ -1,0 +1,114 @@
+<div class="consent-page">
+  <header class="consent-header">
+    <h1>Exam Agreement & Confidentiality</h1>
+    <p class="subtitle">Before you begin, please review and accept the exam terms</p>
+  </header>
+
+  <div class="consent-container">
+    <div *ngIf="error()" class="error-alert">
+      {{ error() }}
+    </div>
+
+    <!-- Exam Info Card -->
+    <div *ngIf="sessionInfo() as session" class="exam-card">
+      <div class="card-header">
+        <h2>{{ examInfo()?.title || 'Secure Exam Assessment' }}</h2>
+        <div class="exam-meta">
+          <span class="meta-item">
+            <strong>Duration:</strong> {{ getDurationDisplay() }}
+          </span>
+          <span class="meta-item">
+            <strong>Session Date:</strong> {{ session.sessionDate }}
+          </span>
+          <span class="meta-item" *ngIf="session.status">
+            <strong>Status:</strong> {{ session.status }}
+          </span>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <section class="agreement-section">
+          <h3>⏱️ Duration & No Retake Policy</h3>
+          <p>
+            This exam has a maximum duration of <strong>{{ getDurationDisplay() }}</strong>.
+            Once you start, you cannot pause or restart the exam. All questions must be completed
+            within the allotted time. If time expires, your current answers will be automatically submitted.
+          </p>
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="agreeNoSharing" name="agreeNoSharing" [disabled]="loading()" />
+            <span>I understand the no-retake policy and time limit</span>
+          </label>
+        </section>
+
+        <section class="agreement-section">
+          <h3>🔐 Confidentiality & Security</h3>
+          <p>
+            This examination is confidential. All questions, answers, and content are proprietary and
+            protected intellectual property. Unauthorized disclosure or sharing of exam material is prohibited.
+          </p>
+          <p>
+            Your exam session is monitored and recorded. Any suspicious activity may result in exam
+            termination and score cancellation.
+          </p>
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="agreeConfidentiality" name="agreeConfidentiality" [disabled]="loading()" />
+            <span>I acknowledge the confidentiality requirements</span>
+          </label>
+        </section>
+
+        <section class="agreement-section">
+          <h3>🚫 No Question or Note Sharing</h3>
+          <p>
+            <strong>You are prohibited from:</strong>
+          </p>
+          <ul>
+            <li>Taking screenshots or photos of exam questions</li>
+            <li>Recording or transcribing exam content</li>
+            <li>Sharing any questions with other people</li>
+            <li>Using external notes, textbooks, or materials (unless explicitly permitted)</li>
+            <li>Discussing specific questions with other candidates</li>
+          </ul>
+          <p class="warning">
+            ⚠️ Violation of these rules may result in immediate exam termination, score invalidation,
+            and disciplinary action.
+          </p>
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="agreeNoSharing" name="agreeNoSharing" [disabled]="loading()" />
+            <span>I will not share questions or take unauthorized notes</span>
+          </label>
+        </section>
+
+        <section class="agreement-section">
+          <h3>✅ Terms of Service</h3>
+          <p>
+            By starting this exam, you certify that:
+          </p>
+          <ul>
+            <li>You are the authorized test taker for this session</li>
+            <li>You will not use prohibited resources or assistance</li>
+            <li>You understand and accept all exam policies</li>
+            <li>You consent to monitoring and recording of your session</li>
+            <li>You accept that your results may be reviewed and validated</li>
+          </ul>
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="agreeTerms" name="agreeTerms" [disabled]="loading()" />
+            <span>I accept all terms and conditions</span>
+          </label>
+        </section>
+      </div>
+
+      <div class="card-footer">
+        <button
+          class="btn-start"
+          (click)="onStartExam()"
+          [disabled]="!allAgreed() || loading()"
+        >
+          {{ loading() ? '🔄 Preparing Exam...' : '▶️ Start Exam' }}
+        </button>
+        <p class="footer-note">
+          Once you click "Start Exam", the timer will begin and you cannot leave the exam view.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

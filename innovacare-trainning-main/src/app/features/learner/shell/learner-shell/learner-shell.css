@@ -79,7 +79,41 @@
   gap:10px;
   min-width:0;
   color:var(--brand-ink);
-  letter-spacing:.2px;
+}
+
+.shell .brand-logo,
+.shell .org-panel__logo{
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 28% 24%, rgba(255,255,255,.76), rgba(255,255,255,0) 52%),
+    linear-gradient(135deg, var(--org-accent, var(--brand)), var(--brand-2));
+  color:#fff;
+  font-size:.74rem;
+  font-weight:950;
+  border:1px solid rgba(255,255,255,.76);
+  box-shadow:0 10px 24px rgba(2,6,23,.12);
+}
+
+.shell .brand-logo img,
+.shell .org-panel__logo img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  background:#fff;
+  padding:2px;
+}
+
+.shell .brand-copy{
+  display:grid;
+  min-width:0;
+  line-height:1.05;
 }
 
 .shell .brand strong{
@@ -88,6 +122,14 @@
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
+}
+
+.shell .brand small{
+  margin-top:3px;
+  color:var(--org-accent, var(--brand));
+  font-size:.68rem;
+  font-weight:950;
+  text-transform:uppercase;
 }
 
 .shell .brand::after{
@@ -113,6 +155,32 @@
   gap:10px;
 }
 
+.shell .language-switch{
+  display:inline-grid;
+  grid-template-columns: repeat(2, minmax(38px, 1fr));
+  align-items:center;
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:3px;
+  background:rgba(255,255,255,.85);
+}
+
+.shell .language-option{
+  border:0;
+  border-radius:999px;
+  min-height:30px;
+  padding:5px 9px;
+  background:transparent;
+  color:var(--muted);
+  font-weight:900;
+  cursor:pointer;
+}
+
+.shell .language-option.active{
+  background:var(--org-accent, var(--brand));
+  color:#fff;
+}
+
 .shell .role{
   color:var(--muted);
   font-weight:900;
@@ -127,11 +195,62 @@
   width:34px;
   height:34px;
   border-radius:999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
   background:
     radial-gradient(circle at 30% 30%, rgba(255,255,255,.8), rgba(255,255,255,0) 55%),
     linear-gradient(135deg, rgba(35,74,132,.80), rgba(66,165,245,.70));
   box-shadow: 0 12px 24px rgba(2,6,23,.14);
   border:1px solid rgba(255,255,255,.70);
+  color:#fff;
+  font-size:.72rem;
+  font-weight:950;
+  letter-spacing:.04em;
+  flex-shrink:0;
+}
+
+.shell .avatar img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.shell .profile-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:9px;
+  min-width:0;
+  max-width:260px;
+  padding:4px 10px 4px 4px;
+  border-radius:999px;
+  border:1px solid rgba(35,74,132,.14);
+  background:rgba(255,255,255,.78);
+}
+
+.shell .profile-copy{
+  min-width:0;
+  line-height:1.1;
+}
+
+.shell .profile-name,
+.shell .profile-org{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.shell .profile-name{
+  color:var(--ink);
+  font-size:.78rem;
+  font-weight:950;
+}
+
+.shell .profile-org{
+  color:var(--org-accent, var(--brand));
+  font-size:.68rem;
+  font-weight:900;
 }
 
 .shell .btn{
@@ -230,6 +349,35 @@
   gap:14px;
 }
 
+.shell .org-panel{
+  padding:12px 14px;
+  border:1px solid rgba(35,74,132,.16);
+  border-radius:var(--radius);
+  background:linear-gradient(135deg, color-mix(in srgb, var(--org-accent, #234a84) 14%, #ffffff), rgba(66,165,245,.08));
+}
+
+.shell .org-panel__brand{
+  margin-bottom:10px;
+}
+
+.shell .org-panel__label{
+  font-size:.72rem;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--muted);
+  font-weight:950;
+}
+
+.shell .org-panel__name{
+  margin-top:3px;
+  color:var(--brand-ink);
+  font-size:.95rem;
+  font-weight:950;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
 .shell .menu-group{
   padding:10px;
   border:1px solid rgba(15,23,42,.08);
@@ -265,12 +413,12 @@
 }
 
 .shell .menu-item:hover{
-  background:rgba(35,74,132,.06);
+  background:color-mix(in srgb, var(--org-accent, #234a84) 8%, #ffffff);
   border-color:rgba(35,74,132,.16);
 }
 
 .shell .menu-item.active{
-  background:linear-gradient(135deg, rgba(35,74,132,.16), rgba(66,165,245,.10));
+  background:linear-gradient(135deg, color-mix(in srgb, var(--org-accent, #234a84) 18%, #ffffff), rgba(66,165,245,.10));
   border-color:rgba(35,74,132,.22);
   color:var(--brand-ink);
   font-weight:950;
@@ -385,6 +533,14 @@
 @media (max-width: 480px){
   .shell .role{
     display:none;
+  }
+
+  .shell .profile-copy{
+    display:none;
+  }
+
+  .shell .profile-chip{
+    padding:3px;
   }
 
   .shell .btn.logout{

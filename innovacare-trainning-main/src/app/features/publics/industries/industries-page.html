@@ -1,0 +1,150 @@
+<app-public-site-nav
+  page="industries"
+  contextLabel="Nouveaux marchés"
+  contextValue="LMS pour équipes non médicales"
+  mobileMetaLabel="Industries"
+  mobileMetaValue="Vendre la plateforme au-delà de la santé"
+></app-public-site-nav>
+
+<main class="industries-page" appPublicTranslate>
+  <section class="industries-hero">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow">LMS pour plusieurs industries</span>
+        <h1>Innovacare Training peut aussi former les équipes hors santé</h1>
+        <p>
+          La plateforme peut être vendue aux entreprises qui doivent organiser l’onboarding,
+          la conformité, les procédures internes, les quiz, les certificats et le suivi des
+          apprenants dans un espace clair.
+        </p>
+
+        <div class="hero-actions">
+          <button mat-flat-button color="primary" type="button" (click)="openDemoDialog()">
+            Demander une démo
+          </button>
+          <a mat-stroked-button routerLink="/pricing">Voir les plans</a>
+        </div>
+
+        <div class="hero-pills" aria-label="Capacités principales">
+          <span *ngFor="let item of proofPoints">{{ item }}</span>
+        </div>
+      </div>
+
+      <div class="hero-visual" aria-label="Aperçu de plateforme de formation">
+        <img
+          src="https://res.cloudinary.com/dtdpx59sc/image/upload/v1774999823/Screenshot_2026-03-31_192949_bju3pb.png"
+          alt="Tableau de bord de formation"
+          loading="lazy"
+        />
+        <div class="visual-card visual-card--top">
+          <span>Assignation</span>
+          <strong>Par rôle, site ou équipe</strong>
+        </div>
+        <div class="visual-card visual-card--bottom">
+          <span>Preuves</span>
+          <strong>Certificats et complétions</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">Marchés cibles</span>
+        <h2>Une plateforme de formation adaptable à plusieurs types d’entreprise</h2>
+        <p>
+          Le produit reste utile partout où une organisation doit former, vérifier,
+          documenter et suivre la progression de ses équipes.
+        </p>
+      </div>
+
+      <div class="industry-grid">
+        <article class="industry-card" *ngFor="let industry of industries">
+          <div class="industry-icon">
+            <mat-icon>{{ industry.icon }}</mat-icon>
+          </div>
+          <h3>{{ industry.title }}</h3>
+          <p>{{ industry.description }}</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-band">
+    <div class="container">
+      <div class="section-head light">
+        <span class="eyebrow light-badge">Cas d’usage</span>
+        <h2>Le même moteur LMS, avec des contenus adaptés à chaque secteur</h2>
+      </div>
+
+      <div class="use-case-grid">
+        <article class="use-case-card" *ngFor="let useCase of useCases">
+          <mat-icon>{{ useCase.icon }}</mat-icon>
+          <h3>{{ useCase.title }}</h3>
+          <p>{{ useCase.text }}</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container split-panel">
+      <div>
+        <span class="eyebrow">Positionnement commercial</span>
+        <h2>Un message plus large sans perdre la spécialité santé</h2>
+        <p>
+          La page santé peut rester ciblée pour les organisations médicales, pendant que cette
+          page ouvre la porte aux compagnies qui veulent un LMS simple, traçable et rapide à
+          déployer pour leurs propres procédures.
+        </p>
+      </div>
+
+      <div class="sales-card">
+        <h3>À vendre comme</h3>
+        <mat-chip-set>
+          <mat-chip>Onboarding LMS</mat-chip>
+          <mat-chip>Compliance training</mat-chip>
+          <mat-chip>Employee training portal</mat-chip>
+          <mat-chip>Multi-site learning platform</mat-chip>
+          <mat-chip>Certification tracker</mat-chip>
+        </mat-chip-set>
+        <button mat-flat-button color="primary" type="button" (click)="openDemoDialog()">
+          Parler d’un déploiement
+        </button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="landing-footer" appPublicTranslate>
+  <div class="container footer-grid">
+    <div>
+      <div class="footer-brand">Innovacare Training</div>
+      <p>Plateforme LMS pour organisations modernes</p>
+    </div>
+
+    <div class="footer-links-group">
+      <h4>Produit</h4>
+      <a routerLink="/fonctionnalites">Fonctionnalités</a>
+      <a routerLink="/industries">Industries</a>
+      <a routerLink="/catalogue">Catalogue</a>
+    </div>
+
+    <div class="footer-links-group">
+      <h4>Entreprise</h4>
+      <a (click)="openDemoDialog()">Démo</a>
+      <a href="mailto:support@perryhomewoundcare.network">Contact</a>
+      <a href="#">Confidentialité</a>
+      <a href="#">Conditions</a>
+    </div>
+
+    <div class="footer-links-group">
+      <h4>Contact</h4>
+      <a href="mailto:support@perryhomewoundcare.network">contact@innovacare.training</a>
+      <a href="tel:+14783104446">+1 (478) 310-4446</a>
+    </div>
+  </div>
+
+  <div class="container footer-bottom">© 2026 Innovacare Training. Tous droits réservés.</div>
+</footer>

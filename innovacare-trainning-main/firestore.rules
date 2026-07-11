@@ -2,276 +2,1290 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ---------- Helpers ----------
+    // ── Helpers ────────────────────────────────────────────────────────────
+
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // Read role from users/{uid}
     function userRole(uid) {
       return exists(/databases/$(database)/documents/users/$(uid))
         ? get(/databases/$(database)/documents/users/$(uid)).data.role
-        : "";
+        : '';
     }
 
-    // Admin via allow-list OR users/{uid}.role == "admin"
-    function isAdmin() {
+    function myRole() {
+      return userRole(request.auth.uid);
+    }
+
+    function myOrgId() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.orgId
+        : null;
+    }
+
+    function myAccountType() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.accountType
+        : null;
+    }
+
+    function myPermissions() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions is list
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions
+        : [];
+    }
+
+    function isSuperAdmin() {
+      return isSignedIn() && myRole() in ['super_admin', 'superAdmin'];
+    }
+
+    function isAdminOrAbove() {
       return isSignedIn() && (
         (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
          get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.active == true)
-        ||
-        (userRole(request.auth.uid) == "admin")
+        || myRole() in ['admin', 'super_admin', 'superAdmin']
       );
     }
 
-    function isClinician() {
-      return isSignedIn() && (userRole(request.auth.uid) in ["nurse","lpn","np","caregiver"]);
+    function isManager() {
+      return isSignedIn() && myRole() == 'manager';
     }
 
-    // Is current user the assignee of a given task object?
+    function isManagerOrAbove() {
+      return isAdminOrAbove() || isManager();
+    }
+
+    function isOrgStaffFor(orgId) {
+      return isSignedIn()
+        && myRole() in ['admin', 'manager']
+        && myOrgId() != null
+        && myOrgId() == orgId;
+    }
+
+    function hasCertificationPermission(permission) {
+      return isSuperAdmin()
+        || (isSignedIn() && permission in myPermissions());
+    }
+
+    function hasAnyCertificationPermission() {
+      return isSignedIn()
+        && myPermissions().hasAny([
+          'certification.create',
+          'certification.update',
+          'certification.view',
+          'certification.session.create',
+          'certification.session.update',
+          'certification.session.publish',
+          'certification.application.review',
+          'certification.application.decide',
+          'certification.results.publish',
+          'certification.documents.review',
+          'certification.jury.review'
+        ]);
+    }
+
+    function certificationAuthorityEnabledFor(orgId) {
+      return exists(/databases/$(database)/documents/organizations/$(orgId))
+        && (
+          get(/databases/$(database)/documents/organizations/$(orgId)).data.certificationAuthorityEnabled == true
+          || get(/databases/$(database)/documents/organizations/$(orgId)).data.features.officialCertifications == true
+        );
+    }
+
+    function isCertificationAuthorityFor(orgId) {
+      return isSuperAdmin()
+        || (isOrgStaffFor(orgId) && certificationAuthorityEnabledFor(orgId))
+        || (isSignedIn() && myOrgId() == orgId && hasAnyCertificationPermission());
+    }
+
+    function isApplicationOwner(applicationData) {
+      return isSignedIn()
+        && applicationData.candidateUserId == request.auth.uid;
+    }
+
+    function isClinician() {
+      return isSignedIn() && myRole() in ['nurse', 'lpn', 'np', 'caregiver'];
+    }
+
+    function isIndividualLearner() {
+      return isSignedIn() && myRole() == 'learner' && myAccountType() == 'individual';
+    }
+
+    function isPublicCourse(courseData) {
+      return courseData.active == true && courseData.isPublic == true;
+    }
+
+    function isCourseAssignedToMyOrg(courseData) {
+      return isSignedIn()
+        && myOrgId() != null
+        && (
+          (courseData.assignedOrgIds is list && myOrgId() in courseData.assignedOrgIds)
+          || sameOrg(courseData)
+        );
+    }
+
+    function isCourseMappedToMyOrg(courseId) {
+      return isSignedIn()
+        && myOrgId() != null
+        && exists(/databases/$(database)/documents/organizationCourseAssignments/$(myOrgId() + '_' + courseId))
+        && get(/databases/$(database)/documents/organizationCourseAssignments/$(myOrgId() + '_' + courseId)).data.active != false;
+    }
+
+    function isLearningPathMappedToMyOrg(pathId) {
+      return isSignedIn()
+        && myOrgId() != null
+        && exists(/databases/$(database)/documents/organizationLearningPathAssignments/$(myOrgId() + '_' + pathId))
+        && get(/databases/$(database)/documents/organizationLearningPathAssignments/$(myOrgId() + '_' + pathId)).data.active != false;
+    }
+
+    function courseIsPublic(courseId) {
+      return exists(/databases/$(database)/documents/courses/$(courseId))
+        && isPublicCourse(get(/databases/$(database)/documents/courses/$(courseId)).data);
+    }
+
+    function hasPaidIndividualEnrollment(courseId) {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid)/enrollments/$(courseId))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)/enrollments/$(courseId)).data.accessMode == 'approved_individual'
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)/enrollments/$(courseId)).data.paymentStatus == 'paid';
+    }
+
+    function canReadCourse(courseId, courseData) {
+      return (!isSignedIn() && isPublicCourse(courseData))
+        || (courseData.active == true && hasPaidIndividualEnrollment(courseId))
+        || isSuperAdmin()
+        || isCourseAssignedToMyOrg(courseData)
+        || isCourseMappedToMyOrg(courseId)
+        || (isSignedIn()
+            && myOrgId() != null
+            && exists(/databases/$(database)/documents/users/$(request.auth.uid)/enrollments/$(courseId)))
+        || (isSignedIn()
+            && myOrgId() == null
+            && isPublicCourse(courseData));
+    }
+
+    function canReadCourseContent(courseId) {
+      return exists(/databases/$(database)/documents/courses/$(courseId))
+        && canReadCourse(courseId, get(/databases/$(database)/documents/courses/$(courseId)).data);
+    }
+
+    function canOrgStaffReadCourseAccessRequest(requestData) {
+      return isManagerOrAbove()
+        && requestData.courseId is string
+        && exists(/databases/$(database)/documents/courses/$(requestData.courseId))
+        && (
+          isCourseAssignedToMyOrg(get(/databases/$(database)/documents/courses/$(requestData.courseId)).data)
+          || isCourseMappedToMyOrg(requestData.courseId)
+        );
+    }
+
+    // doc.orgId matches the requesting manager's orgId
+    function sameOrg(docData) {
+      return docData.orgId != null && docData.orgId == myOrgId();
+    }
+
     function isAssignedTo(task) {
       return isSignedIn() && task.assignedTo == request.auth.uid;
     }
 
-    // Allow only forward, safe status moves for clinicians
-    // new -> assigned -> in_progress -> done|cancelled
     function statusTransitionOk(old, neu) {
       return
-        (old == "new"         && neu in ["new","assigned"]) ||
-        (old == "assigned"    && neu in ["assigned","in_progress","cancelled"]) ||
-        (old == "in_progress" && neu in ["in_progress","done","cancelled"]) ||
-        (old == "done"        && neu == "done") ||
-        (old == "cancelled"   && neu == "cancelled");
+        (old == 'new'         && neu in ['new', 'assigned']) ||
+        (old == 'assigned'    && neu in ['assigned', 'in_progress', 'cancelled']) ||
+        (old == 'in_progress' && neu in ['in_progress', 'done', 'cancelled']) ||
+        (old == 'done'        && neu == 'done') ||
+        (old == 'cancelled'   && neu == 'cancelled');
     }
 
-    // ---------- Admin allow-list doc ----------
-    match /admins/{uid} {
-      allow read, write: if false; // managed server-side/console only
+    function isIndividualSelfProfileCreate(uid) {
+      return isSignedIn()
+        && request.auth.uid == uid
+        && !exists(/databases/$(database)/documents/users/$(uid))
+        && request.resource.data.keys().hasOnly([
+          'uid',
+          'email',
+          'displayName',
+          'role',
+          'active',
+          'orgId',
+          'orgType',
+          'accountType',
+          'onboardingSource',
+          'createdAt',
+          'updatedAt',
+          'lastLoginAt',
+          'lastSeenAt',
+          'activityUpdatedAt',
+          'totalAppSeconds'
+        ])
+        && request.resource.data.uid == uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.displayName is string
+        && request.resource.data.role == 'learner'
+        && request.resource.data.active == true
+        && (
+          request.resource.data.orgId == null
+          || (request.resource.data.orgId is string
+              && exists(/databases/$(database)/documents/organizations/$(request.resource.data.orgId)))
+        )
+        && request.resource.data.orgType == null
+        && request.resource.data.accountType == 'individual'
+        && request.resource.data.onboardingSource == 'public-self-serve'
+        && request.resource.data.totalAppSeconds == 0;
     }
 
-    // ---------- USERS ----------
-    match /users/{uid} {
-      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+    function isSelfProfileUpdate(uid) {
+      return isSignedIn()
+        && request.auth.uid == uid
+        && exists(/databases/$(database)/documents/users/$(uid))
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'displayName',
+          'photoURL',
+          'phone',
+          'address',
+          'profileImage',
+          'lastLoginAt',
+          'lastSeenAt',
+          'activityUpdatedAt',
+          'totalAppSeconds',
+          'updatedAt'
+        ]);
+    }
 
-      // User may edit own profile but cannot self-escalate role/active
-      allow write: if isAdmin()
+    function hasNoRestrictedUserAuthorityFields() {
+      return !request.resource.data.keys().hasAny(['permissions']);
+    }
+
+    function keepsRestrictedUserAuthorityFieldsUnchanged() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(['permissions']);
+    }
+
+    function hasOptionalOfficialExamContext(data) {
+      return !data.keys().hasAny(['officialApplicationId'])
         || (
-          isSignedIn() && request.auth.uid == uid
-          && (!exists(/databases/$(database)/documents/users/$(uid))
-              || (request.resource.data.role == resource.data.role
-                  && request.resource.data.active == resource.data.active))
+          data.officialApplicationId is string
+          && exists(/databases/$(database)/documents/candidateApplications/$(data.officialApplicationId))
+          && get(/databases/$(database)/documents/candidateApplications/$(data.officialApplicationId)).data.candidateUserId == request.auth.uid
+          && get(/databases/$(database)/documents/candidateApplications/$(data.officialApplicationId)).data.status in ['eligible', 'approved_for_exam']
+          && (
+            !data.keys().hasAny(['certificationSessionId'])
+            || get(/databases/$(database)/documents/candidateApplications/$(data.officialApplicationId)).data.sessionId == data.certificationSessionId
+          )
         );
     }
 
-    // ---------- SERVICES (public read; admin write) ----------
+    function isSelfPublicEnrollmentCreate(uid, eid) {
+      return isSignedIn()
+        && request.auth.uid == uid
+        && request.resource.data.uid == uid
+        && request.resource.data.courseId == eid
+        && request.resource.data.status == 'assigned'
+        && request.resource.data.assignedBy == 'self'
+        && request.resource.data.accessMode == 'individual'
+        && request.resource.data.orgId == null
+        && courseIsPublic(eid);
+    }
+
+    function isSelfEnrollmentUpdate(uid) {
+      return isSignedIn()
+        && request.auth.uid == uid
+        && resource.data.uid == uid
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.courseId == resource.data.courseId
+        && request.resource.data.assignedBy == resource.data.assignedBy
+        && request.resource.data.orgId == resource.data.orgId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'uid',
+          'status',
+          'startedAt',
+          'completedAt',
+          'gradedAt',
+          'score',
+          'passed',
+          'passedExamId',
+          'passPct',
+          'examTotal',
+          'examCorrect',
+          'progress',
+          'progressPct',
+          'unlockedIndex',
+          'doneLessons',
+          'scores',
+          'slideDeckProgress',
+          'examDrafts',
+          'updatedAt'
+        ])
+        && request.resource.data.status in ['assigned', 'started', 'completed'];
+    }
+
+    function isCourseAccessRequestCreate(requestId) {
+      return isSignedIn()
+        && requestId == request.auth.uid + '_' + request.resource.data.courseId
+        && request.resource.data.keys().hasOnly([
+          'uid',
+          'userEmail',
+          'userName',
+          'courseId',
+          'courseTitle',
+          'status',
+          'paymentStatus',
+          'source',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.userEmail == request.auth.token.email
+        && request.resource.data.courseId is string
+        && request.resource.data.status == 'pending_approval'
+        && request.resource.data.paymentStatus == 'not_started'
+        && request.resource.data.source is string
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        && (!request.resource.data.keys().hasAny(['userName']) || request.resource.data.userName is string)
+        && (!request.resource.data.keys().hasAny(['courseTitle']) || request.resource.data.courseTitle is string)
+        && exists(/databases/$(database)/documents/courses/$(request.resource.data.courseId))
+        && get(/databases/$(database)/documents/courses/$(request.resource.data.courseId)).data.active == true
+        && get(/databases/$(database)/documents/courses/$(request.resource.data.courseId)).data.isPublic != true;
+    }
+
+    // ── Admin allow-list ───────────────────────────────────────────────────
+    match /admins/{uid} {
+      allow read, write: if false;
+    }
+
+    // ── USERS ──────────────────────────────────────────────────────────────
+    // super_admin  → full access to every user
+    // admin        → full access (already org-admin in most setups)
+    // manager      → read-only, limited to users in the SAME org
+    // self         → read own doc; write own doc but cannot self-escalate role/active
+    match /users/{uid} {
+      allow read: if isSuperAdmin()
+        || isAdminOrAbove()
+        || (isManager() && sameOrg(resource.data))
+        || (isSignedIn() && request.auth.uid == uid);
+
+      allow create: if isSuperAdmin()
+        || (isAdminOrAbove() && hasNoRestrictedUserAuthorityFields())
+        || isIndividualSelfProfileCreate(uid);
+
+      allow update: if isSuperAdmin()
+        || (isAdminOrAbove() && keepsRestrictedUserAuthorityFieldsUnchanged())
+        || isSelfProfileUpdate(uid);
+
+      allow delete: if isSuperAdmin() || isAdminOrAbove();
+    }
+
+    // ── ENROLLMENTS — specific path ────────────────────────────────────────
+    // Path: users/{uid}/enrollments/{eid}
+    // manager can read/write enrollments that share their orgId
+    // learner can read/write their own enrollments
+    match /users/{uid}/enrollments/{eid} {
+      allow read: if isSuperAdmin()
+        || isAdminOrAbove()
+        || (isManager() && sameOrg(resource.data))
+        || (isSignedIn() && request.auth.uid == uid);
+
+      allow create: if isSuperAdmin()
+        || isAdminOrAbove()
+        || (isManager() && sameOrg(request.resource.data))
+        || isSelfPublicEnrollmentCreate(uid, eid);
+
+      allow update: if isSuperAdmin()
+        || isAdminOrAbove()
+        || (isManager() && sameOrg(request.resource.data))
+        || isSelfEnrollmentUpdate(uid);
+
+      allow delete: if isSuperAdmin() || isAdminOrAbove();
+    }
+
+    // ── NOTIFICATION READS ───────────────────────────────────────────────
+    // Used by the in-app notification bell under users/{uid}/notificationReads/{notificationId}
+    match /users/{uid}/notificationReads/{notificationId} {
+      allow read: if isSuperAdmin()
+        || isAdminOrAbove()
+        || (isSignedIn() && request.auth.uid == uid);
+
+      allow create, update, delete: if isSuperAdmin()
+        || isAdminOrAbove()
+        || (isSignedIn() && request.auth.uid == uid);
+    }
+
+    match /users/{uid}/licenses/{licenseId} {
+      allow read, create, update, delete: if isSuperAdmin()
+        || isAdminOrAbove()
+        || (isManager() && uid != request.auth.uid
+            && exists(/databases/$(database)/documents/users/$(uid))
+            && sameOrg(get(/databases/$(database)/documents/users/$(uid)).data))
+        || (isSignedIn() && request.auth.uid == uid);
+    }
+
+    match /users/{uid}/enrollments/{eid}/completedLessons/{lessonId} {
+      allow read: if isSuperAdmin()
+        || isAdminOrAbove()
+        || (isManager() && sameOrg(get(/databases/$(database)/documents/users/$(uid)/enrollments/$(eid)).data))
+        || (isSignedIn() && request.auth.uid == uid);
+
+      allow create, update, delete: if isSuperAdmin()
+        || isAdminOrAbove()
+        || (isManager() && sameOrg(get(/databases/$(database)/documents/users/$(uid)/enrollments/$(eid)).data))
+        || (isSignedIn() && request.auth.uid == uid);
+    }
+
+    match /users/{uid}/examSubmissions/{submissionId} {
+      allow read: if isSuperAdmin()
+        || isAdminOrAbove()
+        || (isSignedIn() && request.auth.uid == uid);
+
+      allow create: if isSignedIn()
+        && request.auth.uid == uid
+        && request.resource.data.uid == uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.keys().hasOnly([
+          'uid',
+          'courseId',
+          'examId',
+          'answers',
+          'officialApplicationId',
+          'certificationSessionId',
+          'status',
+          'createdAt',
+          'updatedAt'
+        ])
+        && request.resource.data.courseId is string
+        && request.resource.data.examId is string
+        && request.resource.data.answers is map
+        && hasOptionalOfficialExamContext(request.resource.data);
+
+      allow update, delete: if isSuperAdmin() || isAdminOrAbove();
+    }
+
+    match /users/{uid}/launchTickets/{ticketId} {
+      allow read: if isSuperAdmin()
+        || isAdminOrAbove()
+        || (isSignedIn() && request.auth.uid == uid);
+
+      allow create, update, delete: if isSuperAdmin()
+        || isAdminOrAbove()
+        || (isSignedIn() && request.auth.uid == uid);
+    }
+
+    match /users/{uid}/wallet/{walletId} {
+      allow read: if isSuperAdmin()
+        || isAdminOrAbove()
+        || (isSignedIn() && request.auth.uid == uid);
+
+      allow write: if isAdminOrAbove();
+    }
+
+    match /users/{uid}/rewards/{rewardId} {
+      allow read: if isSuperAdmin()
+        || isAdminOrAbove()
+        || (isSignedIn() && request.auth.uid == uid);
+
+      allow write: if isAdminOrAbove();
+    }
+
+    // ── ENROLLMENTS — collectionGroup ──────────────────────────────────────
+    // Required so collectionGroup('enrollments') queries work.
+    // Firestore evaluates this rule for each document in the result set.
+    match /{path=**}/enrollments/{eid} {
+      allow read: if isSuperAdmin()
+        || isAdminOrAbove()
+        || (isManager() && sameOrg(resource.data))
+        || (isSignedIn() && resource.data.uid == request.auth.uid);
+
+      allow write: if isSuperAdmin()
+        || isAdminOrAbove()
+        || (isManager() && sameOrg(request.resource.data));
+    }
+
+    // ── ORGANIZATIONS ──────────────────────────────────────────────────────
+    // super_admin → full access
+    // manager/admin → read their own org document only
+    match /organizations/{orgId} {
+      allow read: if isSuperAdmin()
+        || isAdminOrAbove()
+        || (isSignedIn() && myOrgId() == orgId);
+
+      allow write: if isSuperAdmin();
+
+      match /settings/{settingId} {
+        allow read: if isSuperAdmin() || isOrgStaffFor(orgId);
+        allow create, update: if isSuperAdmin()
+          || (isOrgStaffFor(orgId)
+              && settingId == 'reminders'
+              && request.resource.data.keys().hasOnly([
+                'enabled',
+                'defaultDueDays',
+                'upcomingDueEnabled',
+                'upcomingDueDays',
+                'overdueEnabled',
+                'overdueEscalationDays',
+                'inactiveEnabled',
+                'inactiveDays',
+                'managerEscalationEnabled',
+                'digestMode',
+                'updatedAt',
+                'updatedByUid'
+              ]));
+        allow delete: if isSuperAdmin();
+      }
+
+      match /policies/{policyId} {
+        allow read: if isSuperAdmin()
+          || isOrgStaffFor(orgId)
+          || (isSignedIn()
+              && myRole() == 'learner'
+              && myOrgId() == orgId
+              && exists(/databases/$(database)/documents/organizations/$(orgId)/policyAssignments/$(policyId + '_' + request.auth.uid)));
+
+        allow create: if isSuperAdmin()
+          || (isOrgStaffFor(orgId)
+              && request.resource.data.orgId == orgId
+              && request.resource.data.scope == 'organization');
+
+        allow update: if isSuperAdmin()
+          || (isOrgStaffFor(orgId)
+              && resource.data.orgId == orgId
+              && request.resource.data.orgId == orgId);
+
+        allow delete: if isSuperAdmin() || isOrgStaffFor(orgId);
+      }
+
+      match /policyAssignments/{assignmentId} {
+        allow read: if isSuperAdmin()
+          || isOrgStaffFor(orgId)
+          || (isSignedIn()
+              && myOrgId() == orgId
+              && resource.data.userId == request.auth.uid);
+
+        allow create, update: if isSuperAdmin()
+          || (isOrgStaffFor(orgId)
+              && request.resource.data.orgId == orgId
+              && exists(/databases/$(database)/documents/users/$(request.resource.data.userId))
+              && get(/databases/$(database)/documents/users/$(request.resource.data.userId)).data.orgId == orgId
+              && get(/databases/$(database)/documents/users/$(request.resource.data.userId)).data.role == 'learner');
+
+        allow delete: if isSuperAdmin() || isOrgStaffFor(orgId);
+      }
+
+      match /members/{memberId} {
+        allow read: if isSuperAdmin()
+          || isOrgStaffFor(orgId)
+          || (isSignedIn() && request.auth.uid == memberId);
+
+        allow create: if isSuperAdmin()
+          || isOrgStaffFor(orgId)
+          || (isSignedIn()
+              && request.auth.uid == memberId
+              && request.resource.data.uid == memberId
+              && request.resource.data.orgId == orgId);
+
+        allow update: if isSuperAdmin() || isOrgStaffFor(orgId);
+        allow delete: if isSuperAdmin() || isOrgStaffFor(orgId);
+      }
+
+      match /policyAcknowledgements/{ackId} {
+        allow read: if isSuperAdmin()
+          || isOrgStaffFor(orgId)
+          || (isSignedIn()
+              && myOrgId() == orgId
+              && exists(/databases/$(database)/documents/organizations/$(orgId)/policyAssignments/$(ackId))
+              && get(/databases/$(database)/documents/organizations/$(orgId)/policyAssignments/$(ackId)).data.userId == request.auth.uid);
+
+        allow create: if isSignedIn()
+          && myRole() == 'learner'
+          && myOrgId() == orgId
+          && request.resource.data.orgId == orgId
+          && request.resource.data.userId == request.auth.uid
+          && ackId == request.resource.data.policyId + '_' + request.auth.uid
+          && exists(/databases/$(database)/documents/organizations/$(orgId)/policyAssignments/$(ackId));
+
+        allow update, delete: if isSuperAdmin() || isOrgStaffFor(orgId);
+      }
+    }
+
+    // ── COURSES ────────────────────────────────────────────────────────────
+    // Anonymous visitors can read public active courses; private courses require org/admin access.
+    // Only super_admin / admin may create or modify courses.
+    match /courses/{courseId} {
+      allow read: if canReadCourse(courseId, resource.data);
+      allow write: if isSuperAdmin() || isAdminOrAbove();
+    }
+
+    match /courses/{courseId}/certifications/{certificationId} {
+      allow read: if canReadCourseContent(courseId);
+      allow write: if isSuperAdmin() || isAdminOrAbove();
+    }
+
+    match /courses/{courseId}/exams/{examId} {
+      allow read: if isSignedIn() && canReadCourseContent(courseId);
+      allow write: if isSuperAdmin();
+    }
+
+    match /courses/{courseId}/exams/{examId}/questions/{questionId} {
+      allow read: if isSignedIn() && canReadCourseContent(courseId);
+      allow write: if isSuperAdmin();
+    }
+
+    match /courses/{courseId}/exams/{examId}/answerKey/{questionId} {
+      allow read, write: if isSuperAdmin();
+    }
+
+    match /certificates/{certificateId} {
+      allow read: if isSuperAdmin()
+        || isAdminOrAbove()
+        || (isSignedIn() && resource.data.uid == request.auth.uid);
+
+      allow write: if isAdminOrAbove();
+    }
+
+    // ── OFFICIAL CERTIFICATION AUTHORITY ─────────────────────────────────
+    // Additive orchestration layer. It references existing programs/courses/exams
+    // but does not replace the course exam engine.
+    match /officialCertifications/{certificationId} {
+      allow read: if isCertificationAuthorityFor(resource.data.organizationId)
+        || isSignedIn();
+
+      allow create: if request.resource.data.organizationId is string
+        && isCertificationAuthorityFor(request.resource.data.organizationId);
+
+      allow update: if resource.data.organizationId == request.resource.data.organizationId
+        && isCertificationAuthorityFor(resource.data.organizationId);
+
+      allow delete: if isSuperAdmin();
+    }
+
+    match /certificationSessions/{sessionId} {
+      allow read: if isCertificationAuthorityFor(resource.data.organizationId)
+        || isSignedIn();
+
+      allow create: if request.resource.data.organizationId is string
+        && isCertificationAuthorityFor(request.resource.data.organizationId);
+
+      allow update: if resource.data.organizationId == request.resource.data.organizationId
+        && isCertificationAuthorityFor(resource.data.organizationId);
+
+      allow delete: if isSuperAdmin();
+    }
+
+    match /candidateApplications/{applicationId} {
+      allow read: if isCertificationAuthorityFor(resource.data.organizationId)
+        || isApplicationOwner(resource.data);
+
+      allow create: if (request.resource.data.organizationId is string
+        && isSignedIn()
+        && request.resource.data.candidateUserId == request.auth.uid
+        && request.resource.data.status in ['draft', 'submitted']
+        && request.resource.data.sessionId is string
+        && exists(/databases/$(database)/documents/certificationSessions/$(request.resource.data.sessionId))
+        && get(/databases/$(database)/documents/certificationSessions/$(request.resource.data.sessionId)).data.status == 'applications_open'
+        && get(/databases/$(database)/documents/certificationSessions/$(request.resource.data.sessionId)).data.organizationId == request.resource.data.organizationId)
+        // Certification-authority staff create applications on behalf of
+        // onsite (kiosk) exam candidates when issuing their credentials.
+        || (request.resource.data.organizationId is string
+          && isCertificationAuthorityFor(request.resource.data.organizationId)
+          && request.resource.data.origin == 'onsite_exam');
+
+      allow update: if (
+          isCertificationAuthorityFor(resource.data.organizationId)
+          && request.resource.data.organizationId == resource.data.organizationId
+        )
+        || (
+          isApplicationOwner(resource.data)
+          && request.resource.data.organizationId == resource.data.organizationId
+          && request.resource.data.candidateUserId == resource.data.candidateUserId
+          && (
+            request.resource.data.status in ['draft', 'submitted']
+            || (
+              resource.data.status in ['eligible', 'approved_for_exam']
+              && request.resource.data.status == 'exam_completed'
+            )
+            // Self-reported renewal progress and contact info: status/decision
+            // fields are left untouched by the owner in this path.
+            || (
+              request.resource.data.status == resource.data.status
+              && request.resource.data.diff(resource.data).affectedKeys()
+                   .hasOnly(['renewalStatus', 'renewalCoursesCompleted', 'renewalPointsEarned', 'renewalSubmittedAt', 'profileSnapshot', 'updatedAt'])
+            )
+          )
+        );
+
+      allow delete: if isSuperAdmin();
+
+      match /payment/{paymentId} {
+        allow read: if exists(/databases/$(database)/documents/candidateApplications/$(applicationId))
+          && (
+            isCertificationAuthorityFor(get(/databases/$(database)/documents/candidateApplications/$(applicationId)).data.organizationId)
+            || isApplicationOwner(get(/databases/$(database)/documents/candidateApplications/$(applicationId)).data)
+          );
+
+        allow create, update: if exists(/databases/$(database)/documents/candidateApplications/$(applicationId))
+          && (
+            isApplicationOwner(get(/databases/$(database)/documents/candidateApplications/$(applicationId)).data)
+            || isCertificationAuthorityFor(get(/databases/$(database)/documents/candidateApplications/$(applicationId)).data.organizationId)
+          );
+
+        allow delete: if isSuperAdmin();
+      }
+
+      match /documents/{documentId} {
+        allow read: if exists(/databases/$(database)/documents/candidateApplications/$(applicationId))
+          && (
+            isCertificationAuthorityFor(get(/databases/$(database)/documents/candidateApplications/$(applicationId)).data.organizationId)
+            || isApplicationOwner(get(/databases/$(database)/documents/candidateApplications/$(applicationId)).data)
+          );
+
+        allow create: if exists(/databases/$(database)/documents/candidateApplications/$(applicationId))
+          && (
+            isApplicationOwner(get(/databases/$(database)/documents/candidateApplications/$(applicationId)).data)
+            || isCertificationAuthorityFor(get(/databases/$(database)/documents/candidateApplications/$(applicationId)).data.organizationId)
+          );
+
+        allow update: if exists(/databases/$(database)/documents/candidateApplications/$(applicationId))
+          && isCertificationAuthorityFor(get(/databases/$(database)/documents/candidateApplications/$(applicationId)).data.organizationId);
+
+        allow delete: if isSuperAdmin();
+      }
+
+      match /juryReviews/{reviewId} {
+        allow read, create, update: if exists(/databases/$(database)/documents/candidateApplications/$(applicationId))
+          && isCertificationAuthorityFor(get(/databases/$(database)/documents/candidateApplications/$(applicationId)).data.organizationId)
+          && (
+            hasCertificationPermission('certification.jury.review')
+            || isCertificationAuthorityFor(get(/databases/$(database)/documents/candidateApplications/$(applicationId)).data.organizationId)
+          );
+
+        allow delete: if isSuperAdmin();
+      }
+
+      match /decisions/{decisionId} {
+        allow read: if exists(/databases/$(database)/documents/candidateApplications/$(applicationId))
+          && (
+            isCertificationAuthorityFor(get(/databases/$(database)/documents/candidateApplications/$(applicationId)).data.organizationId)
+            || (
+              isApplicationOwner(get(/databases/$(database)/documents/candidateApplications/$(applicationId)).data)
+              && resource.data.publishedAt != null
+            )
+          );
+
+        allow create, update: if exists(/databases/$(database)/documents/candidateApplications/$(applicationId))
+          && isCertificationAuthorityFor(get(/databases/$(database)/documents/candidateApplications/$(applicationId)).data.organizationId)
+          && (
+            hasCertificationPermission('certification.application.decide')
+            || isCertificationAuthorityFor(get(/databases/$(database)/documents/candidateApplications/$(applicationId)).data.organizationId)
+          );
+
+        allow delete: if isSuperAdmin();
+      }
+    }
+
+    match /examBlueprints/{blueprintId} {
+      allow read: if (resource.data.orgId is string
+          && isCertificationAuthorityFor(resource.data.orgId))
+        || (isSignedIn() && resource.data.status == 'published');
+
+      allow create: if request.resource.data.orgId is string
+        && isCertificationAuthorityFor(request.resource.data.orgId);
+
+      allow update: if resource.data.orgId is string
+        && resource.data.orgId == request.resource.data.orgId
+        && isCertificationAuthorityFor(resource.data.orgId);
+
+      allow delete: if isSuperAdmin()
+        || (resource.data.orgId is string && isCertificationAuthorityFor(resource.data.orgId));
+    }
+
+    // Consumed by the Firebase "Trigger Email from Firestore" extension (or an
+    // equivalent Cloud Function) to send transactional emails. Only signed-in
+    // staff can queue mail; delivery/read-back is handled server-side only.
+    match /mail/{mailId} {
+      allow create: if isManagerOrAbove();
+      allow read, update, delete: if isSuperAdmin();
+    }
+
+    // Consumed by the sendQueuedSms Cloud Function (Twilio) for SMS notifications.
+    match /sms/{smsId} {
+      allow create: if isManagerOrAbove();
+      allow read, update, delete: if isSuperAdmin();
+    }
+
+    // Sanitized, non-sensitive lookup entries (name, profession, org, status,
+    // dates only — no email/phone/documents) keyed by membership number, so
+    // any signed-in user can verify a member without exposing their full
+    // candidateApplications record. Written whenever a certification is
+    // approved or renewed.
+    match /memberDirectory/{membershipNumber} {
+      allow read: if isSignedIn();
+      allow create, update: if request.resource.data.organizationId is string
+        && isCertificationAuthorityFor(request.resource.data.organizationId);
+      allow delete: if isSuperAdmin();
+    }
+
+    match /certificationAuditLogs/{logId} {
+      allow read: if isSuperAdmin()
+        || isCertificationAuthorityFor(resource.data.organizationId);
+
+      allow create: if request.resource.data.organizationId is string
+        && (
+          isCertificationAuthorityFor(request.resource.data.organizationId)
+          || (
+            isSignedIn()
+            && request.resource.data.actorUid == request.auth.uid
+            && request.resource.data.action in [
+              'certification.application.submit',
+              'certification.document.upload'
+            ]
+          )
+        );
+
+      allow update, delete: if isSuperAdmin();
+    }
+
+    match /courseAccessRequests/{requestId} {
+      allow create: if isCourseAccessRequestCreate(requestId);
+
+      allow read: if isAdminOrAbove()
+        || canOrgStaffReadCourseAccessRequest(resource.data)
+        || (isSignedIn() && resource.data.uid == request.auth.uid);
+
+      allow update, delete: if isAdminOrAbove()
+        || canOrgStaffReadCourseAccessRequest(resource.data);
+    }
+
+    // ── SUPER ADMIN OPS ───────────────────────────────────────────────────
+    match /organizationAdminCreateRequests/{requestId} {
+      allow create: if isSuperAdmin()
+        && request.resource.data.requestedByUid == request.auth.uid
+        && request.resource.data.status == 'pending';
+
+      allow read: if isSuperAdmin();
+      allow update, delete: if false;
+    }
+
+    match /courseAssignmentBackfillRequests/{requestId} {
+      allow create: if isSuperAdmin()
+        && request.resource.data.requestedByUid == request.auth.uid
+        && request.resource.data.status == 'pending';
+
+      allow read: if isSuperAdmin();
+      allow update, delete: if false;
+    }
+
+    match /smartReminderScanRequests/{requestId} {
+      allow create: if isManagerOrAbove()
+        && request.resource.data.status == 'pending'
+        && request.resource.data.requestedByUid == request.auth.uid
+        && request.resource.data.orgId is string
+        && (isSuperAdmin() || request.resource.data.orgId == myOrgId())
+        && request.resource.data.keys().hasOnly([
+          'status',
+          'orgId',
+          'requestedByUid',
+          'requestedByEmail',
+          'createdAt',
+          'updatedAt'
+        ]);
+
+      allow read: if isSuperAdmin()
+        || (isManagerOrAbove() && resource.data.requestedByUid == request.auth.uid)
+        || (isManagerOrAbove() && resource.data.orgId == myOrgId());
+
+      allow update, delete: if false;
+    }
+
+    match /learningPaths/{pathId} {
+      allow read: if isSuperAdmin()
+        || (isSignedIn()
+            && myOrgId() != null
+            && resource.data.active == true
+            && resource.data.assignedOrgIds is list
+            && myOrgId() in resource.data.assignedOrgIds)
+        || (isSignedIn()
+            && resource.data.active == true
+            && isLearningPathMappedToMyOrg(pathId));
+
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    match /organizationLearningPathAssignments/{assignmentId} {
+      allow read: if isSuperAdmin()
+        || (isSignedIn() && myOrgId() != null && resource.data.orgId == myOrgId());
+
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    match /organizationCourseAssignments/{assignmentId} {
+      allow read: if isSuperAdmin()
+        || (isSignedIn() && myOrgId() != null && resource.data.orgId == myOrgId());
+
+      allow write: if isSuperAdmin();
+    }
+
+    match /adminLogs/{logId} {
+      allow read, write: if isSuperAdmin();
+    }
+
+    match /billingRecords/{recordId} {
+      allow read, write: if isSuperAdmin();
+    }
+
+    // ── PLATFORM / LEGACY POLICIES ───────────────────────────────────────
+    match /platformPolicies/{policyId} {
+      allow read, write: if isSuperAdmin();
+    }
+
+    match /policies/{policyId} {
+      allow read: if isSuperAdmin();
+      allow write: if false;
+    }
+
+    match /policy_acknowledgements/{ackId} {
+      allow read, write: if false;
+    }
+
+    match /organizationPolicyAssignments/{assignmentId} {
+      allow read, write: if isSuperAdmin();
+    }
+
+    match /woundLibrary/{docId} {
+      allow read: if isSuperAdmin()
+        || (isSignedIn() && myOrgId() != null && resource.data.orgId == myOrgId());
+
+      allow create: if isSuperAdmin()
+        || (isManagerOrAbove()
+            && myOrgId() != null
+            && request.resource.data.orgId == myOrgId());
+
+      allow update: if isSuperAdmin()
+        || (isManagerOrAbove()
+            && myOrgId() != null
+            && resource.data.orgId == myOrgId()
+            && request.resource.data.orgId == resource.data.orgId);
+
+      allow delete: if isSuperAdmin()
+        || (isManagerOrAbove()
+            && myOrgId() != null
+            && resource.data.orgId == myOrgId());
+    }
+
+    match /wounds/{docId} {
+      allow read: if isSignedIn() && !isIndividualLearner();
+      allow write: if isManagerOrAbove();
+    }
+
+    // ── SERVICES ──────────────────────────────────────────────────────────
     match /services/{id} {
       allow read: if true;
-      allow write: if isAdmin()
+      allow write: if isAdminOrAbove()
         && request.resource.data.keys().hasOnly(
-            ['title','slug','active','blurb','bullets','category','image','duration','order']
+            ['title', 'slug', 'active', 'blurb', 'bullets', 'category', 'image', 'duration', 'order']
            )
         && (request.resource.data.title is string)
         && (request.resource.data.slug is string)
         && (request.resource.data.active is bool);
     }
 
-    // ---------- CONTACTS (public create; admin read/update) ----------
+    // ── CONTACTS ──────────────────────────────────────────────────────────
     match /contacts/{doc} {
       allow create: if request.auth == null
-        && request.time < timestamp.date(2099,1,1)
+        && request.time < timestamp.date(2099, 1, 1)
         && request.resource.data.keys().hasOnly(
-             ['name','email','phone','reason','message','createdAt','status','userAgent','page']
+             ['name', 'email', 'phone', 'reason', 'message', 'createdAt', 'status', 'userAgent', 'page']
            )
         && request.resource.data.status == 'new'
         && request.resource.data.createdAt == request.time;
-      allow read, update: if isAdmin();
+      allow read, update: if isAdminOrAbove();
       allow delete: if false;
     }
 
-   // ---------- BOOKINGS (public create; admin read/update) ----------
-match /bookings/{doc} {
-  // Allow any visitor (signed-in or not) to create a booking
-  allow create: if
-      (request.auth == null || request.auth != null)
-      && request.time < timestamp.date(2099,1,1)
-      // If you enable App Check, uncomment next line:
-      // && request.appcheck.token != null
-      // Only allow the exact schema your client sends
-      && request.resource.data.keys().hasOnly([
-           'serviceSlug','serviceTitle',
-           'patient','preference','contact',
-           'status','createdAt','userAgent'
-         ])
-      // Validate nested shapes
-      && request.resource.data.patient.keys().hasOnly([
-           'firstName','lastName','dob','woundType','notes'
-         ])
-      && request.resource.data.preference.keys().hasOnly([
-           'mode','preferredDate','preferredTime','address'
-         ])
-      && request.resource.data.contact.keys().hasOnly([
-           'name','phone','email','refSource'
-         ])
-      // Initial status & createdAt must be "now"
-      && request.resource.data.status == 'pending'
-      && request.resource.data.createdAt == request.time;
+    match /demoRequests/{doc} {
+      allow create: if request.time < timestamp.date(2099, 1, 1)
+        && request.resource.data.keys().hasOnly([
+          'fullName',
+          'workEmail',
+          'phone',
+          'organizationName',
+          'organizationType',
+          'selectedPlan',
+          'message',
+          'source',
+          'status',
+          'createdAt'
+        ])
+        && request.resource.data.fullName is string
+        && request.resource.data.workEmail is string
+        && request.resource.data.phone is string
+        && request.resource.data.organizationName is string
+        && request.resource.data.organizationType is string
+        && request.resource.data.selectedPlan is string
+        && request.resource.data.message is string
+        && request.resource.data.source is string
+        && request.resource.data.status == 'new'
+        && request.resource.data.createdAt == request.time;
 
-  // Only admins can read/update bookings
-  allow read, update: if isAdmin();
+      allow read, update: if isAdminOrAbove();
+      allow delete: if false;
+    }
 
-  // No deletes from clients
-  allow delete: if false;
-}
+    // ── BOOKINGS ──────────────────────────────────────────────────────────
+    match /bookings/{doc} {
+      allow create: if
+          (request.auth == null || request.auth != null)
+          && request.time < timestamp.date(2099, 1, 1)
+          && request.resource.data.keys().hasOnly([
+               'serviceSlug', 'serviceTitle',
+               'patient', 'preference', 'contact',
+               'status', 'createdAt', 'userAgent'
+             ])
+          && request.resource.data.patient.keys().hasOnly([
+               'firstName', 'lastName', 'dob', 'woundType', 'notes'
+             ])
+          && request.resource.data.preference.keys().hasOnly([
+               'mode', 'preferredDate', 'preferredTime', 'address'
+             ])
+          && request.resource.data.contact.keys().hasOnly([
+               'name', 'phone', 'email', 'refSource'
+             ])
+          && request.resource.data.status == 'pending'
+          && request.resource.data.createdAt == request.time;
+      allow read, update: if isAdminOrAbove();
+      allow delete: if false;
+    }
 
-
-
-    // ---------- REFERRALS (public create; admin read/update) ----------
+    // ── REFERRALS ─────────────────────────────────────────────────────────
     match /patientReferal/{doc} {
       allow create: if request.auth == null
-        && request.time < timestamp.date(2099,1,1)
+        && request.time < timestamp.date(2099, 1, 1)
         && request.resource.data.keys().hasOnly([
-             'serviceSlug','serviceTitle',
-             'refType','refName','refOrg','refRole','refEmail','refPhone',
-             'patientName','patientDob','patientArea',
-             'diagnosis','urgency','notes',
-             'contactPref','consent',
-             'createdAt','status','page','userAgent'
+             'serviceSlug', 'serviceTitle',
+             'refType', 'refName', 'refOrg', 'refRole', 'refEmail', 'refPhone',
+             'patientName', 'patientDob', 'patientArea',
+             'diagnosis', 'urgency', 'notes',
+             'contactPref', 'consent',
+             'createdAt', 'status', 'page', 'userAgent'
            ])
         && request.resource.data.status == 'new'
         && request.resource.data.createdAt == request.time;
-      allow read, update: if isAdmin();
+      allow read, update: if isAdminOrAbove();
       allow delete: if false;
     }
 
-    // ---------- TASKS & subcollections ----------
-    // Task schema (canonical fields)
-    // { createdAt, createdBy, source, patient, service, scheduledAt, status, assignedTo, notes, lastUpdatedAt }
+    // ── TASKS & subcollections ─────────────────────────────────────────────
     match /tasks/{taskId} {
+      allow read: if isAdminOrAbove() || (isClinician() && isAssignedTo(resource.data));
 
-      // Admin can read; clinician can read IF assigned
-      allow read: if isAdmin() || (isClinician() && isAssignedTo(resource.data));
-
-      // Admin creates tasks with strict schema
-      allow create: if isAdmin()
+      allow create: if isAdminOrAbove()
         && request.resource.data.keys().hasOnly([
-             'createdAt','createdBy','source','patient','service',
-             'scheduledAt','status','assignedTo','notes','lastUpdatedAt'
+             'createdAt', 'createdBy', 'source', 'patient', 'service',
+             'scheduledAt', 'status', 'assignedTo', 'notes', 'lastUpdatedAt'
            ])
-        && (request.resource.data.status in ['new','assigned','in_progress','done','cancelled']);
+        && (request.resource.data.status in ['new', 'assigned', 'in_progress', 'done', 'cancelled']);
 
-      // Updates
-      // - Admin: any update
-      // - Clinician (assignee): can START (-> in_progress), progress, or mark DONE/CANCELLED.
-      //   Immutable fields must stay identical.
-      //   lastUpdatedAt must move forward.
-      allow update: if isAdmin()
-        || (
-          isClinician()
-          && isAssignedTo(resource.data)
+      allow update: if isAdminOrAbove()
+        || (isClinician() && isAssignedTo(resource.data)
+            && request.resource.data.assignedTo == resource.data.assignedTo
+            && request.resource.data.source     == resource.data.source
+            && request.resource.data.patient    == resource.data.patient
+            && request.resource.data.services   == resource.data.services
+            && request.resource.data.createdBy  == resource.data.createdBy
+            && request.resource.data.createdAt  == resource.data.createdAt
+            && request.resource.data.keys().hasOnly([
+                 'createdAt', 'createdBy', 'source', 'patient', 'service',
+                 'scheduledAt', 'status', 'assignedTo', 'notes', 'lastUpdatedAt'
+               ])
+            && (request.resource.data.status in ['assigned', 'in_progress', 'done', 'cancelled'])
+            && statusTransitionOk(resource.data.status, request.resource.data.status)
+            && (request.resource.data.lastUpdatedAt > resource.data.lastUpdatedAt));
 
-          // Immutable fields unchanged by clinician
-          && request.resource.data.assignedTo == resource.data.assignedTo
-          && request.resource.data.source     == resource.data.source
-          && request.resource.data.patient    == resource.data.patient
-          && request.resource.data.services    == resource.data.services
-          && request.resource.data.createdBy  == resource.data.createdBy
-          && request.resource.data.createdAt  == resource.data.createdAt
+      allow delete: if isAdminOrAbove();
 
-          // Only these fields may exist in clinician updates
-          && request.resource.data.keys().hasOnly([
-               'createdAt','createdBy','source','patient','service',
-               'scheduledAt','status','assignedTo','notes','lastUpdatedAt'
-             ])
-
-          // Allowed status values + only forward transitions
-          && (request.resource.data.status in ['assigned','in_progress','done','cancelled'])
-          && statusTransitionOk(resource.data.status, request.resource.data.status)
-
-          // Force a forward-moving timestamp on update
-          && (request.resource.data.lastUpdatedAt > resource.data.lastUpdatedAt)
-        );
-
-      allow delete: if isAdmin();
-
-      // ---- NOTES subcollection ----
-      // Schema: { createdAt, authorUid, text, followUpAt? }
       match /notes/{noteId} {
-        // Admin OR assigned clinician can read notes
-        allow read: if isAdmin()
+        allow read: if isAdminOrAbove()
+          || (isClinician() && isAssignedTo(get(/databases/$(database)/documents/tasks/$(taskId)).data));
+        allow create: if isAdminOrAbove()
           || (isClinician()
+              && isAssignedTo(get(/databases/$(database)/documents/tasks/$(taskId)).data)
+              && request.resource.data.keys().hasOnly(['createdAt', 'authorUid', 'text', 'followUpAt'])
+              && request.resource.data.authorUid == request.auth.uid);
+        allow update: if isAdminOrAbove()
+          || (isClinician()
+              && isAssignedTo(get(/databases/$(database)/documents/tasks/$(taskId)).data)
+              && request.auth.uid == resource.data.authorUid
+              && request.resource.data.keys().hasOnly(['createdAt', 'authorUid', 'text', 'followUpAt'])
+              && request.resource.data.authorUid == resource.data.authorUid
+              && request.resource.data.createdAt == resource.data.createdAt);
+        allow delete: if isAdminOrAbove()
+          || (isClinician()
+              && request.auth.uid == resource.data.authorUid
               && isAssignedTo(get(/databases/$(database)/documents/tasks/$(taskId)).data));
-
-        // Create: admin or assigned clinician; author must be current user
-        allow create: if isAdmin()
-          || (
-            isClinician()
-            && isAssignedTo(get(/databases/$(database)/documents/tasks/$(taskId)).data)
-            && request.resource.data.keys().hasOnly(['createdAt','authorUid','text','followUpAt'])
-            && request.resource.data.authorUid == request.auth.uid
-          );
-
-        // Update: admin or original author clinician; createdAt/authorUid immutable
-        allow update: if isAdmin()
-          || (
-            isClinician()
-            && isAssignedTo(get(/databases/$(database)/documents/tasks/$(taskId)).data)
-            && (request.auth.uid == resource.data.authorUid)
-            && request.resource.data.keys().hasOnly(['createdAt','authorUid','text','followUpAt'])
-            && request.resource.data.authorUid == resource.data.authorUid
-            && request.resource.data.createdAt == resource.data.createdAt
-          );
-
-        // Delete: admin or original author clinician
-        allow delete: if isAdmin()
-          || (
-            isClinician()
-            && (request.auth.uid == resource.data.authorUid)
-            && isAssignedTo(get(/databases/$(database)/documents/tasks/$(taskId)).data)
-          );
       }
 
-      // ---- VISITS (optional) ----
       match /visits/{visitId} {
-        allow read: if isAdmin()
+        allow read: if isAdminOrAbove()
+          || (isClinician() && isAssignedTo(get(/databases/$(database)/documents/tasks/$(taskId)).data));
+        allow create: if isAdminOrAbove()
           || (isClinician()
-              && isAssignedTo(get(/databases/$(database)/documents/tasks/$(taskId)).data));
-
-        allow create: if isAdmin()
-          || (
-            isClinician()
-            && isAssignedTo(get(/databases/$(database)/documents/tasks/$(taskId)).data)
-            && request.resource.data.keys().hasOnly(
-                 ['createdAt','nurseUid','start','end','notes','outcome','vitals']
-               )
-            && request.resource.data.nurseUid == request.auth.uid
-          );
-
-        allow update: if isAdmin()
+              && isAssignedTo(get(/databases/$(database)/documents/tasks/$(taskId)).data)
+              && request.resource.data.keys().hasOnly(
+                   ['createdAt', 'nurseUid', 'start', 'end', 'notes', 'outcome', 'vitals']
+                 )
+              && request.resource.data.nurseUid == request.auth.uid);
+        allow update: if isAdminOrAbove()
           || (isClinician() && resource.data.nurseUid == request.auth.uid);
-
-        allow delete: if isAdmin();
+        allow delete: if isAdminOrAbove();
       }
 
-      // ---- MESSAGES (optional) ----
       match /messages/{msgId} {
-        allow read: if isAdmin()
+        allow read: if isAdminOrAbove()
+          || (isClinician() && isAssignedTo(get(/databases/$(database)/documents/tasks/$(taskId)).data));
+        allow create: if isAdminOrAbove()
           || (isClinician()
-              && isAssignedTo(get(/databases/$(database)/documents/tasks/$(taskId)).data));
-        allow create: if isAdmin()
-          || (
-            isClinician()
-            && isAssignedTo(get(/databases/$(database)/documents/tasks/$(taskId)).data)
-            && request.resource.data.keys().hasOnly(['createdAt','authorUid','text'])
-            && request.resource.data.authorUid == request.auth.uid
-          );
-        allow update, delete: if isAdmin()
+              && isAssignedTo(get(/databases/$(database)/documents/tasks/$(taskId)).data)
+              && request.resource.data.keys().hasOnly(['createdAt', 'authorUid', 'text'])
+              && request.resource.data.authorUid == request.auth.uid);
+        allow update, delete: if isAdminOrAbove()
           || (isSignedIn() && request.auth.uid == resource.data.authorUid);
       }
     }
 
-    // Admin-only collection for in-app pings, etc.
+    // ── ADMIN NOTIFICATIONS ───────────────────────────────────────────────
+    // App code writes and reads from /notifications, not /adminNotifications.
+    match /notifications/{id} {
+      allow read: if isSignedIn();
+
+      allow create: if isManagerOrAbove()
+        && request.resource.data.keys().hasOnly([
+             'title', 'body', 'link', 'severity', 'audience', 'createdAt', 'createdBy'
+           ])
+        && request.resource.data.title is string
+        && request.resource.data.body is string
+        && request.resource.data.severity in ['info', 'warning', 'critical']
+        && request.resource.data.audience is map
+        && request.resource.data.createdBy is map;
+
+      allow update, delete: if isAdminOrAbove();
+    }
+
     match /adminNotifications/{id} {
-      allow read, write: if isAdmin();
+      allow read, write: if isAdminOrAbove();
+    }
+
+    // ── EXAM CENTERS (Onsite) ─────────────────────────────────────────────
+    match /examCenters/{centerId} {
+      // Members see center names/locations when registering for onsite exams
+      allow read: if isSignedIn();
+      allow create, update: if isManagerOrAbove()
+        && request.resource.data.orgId == myOrgId();
+      allow delete: if isManagerOrAbove()
+        && resource.data.orgId == myOrgId();
+    }
+
+    // ── EXAM SESSIONS (Kiosk) ─────────────────────────────────────────────
+    match /examSessions/{sessionId} {
+      // Any signed-in user (incl. anonymous kiosk stations) may read a session
+      allow read: if isSignedIn();
+      allow create, update: if isManagerOrAbove()
+        && request.resource.data.orgId == myOrgId();
+      allow delete: if isManagerOrAbove()
+        && resource.data.orgId == myOrgId();
+
+      // ── RULE AGREEMENTS (audit trail of accepted exam disclaimers) ──────
+      match /ruleAgreements/{agreementId} {
+        allow read: if isManagerOrAbove() || myRole() == 'proctor';
+        // Kiosk stations (anonymous auth) record the candidate's acceptance
+        allow create: if isSignedIn();
+        allow update, delete: if false;
+      }
+
+      // ── CANDIDATE VERIFICATIONS (for kiosk login) ──────────────────────
+      match /candidateVerifications/{uid} {
+        allow read: if true; // Allow public read for kiosk login verification
+        // 1) Kiosk consume: verified -> false, examCompleted -> true
+        // 2) Member self-registration: own doc, unverified only (candidacyApproved stays null/managed by staff only)
+        // 3) Staff (proctors/managers) manage everything
+        allow create: if (isSignedIn()
+            && request.resource.data.verified == false
+            && request.resource.data.examCompleted == true)
+          || (isSignedIn()
+            && request.auth.uid == uid
+            && request.resource.data.candidateUid == request.auth.uid
+            && request.resource.data.verified == false
+            && request.resource.data.examCompleted == false)
+          || isManagerOrAbove()
+          || myRole() == 'proctor';
+        allow update: if (isSignedIn()
+            && request.resource.data.verified == false
+            && request.resource.data.examCompleted == true)
+          || isManagerOrAbove()
+          || myRole() == 'proctor';
+        // Members may withdraw their own registration while still unverified
+        allow delete: if (isSignedIn()
+            && request.auth.uid == uid
+            && resource.data.verified == false)
+          || isManagerOrAbove()
+          || myRole() == 'proctor';
+      }
+    }
+
+    // ── PROCTOR VERIFICATIONS ─────────────────────────────────────────────
+    match /proctorVerifications/{verificationId} {
+      allow read: if isSignedIn() && (
+        isManagerOrAbove() ||
+        myRole() == 'proctor'
+      );
+      allow create, update, delete: if isManagerOrAbove() || myRole() == 'proctor';
+    }
+
+    // ── PROCTOR AUDIT LOGS ────────────────────────────────────────────────
+    match /proctorAuditLogs/{logId} {
+      allow read: if isSignedIn() && (
+        isManagerOrAbove() ||
+        myRole() == 'proctor'
+      );
+      allow create: if isManagerOrAbove() || myRole() == 'proctor';
+      allow update, delete: if isAdminOrAbove();
+    }
+
+    // ── CREDENTIAL EMAIL REQUESTS (card + certificate PDFs by email) ───────
+    match /credentialEmailRequests/{requestId} {
+      allow create: if isManagerOrAbove()
+        && request.resource.data.requestedByUid == request.auth.uid
+        && request.resource.data.status == 'pending';
+      allow read: if isSignedIn() && resource.data.requestedByUid == request.auth.uid;
+      allow update, delete: if false; // only the Cloud Function mutates these
+    }
+
+    // ── KIOSK CANDIDATE CREATE REQUESTS (account + enrollment queue) ───────
+    match /kioskCandidateCreateRequests/{requestId} {
+      allow create: if (isManagerOrAbove() || myRole() == 'proctor')
+        && request.resource.data.requestedByUid == request.auth.uid
+        && request.resource.data.orgId == myOrgId()
+        && request.resource.data.status == 'pending';
+      allow read: if isSignedIn() && resource.data.requestedByUid == request.auth.uid;
+      allow update, delete: if false; // only the Cloud Function mutates these
+    }
+
+    // ── EXAM ATTEMPTS (Results & Email Notifications) ──────────────────────
+    match /examAttempts/{attemptId} {
+      allow read: if isSignedIn() && (
+        isManagerOrAbove() ||
+        (myRole() == 'learner' && resource.data.candidateUid == request.auth.uid)
+      );
+      // Learners create their own attempts; kiosk stations (anonymous auth)
+      // create session-tagged attempts on behalf of verified candidates.
+      allow create: if isSignedIn() && (
+        request.resource.data.candidateUid == request.auth.uid ||
+        request.resource.data.sessionId is string ||
+        isManagerOrAbove() ||
+        myRole() == 'proctor'
+      );
+      // Managers publish results and record card issuance on attempts
+      allow update: if isManagerOrAbove();
+      allow delete: if isAdminOrAbove();
     }
   }
 }
