@@ -108,7 +108,8 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px;
-  margin-bottom: 32px;
+  margin-bottom: 48px;
+  padding-bottom: 24px;
 }
 
 /* Card */
@@ -120,10 +121,10 @@
   border-radius: 16px;
   padding: 20px;
   background: white;
-  overflow: hidden;
+  overflow: visible;
   transition: all 0.3s ease;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  min-height: 320px;
+  min-height: auto;
   position: relative;
 }
 

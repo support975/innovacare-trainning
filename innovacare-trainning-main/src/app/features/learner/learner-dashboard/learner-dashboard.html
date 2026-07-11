@@ -22,8 +22,8 @@
       <!-- Level Progress Bar -->
       <div class="level-progress">
         <div class="progress-header">
-          <span class="label">Level Progress</span>
-          <span class="points">{{ userStats()?.points || 0 }} pts · {{ pointsProgress().pointsToNext }} to next</span>
+          <span class="label">{{ t('dashboard.myLevelLabel') }}</span>
+          <span class="points">{{ userStats()?.points || 0 }} pts · {{ pointsProgress().pointsToNext }} {{ t('dashboard.pointsToNextLabel') }}</span>
         </div>
         <div class="progress-track">
           <span class="progress-bar" [style.width.%]="pointsProgress().percent"></span>
@@ -37,7 +37,7 @@
         <div class="stat-icon">🎓</div>
         <div class="stat-content">
           <div class="stat-number">{{ learningStats().totalHours }}h</div>
-          <div class="stat-label">Learning Hours</div>
+          <div class="stat-label">{{ t('dashboard.activeCoursesLabel') }}</div>
         </div>
       </div>
 
@@ -45,7 +45,7 @@
         <div class="stat-icon">✅</div>
         <div class="stat-content">
           <div class="stat-number">{{ learningStats().completed }}/{{ learningStats().total }}</div>
-          <div class="stat-label">Courses Completed</div>
+          <div class="stat-label">{{ t('dashboard.completionRateLabel') }}</div>
         </div>
       </div>
 
@@ -53,7 +53,7 @@
         <div class="stat-icon">⚡</div>
         <div class="stat-content">
           <div class="stat-number">{{ userStats()?.points || 0 }}</div>
-          <div class="stat-label">Total Points</div>
+          <div class="stat-label">{{ t('dashboard.pointsLabel') }}</div>
         </div>
       </div>
 
@@ -61,7 +61,7 @@
         <div class="stat-icon">🏅</div>
         <div class="stat-content">
           <div class="stat-number">{{ badges().length }}</div>
-          <div class="stat-label">Badges Earned</div>
+          <div class="stat-label">{{ t('dashboard.certificatesLabel') }}</div>
         </div>
       </div>
     </div>

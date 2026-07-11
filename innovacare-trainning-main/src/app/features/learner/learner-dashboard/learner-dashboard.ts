@@ -7,6 +7,7 @@ import { Firestore, collection, collectionData, doc, docData, query, where } fro
 import { toSignal } from '@angular/core/rxjs-interop';
 import { combineLatest, map, of, switchMap } from 'rxjs';
 import { AuthService } from '../../../core/auth';
+import { LanguageService } from '../../../shared/services/language';
 
 type DueStats = { overdue: number; in7: number; in30: number; in90: number };
 type EnrollmentStatus = 'assigned' | 'started' | 'completed';
@@ -105,7 +106,9 @@ export class LearnerDashboardComponent {
   private auth = inject(Auth);
   private authService = inject(AuthService);
   private afs = inject(Firestore);
+  private languageService = inject(LanguageService);
   private profile = toSignal(this.authService.profile$, { initialValue: null });
+  readonly t = (key: string) => this.languageService.t(key);
   readonly isIndividualLearner = computed(() => {
     const p = this.profile();
     return p?.accountType === 'individual' && !p?.orgId;
