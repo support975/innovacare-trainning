@@ -300,7 +300,7 @@ export class LearnerDashboardComponent {
     { label: 'Policies & Procedures', path: '/resources/policies' },
   ]);
 
-  // -------- User profile stats (badges, points, level) --------
+  // -------- User profile stats (organization, role fields only) --------
   private userStats$ = this.auth$.pipe(
     switchMap(user => {
       if (!user) return of(null);
@@ -310,10 +310,32 @@ export class LearnerDashboardComponent {
   );
   userStats = toSignal(this.userStats$, { initialValue: null as any });
 
+  // -------- Points wallet (awarded by the rewards engine at
+  // users/{uid}/wallet/main -- NOT a field on the user doc itself) --------
+  private wallet$ = this.auth$.pipe(
+    switchMap(user => {
+      if (!user) return of({ totalPoints: 0 } as any);
+      return docData(doc(this.afs, `users/${user.uid}/wallet/main`));
+    })
+  );
+  totalPoints = toSignal(
+    this.wallet$.pipe(map((w: any) => Number(w?.totalPoints ?? 0))),
+    { initialValue: 0 }
+  );
+
+  // -------- Rewards (badges + point grants), users/{uid}/rewards/{id} --------
+  private rewards$ = this.auth$.pipe(
+    switchMap(user => {
+      if (!user) return of([] as any[]);
+      const rcol = collection(this.afs, `users/${user.uid}/rewards`);
+      return collectionData(rcol, { idField: 'id' });
+    })
+  );
+  rewardsList = toSignal(this.rewards$, { initialValue: [] as any[] });
+
   // -------- Gamification level from points --------
   levelFromPoints = computed(() => {
-    const stats = this.userStats();
-    const points = stats?.points || 0;
+    const points = this.totalPoints();
     if (points >= 5000) return { name: 'Legend 🏆', level: 5, color: '#FFD700' };
     if (points >= 3000) return { name: 'Platinum 💎', level: 4, color: '#E5E4E2' };
     if (points >= 1500) return { name: 'Gold 🥇', level: 3, color: '#FFD700' };
@@ -332,16 +354,20 @@ export class LearnerDashboardComponent {
     return { totalHours, completed, total, completionRate };
   });
 
-  // -------- Recent badges earned --------
-  badges = computed(() => {
-    const stats = this.userStats();
-    return stats?.badges || [];
-  });
+  // -------- Recent badges earned (type === 'badge' reward docs) --------
+  badges = computed(() =>
+    this.rewardsList()
+      .filter((r: any) => r.type === 'badge')
+      .map((r: any) => ({
+        icon: '🎖️',
+        name: r.title || 'Badge',
+        description: r.points ? `+${r.points} pts` : '',
+      }))
+  );
 
   // -------- Points progress to next level --------
   pointsProgress = computed(() => {
-    const stats = this.userStats();
-    const points = stats?.points || 0;
+    const points = this.totalPoints();
     const level = this.levelFromPoints();
     const levels = [0, 500, 1500, 3000, 5000];
     const currentIdx = level.level - 1;

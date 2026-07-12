@@ -23,7 +23,7 @@
       <div class="level-progress">
         <div class="progress-header">
           <span class="label">{{ t('dashboard.myLevelLabel') }}</span>
-          <span class="points">{{ userStats()?.points || 0 }} pts · {{ pointsProgress().pointsToNext }} {{ t('dashboard.pointsToNextLabel') }}</span>
+          <span class="points">{{ totalPoints() }} pts · {{ pointsProgress().pointsToNext }} {{ t('dashboard.pointsToNextLabel') }}</span>
         </div>
         <div class="progress-track">
           <span class="progress-bar" [style.width.%]="pointsProgress().percent"></span>
@@ -52,7 +52,7 @@
       <div class="stat-card card">
         <div class="stat-icon">⚡</div>
         <div class="stat-content">
-          <div class="stat-number">{{ userStats()?.points || 0 }}</div>
+          <div class="stat-number">{{ totalPoints() }}</div>
           <div class="stat-label">{{ t('dashboard.pointsLabel') }}</div>
         </div>
       </div>
