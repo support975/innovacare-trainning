@@ -7,6 +7,13 @@
     </div>
   </header>
 
+  <!-- Tabs -->
+  <div class="tab-bar" *ngIf="!isIndividualLearner()">
+    <button type="button" class="tab" [class.active]="activeTab()==='my'" (click)="activeTab.set('my')">{{ t('rewards.title') }}</button>
+    <button type="button" class="tab" [class.active]="activeTab()==='leaderboard'" (click)="activeTab.set('leaderboard')">🏁 {{ t('rewards.leaderboard') }}</button>
+  </div>
+
+  <ng-container *ngIf="activeTab()==='my' || isIndividualLearner()">
   <!-- Hero: points + level -->
   <section class="hero" *ngIf="levelInfo() as lvl">
     <div class="hero-points">
@@ -130,5 +137,32 @@
         </tbody>
       </table>
     </div>
+  </section>
+  </ng-container>
+
+  <!-- Leaderboard -->
+  <section class="leaderboard-section" *ngIf="activeTab()==='leaderboard' && !isIndividualLearner()">
+    <h2>{{ t('rewards.leaderboard') }}</h2>
+    <div class="history-table-wrap" *ngIf="leaderboardRanked().length; else noLeaderboard">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>{{ t('rewards.colRank') }}</th>
+            <th>{{ t('rewards.colTitle') }}</th>
+            <th class="right">{{ t('rewards.colValue') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of leaderboardRanked(); let i = index" [class.me]="row.id === myUid()">
+            <td class="rank-cell">{{ rankIcon(i) }}</td>
+            <td class="title-cell">{{ row.displayName || '—' }}<span class="muted" *ngIf="row.id === myUid()"> ({{ t('rewards.you') }})</span></td>
+            <td class="right value-cell">{{ row.totalPoints }} pts</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <ng-template #noLeaderboard>
+      <div class="empty-state">{{ t('rewards.empty') }}</div>
+    </ng-template>
   </section>
 </div>

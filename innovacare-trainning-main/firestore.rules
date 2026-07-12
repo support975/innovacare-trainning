@@ -540,6 +540,15 @@ service cloud.firestore {
         allow delete: if isSuperAdmin();
       }
 
+      // Privacy-safe leaderboard projection (displayName + totalPoints only,
+      // no PII) maintained by the onWalletUpdated Cloud Function trigger.
+      // Any same-org signed-in user (learner or staff) can see the ranking;
+      // never written directly by clients.
+      match /leaderboard/{uid} {
+        allow read: if isSignedIn() && myOrgId() == orgId;
+        allow write: if false;
+      }
+
       match /policies/{policyId} {
         allow read: if isSuperAdmin()
           || isOrgStaffFor(orgId)

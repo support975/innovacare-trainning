@@ -44,6 +44,9 @@ export class Rewards {
     return this.lang.t(key, params);
   }
 
+  // Tabs: my rewards vs org leaderboard
+  activeTab = signal<'my' | 'leaderboard'>('my');
+
   // Filters (Relias-like)
   search = signal('');
   typeFilter = signal<'all' | RewardType>('all');
@@ -66,6 +69,36 @@ export class Rewards {
     })
   );
   wallet = toSignal(this.wallet$, { initialValue: { totalPoints: 0 } });
+
+  // Org leaderboard (privacy-safe projection: displayName + totalPoints only)
+  private leaderboard$ = this.authService.profile$.pipe(
+    switchMap(profile => {
+      const orgId = profile?.orgId;
+      if (!orgId) return of([] as Array<{ id: string; displayName?: string; totalPoints: number }>);
+      const lcol = collection(this.afs, `organizations/${orgId}/leaderboard`);
+      return collectionData(lcol, { idField: 'id' }).pipe(
+        map((rows: any[]) => (rows || []).map(r => ({
+          id: String(r.id),
+          displayName: r.displayName ? String(r.displayName) : undefined,
+          totalPoints: Number(r.totalPoints ?? 0),
+        })))
+      );
+    })
+  );
+  private leaderboardRows = toSignal(this.leaderboard$, { initialValue: [] as Array<{ id: string; displayName?: string; totalPoints: number }> });
+
+  leaderboardRanked = computed(() =>
+    [...this.leaderboardRows()].sort((a, b) => b.totalPoints - a.totalPoints)
+  );
+
+  myUid = computed(() => this.profile()?.uid);
+
+  rankIcon(index: number): string {
+    if (index === 0) return '🥇';
+    if (index === 1) return '🥈';
+    if (index === 2) return '🥉';
+    return `#${index + 1}`;
+  }
 
   // Rewards + join course title
   private rows$ = this.user$.pipe(

@@ -3082,7 +3082,7 @@ export const onEnrollmentCompleted = onDocumentUpdated(
   },
 );
 
-export {grantManualReward} from "./rewards-admin";
+export {grantManualReward, onWalletUpdated, backfillLeaderboardProjections} from "./rewards-admin";
 
 /**
  * Helper function for notification email templates.

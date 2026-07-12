@@ -326,3 +326,47 @@
   .level-row { justify-content: center; }
   .hero-kpis { justify-content: center; }
 }
+
+/* ── Tabs ─────────────────────────────────────────── */
+.tab-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1.25rem;
+}
+
+.tab {
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 2px solid #e5e7eb;
+  background: #ffffff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: #111827;
+}
+
+.tab.active {
+  border-color: #1e3a8a;
+  background: linear-gradient(135deg, #1e3a8a, #2563eb);
+  color: #ffffff;
+}
+
+/* ── Leaderboard ─────────────────────────────────────── */
+.leaderboard-section h2 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  color: #111827;
+}
+
+.rank-cell {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+tr.me {
+  background: #eff6ff;
+}
+
+tr.me .title-cell {
+  font-weight: 700;
+}
