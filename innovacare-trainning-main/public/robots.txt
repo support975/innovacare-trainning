@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+Disallow: /learner/
+Disallow: /manager/
+Disallow: /proctor/
+Disallow: /super-admin/
+Disallow: /org/
+Disallow: /kiosk
+Disallow: /kiosk-exam/
+Disallow: /exam-session-login
+Disallow: /exam-session-consent
+Disallow: /exam-session-proctor-verify
+Disallow: /exam-session-launcher
+Disallow: /exam-session-runner
+Disallow: /exam-results
+Disallow: /exam-reinscription
+Disallow: /login
+Disallow: /login-org
+Disallow: /register-organization
+Disallow: /signup
+Disallow: /reset
+
+Sitemap: https://www.innovacaretrainning.com/sitemap.xml

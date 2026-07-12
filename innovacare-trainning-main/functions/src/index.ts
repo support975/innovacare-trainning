@@ -22,6 +22,8 @@ const storage = admin.storage();
 setGlobalOptions({region: "us-central1"});
 
 const callableCors = [
+  "https://www.innovacaretrainning.com",
+  "https://innovacaretrainning.com",
   "https://innovacare-training.web.app",
   "https://innovacare-training.firebaseapp.com",
   "http://localhost:4200",
@@ -39,7 +41,7 @@ const SENDGRID_FROM_EMAIL = defineSecret("SENDGRID_FROM_EMAIL");
 const TWILIO_ACCOUNT_SID = defineSecret("TWILIO_ACCOUNT_SID");
 const TWILIO_AUTH_TOKEN = defineSecret("TWILIO_AUTH_TOKEN");
 const TWILIO_FROM_NUMBER = defineSecret("TWILIO_FROM_NUMBER");
-const PUBLIC_APP_URL = "https://innovacare-training.web.app";
+const PUBLIC_APP_URL = "https://www.innovacaretrainning.com";
 
 /* ─────────── Helpers & types ─────────── */
 const setEq = (a: string[], b: string[]) => a.length === b.length && a.every((x) => b.includes(x));
@@ -3126,7 +3128,7 @@ function getNotificationEmailTemplate(
                   <strong>Due Date:</strong> ${param3}
                 </div>
                 <p>Start learning now to complete this course on time.</p>
-                <a href="https://innovacare-training.web.app/learner/assignments" class="button">View Assignments</a>
+                <a href="https://www.innovacaretrainning.com/learner/assignments" class="button">View Assignments</a>
               </div>
               <div class="footer"><p>© 2026 Innovacare Training. All rights reserved.</p></div>
             </div>
@@ -3154,7 +3156,7 @@ function getNotificationEmailTemplate(
                   ${param3 ? `Grade: ${param3}` : ""}
                 </div>
                 <p>Great work! Download your certificate now.</p>
-                <a href="https://innovacare-training.web.app/learner/certifications" class="button">View Certificates</a>
+                <a href="https://www.innovacaretrainning.com/learner/certifications" class="button">View Certificates</a>
               </div>
               <div class="footer"><p>© 2026 Innovacare Training. All rights reserved.</p></div>
             </div>

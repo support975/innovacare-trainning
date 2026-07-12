@@ -68,7 +68,7 @@ const emailTemplates = {
                 <strong>Due Date:</strong> ${dueDate}
               </div>
               <p>Start learning now to complete this course on time. Access your assignments and track your progress in your learner dashboard.</p>
-              <a href="https://innovacare-training.web.app/learner/assignments" class="button">View Assignments</a>
+              <a href="https://www.innovacaretrainning.com/learner/assignments" class="button">View Assignments</a>
               <p>If you have any questions, contact your training administrator.</p>
             </div>
             <div class="footer">
@@ -112,7 +112,7 @@ const emailTemplates = {
                 ${grade ? `Grade: ${grade}` : ""}
               </div>
               <p>Great work! Your completion has been recorded and you can now download your certificate.</p>
-              <a href="https://innovacare-training.web.app/learner/certifications" class="button">View Certificates</a>
+              <a href="https://www.innovacaretrainning.com/learner/certifications" class="button">View Certificates</a>
               <p>Keep up the excellent work and continue your learning journey!</p>
             </div>
             <div class="footer">
@@ -156,7 +156,7 @@ const emailTemplates = {
                 <strong>Days Overdue:</strong> ${daysOverdue} days
               </div>
               <p>Please complete this course as soon as possible. Contact your training administrator if you need assistance.</p>
-              <a href="https://innovacare-training.web.app/learner/assignments" class="button">Complete Now</a>
+              <a href="https://www.innovacaretrainning.com/learner/assignments" class="button">Complete Now</a>
             </div>
             <div class="footer">
               <p>© 2026 Innovacare Training. All rights reserved.</p>
@@ -193,7 +193,7 @@ const emailTemplates = {
               <p>Hello ${learnerName},</p>
               <p>Please find your updated learning transcript attached to this email. It includes all completed courses, grades, and certifications.</p>
               <p>You can also view your transcript anytime in your learner dashboard:</p>
-              <a href="https://innovacare-training.web.app/learner/transcript" class="button">View Transcript</a>
+              <a href="https://www.innovacaretrainning.com/learner/transcript" class="button">View Transcript</a>
               <p>If you need any assistance, please contact your administrator.</p>
             </div>
             <div class="footer">
@@ -238,7 +238,7 @@ const emailTemplates = {
                 <div class="points">+${points} Points</div>
               </div>
               <p>Keep up the great work and continue earning rewards as you progress through your learning journey!</p>
-              <a href="https://innovacare-training.web.app/learner/rewards" class="button">View Rewards</a>
+              <a href="https://www.innovacaretrainning.com/learner/rewards" class="button">View Rewards</a>
             </div>
             <div class="footer">
               <p>© 2026 Innovacare Training. All rights reserved.</p>
