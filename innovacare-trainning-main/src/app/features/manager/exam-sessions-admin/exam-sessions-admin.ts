@@ -108,11 +108,9 @@ export class ExamSessionsAdminComponent implements OnInit {
   }
 
   private loadPublishedExams(orgId: string): void {
-    this.blueprintService.getBlueprintsByOrg(orgId).subscribe({
+    this.blueprintService.getPublishedBlueprintsByOrg(orgId).subscribe({
       next: (blueprints) => {
-        // Show only published blueprints as available exams
-        const published = blueprints.filter(b => b.status === 'published');
-        this.availableExams.set(published.map(b => ({
+        this.availableExams.set(blueprints.map(b => ({
           id: b.id,
           ...b
         })));

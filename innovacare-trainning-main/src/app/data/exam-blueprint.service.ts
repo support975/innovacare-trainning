@@ -76,6 +76,22 @@ export class ExamBlueprintService {
     return collectionData(q, { idField: 'id' }) as Observable<ExamBlueprint[]>;
   }
 
+  /**
+   * Published blueprints for an org, readable by any signed-in manager (not
+   * just the org's certification authority). The security rules only allow
+   * non-authority users to read published blueprints, so the 'published'
+   * filter must be part of the query itself — filtering client-side after an
+   * unscoped getBlueprintsByOrg() query gets the whole query denied.
+   */
+  getPublishedBlueprintsByOrg(orgId: string): Observable<ExamBlueprint[]> {
+    const q = query(
+      collection(this.firestore, 'examBlueprints'),
+      where('orgId', '==', orgId),
+      where('status', '==', 'published')
+    );
+    return collectionData(q, { idField: 'id' }) as Observable<ExamBlueprint[]>;
+  }
+
   async getBlueprint(id: string): Promise<ExamBlueprint | null> {
     if (!id) return null;
     const docRef = doc(this.firestore, 'examBlueprints', id);
