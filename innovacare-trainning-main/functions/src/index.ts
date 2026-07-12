@@ -2931,17 +2931,19 @@ export const onExamCompleted = onDocumentCreated(
 // ─────────── NOTIFICATION TRIGGERS ───────────
 
 /**
- * Trigger when enrollment is created (course assigned)
+ * Trigger when enrollment is created (course assigned).
+ * Enrollments live at users/{uid}/enrollments/{courseId} -- NOT under
+ * organizations/{orgId}/enrollments -- see EnrollmentService in the
+ * client app (shared/services/enrollement.ts).
  */
 export const onEnrollmentCreated = onDocumentCreated(
-  "organizations/{orgId}/enrollments/{enrollmentId}",
+  {document: "users/{uid}/enrollments/{courseId}", secrets: [SENDGRID_API_KEY, SENDGRID_FROM_EMAIL]},
   async (event) => {
     const enrollment = event.data?.data();
     if (!enrollment) return;
 
-    const learnerId = enrollment.learnerId as string;
-    const courseId = enrollment.courseId as string;
-    const orgId = event.params.orgId;
+    const learnerId = event.params.uid;
+    const courseId = event.params.courseId;
 
     try {
       // Get learner info
@@ -2952,27 +2954,25 @@ export const onEnrollmentCreated = onDocumentCreated(
       const learnerEmail = learner.email as string;
       const learnerName = learner.displayName || learner.email || "Learner";
 
-      // Get course info
-      const courseDocRef = db.collection("organizations").doc(orgId)
-        .collection("courses").doc(courseId);
-      const courseDoc = await courseDocRef.get();
+      // Get course info (top-level 'courses' collection)
+      const courseDoc = await db.collection("courses").doc(courseId).get();
       const course = courseDoc.data();
       const courseName = course?.title || "Course";
 
-      // Calculate due date (default 30 days)
-      const dueDate = new Date();
-      dueDate.setDate(dueDate.getDate() + 30);
+      // Calculate due date (from enrollment if set, else default 30 days)
+      const dueDate = enrollment.dueDate?.toDate?.() ?? (() => {
+        const d = new Date();
+        d.setDate(d.getDate() + 30);
+        return d;
+      })();
       const dueDateStr = dueDate.toLocaleDateString(
         "en-US",
         {year: "numeric", month: "long", day: "numeric"},
       );
 
-      // Send email (requires SendGrid API key to be available)
-      const sgApiKey = process.env.SENDGRID_API_KEY;
-      const sgFromEmail = process.env.SENDGRID_FROM_EMAIL;
-
-      if (sgApiKey && sgFromEmail) {
-        sgMail.setApiKey(sgApiKey);
+      // Send email via SendGrid
+      if (learnerEmail) {
+        sgMail.setApiKey(SENDGRID_API_KEY.value());
         const template = getNotificationEmailTemplate(
           "course_assigned",
           learnerName,
@@ -2982,7 +2982,7 @@ export const onEnrollmentCreated = onDocumentCreated(
 
         await sgMail.send({
           to: learnerEmail,
-          from: sgFromEmail,
+          from: SENDGRID_FROM_EMAIL.value(),
           subject: template.subject,
           html: template.html,
         });
@@ -3007,10 +3007,11 @@ export const onEnrollmentCreated = onDocumentCreated(
 );
 
 /**
- * Trigger when enrollment completion is marked
+ * Trigger when enrollment completion is marked.
+ * Same path correction as onEnrollmentCreated above.
  */
 export const onEnrollmentCompleted = onDocumentUpdated(
-  "organizations/{orgId}/enrollments/{enrollmentId}",
+  {document: "users/{uid}/enrollments/{courseId}", secrets: [SENDGRID_API_KEY, SENDGRID_FROM_EMAIL]},
   async (event) => {
     const beforeData = event.data?.before.data();
     const afterData = event.data?.after.data();
@@ -3024,9 +3025,8 @@ export const onEnrollmentCompleted = onDocumentUpdated(
     // Already completed or still not completed
     if (wasCompleted || !isCompleted) return;
 
-    const learnerId = afterData.learnerId as string;
-    const courseId = afterData.courseId as string;
-    const orgId = event.params.orgId;
+    const learnerId = event.params.uid;
+    const courseId = event.params.courseId;
     const grade = afterData.grade as string | undefined;
 
     try {
@@ -3038,19 +3038,14 @@ export const onEnrollmentCompleted = onDocumentUpdated(
       const learnerEmail = learner.email as string;
       const learnerName = learner.displayName || learner.email || "Learner";
 
-      // Get course info
-      const courseDocRef2 = db.collection("organizations").doc(orgId)
-        .collection("courses").doc(courseId);
-      const courseDoc = await courseDocRef2.get();
+      // Get course info (top-level 'courses' collection)
+      const courseDoc = await db.collection("courses").doc(courseId).get();
       const course = courseDoc.data();
       const courseName = course?.title || "Course";
 
-      // Send email
-      const sgApiKey = process.env.SENDGRID_API_KEY;
-      const sgFromEmail = process.env.SENDGRID_FROM_EMAIL;
-
-      if (sgApiKey && sgFromEmail) {
-        sgMail.setApiKey(sgApiKey);
+      // Send email via SendGrid
+      if (learnerEmail) {
+        sgMail.setApiKey(SENDGRID_API_KEY.value());
         const template = getNotificationEmailTemplate(
           "course_completed",
           learnerName,
@@ -3060,7 +3055,7 @@ export const onEnrollmentCompleted = onDocumentUpdated(
 
         await sgMail.send({
           to: learnerEmail,
-          from: sgFromEmail,
+          from: SENDGRID_FROM_EMAIL.value(),
           subject: template.subject,
           html: template.html,
         });
