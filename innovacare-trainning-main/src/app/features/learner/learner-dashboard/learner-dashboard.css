@@ -1,6 +1,6 @@
 /* learner-dashboard.css — enhanced with KPI-rich layout */
 
-:root {
+:host {
   --primary: #1a3f6f;
   --secondary: #00a79d;
   --success: #10b981;
@@ -59,6 +59,14 @@
   color: white;
   font-size: 32px;
   font-weight: 900;
+  box-shadow: 0 4px 12px rgba(26, 63, 111, 0.2);
+}
+
+.avatar-photo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
   box-shadow: 0 4px 12px rgba(26, 63, 111, 0.2);
 }
 

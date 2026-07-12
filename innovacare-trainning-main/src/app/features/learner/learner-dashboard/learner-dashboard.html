@@ -5,7 +5,10 @@
     <div class="ld-profile-card card">
       <div class="profile-header">
         <div class="profile-avatar">
-          <div class="avatar-placeholder">{{ displayName().charAt(0).toUpperCase() }}</div>
+          <img *ngIf="userStats()?.profileImage as photo; else letterAvatar" [src]="photo" alt="" class="avatar-photo" />
+          <ng-template #letterAvatar>
+            <div class="avatar-placeholder">{{ displayName().charAt(0).toUpperCase() }}</div>
+          </ng-template>
         </div>
         <div class="profile-info">
           <h1>{{ displayName() }}</h1>

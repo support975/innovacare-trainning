@@ -1,6 +1,6 @@
 /* Profile Page — Premium Design */
 
-:root {
+:host {
   --primary: #1a3f6f;
   --secondary: #00a79d;
   --success: #10b981;
