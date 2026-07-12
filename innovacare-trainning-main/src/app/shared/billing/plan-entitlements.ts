@@ -13,7 +13,8 @@ export type PlanFeature =
   | 'manager.policyAssignments'
   | 'manager.settings'
   | 'manager.clinicalResources'
-  | 'manager.officialCertifications';
+  | 'manager.officialCertifications'
+  | 'manager.rewardsCenter';
 
 export type PlanEntitlements = {
   plan: AppPlan;
@@ -55,6 +56,7 @@ export const PLAN_ENTITLEMENTS: Record<AppPlan, PlanEntitlements> = {
       'manager.settings',
       'manager.clinicalResources',
       'manager.officialCertifications',
+      'manager.rewardsCenter',
     ],
   },
   enterprise: {
@@ -76,6 +78,7 @@ export const PLAN_ENTITLEMENTS: Record<AppPlan, PlanEntitlements> = {
       'manager.settings',
       'manager.clinicalResources',
       'manager.officialCertifications',
+      'manager.rewardsCenter',
     ],
   },
 };

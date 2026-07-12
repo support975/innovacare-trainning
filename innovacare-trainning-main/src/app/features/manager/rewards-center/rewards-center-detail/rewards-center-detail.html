@@ -1,0 +1,90 @@
+<div class="page" *ngIf="accessOk(); else denied">
+  <button type="button" class="back-link" (click)="goBack()">← Back to Rewards Center</button>
+
+  <div class="header">
+    <div class="header-info">
+      <h1>{{ learner()?.displayName || learner()?.email || 'Learner' }}</h1>
+      <p class="muted">{{ learner()?.email }}</p>
+    </div>
+    <button type="button" class="btn primary" (click)="openDialog()">🎉 Award Reward</button>
+  </div>
+
+  <div class="level-card card">
+    <div class="level-info">
+      <span class="level-icon">{{ levelInfo().current.icon }}</span>
+      <div>
+        <div class="level-name">{{ levelInfo().current.key | titlecase }}</div>
+        <div class="muted">{{ wallet().totalPoints }} pts total</div>
+      </div>
+    </div>
+    <div class="progress-track">
+      <span class="progress-bar" [style.width.%]="levelInfo().percent"></span>
+    </div>
+    <div class="muted" *ngIf="levelInfo().next">{{ levelInfo().pointsToNext }} pts to next level</div>
+  </div>
+
+  <div class="badges-card card">
+    <h2>Badges</h2>
+    <div class="badges-grid">
+      <div class="badge-item" *ngFor="let b of badges()" [class.earned]="b.earned">
+        <div class="badge-icon">{{ b.icon }}</div>
+        <div class="badge-key">{{ b.key }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="license-card card" *ngIf="licenses().length">
+    <h2>License Renewal Progress (Continuing Education)</h2>
+    <div class="license-row" *ngFor="let lp of licenseProgress()">
+      <div class="license-head">
+        <strong>{{ lp.license.type }} · {{ lp.license.number }} ({{ lp.license.state }})</strong>
+        <span class="license-status" [class.met]="lp.met">{{ lp.earnedHours }} / {{ lp.required || '—' }} hrs</span>
+      </div>
+      <div class="progress-track">
+        <span class="progress-bar" [style.width.%]="lp.percent"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="history-card card">
+    <h2>Reward History</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Title</th>
+          <th>Points/Hours</th>
+          <th>Source</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of rows()">
+          <td>{{ fmtDate(r.issuedAtMs) }}</td>
+          <td>{{ r.type }}</td>
+          <td>{{ r.title }}<span class="course" *ngIf="r.courseTitle && r.courseTitle !== '—'"> — {{ r.courseTitle }}</span></td>
+          <td>{{ r.type === 'credit_hours' ? (r.hours + ' hrs') : (r.points || 0) }}</td>
+          <td>{{ r.manual ? '👤 Manual' : '⚙️ Automatic' }}</td>
+        </tr>
+        <tr *ngIf="!rows().length">
+          <td colspan="5" class="empty">No rewards yet.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<ng-template #denied>
+  <div class="page">
+    <p class="empty">You don't have access to this learner's rewards.</p>
+    <button type="button" class="btn outline" (click)="goBack()">← Back to Rewards Center</button>
+  </div>
+</ng-template>
+
+<app-grant-reward-dialog
+  [open]="dialogOpen()"
+  [learnerUid]="learnerUid"
+  [learnerName]="learner()?.displayName || learner()?.email || ''"
+  (closed)="closeDialog()"
+  (granted)="closeDialog()"
+></app-grant-reward-dialog>

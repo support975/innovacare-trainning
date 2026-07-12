@@ -178,6 +178,22 @@ const routes: Routes = [
             m => m.OnsiteExamCenterComponent
           ),
       },
+      {
+        path: 'rewards-center',
+        canMatch: [planFeatureCanMatch('manager.rewardsCenter')],
+        loadComponent: () =>
+          import('./rewards-center/rewards-center-list/rewards-center-list').then(
+            m => m.RewardsCenterList
+          ),
+      },
+      {
+        path: 'rewards-center/:learnerUid',
+        canMatch: [planFeatureCanMatch('manager.rewardsCenter')],
+        loadComponent: () =>
+          import('./rewards-center/rewards-center-detail/rewards-center-detail').then(
+            m => m.RewardsCenterDetail
+          ),
+      },
     ]
   }
 ];

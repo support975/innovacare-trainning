@@ -475,6 +475,9 @@ service cloud.firestore {
     match /users/{uid}/wallet/{walletId} {
       allow read: if isSuperAdmin()
         || isAdminOrAbove()
+        || (isManager() && uid != request.auth.uid
+            && exists(/databases/$(database)/documents/users/$(uid))
+            && sameOrg(get(/databases/$(database)/documents/users/$(uid)).data))
         || (isSignedIn() && request.auth.uid == uid);
 
       allow write: if isAdminOrAbove();
@@ -483,6 +486,9 @@ service cloud.firestore {
     match /users/{uid}/rewards/{rewardId} {
       allow read: if isSuperAdmin()
         || isAdminOrAbove()
+        || (isManager() && uid != request.auth.uid
+            && exists(/databases/$(database)/documents/users/$(uid))
+            && sameOrg(get(/databases/$(database)/documents/users/$(uid)).data))
         || (isSignedIn() && request.auth.uid == uid);
 
       allow write: if isAdminOrAbove();

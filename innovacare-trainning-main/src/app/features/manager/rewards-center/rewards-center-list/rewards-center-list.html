@@ -1,0 +1,101 @@
+<div class="page">
+  <div class="header">
+    <h1>🏆 Rewards Center</h1>
+    <p>Recognize learners, grant appreciation, and track engagement across your organization.</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-number">{{ stats().totalLearners }}</div>
+      <div class="stat-label">Learners</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ stats().totalPoints }}</div>
+      <div class="stat-label">Total Points Awarded</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">{{ stats().topLearnerName }}</div>
+      <div class="stat-label">Top Learner</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button type="button" class="tab" [class.active]="view()==='overview'" (click)="setView('overview')">Overview</button>
+    <button type="button" class="tab" [class.active]="view()==='leaderboard'" (click)="setView('leaderboard')">🏁 Leaderboard</button>
+  </div>
+
+  <div class="toolbar">
+    <input
+      type="search"
+      placeholder="Search learners…"
+      [ngModel]="search()"
+      (ngModelChange)="search.set($event)"
+    />
+    <div class="period-toggle" *ngIf="view()==='leaderboard'">
+      <button type="button" [class.active]="period()==='all'" (click)="setPeriod('all')">All-time</button>
+      <button type="button" [class.active]="period()==='month'" (click)="setPeriod('month')">This month</button>
+    </div>
+  </div>
+
+  <!-- OVERVIEW TABLE -->
+  <div class="card" *ngIf="view()==='overview'">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Learner</th>
+          <th>Points</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of displayRows()">
+          <td class="learner-cell" (click)="viewDetail(row.id)">
+            <strong>{{ row.displayName || row.email || '—' }}</strong>
+            <span class="muted">{{ row.email }}</span>
+          </td>
+          <td>{{ row.totalPoints }}</td>
+          <td class="actions-cell">
+            <button type="button" class="btn outline" (click)="viewDetail(row.id)">View</button>
+            <button type="button" class="btn primary" (click)="openGrantDialog(row)">🎉 Grant Reward</button>
+          </td>
+        </tr>
+        <tr *ngIf="!displayRows().length">
+          <td colspan="3" class="empty">No learners found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div class="card" *ngIf="view()==='leaderboard'">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Learner</th>
+          <th>Points</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of leaderboardRows(); let i = index" [class.top3]="i < 3">
+          <td class="rank">{{ rankIcon(i) }}</td>
+          <td class="learner-cell" (click)="viewDetail(row.id)">
+            <strong>{{ row.displayName || row.email || '—' }}</strong>
+          </td>
+          <td>{{ period()==='month' ? (row.periodPoints ?? 0) : row.totalPoints }}</td>
+        </tr>
+        <tr *ngIf="!leaderboardRows().length">
+          <td colspan="3" class="empty">No data yet.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<app-grant-reward-dialog
+  [open]="dialogOpen()"
+  [learnerUid]="dialogUid()"
+  [learnerName]="dialogName()"
+  (closed)="closeDialog()"
+  (granted)="onGranted()"
+></app-grant-reward-dialog>

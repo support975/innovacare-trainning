@@ -31,6 +31,7 @@ export interface LicenseDoc {
   number: string;
   renewalDate?: any;
   renewalPeriodMonths?: number;
+  /** Continuing-education hours required for this license's renewal period. */
   hours?: number;
   reminderWeeks?: number;
   createdAt?: any;
@@ -81,6 +82,14 @@ export class UserDirectoryService {
           map((rows: any[]) => (rows ?? []) as LicenseDoc[])
         );
       })
+    );
+  }
+
+  /** Read another user's licenses (manager/admin same-org, per firestore.rules). */
+  licensesForUid$(uid: string) {
+    const colRef = collection(this.afs, `users/${uid}/licenses`);
+    return collectionData(colRef, { idField: 'id' }).pipe(
+      map((rows: any[]) => (rows ?? []) as LicenseDoc[])
     );
   }
 

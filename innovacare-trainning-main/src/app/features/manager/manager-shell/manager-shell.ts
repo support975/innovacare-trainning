@@ -150,6 +150,12 @@ export class ManagerShell {
       ],
     },
     {
+      label: 'Recognition',
+      items: [
+        { path: '/manager/rewards-center', label: 'Rewards Center', icon: '🏆', hint: 'Grant recognition and track learner achievement', feature: 'manager.rewardsCenter' },
+      ],
+    },
+    {
       label: 'Compliance',
       items: [
         { path: '/manager/audit', label: 'Audit & Acknowledgements', icon: '≣', hint: 'Evidence, attestations, policy status', feature: 'manager.audit' },

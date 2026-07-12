@@ -10,76 +10,16 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { combineLatest, map, of, switchMap } from 'rxjs';
 import { AuthService } from '../../../../core/auth';
 import { LanguageService } from '../../../../shared/services/language';
-
-type RewardType = 'certificate' | 'badge' | 'points' | 'credit_hours';
-
-interface RewardRow {
-  id: string;
-  issuedAtMs?: number;
-
-  type: RewardType;
-  title: string;
-
-  courseId: string;
-  courseTitle: string;
-
-  score?: number;
-  honor?: string;
-
-  hours?: number;
-  creditUnit?: string;
-
-  points?: number;
-  badge?: string;
-
-  certificateId?: string;
-  certificateNo?: string;
-}
-
-interface WalletDoc {
-  totalPoints?: number;
-}
-
-interface LevelDef {
-  key: string;
-  labelKey: string;
-  icon: string;
-  minPoints: number;
-}
-
-const LEVELS: LevelDef[] = [
-  { key: 'bronze', labelKey: 'rewards.levelBronze', icon: '🥉', minPoints: 0 },
-  { key: 'silver', labelKey: 'rewards.levelSilver', icon: '🥈', minPoints: 250 },
-  { key: 'gold', labelKey: 'rewards.levelGold', icon: '🥇', minPoints: 750 },
-  { key: 'platinum', labelKey: 'rewards.levelPlatinum', icon: '💎', minPoints: 1500 },
-  { key: 'legend', labelKey: 'rewards.levelLegend', icon: '🏆', minPoints: 3000 },
-];
-
-const BADGE_CATALOG: Array<{ key: string; icon: string }> = [
-  { key: 'first_course', icon: '🌱' },
-  { key: 'five_courses', icon: '📚' },
-  { key: 'ten_courses', icon: '🔍' },
-  { key: 'twenty_five_courses', icon: '🎓' },
-  { key: 'exam_passed', icon: '🏅' },
-  { key: 'perfect_score', icon: '⭐' },
-];
-
-function epochMs(x: any): number | undefined {
-  if (!x) return undefined;
-  if (typeof x === 'number') return x;
-  if (typeof x === 'string') {
-    const t = Date.parse(x);
-    return isNaN(t) ? undefined : t;
-  }
-  if (typeof x?.toMillis === 'function') return x.toMillis();
-  if (typeof x?.toDate === 'function') return +x.toDate();
-  return undefined;
-}
-
-function fmtDate(ms?: number): string {
-  if (!ms) return '—';
-  try { return new Date(ms).toLocaleDateString(); } catch { return '—'; }
-}
+import {
+  RewardType,
+  RewardRow,
+  WalletDoc,
+  LEVELS,
+  BADGE_CATALOG,
+  levelInfoFor,
+  epochMs,
+  fmtDate,
+} from '../../../../shared/rewards/reward-catalog';
 
 @Component({
   selector: 'app-rewards',
@@ -211,24 +151,7 @@ export class Rewards {
   totalAll = computed(() => this.rowsSrc().length);
 
   // ── Gamification: level + badges ──────────────────────────────
-  readonly levelInfo = computed(() => {
-    const points = this.wallet().totalPoints ?? 0;
-    let current = LEVELS[0];
-    let next: LevelDef | null = null;
-    for (const lvl of LEVELS) {
-      if (points >= lvl.minPoints) current = lvl;
-      else { next = lvl; break; }
-    }
-    const base = current.minPoints;
-    const span = next ? next.minPoints - base : 0;
-    const percent = next ? Math.min(100, Math.round(((points - base) / span) * 100)) : 100;
-    return {
-      current,
-      next,
-      percent,
-      pointsToNext: next ? next.minPoints - points : 0,
-    };
-  });
+  readonly levelInfo = computed(() => levelInfoFor(this.wallet().totalPoints ?? 0));
 
   readonly badges = computed(() => {
     const earned = new Set(

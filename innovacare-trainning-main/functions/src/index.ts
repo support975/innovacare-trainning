@@ -3082,6 +3082,8 @@ export const onEnrollmentCompleted = onDocumentUpdated(
   },
 );
 
+export {grantManualReward} from "./rewards-admin";
+
 /**
  * Helper function for notification email templates.
  * @param {string} type - The notification type
