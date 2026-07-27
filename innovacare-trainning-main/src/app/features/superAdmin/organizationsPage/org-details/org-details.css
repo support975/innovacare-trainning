@@ -25,6 +25,8 @@
 .badge--pro        { background: #e8eef8; color: #1a3f6f; border: 1px solid #d6e0ee; }
 .badge--enterprise { background: #f2edf9; color: #6d28d9; border: 1px solid #d8b4fe; }
 .badge--info     { background: #e6f6f5; color: #00756d; border: 1px solid #b3e8e5; }
+.badge--success  { background: #e6f4ec; color: #166534; border: 1px solid #b3ddb3; }
+.badge--facility { background: #fdf2e9; color: #b45309; border: 1px solid #f3d9b1; }
 .avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #1a3f6f 0%, #234d82 100%); color: #fff; font-size: 0.7rem; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .empty-state { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; padding: 2.5rem 1rem; color: #8ea0b8; font-size: 0.85rem; text-align: center; }
 .empty-state__icon { font-size: 2rem; color: #d6e0ee; margin-bottom: 0.25rem; }
@@ -54,3 +56,61 @@
 .member-name { font-weight: 700; font-size: 0.88rem; color: #1a3f6f; }
 .member-email { font-size: 0.78rem; color: #8ea0b8; }
 @media (max-width: 900px) { .details-layout { grid-template-columns: 1fr; } }
+
+/* Facility Group Overview */
+.facility-panel { display: flex; flex-direction: column; }
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: #f0f4fb;
+}
+
+.kpi-card {
+  background: #fff;
+  padding: 1.25rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  text-align: center;
+}
+
+.kpi-card__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  margin-bottom: 0.15rem;
+}
+
+.kpi-card__icon--facilities { background: #fdf2e9; }
+.kpi-card__icon--learners   { background: #e8eef8; }
+.kpi-card__icon--completion { background: #e6f4ec; }
+.kpi-card__icon--overdue    { background: #f4f7fb; }
+
+.kpi-card__value { font-size: 1.6rem; font-weight: 900; color: #1a3f6f; line-height: 1; }
+.kpi-card__label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #8ea0b8; }
+
+.kpi-card--alert .kpi-card__value { color: #b91c1c; }
+.kpi-card--alert .kpi-card__icon--overdue { background: #fef2f2; }
+
+@media (max-width: 720px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.facility-table-wrap { overflow-x: auto; }
+.facility-name { font-weight: 700; color: #1a3f6f; }
+
+.overdue-count { font-weight: 700; color: #5a6a7e; }
+.overdue-count--alert { color: #b91c1c; }
+
+.completion-cell { display: flex; align-items: center; gap: 0.6rem; min-width: 140px; }
+.completion-bar { flex: 1; height: 7px; border-radius: 999px; background: #eef2f9; overflow: hidden; }
+.completion-bar__fill { height: 100%; border-radius: 999px; transition: width 0.2s; }
+.completion-bar__fill--good { background: #22a06b; }
+.completion-bar__fill--warn { background: #e0a02c; }
+.completion-bar__fill--risk { background: #dc2626; }
+.completion-cell__label { font-size: 0.78rem; font-weight: 700; color: #1a2b4a; min-width: 32px; text-align: right; }

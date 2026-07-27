@@ -13,7 +13,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Observable, firstValueFrom, map, of, switchMap, take } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { EnrollmentService } from '../../../shared/services/enrollement';
-import { AppProfile, AuthService } from '../../../core/auth';
+import { AppProfile } from '../../../core/auth';
+import { ActingOrgService } from '../../../core/organization/services/acting-org.service';
 import { CoursesRepo } from '../../../data/courses.repo';
 import { LearningPath, LearningPathsService } from '../../../shared/services/learning-paths';
 
@@ -30,7 +31,7 @@ export class Assign {
   private afs    = inject(Firestore);
   private enroll = inject(EnrollmentService);
   private route  = inject(ActivatedRoute);
-  private authSvc = inject(AuthService);
+  private orgContext = inject(ActingOrgService);
   private coursesRepo = inject(CoursesRepo);
   private learningPaths = inject(LearningPathsService);
 
@@ -45,7 +46,7 @@ export class Assign {
   uQuery = signal('');
   cQuery = signal('');
 
-  private profile$ = this.authSvc.profile$.pipe(filter(Boolean));
+  private profile$ = this.orgContext.effectiveProfile$.pipe(filter(Boolean));
   profile = toSignal(this.profile$ as Observable<AppProfile>);
 
   // Only load learners that belong to the same org as the manager
@@ -146,7 +147,7 @@ export class Assign {
     this.busy.set(true);
 
     try {
-      const profile = await firstValueFrom(this.authSvc.profile$.pipe(filter(Boolean), take(1)));
+      const profile = await firstValueFrom(this.profile$.pipe(take(1)));
       const orgId   = profile?.orgId ?? null;
 
       const userIds   = Array.from(this.selectedUsers());

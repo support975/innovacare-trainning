@@ -30,6 +30,7 @@ export class Edit implements OnInit {
     active: true,
     ownerEmail: '',
     certificationAuthorityEnabled: false,
+    canCreateSubOrgs: false,
   };
 
   planOptions = [
@@ -50,6 +51,7 @@ export class Edit implements OnInit {
           active: org.active ?? true,
           ownerEmail: (org as any).ownerEmail ?? '',
           certificationAuthorityEnabled: org.certificationAuthorityEnabled ?? false,
+          canCreateSubOrgs: org.canCreateSubOrgs ?? false,
         };
       }
       this.loading.set(false);
@@ -71,6 +73,7 @@ export class Edit implements OnInit {
         learnerLimit: this.form.learnerLimit,
         active: this.form.active,
         certificationAuthorityEnabled: this.form.certificationAuthorityEnabled,
+        canCreateSubOrgs: this.form.canCreateSubOrgs,
       });
       this.notice.set('Organization updated successfully.');
     } catch (e: any) {

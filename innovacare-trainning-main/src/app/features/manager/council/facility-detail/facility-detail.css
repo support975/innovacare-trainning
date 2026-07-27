@@ -1,0 +1,179 @@
+/* =========================================================
+   facility-detail.css — Facility Details
+   Hardcoded hex only — no CSS variables
+   ========================================================= */
+
+:host { display: block; }
+
+.facility-detail-page {
+  padding: 28px 32px;
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-bottom: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #5a6a7e;
+  cursor: pointer;
+}
+
+.back-link:hover { color: #00a79d; }
+
+.page-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #00a79d;
+  margin: 0 0 6px;
+}
+
+.page-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #1a3f6f;
+  margin: 0 0 4px;
+  line-height: 1.2;
+}
+
+.page-sub {
+  font-size: 14px;
+  color: #5a6a7e;
+  margin: 0;
+}
+
+.loading-hint,
+.empty-hint {
+  font-size: 13px;
+  color: #5a6a7e;
+}
+
+/* Summary cards */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+
+.summary-card {
+  background: #ffffff;
+  border: 1px solid #e4ecf7;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(26,63,111,0.06);
+  padding: 18px;
+  text-align: center;
+}
+
+.summary-card--alert .summary-value { color: #b91c1c; }
+
+.summary-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1a3f6f;
+}
+
+.summary-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #5a6a7e;
+  margin-top: 4px;
+}
+
+.completion-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: #eef2f9;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.completion-bar__fill { height: 100%; border-radius: 999px; }
+.completion-bar__fill--good { background: #22a06b; }
+.completion-bar__fill--warn { background: #e0a02c; }
+.completion-bar__fill--risk { background: #dc2626; }
+
+@media (max-width: 720px) { .summary-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* Panel */
+.panel {
+  background: #ffffff;
+  border: 1px solid #e4ecf7;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(26,63,111,0.06);
+  padding: 24px;
+}
+
+.panel-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #1a3f6f;
+  margin-bottom: 16px;
+}
+
+.info-rows { display: flex; flex-direction: column; }
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f4f7fb;
+  gap: 10px;
+}
+
+.info-row:last-child { border-bottom: none; }
+
+.info-row__key {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8ea0b8;
+}
+
+.info-row__val {
+  font-size: 14px;
+  color: #1a2b4a;
+  font-weight: 600;
+}
+
+.info-row__val--mono {
+  font-family: monospace;
+  font-size: 12px;
+}
+
+/* Button */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 22px;
+  border-radius: 8px;
+  border: none;
+  background: #1a3f6f;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-primary:hover { background: #0d2240; }
+.btn-primary:disabled { background: #9fb0c8; cursor: not-allowed; }

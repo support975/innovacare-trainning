@@ -12,7 +12,7 @@ import {
 import { CoursesRepo } from '../../../data/courses.repo';
 import { Course, Section, Lesson, Block } from '../../../data/models';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuthService } from '../../../core/auth';
+import { ActingOrgService } from '../../../core/organization/services/acting-org.service';
 
 import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -148,7 +148,7 @@ export class Courses {
   private route = inject(ActivatedRoute);
   private sanitizer = inject(DomSanitizer);
   private tts = inject(TtsGenerationService);
-  private authSvc = inject(AuthService);
+  private orgContext = inject(ActingOrgService);
 
   editId: string | null = null;
   loadingEdit = false;
@@ -174,7 +174,10 @@ export class Courses {
   private readonly ttsStatusVersion = signal(0);
 
   readonly isSuperAdmin = this.router.url.startsWith('/super-admin');
-  readonly canManageCourses = this.isSuperAdmin;
+  // A council/facility-group admin "acting as admin" for a facility can also
+  // author courses there — course authoring stays super-admin-only for a
+  // regular org admin browsing their own /manager/courses otherwise.
+  readonly canManageCourses = this.isSuperAdmin || this.orgContext.isActing();
 
   form = this.fb.group({
     title: this.fb.control<string>('', {
@@ -227,7 +230,7 @@ export class Courses {
   }
 
   courses = toSignal(
-    this.authSvc.profile$.pipe(
+    this.orgContext.effectiveProfile$.pipe(
       switchMap((profile) => this.repo.visibleForProfile(profile))
     ),
     { initialValue: [] as Course[] }

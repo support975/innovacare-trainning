@@ -127,6 +127,24 @@
               <span class="active-toggle-status">{{ form.certificationAuthorityEnabled ? 'Certification authority is enabled' : 'Certification authority is disabled' }}</span>
             </div>
           </div>
+          <div class="field field--full">
+            <label class="toggle-label">
+              <span class="field__label">Facility Group</span>
+              <span class="field__hint">Let this organization create and oversee its own child facilities (regions, chapters, locations) with roll-up reporting</span>
+            </label>
+            <div class="active-toggle-row">
+              <span class="toggle-wrap">
+                <input
+                  type="checkbox"
+                  class="toggle-input"
+                  id="editCanCreateSubOrgs"
+                  [(ngModel)]="form.canCreateSubOrgs"
+                />
+                <label class="toggle-slider" for="editCanCreateSubOrgs"></label>
+              </span>
+              <span class="active-toggle-status">{{ form.canCreateSubOrgs ? 'Can create facilities' : 'Cannot create facilities' }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

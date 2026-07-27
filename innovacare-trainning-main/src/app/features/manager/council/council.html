@@ -1,0 +1,127 @@
+<div class="council-page">
+
+  <div class="page-header">
+    <div>
+      <p class="page-eyebrow">Manager · Facilities</p>
+      <h1 class="page-title">Facilities</h1>
+      <p class="page-sub">Create and oversee the facilities under your organization.</p>
+    </div>
+  </div>
+
+  <!-- Rollup summary -->
+  <div class="summary-grid" *ngIf="!loadingRollup(); else loadingBlock">
+    <div class="summary-card">
+      <div class="summary-value">{{ rollup().regions.length }}</div>
+      <div class="summary-label">Facilities</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-value">{{ rollup().totalLearners }}</div>
+      <div class="summary-label">Learners</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-value">{{ rollup().averageCompletionRate }}%</div>
+      <div class="summary-label">Avg. completion</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-value">{{ rollup().totalOverdue }}</div>
+      <div class="summary-label">Overdue</div>
+    </div>
+  </div>
+  <ng-template #loadingBlock>
+    <div class="summary-grid summary-grid--loading">Loading rollup…</div>
+  </ng-template>
+
+  <!-- Facilities table -->
+  <div class="panel">
+    <div class="panel-title">Facilities</div>
+    <table class="regions-table" *ngIf="rollup().regions.length; else noRegions">
+      <thead>
+        <tr>
+          <th>Facility</th>
+          <th>Learners</th>
+          <th>Completed</th>
+          <th>In progress</th>
+          <th>Overdue</th>
+          <th>Completion</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let region of rollup().regions">
+          <td>{{ region.orgName }}</td>
+          <td>{{ region.learnerCount }}</td>
+          <td>{{ region.completed }}</td>
+          <td>{{ region.inProgress }}</td>
+          <td>{{ region.overdue }}</td>
+          <td>{{ region.completionRate }}%</td>
+          <td><a class="view-details-link" [routerLink]="['/manager/council', region.orgId]">View details</a></td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #noRegions>
+      <p class="empty-hint">No facilities yet — create one below.</p>
+    </ng-template>
+  </div>
+
+  <!-- Create facility -->
+  <div class="panel">
+    <div class="panel-title">Create a facility</div>
+    <div *ngIf="regionNotice()" class="notice-banner" [class.notice-banner--error]="regionError()">
+      {{ regionNotice() }}
+    </div>
+    <form class="inline-form" (ngSubmit)="createRegion()">
+      <label>
+        Name
+        <input type="text" name="regionName" [(ngModel)]="regionForm.name" placeholder="e.g. Downtown Clinic" />
+      </label>
+      <label>
+        Type
+        <select name="regionType" [(ngModel)]="regionForm.type">
+          <option value="health">Health</option>
+          <option value="IT">IT</option>
+          <option value="school">School</option>
+        </select>
+      </label>
+      <label>
+        Plan
+        <select name="regionPlan" [(ngModel)]="regionForm.plan">
+          <option value="free">Free</option>
+          <option value="pro">Pro</option>
+          <option value="enterprise">Enterprise</option>
+        </select>
+      </label>
+      <button type="submit" class="btn-primary" [disabled]="creatingRegion()">
+        {{ creatingRegion() ? 'Creating…' : 'Create facility' }}
+      </button>
+    </form>
+  </div>
+
+  <!-- Invite facility admin -->
+  <div class="panel">
+    <div class="panel-title">Invite a facility admin</div>
+    <div *ngIf="inviteNotice()" class="notice-banner" [class.notice-banner--error]="inviteError()">
+      {{ inviteNotice() }}
+    </div>
+    <form class="inline-form" (ngSubmit)="inviteRegionalAdmin()">
+      <label>
+        Facility
+        <select name="inviteOrgId" [(ngModel)]="inviteForm.orgId">
+          <option value="" disabled selected>Choose a facility</option>
+          <option *ngFor="let region of rollup().regions" [value]="region.orgId">{{ region.orgName }}</option>
+        </select>
+      </label>
+      <label>
+        Name
+        <input type="text" name="inviteDisplayName" [(ngModel)]="inviteForm.displayName" placeholder="Admin name" />
+      </label>
+      <label>
+        Email
+        <input type="email" name="inviteEmail" [(ngModel)]="inviteForm.email" placeholder="admin@facility.org" />
+      </label>
+      <button type="submit" class="btn-primary" [disabled]="invitingAdmin()">
+        {{ invitingAdmin() ? 'Inviting…' : 'Invite admin' }}
+      </button>
+    </form>
+  </div>
+
+</div>

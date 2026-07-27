@@ -372,6 +372,36 @@
   background: var(--bg);
 }
 
+/* ── ACTING BANNER ───────────────────────────────────── */
+.acting-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 24px;
+  background: #fdf2e9;
+  border-bottom: 1px solid #f3d9b1;
+  color: #92400e;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.acting-banner__icon { font-size: 14px; }
+
+.acting-banner__text { flex: 1; }
+
+.acting-banner__exit {
+  padding: 6px 16px;
+  border-radius: 8px;
+  border: 1px solid #d97706;
+  background: #fff;
+  color: #92400e;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.acting-banner__exit:hover { background: #fdf2e9; }
+
 /* ── RESPONSIVE ──────────────────────────────────────── */
 @media (max-width: 860px) {
   .shell {

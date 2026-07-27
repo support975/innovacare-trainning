@@ -60,6 +60,7 @@
           <span [class]="'badge badge--' + org()!.plan">{{ planLabel(org()!.plan) }}</span>
           <span [class]="'badge badge--' + (org()!.active ? 'active' : 'inactive')">{{ org()!.active ? 'Active' : 'Inactive' }}</span>
           <span *ngIf="org()!.certificationAuthorityEnabled" class="badge badge--success">Certifications Enabled</span>
+          <span *ngIf="org()!.canCreateSubOrgs" class="badge badge--facility">Facility Group</span>
         </div>
         <div class="org-info-rows">
           <div class="org-info-row">
@@ -87,6 +88,14 @@
             <span class="org-info-row__val">
               <span [class]="'badge badge--' + (org()!.certificationAuthorityEnabled ? 'success' : 'inactive')">
                 {{ org()!.certificationAuthorityEnabled ? 'Enabled' : 'Disabled' }}
+              </span>
+            </span>
+          </div>
+          <div class="org-info-row">
+            <span class="org-info-row__key">Facility Group</span>
+            <span class="org-info-row__val">
+              <span [class]="'badge badge--' + (org()!.canCreateSubOrgs ? 'facility' : 'inactive')">
+                {{ org()!.canCreateSubOrgs ? 'Enabled' : 'Disabled' }}
               </span>
             </span>
           </div>
@@ -144,6 +153,92 @@
       </ng-template>
     </div>
 
+  </div>
+
+  <!-- Facility Group Overview -->
+  <div class="panel facility-panel" *ngIf="!loading() && org()?.canCreateSubOrgs">
+    <div class="panel__head">
+      <div>
+        <div class="panel__title">Facility Group Overview</div>
+        <div class="panel__sub">Roll-up training performance across every facility under this organization.</div>
+      </div>
+    </div>
+
+    <div *ngIf="loadingRollup()" class="loading-state">
+      <div class="loading-spinner"></div>
+      <span>Loading facility roll-up...</span>
+    </div>
+
+    <ng-container *ngIf="!loadingRollup()">
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--facilities">&#127970;</div>
+          <div class="kpi-card__value">{{ rollup().regions.length }}</div>
+          <div class="kpi-card__label">Facilities</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--learners">&#128101;</div>
+          <div class="kpi-card__value">{{ rollup().totalLearners }}</div>
+          <div class="kpi-card__label">Total Learners</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--completion">&#9989;</div>
+          <div class="kpi-card__value">{{ rollup().averageCompletionRate }}%</div>
+          <div class="kpi-card__label">Avg. Completion</div>
+        </div>
+        <div [class]="'kpi-card' + (rollup().totalOverdue > 0 ? ' kpi-card--alert' : '')">
+          <div class="kpi-card__icon kpi-card__icon--overdue">&#9888;</div>
+          <div class="kpi-card__value">{{ rollup().totalOverdue }}</div>
+          <div class="kpi-card__label">Overdue</div>
+        </div>
+      </div>
+
+      <div *ngIf="rollup().regions.length; else noFacilities" class="facility-table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Facility</th>
+              <th>Learners</th>
+              <th>Completed</th>
+              <th>In Progress</th>
+              <th>Overdue</th>
+              <th>Completion</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let facility of rollup().regions">
+              <td class="facility-name">{{ facility.orgName }}</td>
+              <td>{{ facility.learnerCount }}</td>
+              <td>{{ facility.completed }}</td>
+              <td>{{ facility.inProgress }}</td>
+              <td>
+                <span [class]="facility.overdue > 0 ? 'overdue-count overdue-count--alert' : 'overdue-count'">
+                  {{ facility.overdue }}
+                </span>
+              </td>
+              <td>
+                <div class="completion-cell">
+                  <div class="completion-bar">
+                    <div
+                      [class]="'completion-bar__fill completion-bar__fill--' + completionTone(facility.completionRate)"
+                      [style.width.%]="facility.completionRate"
+                    ></div>
+                  </div>
+                  <span class="completion-cell__label">{{ facility.completionRate }}%</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-template #noFacilities>
+        <div class="empty-state">
+          <div class="empty-state__icon">&#127970;</div>
+          <strong>No facilities yet</strong>
+          <span>This organization hasn't created any child facilities.</span>
+        </div>
+      </ng-template>
+    </ng-container>
   </div>
 
   <!-- Not Found -->
