@@ -1,0 +1,57 @@
+name: Deploy to dev
+
+# Every push to main deploys straight to the dev Firebase project
+# (innovacaretrainning-dev) — hosting (dev site), Firestore/Storage rules,
+# and Cloud Functions. Promoting to staging or production is a separate,
+# manual workflow (see deploy-staging.yml / deploy-production.yml).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
+
+defaults:
+  run:
+    working-directory: innovacare-trainning-main
+
+jobs:
+  deploy:
+    name: Build & deploy (dev)
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: innovacare-trainning-main/package-lock.json
+
+      - name: Install app dependencies
+        run: npm ci
+
+      - name: Build (optimized, pointed at the dev Firebase backend)
+        run: npx ng build --configuration dev
+
+      - name: Install functions dependencies (default codebase)
+        working-directory: innovacare-trainning-main/functions
+        run: npm ci
+
+      - name: Install functions dependencies (innovacare-training codebase)
+        working-directory: innovacare-trainning-main/innovacare-training
+        run: npm ci
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DEV }}
+
+      - name: Deploy to Firebase (dev)
+        run: |
+          npx firebase-tools@13 deploy \
+            --project innovacaretrainning-dev \
+            --only hosting:dev,firestore,storage,functions \
+            --non-interactive

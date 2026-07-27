@@ -4,6 +4,24 @@
     "training": "innovacare-training",
     "dev": "innovacaretrainning-dev"
   },
-  "targets": {},
+  "targets": {
+    "innovacare-training": {
+      "hosting": {
+        "prod": [
+          "innovacare-training"
+        ]
+      }
+    },
+    "innovacaretrainning-dev": {
+      "hosting": {
+        "dev": [
+          "innovacaretrainning-dev"
+        ],
+        "staging": [
+          "innovacaretrainning-staging"
+        ]
+      }
+    }
+  },
   "etags": {}
 }

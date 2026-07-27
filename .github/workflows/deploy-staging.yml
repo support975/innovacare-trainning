@@ -1,0 +1,55 @@
+name: Promote to staging
+
+# Manual promotion only. Staging shares the dev Firebase project's backend
+# (Firestore/Storage rules and Cloud Functions are already live there from
+# deploy-dev.yml) — this just builds the chosen ref and publishes it to the
+# separate "staging" Hosting site in that same project, so it can be
+# reviewed on its own URL before promoting to production.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch, tag, or commit SHA to deploy to staging'
+        required: false
+        default: main
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+defaults:
+  run:
+    working-directory: innovacare-trainning-main
+
+jobs:
+  deploy:
+    name: Build & deploy (staging)
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: innovacare-trainning-main/package-lock.json
+
+      - name: Install app dependencies
+        run: npm ci
+
+      - name: Build (optimized, pointed at the dev Firebase backend)
+        run: npx ng build --configuration dev
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DEV }}
+
+      - name: Deploy hosting to staging site
+        run: |
+          npx firebase-tools@13 deploy \
+            --project innovacaretrainning-dev \
+            --only hosting:staging \
+            --non-interactive
