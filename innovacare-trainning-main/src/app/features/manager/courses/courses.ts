@@ -76,6 +76,16 @@ type SlideForm = FormGroup<{
   interactiveCards: FormArray<InteractiveCardForm>;
 }>;
 
+type CarouselSlideForm = FormGroup<{
+  id: FormControl<string>;
+  imageUrl: FormControl<string>;
+  heading: FormControl<string>;
+  bodyHtml: FormControl<string>;
+  buttonLabel: FormControl<string>;
+  buttonAction: FormControl<'url' | 'nextLesson' | 'markComplete'>;
+  buttonUrl: FormControl<string>;
+}>;
+
 type BlockForm = FormGroup<{
   id: FormControl<string>;
   type: FormControl<Block['type']>;
@@ -106,6 +116,7 @@ type BlockForm = FormGroup<{
   tabs: FormArray<TabItemForm>;
   cards: FormArray<InteractiveCardForm>;
   slides: FormArray<SlideForm>;
+  carouselSlides: FormArray<CarouselSlideForm>;
 }>;
 
 type LessonForm = FormGroup<{
@@ -903,6 +914,25 @@ export class Courses {
     });
   }
 
+  private newCarouselSlide(seed?: {
+    imageUrl?: string;
+    heading?: string;
+    bodyHtml?: string;
+    buttonLabel?: string;
+    buttonAction?: 'url' | 'nextLesson' | 'markComplete';
+    buttonUrl?: string;
+  }): CarouselSlideForm {
+    return this.fb.group({
+      id: this.fb.control<string>(crypto.randomUUID()),
+      imageUrl: this.fb.control<string>(seed?.imageUrl ?? ''),
+      heading: this.fb.control<string>(seed?.heading ?? 'New slide'),
+      bodyHtml: this.fb.control<string>(seed?.bodyHtml ?? ''),
+      buttonLabel: this.fb.control<string>(seed?.buttonLabel ?? ''),
+      buttonAction: this.fb.control<'url' | 'nextLesson' | 'markComplete'>(seed?.buttonAction ?? 'url'),
+      buttonUrl: this.fb.control<string>(seed?.buttonUrl ?? ''),
+    });
+  }
+
   private newBlock(kind: Block['type'] = 'text'): BlockForm {
     return this.fb.group({
       id: this.fb.control<string>(crypto.randomUUID()),
@@ -955,6 +985,7 @@ export class Courses {
         this.newInteractiveCard({ title: 'Card 2', variant: 'default' }),
       ]),
       slides: this.fb.array<SlideForm>([this.newSlide()]),
+      carouselSlides: this.fb.array<CarouselSlideForm>([this.newCarouselSlide()]),
     });
   }
 
@@ -1255,6 +1286,20 @@ export class Courses {
     slides.removeAt(slideIndex);
   }
 
+  carouselSlidesFA(si: number, li: number, bi: number) {
+    return this.blocksFA(si, li).at(bi).controls.carouselSlides;
+  }
+
+  addCarouselSlide(si: number, li: number, bi: number) {
+    this.carouselSlidesFA(si, li, bi).push(this.newCarouselSlide());
+  }
+
+  removeCarouselSlide(si: number, li: number, bi: number, slideIndex: number) {
+    const slides = this.carouselSlidesFA(si, li, bi);
+    if (slides.length <= 1) return;
+    slides.removeAt(slideIndex);
+  }
+
   addInteractiveCard(si: number, li: number, bi: number, slideIndex: number) {
     this.interactiveCardsFA(si, li, bi, slideIndex).push(this.newInteractiveCard());
   }
@@ -1312,6 +1357,10 @@ export class Courses {
 
     if (b.controls.type.value === 'slideDeck' && b.controls.slides.length === 0) {
       b.controls.slides.push(this.newSlide());
+    }
+
+    if (b.controls.type.value === 'carousel' && b.controls.carouselSlides.length === 0) {
+      b.controls.carouselSlides.push(this.newCarouselSlide());
     }
 
     if (b.controls.type.value === 'accordion' && b.controls.items.length === 0) {
@@ -1661,6 +1710,31 @@ export class Courses {
       );
     }
 
+    if (t === 'carousel') {
+      const slide = b.controls.carouselSlides.at(0)?.value;
+      if (!slide) {
+        return this.sanitizer.bypassSecurityTrustHtml('');
+      }
+
+      const imageUrl = this.escapeAttr((slide.imageUrl ?? '').trim());
+      const heading = this.escapeHtml(slide.heading ?? '');
+      const body = slide.bodyHtml ? String(slide.bodyHtml) : '';
+      const buttonLabel = this.escapeHtml(slide.buttonLabel ?? '');
+      const slideCount = b.controls.carouselSlides.length;
+
+      return this.sanitizer.bypassSecurityTrustHtml(`
+        <div style="display:grid;gap:10px;border:1px solid #dbe4f0;border-radius:16px;overflow:hidden;background:#fff;">
+          ${imageUrl ? `<img src="${imageUrl}" alt="${heading}" style="width:100%;max-height:180px;object-fit:cover;">` : ''}
+          <div style="display:grid;gap:8px;padding:14px;">
+            ${heading ? `<div style="font-size:18px;font-weight:800;">${heading}</div>` : ''}
+            ${body}
+            ${buttonLabel ? `<div><button type="button" style="padding:8px 16px;border-radius:999px;border:0;background:#234a84;color:#fff;font-weight:700;">${buttonLabel}</button></div>` : ''}
+            <div style="font-size:12px;color:#94a3b8;">Slide 1 of ${slideCount}</div>
+          </div>
+        </div>
+      `);
+    }
+
     return this.sanitizer.bypassSecurityTrustHtml('');
   }
 
@@ -1997,6 +2071,22 @@ export class Courses {
                 } as Block;
               }
 
+              if (b.type === 'carousel') {
+                return {
+                  type: 'carousel',
+                  title: b.title ?? '',
+                  slides: (b.slides ?? []).map((slide) => ({
+                    id: crypto.randomUUID(),
+                    imageUrl: slide.imageUrl ?? '',
+                    heading: slide.heading ?? '',
+                    bodyHtml: slide.bodyHtml ?? '',
+                    buttonLabel: slide.buttonLabel ?? '',
+                    buttonAction: slide.buttonAction ?? 'url',
+                    buttonUrl: slide.buttonUrl ?? '',
+                  })),
+                } as Block;
+              }
+
               throw new Error(`Unsupported course block type: ${(b as Block).type}`);
             }),
           })),
@@ -2163,6 +2253,22 @@ export class Courses {
           id: c.value.id!,
           text: c.value.text ?? '',
           correct: !!c.value.correct,
+        })),
+      };
+    }
+
+    if (t === 'carousel') {
+      return {
+        type: 'carousel',
+        title: b.value.title ?? '',
+        slides: b.controls.carouselSlides.controls.map((slide) => ({
+          id: slide.value.id ?? crypto.randomUUID(),
+          imageUrl: slide.value.imageUrl ?? '',
+          heading: slide.value.heading ?? '',
+          bodyHtml: slide.value.bodyHtml ?? '',
+          buttonLabel: slide.value.buttonLabel ?? '',
+          buttonAction: slide.value.buttonAction ?? 'url',
+          buttonUrl: slide.value.buttonUrl ?? '',
         })),
       };
     }

@@ -28,7 +28,7 @@ import {
 
 
 type Lang = 'EN' | 'FR' | 'ES';
-type BlockType = 'heading' | 'text' | 'image' | 'audio' | 'video' | 'hero' | 'accordion' | 'tabs' | 'cardStack' | 'quizIntro' | 'slideDeck' | 'callout' | 'quiz';
+type BlockType = 'heading' | 'text' | 'image' | 'audio' | 'video' | 'hero' | 'accordion' | 'tabs' | 'cardStack' | 'quizIntro' | 'slideDeck' | 'carousel' | 'callout' | 'quiz';
 
 interface AccordionItem {
   id: string;
@@ -81,6 +81,16 @@ interface SlideDeckSlide {
   }>;
 }
 
+interface CarouselSlide {
+  id: string;
+  imageUrl?: string;
+  heading?: string;
+  bodyHtml?: string;
+  buttonLabel?: string;
+  buttonAction?: 'url' | 'nextLesson' | 'markComplete';
+  buttonUrl?: string;
+}
+
 interface Block {
   type: BlockType;
   level?: 1 | 2 | 3;
@@ -101,7 +111,7 @@ interface Block {
   items?: AccordionItem[];
   cards?: CardStackCard[];
   theme?: 'default' | 'focus';
-  slides?: SlideDeckSlide[];
+  slides?: Array<SlideDeckSlide | CarouselSlide>;
   mode?: 'single' | 'multi' | 'caseStudy';
   question?: string;
   choices?: Array<{ id: string; text: string; correct: boolean }>;
@@ -198,6 +208,8 @@ export class CoursePlayer implements OnInit, AfterViewInit, OnDestroy {
   private slideDeckVisited = new Map<string, Set<number>>();
   private slideDeckRevealedCards = new Map<string, Set<string>>();
   private cardStackRevealed = new Map<string, Set<string>>();
+  private carouselIndexes = new Map<string, number>();
+  private carouselDragStartX = new Map<string, number>();
   private accordionSeen = new Map<string, Set<string>>();
   private tabSeen = new Map<string, Set<string>>();
   private activeTabs = new Map<string, string>();
@@ -524,7 +536,11 @@ private async persistSlideDeckState(lessonId: string, bi: number): Promise<void>
 }
 
 slideDeckSlides(block: Block): SlideDeckSlide[] {
-  return Array.isArray(block.slides) ? block.slides : [];
+  return Array.isArray(block.slides) ? (block.slides as SlideDeckSlide[]) : [];
+}
+
+carouselSlides(block: Block): CarouselSlide[] {
+  return Array.isArray(block.slides) ? (block.slides as CarouselSlide[]) : [];
 }
 
 slideDeckTotalCardCount(block: Block): number {
@@ -742,6 +758,79 @@ toggleCardStackCard(lessonId: string, bi: number, block: Block, cardId: string):
   this.cardStackRevealed.set(key, revealed);
 }
 
+private carouselKey(lessonId: string, bi: number): string {
+  return `${lessonId}::carousel::${bi}`;
+}
+
+carouselIndex(lessonId: string, bi: number, block: Block): number {
+  const slides = this.carouselSlides(block);
+  if (!slides.length) return 0;
+
+  const key = this.carouselKey(lessonId, bi);
+  const current = this.carouselIndexes.get(key) ?? 0;
+  return Math.min(Math.max(current, 0), slides.length - 1);
+}
+
+activeCarouselSlide(lessonId: string, bi: number, block: Block): CarouselSlide | null {
+  const slides = this.carouselSlides(block);
+  if (!slides.length) return null;
+  return slides[this.carouselIndex(lessonId, bi, block)] ?? null;
+}
+
+setCarouselIndex(lessonId: string, bi: number, block: Block, index: number): void {
+  const slides = this.carouselSlides(block);
+  if (!slides.length) return;
+
+  const nextIndex = Math.min(Math.max(index, 0), slides.length - 1);
+  this.carouselIndexes.set(this.carouselKey(lessonId, bi), nextIndex);
+}
+
+nextCarouselSlide(lessonId: string, bi: number, block: Block): void {
+  this.setCarouselIndex(lessonId, bi, block, this.carouselIndex(lessonId, bi, block) + 1);
+}
+
+prevCarouselSlide(lessonId: string, bi: number, block: Block): void {
+  this.setCarouselIndex(lessonId, bi, block, this.carouselIndex(lessonId, bi, block) - 1);
+}
+
+onCarouselPointerDown(lessonId: string, bi: number, event: PointerEvent): void {
+  this.carouselDragStartX.set(this.carouselKey(lessonId, bi), event.clientX);
+}
+
+onCarouselPointerUp(lessonId: string, bi: number, block: Block, event: PointerEvent): void {
+  const key = this.carouselKey(lessonId, bi);
+  const startX = this.carouselDragStartX.get(key);
+  this.carouselDragStartX.delete(key);
+  if (startX == null) return;
+
+  const deltaX = event.clientX - startX;
+  const swipeThresholdPx = 40;
+  if (deltaX <= -swipeThresholdPx) {
+    this.nextCarouselSlide(lessonId, bi, block);
+  } else if (deltaX >= swipeThresholdPx) {
+    this.prevCarouselSlide(lessonId, bi, block);
+  }
+}
+
+async onCarouselAction(lesson: FlatLesson, slide: CarouselSlide): Promise<void> {
+  const action = slide.buttonAction ?? 'url';
+
+  if (action === 'url') {
+    const url = (slide.buttonUrl ?? '').trim();
+    if (url) window.open(url, '_blank', 'noopener');
+    return;
+  }
+
+  if (action === 'nextLesson') {
+    this.next(lesson.index);
+    return;
+  }
+
+  if (action === 'markComplete') {
+    await this.completeLesson(lesson.id, true);
+  }
+}
+
 lessonAdvanceHint(lesson: FlatLesson | null): string {
   if (!lesson) return '';
   for (let bi = 0; bi < lesson.blocks.length; bi += 1) {
@@ -956,6 +1045,9 @@ videoKind(url?: string): 'youtube' | 'vimeo' | 'file' | 'none' {
       }
 
       case 'slideDeck':
+        return '';
+
+      case 'carousel':
         return '';
 
       case 'callout': {
