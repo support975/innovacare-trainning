@@ -87,6 +87,11 @@
 
   <!-- MAIN CONTENT -->
   <main class="content">
+    <div class="acting-banner" *ngIf="isActing()">
+      <span class="acting-banner__icon">🏛️</span>
+      <span class="acting-banner__text">Managing <strong>{{ actingOrgName() }}</strong> as admin</span>
+      <button class="acting-banner__exit" (click)="exitActing()">Exit</button>
+    </div>
     <router-outlet></router-outlet>
   </main>
 

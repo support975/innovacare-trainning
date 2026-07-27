@@ -17,7 +17,7 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, combineLatest, map, of, switchMap, filter } from 'rxjs';
 import type { Observable } from 'rxjs';
-import { AuthService } from '../../../core/auth';
+import { ActingOrgService } from '../../../core/organization/services/acting-org.service';
 import { CandidateApplicationService } from '../../../shared/certification-authority/candidate-application.service';
 import { CandidateApplication } from '../../../shared/certification-authority/certification.models';
 
@@ -159,13 +159,13 @@ export class ManagerDashboardComponent {
   private afs = inject(Firestore);
   private auth = inject(Auth);
   private router = inject(Router);
-  private authSvc = inject(AuthService);
+  private orgContext = inject(ActingOrgService);
   private certApplicationsSvc = inject(CandidateApplicationService);
 
   notice = '';
 
-  /* ── Manager profile (includes orgId) ─────────────────────────── */
-  private profile$ = this.authSvc.profile$.pipe(filter(Boolean));
+  /* ── Manager profile (includes orgId) — follows the acting org, if any ── */
+  private profile$ = this.orgContext.effectiveProfile$.pipe(filter(Boolean));
 
   /* ── Manager name ──────────────────────────────────────────────── */
   private managerName$ = authState(this.auth).pipe(

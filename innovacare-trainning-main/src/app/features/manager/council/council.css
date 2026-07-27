@@ -1,0 +1,203 @@
+/* =========================================================
+   council.css — Facilities
+   Hardcoded hex only — no CSS variables
+   ========================================================= */
+
+:host { display: block; }
+
+.council-page {
+  padding: 28px 32px;
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.page-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #00a79d;
+  margin: 0 0 6px;
+}
+
+.page-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #1a3f6f;
+  margin: 0 0 4px;
+  line-height: 1.2;
+}
+
+.page-sub {
+  font-size: 14px;
+  color: #5a6a7e;
+  margin: 0;
+}
+
+/* Summary cards */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.summary-grid--loading {
+  display: block;
+  padding: 16px;
+  color: #5a6a7e;
+  font-size: 13px;
+}
+
+.summary-card {
+  background: #ffffff;
+  border: 1px solid #e4ecf7;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(26,63,111,0.06);
+  padding: 18px;
+  text-align: center;
+}
+
+.summary-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1a3f6f;
+}
+
+.summary-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #5a6a7e;
+  margin-top: 4px;
+}
+
+/* Panels */
+.panel {
+  background: #ffffff;
+  border: 1px solid #e4ecf7;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(26,63,111,0.06);
+  padding: 24px;
+}
+
+.panel-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #1a3f6f;
+  margin-bottom: 16px;
+}
+
+.empty-hint {
+  font-size: 13px;
+  color: #5a6a7e;
+  margin: 0;
+}
+
+/* Regions table */
+.regions-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.regions-table th {
+  text-align: left;
+  padding: 10px 12px;
+  font-weight: 700;
+  color: #5a6a7e;
+  border-bottom: 1px solid #e4ecf7;
+}
+
+.regions-table td {
+  padding: 10px 12px;
+  color: #1a2b4a;
+  border-bottom: 1px solid #f4f7fb;
+}
+
+.view-details-link {
+  font-size: 13px;
+  font-weight: 700;
+  color: #00a79d;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.view-details-link:hover { text-decoration: underline; }
+
+/* Forms */
+.inline-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px;
+}
+
+.inline-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a2b4a;
+}
+
+.inline-form input,
+.inline-form select {
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid #e4ecf7;
+  background: #ffffff;
+  font-size: 14px;
+  color: #1a2b4a;
+  outline: none;
+  min-width: 200px;
+}
+
+.inline-form input:focus,
+.inline-form select:focus {
+  border-color: #00a79d;
+  box-shadow: 0 0 0 3px rgba(0,167,157,0.12);
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 22px;
+  border-radius: 8px;
+  border: none;
+  background: #1a3f6f;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-primary:hover { background: #0d2240; }
+.btn-primary:disabled { background: #9fb0c8; cursor: not-allowed; }
+
+.notice-banner {
+  padding: 12px 16px;
+  background: #e6f9f4;
+  border: 1px solid #9ae6d2;
+  border-radius: 10px;
+  color: #276749;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.notice-banner--error {
+  background: #fff5f5;
+  border-color: #feb2b2;
+  color: #c53030;
+}

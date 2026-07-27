@@ -1,0 +1,11 @@
+# Cloud Functions source must stay LF — the ESLint config's linebreak-style
+# rule requires LF, but core.autocrlf=true on Windows checkouts converts
+# tracked text files to CRLF, which fails `npm run lint` (and therefore the
+# firebase deploy --only functions predeploy hook) even on files nobody
+# touched. Force LF specifically for these two Cloud Functions codebases.
+functions/**/*.ts text eol=lf
+functions/**/*.js text eol=lf
+functions/**/*.json text eol=lf
+innovacare-training/**/*.ts text eol=lf
+innovacare-training/**/*.js text eol=lf
+innovacare-training/**/*.json text eol=lf

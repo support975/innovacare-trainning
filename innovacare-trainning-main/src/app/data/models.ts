@@ -3,6 +3,23 @@ export interface HealthMeta {
   healthCareType: 'SNF' | 'HomeHealth' | 'Hospice' | 'Hospital' | 'PrivatePractice' | 'PHCP';
 }
 
+export interface OrganizationBranding {
+  displayName?: string;
+  logoUrl?: string;
+  faviconUrl?: string;
+  primaryColor?: string;
+  accentColor?: string;
+  senderName?: string;
+  senderEmail?: string;
+  supportEmail?: string;
+  /** Gated by Organization.canWhiteLabel. */
+  hidePlatformBranding?: boolean;
+  /** Gated by Organization.canWhiteLabel. A request, not a live toggle — see customDomainStatus. */
+  customDomain?: string;
+  /** Self-serve can only set 'none'/'pending'; only Super Admin sets 'active' once DNS/SSL is provisioned. */
+  customDomainStatus?: 'none' | 'pending' | 'active';
+}
+
 export interface Organization {
   id: string;
   name: string;
@@ -10,12 +27,18 @@ export interface Organization {
 
   plan: 'free'|'pro'|'enterprise';
 
-  branding?: {
-    logoUrl?: string;
-    primaryColor?: string;
-  };
+  branding?: OrganizationBranding;
+  /** Super-Admin-only, independent of canCreateSubOrgs: gates hidePlatformBranding/customDomain. */
+  canWhiteLabel?: boolean;
 
   certificationAuthorityEnabled?: boolean;
+
+  /** Direct parent org id, e.g. a regional org under a council. Absent/null for top-level orgs. */
+  parentOrgId?: string | null;
+  /** Materialized path from root ancestor to direct parent (Firestore rules can't do recursive parent lookups). */
+  ancestorOrgIds?: string[];
+  /** Super-Admin-only: this org may create its own child orgs ("council"). */
+  canCreateSubOrgs?: boolean;
 
   createdAt: any;
 }

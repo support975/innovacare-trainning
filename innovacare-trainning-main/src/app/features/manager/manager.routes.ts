@@ -5,6 +5,7 @@ import { authCanMatch } from '../../core/auth.canmatch';
 import { roleCanMatch } from '../../core/role.canmatch';
 import { planFeatureCanMatch } from '../../core/plan-feature.canmatch';
 import { certificationAuthorityCanMatch } from '../../core/certification-authority.canmatch';
+import { councilCanMatch } from '../../core/council.canmatch';
 
 const routes: Routes = [
   {
@@ -193,6 +194,17 @@ const routes: Routes = [
           import('./rewards-center/rewards-center-detail/rewards-center-detail').then(
             m => m.RewardsCenterDetail
           ),
+      },
+      {
+        path: 'council',
+        canMatch: [councilCanMatch],
+        loadComponent: () => import('./council/council').then(m => m.Council),
+      },
+      {
+        path: 'council/:facilityId',
+        canMatch: [councilCanMatch],
+        loadComponent: () =>
+          import('./council/facility-detail/facility-detail').then(m => m.FacilityDetail),
       },
     ]
   }

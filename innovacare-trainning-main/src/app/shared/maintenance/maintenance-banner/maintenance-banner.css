@@ -1,0 +1,35 @@
+/* =========================================================
+   maintenance-banner.css — Scheduled-maintenance notice banner
+   Hardcoded hex only — no CSS variables
+   ========================================================= */
+
+.maintenance-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  background: #fdf2e9;
+  border-bottom: 1px solid #f3d9b1;
+  color: #92400e;
+  font-size: 13px;
+  font-weight: 600;
+  position: relative;
+  z-index: 1000;
+}
+
+.maintenance-banner__icon { font-size: 14px; }
+
+.maintenance-banner__text { flex: 1; }
+
+.maintenance-banner__close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  font-size: 13px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  opacity: 0.7;
+}
+
+.maintenance-banner__close:hover { opacity: 1; }

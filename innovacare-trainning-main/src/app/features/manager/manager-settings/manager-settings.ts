@@ -2,7 +2,7 @@ import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AuthService } from '../../../core/auth';
+import { ActingOrgService } from '../../../core/organization/services/acting-org.service';
 import {
   DEFAULT_SMART_REMINDER_SETTINGS,
   SmartReminderSettings,
@@ -17,7 +17,7 @@ import {
   styleUrl: './manager-settings.css',
 })
 export class ManagerSettings {
-  private readonly authSvc = inject(AuthService);
+  private readonly orgContext = inject(ActingOrgService);
   private readonly remindersSvc = inject(SmartRemindersService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -63,7 +63,7 @@ export class ManagerSettings {
   smartReminders: SmartReminderSettings = { ...DEFAULT_SMART_REMINDER_SETTINGS };
 
   constructor() {
-    this.authSvc.profile$
+    this.orgContext.effectiveProfile$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(profile => {
         this.currentOrgId.set(profile?.orgId ?? null);

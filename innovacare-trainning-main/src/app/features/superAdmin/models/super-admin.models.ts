@@ -12,6 +12,10 @@ export interface SuperAdminOrganization {
   active?: boolean;
   ownerUid?: string | null;
   certificationAuthorityEnabled?: boolean;
+  parentOrgId?: string | null;
+  ancestorOrgIds?: string[];
+  canCreateSubOrgs?: boolean;
+  canWhiteLabel?: boolean;
   createdAt?: any;
   updatedAt?: any;
 }

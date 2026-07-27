@@ -1,0 +1,5 @@
+<div class="maintenance-banner" *ngIf="!dismissed() && message()">
+  <span class="maintenance-banner__icon">🛠️</span>
+  <span class="maintenance-banner__text">{{ message() }}</span>
+  <button class="maintenance-banner__close" (click)="dismiss()" aria-label="Dismiss">&#10005;</button>
+</div>

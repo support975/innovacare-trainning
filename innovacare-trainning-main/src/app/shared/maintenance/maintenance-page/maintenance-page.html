@@ -1,0 +1,11 @@
+<div class="maintenance-page">
+  <div class="maintenance-card">
+    <div class="maintenance-icon">🛠️</div>
+    <h1 class="maintenance-title">We'll be back shortly</h1>
+    <p class="maintenance-message">{{ message() }}</p>
+    <p class="maintenance-eta" *ngIf="formatReturn(estimatedReturnAt())">
+      Estimated back online: {{ formatReturn(estimatedReturnAt()) }}
+    </p>
+    <a class="maintenance-admin-link" routerLink="/login">Administrator sign in</a>
+  </div>
+</div>

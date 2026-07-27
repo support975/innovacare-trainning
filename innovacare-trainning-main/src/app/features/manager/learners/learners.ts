@@ -12,7 +12,7 @@ import {
 } from '@angular/fire/firestore';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { combineLatest, firstValueFrom, from, map, of, switchMap, take } from 'rxjs';
-import { AuthService } from '../../../core/auth';
+import { ActingOrgService } from '../../../core/organization/services/acting-org.service';
 import { filter } from 'rxjs/operators';
 import { PolicyService } from '../../../shared/services/policy';
 import { CoursesRepo } from '../../../data/courses.repo';
@@ -130,7 +130,7 @@ function enrollmentProgress(enrollment: EnrollmentDoc): number | null {
 })
 export class Learners {
   private afs = inject(Firestore);
-  private authSvc = inject(AuthService);
+  private orgContext = inject(ActingOrgService);
   private router = inject(Router);
   private policySvc = inject(PolicyService);
   private managedUsers = inject(ManagedUsersService);
@@ -149,7 +149,7 @@ export class Learners {
     role: 'learner' as Exclude<ManagedUserRole, 'admin'>,
   };
 
-  private profile$ = this.authSvc.profile$.pipe(filter(Boolean));
+  private profile$ = this.orgContext.effectiveProfile$.pipe(filter(Boolean));
 
   /* ── Learners scoped to org ─────────────────────────────────────── */
   private learners$ = this.profile$.pipe(

@@ -890,12 +890,27 @@ async function createManagedUserCore(
     throw new HttpsError("invalid-argument", "Invalid user role.");
   }
 
-  if (isOrganizationAdmin && !["manager", "learner"].includes(role)) {
+  // A "council" org admin (their own org has canCreateSubOrgs) may create a
+  // user -- including role:"admin" -- in one of its own descendant regions.
+  // This cross-org carve-out only applies when the requested org differs from
+  // the actor's own org AND the ancestor check passes server-side; creating
+  // an admin WITHIN the actor's own org stays super_admin-only, unchanged.
+  let isCouncilCrossOrgCreate = false;
+  if (isOrganizationAdmin && requestedOrgId !== actorOrgId) {
+    const actorOrgSnap = await db.doc(`organizations/${actorOrgId}`).get();
+    if (actorOrgSnap.exists && actorOrgSnap.get("canCreateSubOrgs") === true) {
+      const targetOrgSnap = await db.doc(`organizations/${requestedOrgId}`).get();
+      const targetAncestorOrgIds = targetOrgSnap.exists ? targetOrgSnap.get("ancestorOrgIds") : undefined;
+      isCouncilCrossOrgCreate = Array.isArray(targetAncestorOrgIds) && targetAncestorOrgIds.includes(actorOrgId);
+    }
+  }
+
+  if (isOrganizationAdmin && !isCouncilCrossOrgCreate && !["manager", "learner"].includes(role)) {
     throw new HttpsError("permission-denied", "Organization admins can create managers and learners only.");
   }
 
-  const targetOrgId = isSuperAdmin ? requestedOrgId : actorOrgId;
-  if (!targetOrgId || (isOrganizationAdmin && requestedOrgId !== actorOrgId)) {
+  const targetOrgId = isSuperAdmin || isCouncilCrossOrgCreate ? requestedOrgId : actorOrgId;
+  if (!targetOrgId || (isOrganizationAdmin && !isCouncilCrossOrgCreate && requestedOrgId !== actorOrgId)) {
     throw new HttpsError("permission-denied", "You can only create users in your organization.");
   }
 
@@ -952,7 +967,7 @@ async function createManagedUserCore(
       actorEmail: actor.email,
       message: `Managed user created: ${email}`,
       severity: "info",
-      meta: {email, displayName, role, orgId: targetOrgId},
+      meta: {email, displayName, role, orgId: targetOrgId, viaCouncil: isCouncilCrossOrgCreate},
       createdAt: nowTs(),
     });
 

@@ -59,10 +59,72 @@ service cloud.firestore {
     }
 
     function isOrgStaffFor(orgId) {
-      return isSignedIn()
+      return (isSignedIn()
         && myRole() in ['admin', 'manager']
         && myOrgId() != null
-        && myOrgId() == orgId;
+        && myOrgId() == orgId)
+        || isCouncilAncestorAdmin(orgId);
+    }
+
+    // ── ORG HIERARCHY (council / regional sub-orgs) ─────────────────────────
+    // A "council" org (canCreateSubOrgs == true, Super-Admin-granted only) may
+    // create its own child orgs. ancestorOrgIds is the materialized path from
+    // root, since rules can't do recursive parent lookups.
+    function orgAncestorIds(orgId) {
+      return exists(/databases/$(database)/documents/organizations/$(orgId))
+        ? get(/databases/$(database)/documents/organizations/$(orgId)).data.get('ancestorOrgIds', [])
+        : [];
+    }
+
+    function orgCanCreateSubOrgs(orgId) {
+      return exists(/databases/$(database)/documents/organizations/$(orgId))
+        && get(/databases/$(database)/documents/organizations/$(orgId)).data.get('canCreateSubOrgs', false) == true;
+    }
+
+    function isCouncilAdmin() {
+      return isSignedIn()
+        && myRole() == 'admin'
+        && myOrgId() != null
+        && orgCanCreateSubOrgs(myOrgId());
+    }
+
+    // A council (facility-group) admin "acting as admin" for one of its own
+    // descendant facilities. Only 'admin' qualifies (not 'manager'), matching
+    // isCouncilAdmin() above. Used to broaden isOrgStaffFor() so the same
+    // org-settings/policies/members/certification-authority rules a facility's
+    // own admin has also work for its corporate parent's admin.
+    function isCouncilAncestorAdmin(orgId) {
+      return isSignedIn()
+        && myRole() == 'admin'
+        && myOrgId() != null
+        && myOrgId() in orgAncestorIds(orgId);
+    }
+
+    // ── BRANDING / WHITE-LABEL ───────────────────────────────────────────────
+    // Cosmetic branding is self-serve for any org's own admin, any plan tier.
+    // hidePlatformBranding/customDomain are gated behind canWhiteLabel (Super-
+    // Admin-only, independent of canCreateSubOrgs). customDomain is a request,
+    // not a live toggle: self-serve can only move customDomainStatus to
+    // 'none'/'pending' — only Super Admin sets 'active' once DNS/SSL is
+    // actually provisioned.
+    function isOrgAdminFor(orgId) {
+      return isSignedIn() && myRole() == 'admin' && myOrgId() == orgId;
+    }
+
+    function isValidSelfServeBrandingWrite(orgId) {
+      let newBranding = request.resource.data.get('branding', {});
+      let oldBranding = resource.data.get('branding', {});
+      let canWhiteLabel = resource.data.get('canWhiteLabel', false) == true;
+      return isOrgAdminFor(orgId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['branding', 'updatedAt'])
+        && newBranding.get('customDomainStatus', 'none') in ['none', 'pending']
+        && (
+          canWhiteLabel
+          || (
+            newBranding.get('hidePlatformBranding', false) == oldBranding.get('hidePlatformBranding', false)
+            && newBranding.get('customDomain', '') == oldBranding.get('customDomain', '')
+          )
+        );
     }
 
     function hasCertificationPermission(permission) {
@@ -157,6 +219,11 @@ service cloud.firestore {
       return (!isSignedIn() && isPublicCourse(courseData))
         || (courseData.active == true && hasPaidIndividualEnrollment(courseId))
         || isSuperAdmin()
+        // Matches the existing blanket admin WRITE grant on courses/{courseId}
+        // below — reads shouldn't be more restrictive than writes for the
+        // same role, and this is also what lets a council admin "acting as"
+        // a descendant facility read courses assigned to that facility.
+        || isAdminOrAbove()
         || isCourseAssignedToMyOrg(courseData)
         || isCourseMappedToMyOrg(courseId)
         || (isSignedIn()
@@ -516,7 +583,19 @@ service cloud.firestore {
         || isAdminOrAbove()
         || (isSignedIn() && myOrgId() == orgId);
 
-      allow write: if isSuperAdmin();
+      // A council admin may create a child org under itself, but only with
+      // parentOrgId/ancestorOrgIds correctly extending its own chain, and the
+      // new org can't be born a council itself (no self-granted nesting).
+      allow create: if isSuperAdmin()
+        || (isCouncilAdmin()
+            && request.resource.data.parentOrgId == myOrgId()
+            && request.resource.data.get('ancestorOrgIds', []) == orgAncestorIds(myOrgId()).concat([myOrgId()])
+            && request.resource.data.get('canCreateSubOrgs', false) == false);
+
+      allow update: if isSuperAdmin()
+        || isValidSelfServeBrandingWrite(orgId);
+
+      allow delete: if isSuperAdmin();
 
       match /settings/{settingId} {
         allow read: if isSuperAdmin() || isOrgStaffFor(orgId);
@@ -951,6 +1030,13 @@ service cloud.firestore {
     // ── PLATFORM / LEGACY POLICIES ───────────────────────────────────────
     match /platformPolicies/{policyId} {
       allow read, write: if isSuperAdmin();
+    }
+
+    // Public read (even signed-out visitors need to see maintenance status
+    // before login) — no sensitive data here, only status flags/messages.
+    match /platformSettings/{settingId} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
     }
 
     match /policies/{policyId} {
