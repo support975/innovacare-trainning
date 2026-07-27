@@ -1032,6 +1032,13 @@ service cloud.firestore {
       allow read, write: if isSuperAdmin();
     }
 
+    // Public read (even signed-out visitors need to see maintenance status
+    // before login) — no sensitive data here, only status flags/messages.
+    match /platformSettings/{settingId} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+
     match /policies/{policyId} {
       allow read: if isSuperAdmin();
       allow write: if false;

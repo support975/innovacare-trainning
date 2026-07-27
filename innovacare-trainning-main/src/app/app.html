@@ -1,3 +1,11 @@
-<!-- Ici le routerOutlet sert à afficher les pages une fois la navigation faite -->
-<router-outlet></router-outlet>
-<app-cookie-consent></app-cookie-consent>
+<app-maintenance-banner *ngIf="!isBlocked()"></app-maintenance-banner>
+
+<ng-container *ngIf="!isBlocked(); else blocked">
+  <!-- Ici le routerOutlet sert à afficher les pages une fois la navigation faite -->
+  <router-outlet></router-outlet>
+  <app-cookie-consent></app-cookie-consent>
+</ng-container>
+
+<ng-template #blocked>
+  <app-maintenance-page></app-maintenance-page>
+</ng-template>

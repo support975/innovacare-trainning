@@ -1,0 +1,103 @@
+<div class="sa-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <p class="page-eyebrow">Super Admin · Maintenance</p>
+      <h1 class="page-title">Maintenance Mode</h1>
+      <p class="page-sub">Warn users of upcoming maintenance, or block the whole platform during an actual outage.</p>
+    </div>
+  </div>
+
+  <!-- Banner Panel -->
+  <div class="panel">
+    <div class="panel__head">
+      <div>
+        <div class="panel__title">Scheduled Maintenance Banner</div>
+        <div class="panel__sub">Shows a dismissible notice at the top of every page. The app stays fully usable.</div>
+      </div>
+    </div>
+    <div class="settings-form">
+      <div *ngIf="bannerNotice()" [class]="'notice-banner' + (bannerError() ? ' notice-banner--error' : '')">
+        <span class="notice-banner__text">{{ bannerNotice() }}</span>
+      </div>
+      <label class="toggle-field toggle-field--row">
+        <div class="toggle-field__info">
+          <span class="toggle-field__label">Show banner</span>
+          <span class="toggle-field__desc">Everyone signed in (and signed-out visitors) will see this message.</span>
+        </div>
+        <span class="toggle-wrap">
+          <input type="checkbox" class="toggle-input" id="bannerEnabled" [(ngModel)]="banner.enabled" />
+          <label class="toggle-slider" for="bannerEnabled"></label>
+        </span>
+      </label>
+      <div class="field field--full">
+        <label class="field__label" for="bannerMessage">Banner message</label>
+        <textarea
+          id="bannerMessage"
+          class="field__textarea"
+          rows="2"
+          [(ngModel)]="banner.message"
+          placeholder="e.g. Scheduled maintenance on July 30 at 10pm EST — the platform may be briefly unavailable."
+        ></textarea>
+      </div>
+      <div class="settings-form__footer">
+        <button class="btn-primary" (click)="saveBanner()" [disabled]="bannerSaving()">
+          {{ bannerSaving() ? 'Saving...' : 'Save Banner Settings' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Block Panel -->
+  <div class="panel">
+    <div class="panel__head">
+      <div>
+        <div class="panel__title">Full Maintenance Block</div>
+        <div class="panel__sub">Replaces the entire app with a "we'll be back" screen. Only super admins can still use the app.</div>
+      </div>
+    </div>
+    <div class="settings-form">
+      <div *ngIf="blockNotice()" [class]="'notice-banner' + (blockError() ? ' notice-banner--error' : '')">
+        <span class="notice-banner__text">{{ blockNotice() }}</span>
+      </div>
+      <label class="toggle-field toggle-field--row">
+        <div class="toggle-field__info">
+          <span class="toggle-field__label">Enable full block</span>
+          <span class="toggle-field__desc">Blocks the entire platform for everyone except super admins.</span>
+        </div>
+        <span class="toggle-wrap">
+          <input type="checkbox" class="toggle-input" id="blockEnabled" [(ngModel)]="block.enabled" />
+          <label class="toggle-slider" for="blockEnabled"></label>
+        </span>
+      </label>
+      <div class="settings-form__grid">
+        <div class="field field--full">
+          <label class="field__label" for="blockMessage">Block screen message</label>
+          <textarea
+            id="blockMessage"
+            class="field__textarea"
+            rows="2"
+            [(ngModel)]="block.message"
+            placeholder="We're currently performing scheduled maintenance. Please check back shortly."
+          ></textarea>
+        </div>
+        <div class="field">
+          <label class="field__label" for="estimatedReturnAt">Estimated back online (optional)</label>
+          <input
+            id="estimatedReturnAt"
+            class="field__input"
+            type="datetime-local"
+            [(ngModel)]="block.estimatedReturnAt"
+          />
+        </div>
+      </div>
+      <div class="settings-form__footer">
+        <button class="btn-primary" (click)="saveBlock()" [disabled]="blockSaving()">
+          {{ blockSaving() ? 'Saving...' : 'Save Maintenance Block Settings' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

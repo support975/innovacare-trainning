@@ -110,6 +110,11 @@ export class Shell {
           icon: 'M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm0-5v3m0 11v3M4.2 6.2l2.1 2.1m11.4 7.4 2.1 2.1M1.5 12h3m15 0h3M4.2 17.8l2.1-2.1M17.7 8.3l2.1-2.1',
         },
         {
+          label: 'Maintenance',
+          path: '/super-admin/maintenance',
+          icon: 'M14.7 3.3a3.5 3.5 0 0 0-4.8 4.8L4 14l3 3 5.9-5.9a3.5 3.5 0 0 0 4.8-4.8l-2.4 2.4-2-2 2.4-2.4Z',
+        },
+        {
           label: 'Setup',
           path: '/super-admin/setup',
           icon: 'M12 3 5 6.5v6c0 4.4 2.9 7.4 7 8.5 4.1-1.1 7-4.1 7-8.5v-6L12 3Zm-3 9 2 2 4-4',
