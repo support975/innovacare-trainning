@@ -63,8 +63,15 @@ jobs:
           service_account: firebase-adminsdk-fbsvc@innovacare-training.iam.gserviceaccount.com
 
       - name: Deploy to Firebase (production)
+        # functions:default (not bare "functions") because the innovacare-training
+        # codebase's source was never checked into this repo (its index.ts is
+        # empty) while real production functions (blog creation, agent tasks,
+        # etc.) run under that codebase name. Bare "functions" diffs every
+        # codebase and, in non-interactive mode, would either abort or — with
+        # --force — delete those functions outright. Scoping to :default skips
+        # that codebase entirely so they're never evaluated or touched.
         run: |
           npx firebase-tools@13 deploy \
             --project innovacare-training \
-            --only hosting,firestore,storage,database,functions \
+            --only hosting,firestore,storage,database,functions:default \
             --non-interactive
