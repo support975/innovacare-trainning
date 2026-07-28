@@ -1,10 +1,9 @@
 name: Promote to staging
 
-# Manual promotion only. Staging shares the dev Firebase project's backend
-# (Firestore/Storage rules and Cloud Functions are already live there from
-# deploy-dev.yml) — this just builds the chosen ref and publishes it to the
-# separate "staging" Hosting site in that same project, so it can be
-# reviewed on its own URL before promoting to production.
+# Manual promotion only. Staging is its own separate Firebase project
+# (innovacaretrainninng-staging) with its own Firestore/Storage/Database/
+# Functions — not shared with dev — so this deploys the full stack there,
+# same shape as deploy-dev.yml / deploy-production.yml.
 on:
   workflow_dispatch:
     inputs:
@@ -40,16 +39,29 @@ jobs:
       - name: Install app dependencies
         run: npm ci
 
-      - name: Build (optimized, pointed at the dev Firebase backend)
-        run: npx ng build --configuration dev
+      - name: Build (optimized, pointed at the staging Firebase backend)
+        run: npx ng build --configuration staging
+
+      - name: Install functions dependencies (default codebase)
+        working-directory: innovacare-trainning-main/functions
+        run: npm ci
+
+      - name: Install functions dependencies (innovacare-training codebase)
+        working-directory: innovacare-trainning-main/innovacare-training
+        run: npm ci
 
       - uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DEV }}
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_STAGING }}
 
-      - name: Deploy hosting to staging site
+      - name: Deploy to Firebase (staging)
+        # NOTE: "database" (Realtime Database) is deliberately left out here —
+        # unlike dev/prod, this is a brand-new project and RTDB isn't
+        # provisioned by default. Add ",database" to --only once it's enabled
+        # (Firebase console → Realtime Database → Create Database) and
+        # database.rules.json has been reviewed for this project.
         run: |
           npx firebase-tools@13 deploy \
-            --project innovacaretrainning-dev \
-            --only hosting:staging \
+            --project innovacaretrainninng-staging \
+            --only hosting,firestore,storage,functions \
             --non-interactive

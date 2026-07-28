@@ -37,98 +37,35 @@
       ]
     }
   ],
-  "hosting": [
-    {
-      "target": "prod",
-      "public": "dist/myapp/browser",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ],
-      "headers": [
-        {
-          "source": "**/*.@(js|css)",
-          "headers": [
-            { "key": "Cache-Control", "value": "no-cache" }
-          ]
+  "hosting": {
+    "public": "dist/myapp/browser",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "headers": [
+      {
+        "source": "**/*.@(js|css)",
+        "headers": [
+          { "key": "Cache-Control", "value": "no-cache" }
+        ]
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "/api/create-organization-admin",
+        "function": {
+          "functionId": "createOrganizationAdminHttp",
+          "region": "us-central1"
         }
-      ],
-      "rewrites": [
-        {
-          "source": "/api/create-organization-admin",
-          "function": {
-            "functionId": "createOrganizationAdminHttp",
-            "region": "us-central1"
-          }
-        },
-        {
-          "source": "**",
-          "destination": "/index.html"
-        }
-      ]
-    },
-    {
-      "target": "dev",
-      "public": "dist/myapp/browser",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ],
-      "headers": [
-        {
-          "source": "**/*.@(js|css)",
-          "headers": [
-            { "key": "Cache-Control", "value": "no-cache" }
-          ]
-        }
-      ],
-      "rewrites": [
-        {
-          "source": "/api/create-organization-admin",
-          "function": {
-            "functionId": "createOrganizationAdminHttp",
-            "region": "us-central1"
-          }
-        },
-        {
-          "source": "**",
-          "destination": "/index.html"
-        }
-      ]
-    },
-    {
-      "target": "staging",
-      "public": "dist/myapp/browser",
-      "ignore": [
-        "firebase.json",
-        "**/.*",
-        "**/node_modules/**"
-      ],
-      "headers": [
-        {
-          "source": "**/*.@(js|css)",
-          "headers": [
-            { "key": "Cache-Control", "value": "no-cache" }
-          ]
-        }
-      ],
-      "rewrites": [
-        {
-          "source": "/api/create-organization-admin",
-          "function": {
-            "functionId": "createOrganizationAdminHttp",
-            "region": "us-central1"
-          }
-        },
-        {
-          "source": "**",
-          "destination": "/index.html"
-        }
-      ]
-    }
-  ],
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
   "storage": {
     "rules": "storage.rules"
   },

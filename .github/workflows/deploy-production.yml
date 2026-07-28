@@ -2,8 +2,8 @@ name: Deploy to production
 
 # Manual promotion only, gated by the "production" GitHub Environment —
 # configure required reviewers on that Environment in repo Settings so this
-# can't run unattended. Deploys hosting (prod site), Firestore/Storage/
-# Database rules, and Cloud Functions to the innovacare-training project.
+# can't run unattended. Deploys hosting, Firestore/Storage/Database rules,
+# and Cloud Functions to the innovacare-training project.
 on:
   workflow_dispatch:
     inputs:
@@ -58,5 +58,5 @@ jobs:
         run: |
           npx firebase-tools@13 deploy \
             --project innovacare-training \
-            --only hosting:prod,firestore,storage,database,functions \
+            --only hosting,firestore,storage,database,functions \
             --non-interactive

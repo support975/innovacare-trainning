@@ -2,26 +2,9 @@
   "projects": {
     "default": "innovacare-training",
     "training": "innovacare-training",
-    "dev": "innovacaretrainning-dev"
+    "dev": "innovacaretrainning-dev",
+    "staging": "innovacaretrainninng-staging"
   },
-  "targets": {
-    "innovacare-training": {
-      "hosting": {
-        "prod": [
-          "innovacare-training"
-        ]
-      }
-    },
-    "innovacaretrainning-dev": {
-      "hosting": {
-        "dev": [
-          "innovacaretrainning-dev"
-        ],
-        "staging": [
-          "innovacaretrainning-staging"
-        ]
-      }
-    }
-  },
+  "targets": {},
   "etags": {}
 }
