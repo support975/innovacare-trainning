@@ -1,0 +1,141 @@
+<main class="events-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Events</p>
+      <h1>Webinars &amp; seminars</h1>
+      <p class="sub">Create a webinar, assign it to organizations, and optionally make it public for B2C registration.</p>
+    </div>
+    <button class="btn-ghost" type="button" (click)="resetForm()">New event</button>
+  </header>
+
+  <div class="notice" *ngIf="notice()" [class.notice--error]="error()">
+    {{ notice() }}
+  </div>
+
+  <section class="workspace">
+    <form class="panel form-panel" (ngSubmit)="save()">
+      <div class="panel-head">
+        <h2>{{ form.id ? 'Edit event' : 'Create event' }}</h2>
+      </div>
+
+      <label class="field">
+        <span>Title</span>
+        <input name="title" [(ngModel)]="form.title" placeholder="Understanding Microclimate" required />
+      </label>
+
+      <label class="field">
+        <span>Description</span>
+        <textarea name="description" [(ngModel)]="form.description" rows="3" placeholder="What attendees will learn."></textarea>
+      </label>
+
+      <label class="field">
+        <span>Owning organization</span>
+        <select name="ownerOrgId" [(ngModel)]="form.ownerOrgId" required>
+          <option value="">Select organization</option>
+          <option *ngFor="let org of organizations()" [value]="org.id">{{ org.name }}</option>
+        </select>
+      </label>
+
+      <div class="field-grid field-grid--3">
+        <label class="field">
+          <span>Date</span>
+          <input type="date" name="dateStr" [(ngModel)]="form.dateStr" required />
+        </label>
+        <label class="field">
+          <span>Start time</span>
+          <input type="time" name="startTime" [(ngModel)]="form.startTime" />
+        </label>
+        <label class="field">
+          <span>End time</span>
+          <input type="time" name="endTime" [(ngModel)]="form.endTime" />
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Timezone (IANA, e.g. America/New_York)</span>
+        <input name="timezone" [(ngModel)]="form.timezone" />
+      </label>
+
+      <div class="field-grid">
+        <label class="field">
+          <span>Member price (USD, 0 = free)</span>
+          <input type="number" min="0" step="0.01" name="memberPrice" [(ngModel)]="form.memberPrice" />
+        </label>
+        <label class="field">
+          <span>Guest / non-member price (USD, 0 = free)</span>
+          <input type="number" min="0" step="0.01" name="guestPrice" [(ngModel)]="form.guestPrice" />
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Zoom join link (static, phase 1)</span>
+        <input name="zoomJoinUrl" [(ngModel)]="form.zoomJoinUrl" placeholder="https://zoom.us/j/..." />
+      </label>
+
+      <label class="toggle-row">
+        <input type="checkbox" name="isPublic" [(ngModel)]="form.isPublic" />
+        <span>Public — visible to B2C/individual visitors, not just assigned organizations</span>
+      </label>
+
+      <label class="field">
+        <span>Status</span>
+        <select name="status" [(ngModel)]="form.status">
+          <option value="draft">Draft</option>
+          <option value="published">Published</option>
+          <option value="live">Live</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </label>
+
+      <label class="toggle-row">
+        <input type="checkbox" name="active" [(ngModel)]="form.active" />
+        <span>Active and visible in catalogs</span>
+      </label>
+
+      <div class="org-picker">
+        <h3>Assign to organizations</h3>
+        <p>Members of these organizations see the member price; everyone else sees the guest price.</p>
+        <div class="org-list">
+          <label class="org-row" *ngFor="let org of organizations()" [class.org-row--checked]="selectedOrgIds().has(org.id || '')">
+            <input
+              type="checkbox"
+              [checked]="selectedOrgIds().has(org.id || '')"
+              (change)="toggleOrg(org.id, $any($event.target).checked)"
+            />
+            <span>{{ org.name }}</span>
+          </label>
+        </div>
+      </div>
+
+      <button class="btn-primary" type="submit" [disabled]="busy()">
+        {{ busy() ? 'Saving...' : (form.id ? 'Save event' : 'Create event') }}
+      </button>
+    </form>
+
+    <section class="panel events-list">
+      <div class="panel-head">
+        <h2>Existing events</h2>
+      </div>
+
+      <article class="event-row" *ngFor="let event of events()" [class.event-row--inactive]="event.active === false">
+        <div class="event-row__body">
+          <strong>{{ event.title }}</strong>
+          <small>{{ formatDate(event) }} · {{ ownerName(event) }} · {{ event.status }}</small>
+          <div class="org-chips" *ngIf="event.assignedOrgIds?.length">
+            <span class="org-chip" *ngFor="let orgId of event.assignedOrgIds">{{ orgName(orgId) }}</span>
+          </div>
+        </div>
+        <div class="event-row__actions">
+          <button class="btn-ghost" type="button" (click)="edit(event)">Edit</button>
+          <button class="btn-ghost btn-ghost--danger" type="button" [disabled]="busy()" (click)="remove(event)">Delete</button>
+        </div>
+      </article>
+
+      <div class="empty" *ngIf="!events().length">
+        <h2>No events yet</h2>
+        <p>Create the first webinar using the form.</p>
+      </div>
+    </section>
+  </section>
+</main>

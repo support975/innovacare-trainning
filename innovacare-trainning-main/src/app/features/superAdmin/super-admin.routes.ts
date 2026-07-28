@@ -87,6 +87,11 @@ export const SUPER_ADMIN_ROUTES: Routes = [
           import('./learning-paths/learning-paths').then(m => m.LearningPathsComponent),
       },
       {
+        path: 'events',
+        loadComponent: () =>
+          import('./events-authoring/events-authoring').then(m => m.EventsAuthoringComponent),
+      },
+      {
         path: 'exam-authoring',
         loadComponent: () =>
           import('./exam-authoring/exam-authoring').then(m => m.ExamAuthoringComponent),

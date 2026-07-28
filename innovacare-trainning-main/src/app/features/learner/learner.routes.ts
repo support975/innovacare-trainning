@@ -25,6 +25,11 @@ export const learnerRoutes: Routes = [
           ),
       },
       {
+        path: 'events',
+        loadComponent: () =>
+          import('./events/events-catalog/events-catalog').then(m => m.EventsCatalog),
+      },
+      {
         path: 'certifications',
         loadComponent: () =>
           import('./certifications/certifications/certifications').then(m => m.Certifications),

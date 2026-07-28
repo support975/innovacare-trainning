@@ -75,6 +75,11 @@ export class Shell {
           icon: 'M4 6h6v4H4V6Zm10 0h6v4h-6V6ZM7 10v4m0 0h10m0-4v4M4 14h6v4H4v-4Zm10 0h6v4h-6v-4Z',
         },
         {
+          label: 'Events',
+          path: '/super-admin/events',
+          icon: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z',
+        },
+        {
           label: 'Exam Authoring',
           path: '/super-admin/exam-authoring',
           icon: 'M5 4h14v16H5V4Zm3 4h8m-8 4h8m-8 4h5M16 15l1 1 2-3',

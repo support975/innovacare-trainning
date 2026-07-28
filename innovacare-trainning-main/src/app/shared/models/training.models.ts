@@ -13,8 +13,8 @@ export interface UserProfile {
 
   orgId?: string | null;     // 🔥 clé
   orgType?: 'health'|'IT'|'school'|'professional_order'|'nursing_council'|'university'|'hospital'|'ngo'|'private_training_org'|'scientific_society';
-  /** Distingue un membre réel d'une organisation d'un inscrit B2C rattaché à l'org publique. */
-  accountType?: 'org_member' | 'b2c_guest';
+  /** Matches core/auth.ts AppProfile.accountType — 'individual' means orgId is null (public self-serve). */
+  accountType?: 'organization' | 'individual' | 'guest';
 
   site?: 'Perry'|'Kathleen'|'WarnerRobins';
 

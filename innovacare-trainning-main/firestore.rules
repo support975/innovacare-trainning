@@ -209,6 +209,39 @@ service cloud.firestore {
         && myOrgId() in courseData.get('assignedOrgReachableIds', []);
     }
 
+    // ── EVENTS (webinars) — mirrors the COURSES helpers above exactly ──────
+    function isPublicEvent(eventData) {
+      return eventData.active == true && eventData.isPublic == true;
+    }
+
+    function isEventAssignedToMyOrg(eventData) {
+      return isSignedIn()
+        && myOrgId() != null
+        && (
+          (eventData.assignedOrgIds is list && myOrgId() in eventData.assignedOrgIds)
+          || sameOrg(eventData)
+        );
+    }
+
+    // Kept in sync by onEventAssignedOrgIdsChange, same shape as
+    // assignedOrgReachableIds/onCourseAssignedOrgIdsChange for courses.
+    function isEventReachableByMyOrg(eventData) {
+      return isSignedIn()
+        && myOrgId() != null
+        && myRole() in ['admin', 'manager']
+        && myOrgId() in eventData.get('assignedOrgReachableIds', []);
+    }
+
+    function canReadEvent(eventData) {
+      return (!isSignedIn() && isPublicEvent(eventData))
+        || isSuperAdmin()
+        || isEventAssignedToMyOrg(eventData)
+        || isEventReachableByMyOrg(eventData)
+        // Individual/guest users (accountType:'individual', orgId:null) —
+        // same public-visitor rule as courses, but while signed in.
+        || (isSignedIn() && myOrgId() == null && isPublicEvent(eventData));
+    }
+
     function isLearningPathMappedToMyOrg(pathId) {
       return isSignedIn()
         && myOrgId() != null
@@ -399,6 +432,14 @@ service cloud.firestore {
           'updatedAt'
         ])
         && request.resource.data.status in ['assigned', 'started', 'completed'];
+    }
+
+    function isSelfEventRegistrationCreate(regData) {
+      return isSignedIn()
+        && regData.uid == request.auth.uid
+        && exists(/databases/$(database)/documents/events/$(regData.eventId))
+        && canReadEvent(get(/databases/$(database)/documents/events/$(regData.eventId)).data)
+        && regData.orgId == myOrgId();
     }
 
     function isCourseAccessRequestCreate(requestId) {
@@ -740,6 +781,30 @@ service cloud.firestore {
 
     match /courses/{courseId}/exams/{examId}/answerKey/{questionId} {
       allow read, write: if isSuperAdmin();
+    }
+
+    // ── EVENTS (webinars) ──────────────────────────────────────────────────
+    match /events/{eventId} {
+      allow read: if canReadEvent(resource.data);
+      allow write: if isSuperAdmin() || isAdminOrAbove();
+    }
+
+    match /eventRegistrations/{registrationId} {
+      allow read: if isSuperAdmin()
+        || isAdminOrAbove()
+        || (isManager() && sameOrg(resource.data))
+        || (isSignedIn() && resource.data.uid == request.auth.uid);
+
+      allow create: if isSuperAdmin()
+        || isAdminOrAbove()
+        || (isManager() && sameOrg(request.resource.data))
+        || isSelfEventRegistrationCreate(request.resource.data);
+
+      allow update: if isSuperAdmin()
+        || isAdminOrAbove()
+        || (isManager() && sameOrg(resource.data) && sameOrg(request.resource.data));
+
+      allow delete: if isSuperAdmin() || isAdminOrAbove();
     }
 
     // ── FACULTY / SPONSORS (reusable profiles for webinars/events) ─────────

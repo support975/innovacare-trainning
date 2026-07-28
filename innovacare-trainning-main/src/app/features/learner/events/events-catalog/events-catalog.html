@@ -1,0 +1,43 @@
+<div class="events-page">
+  <div class="page-header">
+    <h1 class="page-title">{{ t('shell.events') }}</h1>
+    <p class="page-sub">Upcoming webinars and seminars — free for members of participating organizations, open to everyone.</p>
+  </div>
+
+  <div *ngIf="notice()" class="notice-banner">{{ notice() }}</div>
+
+  <div class="event-grid" *ngIf="cards().length; else emptyState">
+    <div class="event-card" *ngFor="let vm of cards()">
+      <div class="event-card__body">
+        <h2 class="event-card__title">{{ vm.event.title }}</h2>
+        <p class="event-card__date">{{ formatDate(vm) }}</p>
+        <p class="event-card__desc">{{ vm.event.description }}</p>
+
+        <div class="event-card__meta">
+          <span class="badge" [class.badge--free]="isFree(vm)">
+            {{ isFree(vm) ? 'Free' : (vm.price | currency) }}
+          </span>
+          <span class="badge badge--tier" *ngIf="vm.isMember">Member</span>
+        </div>
+      </div>
+
+      <div class="event-card__actions">
+        <button
+          type="button"
+          class="btn-primary"
+          [disabled]="registering() === vm.event.id || isRegistered(vm.event.id)"
+          (click)="register(vm)">
+          <span *ngIf="isRegistered(vm.event.id); else notRegistered">Registered</span>
+          <ng-template #notRegistered>
+            <span *ngIf="registering() === vm.event.id; else registerLabel">Registering…</span>
+          </ng-template>
+          <ng-template #registerLabel>{{ isFree(vm) ? 'Register free' : 'Register' }}</ng-template>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #emptyState>
+    <div class="empty-state">No upcoming events right now — check back soon.</div>
+  </ng-template>
+</div>
