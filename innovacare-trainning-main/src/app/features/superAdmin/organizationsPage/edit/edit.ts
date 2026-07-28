@@ -24,7 +24,9 @@ export class Edit implements OnInit {
 
   form = {
     name: '',
-    type: 'health' as 'health'|'IT'|'school',
+    type: 'health' as 'health'|'IT'|'school'
+      |'professional_order'|'nursing_council'|'university'|'hospital'
+      |'ngo'|'private_training_org'|'scientific_society',
     plan: 'free' as 'free'|'pro'|'enterprise',
     learnerLimit: 25 as number | null,
     active: true,

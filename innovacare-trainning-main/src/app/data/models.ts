@@ -1,4 +1,6 @@
-export type OrgType = 'health' | 'IT' | 'school';
+export type OrgType = 'health' | 'IT' | 'school'
+  | 'professional_order' | 'nursing_council' | 'university' | 'hospital'
+  | 'ngo' | 'private_training_org' | 'scientific_society';
 export interface HealthMeta {
   healthCareType: 'SNF' | 'HomeHealth' | 'Hospice' | 'Hospital' | 'PrivatePractice' | 'PHCP';
 }
@@ -86,6 +88,39 @@ export interface Course {
   level: 'Beginner' | 'Intermediate' | 'Advanced';
   certification?: boolean;      // enable exam blueprint creation for this course
 
+}
+
+/** Reusable speaker profile — attached to webinars/events (and later, faculty-led courses). */
+export interface Faculty {
+  id?: string;
+  ownerOrgId: string;
+  name: string;
+  title?: string;                 // e.g. "RN, BSN, CWCN"
+  photoUrl?: string;
+  bio?: string;
+  credentials?: string;
+  organization?: string;          // employer/affiliation, distinct from ownerOrgId
+  cvUrl?: string;
+  financialDisclosure?: string;
+  conflictOfInterest?: string;
+  speakerProfileUrl?: string;
+  createdAt?: any;
+  updatedAt?: any;
+}
+
+/** Reusable sponsor profile — attached to webinars/events for commercial-support disclosure. */
+export interface Sponsor {
+  id?: string;
+  ownerOrgId: string;
+  name: string;
+  logoUrl?: string;
+  website?: string;
+  description?: string;
+  supportLevel?: 'platinum' | 'gold' | 'silver' | 'grant';
+  commercialDisclosure?: string;
+  grantInformation?: string;
+  createdAt?: any;
+  updatedAt?: any;
 }
 
 export interface Section {

@@ -22,7 +22,9 @@ export class Create {
 
   form = {
     name: '', orgId: '',
-    type: 'health' as 'health' | 'IT' | 'school',
+    type: 'health' as 'health' | 'IT' | 'school'
+      | 'professional_order' | 'nursing_council' | 'university' | 'hospital'
+      | 'ngo' | 'private_training_org' | 'scientific_society',
     plan: 'free' as 'free' | 'pro' | 'enterprise',
     ownerEmail: '', ownerDisplayName: '',
   };

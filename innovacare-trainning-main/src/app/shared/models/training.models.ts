@@ -12,7 +12,7 @@ export interface UserProfile {
   role: 'super_admin'|'admin'|'manager'|'learner'|'guest';
 
   orgId?: string | null;     // 🔥 clé
-  orgType?: 'health'|'IT'|'school';
+  orgType?: 'health'|'IT'|'school'|'professional_order'|'nursing_council'|'university'|'hospital'|'ngo'|'private_training_org'|'scientific_society';
   /** Distingue un membre réel d'une organisation d'un inscrit B2C rattaché à l'org publique. */
   accountType?: 'org_member' | 'b2c_guest';
 
@@ -62,7 +62,7 @@ export interface Course {
   tags: string[];
   level: 'Beginner'|'Intermediate'|'Advanced';
   orgId?: string | null;   // 🔥
-  orgType?: 'health'|'IT'|'school';
+  orgType?: 'health'|'IT'|'school'|'professional_order'|'nursing_council'|'university'|'hospital'|'ngo'|'private_training_org'|'scientific_society';
   isPublic?: boolean;      // 🔥 B2C vs B2B
   passingScore: number;      // e.g. 80
   lockedSequence: boolean;   // require module order
@@ -77,7 +77,7 @@ export type ModuleType = 'lesson'|'quiz'|'practical';
 export interface CourseModule {
   id: string;
   orgId?: string | null;   // 🔥
-  orgType?: 'health'|'IT'|'school';
+  orgType?: 'health'|'IT'|'school'|'professional_order'|'nursing_council'|'university'|'hospital'|'ngo'|'private_training_org'|'scientific_society';
   courseId: string;
   title: string;
   order: number;
@@ -125,7 +125,7 @@ export interface Assignment {
   assignedTo: string;
   assignedBy: string;
   orgId?: string | null;   // 🔥
-  orgType?: 'health'|'IT'|'school';
+  orgType?: 'health'|'IT'|'school'|'professional_order'|'nursing_council'|'university'|'hospital'|'ngo'|'private_training_org'|'scientific_society';
   targets: { role?: string; site?: string; userIds?: string[] };
   dueDate?: number;
   createdAt: number;
@@ -140,7 +140,7 @@ export interface Enrollment {
   sequence: number;
   unlockedIndex: number;
   orgId?: string | null;   // 🔥
-  orgType?: 'health'|'IT'|'school';
+  orgType?: 'health'|'IT'|'school'|'professional_order'|'nursing_council'|'university'|'hospital'|'ngo'|'private_training_org'|'scientific_society';
   progressPct: number;
   status: 'assigned'|'in_progress'|'completed'|'failed';
   score?: number;
@@ -151,7 +151,7 @@ export interface Enrollment {
 export interface Attempt {
   id: string;
   orgId?: string | null;   // 🔥
-  orgType?: 'health'|'IT'|'school';
+  orgType?: 'health'|'IT'|'school'|'professional_order'|'nursing_council'|'university'|'hospital'|'ngo'|'private_training_org'|'scientific_society';
   uid: string;
   examId: string;
   courseId: string;
@@ -165,7 +165,7 @@ export interface Attempt {
 export interface Certificate {
   id: string;
   orgId?: string | null;   // 🔥
-  orgType?: 'health'|'IT'|'school';
+  orgType?: 'health'|'IT'|'school'|'professional_order'|'nursing_council'|'university'|'hospital'|'ngo'|'private_training_org'|'scientific_society';
   uid: string;
   courseId: string;
   examId: string;
