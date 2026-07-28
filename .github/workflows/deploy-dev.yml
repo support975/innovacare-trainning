@@ -56,8 +56,14 @@ jobs:
           service_account: firebase-adminsdk-fbsvc@innovacaretrainning-dev.iam.gserviceaccount.com
 
       - name: Deploy to Firebase (dev)
+        # functions:default (not bare "functions") because the live project has
+        # functions under the innovacare-training codebase whose source was
+        # never checked into this repo (its index.ts is empty). Deploying bare
+        # "functions" diffs every codebase and non-interactively refuses to
+        # proceed rather than silently deleting them — scoping to :default
+        # skips that codebase entirely so those functions are left alone.
         run: |
           npx firebase-tools@13 deploy \
             --project innovacaretrainning-dev \
-            --only hosting,firestore,storage,database,functions \
+            --only hosting,firestore,storage,database,functions:default \
             --non-interactive
