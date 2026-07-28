@@ -20,6 +20,12 @@ export class EventsService {
   private eventsCollection = collection(this.firestore, 'events');
   private registrationsCollection = collection(this.firestore, 'eventRegistrations');
 
+  /** Superadmin/staff-only — every event regardless of active/isPublic, for authoring. */
+  listAllForAdmin(): Observable<WebinarEvent[]> {
+    const q = query(this.eventsCollection, orderBy('schedule.date', 'desc'));
+    return collectionData(q, { idField: 'id' }) as Observable<WebinarEvent[]>;
+  }
+
   /** Public catalog — active + isPublic events, visible to anonymous/individual visitors. */
   listPublicEvents(): Observable<WebinarEvent[]> {
     const q = query(
