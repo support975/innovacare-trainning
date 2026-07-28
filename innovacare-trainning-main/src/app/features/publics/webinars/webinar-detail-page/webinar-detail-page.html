@@ -1,0 +1,141 @@
+<app-public-site-nav
+  page="webinars"
+  contextLabel="Live continuing education"
+  contextValue="Accredited webinars, open to everyone"
+  mobileMetaLabel="Webinars"
+  mobileMetaValue="Live CE sessions from real clinical faculty"
+></app-public-site-nav>
+
+<main class="detail-page">
+  <div class="container" *ngIf="loading()">
+    <div class="skeleton-hero"></div>
+  </div>
+
+  <div class="container not-found" *ngIf="notFound()">
+    <h1>{{ t('publicWebinarDetail.notFound.title') }}</h1>
+    <p>{{ t('publicWebinarDetail.notFound.body') }}</p>
+    <a class="btn-ghost" routerLink="/webinars">← {{ t('publicWebinarDetail.back') }}</a>
+  </div>
+
+  <ng-container *ngIf="event() as ev">
+    <section class="hero">
+      <div class="hero-orb" aria-hidden="true"></div>
+      <div class="container">
+        <a class="back-link" routerLink="/webinars">← {{ t('publicWebinarDetail.back') }}</a>
+
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <div class="hero-badges">
+              <span class="badge badge--accent" *ngIf="ev.accreditationId">{{ t('publicWebinars.badge.accredited') }}</span>
+              <span class="badge badge--free" *ngIf="isFree()">{{ t('publicWebinars.badge.free') }}</span>
+            </div>
+            <h1>{{ ev.title }}</h1>
+            <p class="hero-date">{{ formatDate() }}</p>
+            <p class="hero-desc">{{ ev.description }}</p>
+          </div>
+
+          <div class="register-card" [appTilt3d]="5">
+            <div class="register-card__inner">
+              <ng-container *ngIf="!alreadyRegistered(); else registeredState">
+                <div class="price-row">
+                  <div>
+                    <span class="price-label">{{ isMember() ? t('publicWebinarDetail.priceMember') : t('publicWebinarDetail.priceGuest') }}</span>
+                    <strong class="price-value">{{ isFree() ? t('publicWebinars.badge.free') : (price() | currency) }}</strong>
+                  </div>
+                </div>
+
+                <p class="signin-hint" *ngIf="!profile() && ev.pricing?.memberPrice !== ev.pricing?.guestPrice">
+                  {{ t('publicWebinarDetail.signInPrompt') }}
+                </p>
+
+                <button type="button" class="btn-primary btn-block" [disabled]="registering()" (click)="register()">
+                  {{ registering() ? t('publicWebinarDetail.registering') : (isFree() ? t('publicWebinarDetail.registerFree') : t('publicWebinarDetail.register')) }}
+                </button>
+
+                <p class="notice" *ngIf="notice()">{{ notice() }}</p>
+              </ng-container>
+
+              <ng-template #registeredState>
+                <div class="registered-state">
+                  <div class="registered-icon">✓</div>
+                  <strong>{{ t('publicWebinarDetail.registered') }}</strong>
+                  <p>{{ t('publicWebinarDetail.registeredBody') }}</p>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content" *ngIf="knownFaculty().length || knownSponsors().length || accreditation()">
+      <div class="container content-grid">
+        <div class="content-main">
+          <div class="panel" *ngIf="knownFaculty().length">
+            <h2>{{ t('publicWebinarDetail.faculty') }}</h2>
+            <div class="faculty-list">
+              <div class="faculty-card" *ngFor="let f of knownFaculty()" [appTilt3d]="4">
+                <img class="faculty-photo" *ngIf="f.photoUrl" [src]="f.photoUrl" [alt]="f.name" />
+                <div class="faculty-avatar" *ngIf="!f.photoUrl">{{ f.name.charAt(0) }}</div>
+                <div class="faculty-copy">
+                  <strong>{{ f.name }}</strong>
+                  <span *ngIf="f.title">{{ f.title }}</span>
+                  <span class="faculty-org" *ngIf="f.organization">{{ f.organization }}</span>
+                  <p *ngIf="f.bio">{{ f.bio }}</p>
+                  <p class="disclosure" *ngIf="f.financialDisclosure || f.conflictOfInterest">
+                    <strong>{{ t('publicWebinarDetail.disclosure') }}:</strong>
+                    {{ f.financialDisclosure || f.conflictOfInterest }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel" *ngIf="accreditation() as accr">
+            <h2>{{ t('publicWebinarDetail.accreditation') }}</h2>
+            <div class="accreditation-card">
+              <div class="accreditation-stats">
+                <div>
+                  <strong>{{ accr.contactHours }}</strong>
+                  <span>{{ t('publicWebinarDetail.contactHours') }}</span>
+                </div>
+                <div>
+                  <strong>{{ accr.ceCredits }}</strong>
+                  <span>{{ t('publicWebinarDetail.ceCredits') }}</span>
+                </div>
+              </div>
+              <p class="accreditor">{{ accr.accreditingOrganization }}</p>
+
+              <div class="objectives" *ngIf="accr.learningObjectives?.length">
+                <h3>{{ t('publicWebinarDetail.objectives') }}</h3>
+                <ul>
+                  <li *ngFor="let objective of accr.learningObjectives">{{ objective }}</li>
+                </ul>
+              </div>
+
+              <p class="disclosure" *ngIf="accr.conflictOfInterestStatement">{{ accr.conflictOfInterestStatement }}</p>
+              <p class="disclosure" *ngIf="accr.commercialSupportStatement">{{ accr.commercialSupportStatement }}</p>
+              <p class="disclosure" *ngIf="accr.disclaimer">{{ accr.disclaimer }}</p>
+            </div>
+          </div>
+        </div>
+
+        <aside class="content-side" *ngIf="knownSponsors().length">
+          <div class="panel">
+            <h2>{{ t('publicWebinarDetail.sponsors') }}</h2>
+            <div class="sponsor-list">
+              <div class="sponsor-row" *ngFor="let s of knownSponsors()">
+                <img class="sponsor-logo" *ngIf="s.logoUrl" [src]="s.logoUrl" [alt]="s.name" />
+                <div class="sponsor-copy">
+                  <strong>{{ s.name }}</strong>
+                  <span *ngIf="s.supportLevel">{{ s.supportLevel }}</span>
+                  <p *ngIf="s.commercialDisclosure">{{ s.commercialDisclosure }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </ng-container>
+</main>

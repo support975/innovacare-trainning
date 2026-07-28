@@ -199,5 +199,20 @@ export const routes: Routes = [
       ),
   },
 
+  {
+    path: 'webinars',
+    loadComponent: () =>
+      import('./features/publics/webinars/webinars-page/webinars-page').then(
+        (m) => m.WebinarsPageComponent
+      ),
+  },
+  {
+    path: 'webinars/:id',
+    loadComponent: () =>
+      import('./features/publics/webinars/webinar-detail-page/webinar-detail-page').then(
+        (m) => m.WebinarDetailPageComponent
+      ),
+  },
+
   { path: '**', redirectTo: '/home' }
 ];
