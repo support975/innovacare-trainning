@@ -87,6 +87,7 @@ export interface Course {
   type: 'It' |'Health' | 'Hr' | 'safety'
   level: 'Beginner' | 'Intermediate' | 'Advanced';
   certification?: boolean;      // enable exam blueprint creation for this course
+  accreditationId?: string;     // FK into accreditations, supersedes the flat ceCredit field going forward
 
 }
 
@@ -119,6 +120,35 @@ export interface Sponsor {
   supportLevel?: 'platinum' | 'gold' | 'silver' | 'grant';
   commercialDisclosure?: string;
   grantInformation?: string;
+  createdAt?: any;
+  updatedAt?: any;
+}
+
+/**
+ * A reusable accreditation/CE record — created once, then referenced by
+ * accreditationId from multiple Courses/WebinarEvents, so the same
+ * accrediting-body disclosures don't get retyped for every webinar.
+ */
+export interface Accreditation {
+  id?: string;
+  ownerOrgId: string;
+  accreditingOrganization: string;
+  providerNumber?: string;
+  approvalNumber?: string;
+  contactHours: number;
+  ceCredits: number;
+  expirationDate?: any;
+  targetAudience?: string[];
+  learningObjectives?: string[];
+  awardCriteria?: string;
+  conflictOfInterestStatement?: string;
+  facultyDisclosureRequired?: boolean;
+  commercialSupportStatement?: string;
+  disclaimer?: string;
+  evaluationRequirements?: string;
+  certificateRequirements?: string;
+  applicableBoards?: string[];
+  applicableCertifications?: string[];
   createdAt?: any;
   updatedAt?: any;
 }

@@ -2,12 +2,16 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Timestamp, deleteField } from '@angular/fire/firestore';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { of, switchMap } from 'rxjs';
 
 import { EventsService } from '../../../shared/services/events.service';
+import { FacultyService } from '../../../shared/services/faculty.service';
+import { SponsorsService } from '../../../shared/services/sponsors.service';
+import { AccreditationService } from '../../../shared/services/accreditation.service';
 import { SuperAdminOrganizationsService } from '../services/super-admin-organizations';
 import type { SuperAdminOrganization } from '../models/super-admin.models';
-import type { WebinarEvent } from '../../../data/models';
+import type { Faculty, Sponsor, Accreditation, WebinarEvent } from '../../../data/models';
 
 type EventForm = {
   id: string;
@@ -24,6 +28,7 @@ type EventForm = {
   zoomJoinUrl: string;
   active: boolean;
   status: WebinarEvent['status'];
+  accreditationId: string;
 };
 
 function emptyForm(): EventForm {
@@ -42,6 +47,7 @@ function emptyForm(): EventForm {
     zoomJoinUrl: '',
     active: true,
     status: 'draft',
+    accreditationId: '',
   };
 }
 
@@ -55,14 +61,45 @@ function emptyForm(): EventForm {
 export class EventsAuthoringComponent {
   private readonly eventsSvc = inject(EventsService);
   private readonly orgsSvc = inject(SuperAdminOrganizationsService);
+  private readonly facultySvc = inject(FacultyService);
+  private readonly sponsorsSvc = inject(SponsorsService);
+  private readonly accreditationSvc = inject(AccreditationService);
 
   readonly events = toSignal(this.eventsSvc.listAllForAdmin(), { initialValue: [] as WebinarEvent[] });
   readonly organizations = toSignal(this.orgsSvc.list(), { initialValue: [] as SuperAdminOrganization[] });
 
   readonly selectedOrgIds = signal(new Set<string>());
+  readonly selectedFacultyIds = signal(new Set<string>());
+  readonly selectedSponsorIds = signal(new Set<string>());
   readonly busy = signal(false);
   readonly notice = signal('');
   readonly error = signal(false);
+
+  // Faculty/Sponsors/Accreditation are scoped to the form's owning organization,
+  // so the picker lists must react to ownerOrgId changes even though the form
+  // itself is a plain (non-signal) object bound via ngModel.
+  readonly formOwnerOrgId = signal('');
+
+  readonly availableFaculty = toSignal(
+    toObservable(this.formOwnerOrgId).pipe(
+      switchMap((orgId) => (orgId ? this.facultySvc.listByOrg(orgId) : of([] as Faculty[]))),
+    ),
+    { initialValue: [] as Faculty[] }
+  );
+
+  readonly availableSponsors = toSignal(
+    toObservable(this.formOwnerOrgId).pipe(
+      switchMap((orgId) => (orgId ? this.sponsorsSvc.listByOrg(orgId) : of([] as Sponsor[]))),
+    ),
+    { initialValue: [] as Sponsor[] }
+  );
+
+  readonly availableAccreditations = toSignal(
+    toObservable(this.formOwnerOrgId).pipe(
+      switchMap((orgId) => (orgId ? this.accreditationSvc.listByOrg(orgId) : of([] as Accreditation[]))),
+    ),
+    { initialValue: [] as Accreditation[] }
+  );
 
   form: EventForm = emptyForm();
 
@@ -82,6 +119,30 @@ export class EventsAuthoringComponent {
     this.selectedOrgIds.set(next);
   }
 
+  toggleFaculty(facultyId: string | undefined, checked: boolean): void {
+    if (!facultyId) return;
+    const next = new Set(this.selectedFacultyIds());
+    if (checked) next.add(facultyId);
+    else next.delete(facultyId);
+    this.selectedFacultyIds.set(next);
+  }
+
+  toggleSponsor(sponsorId: string | undefined, checked: boolean): void {
+    if (!sponsorId) return;
+    const next = new Set(this.selectedSponsorIds());
+    if (checked) next.add(sponsorId);
+    else next.delete(sponsorId);
+    this.selectedSponsorIds.set(next);
+  }
+
+  onOwnerOrgChange(orgId: string): void {
+    this.form.ownerOrgId = orgId;
+    this.formOwnerOrgId.set(orgId);
+    this.selectedFacultyIds.set(new Set());
+    this.selectedSponsorIds.set(new Set());
+    this.form.accreditationId = '';
+  }
+
   edit(event: WebinarEvent): void {
     const date = event.schedule?.date?.toDate?.() as Date | undefined;
     this.form = {
@@ -99,8 +160,12 @@ export class EventsAuthoringComponent {
       zoomJoinUrl: event.zoom?.joinUrl || '',
       active: event.active !== false,
       status: event.status || 'draft',
+      accreditationId: event.accreditationId || '',
     };
     this.selectedOrgIds.set(new Set(event.assignedOrgIds || []));
+    this.selectedFacultyIds.set(new Set(event.facultyIds || []));
+    this.selectedSponsorIds.set(new Set(event.sponsorIds || []));
+    this.formOwnerOrgId.set(this.form.ownerOrgId);
     this.notice.set('');
     this.error.set(false);
   }
@@ -108,6 +173,9 @@ export class EventsAuthoringComponent {
   resetForm(): void {
     this.form = emptyForm();
     this.selectedOrgIds.set(new Set());
+    this.selectedFacultyIds.set(new Set());
+    this.selectedSponsorIds.set(new Set());
+    this.formOwnerOrgId.set('');
   }
 
   async save(): Promise<void> {
@@ -127,11 +195,15 @@ export class EventsAuthoringComponent {
       const zoomJoinUrl = this.form.zoomJoinUrl.trim();
       const wasEditing = !!this.form.id;
 
+      const accreditationId = this.form.accreditationId.trim();
+
       const basePayload = {
         title,
         description: this.form.description.trim(),
         ownerOrgId,
         assignedOrgIds: Array.from(this.selectedOrgIds()),
+        facultyIds: Array.from(this.selectedFacultyIds()),
+        sponsorIds: Array.from(this.selectedSponsorIds()),
         isPublic: this.form.isPublic,
         schedule: {
           date: Timestamp.fromDate(new Date(`${this.form.dateStr}T00:00:00`)),
@@ -148,19 +220,21 @@ export class EventsAuthoringComponent {
       };
 
       if (wasEditing) {
-        // deleteField() when cleared, so removing the URL on an existing
-        // event actually clears it — updateDoc() only touches keys present
-        // in the payload, it never removes fields on its own.
+        // deleteField() when cleared, so removing the URL/accreditation on an
+        // existing event actually clears it — updateDoc() only touches keys
+        // present in the payload, it never removes fields on its own.
         await this.eventsSvc.update(this.form.id, {
           ...basePayload,
           zoom: zoomJoinUrl ? { meetingType: 'webinar', joinUrl: zoomJoinUrl } : (deleteField() as any),
+          accreditationId: accreditationId ? accreditationId : (deleteField() as any),
         });
       } else {
-        // Omit the zoom key entirely on create (not zoom: undefined) —
-        // Firestore rejects undefined field values by default.
+        // Omit the zoom/accreditationId keys entirely on create (not set to
+        // undefined) — Firestore rejects undefined field values by default.
         const id = await this.eventsSvc.create({
           ...basePayload,
           ...(zoomJoinUrl ? { zoom: { meetingType: 'webinar' as const, joinUrl: zoomJoinUrl } } : {}),
+          ...(accreditationId ? { accreditationId } : {}),
         });
         this.form.id = id;
       }
@@ -192,6 +266,18 @@ export class EventsAuthoringComponent {
 
   orgName(orgId: string): string {
     return this.orgMap().get(orgId)?.name || orgId;
+  }
+
+  facultyName(facultyId: string): string {
+    return this.availableFaculty().find((f) => f.id === facultyId)?.name || facultyId;
+  }
+
+  sponsorName(sponsorId: string): string {
+    return this.availableSponsors().find((s) => s.id === sponsorId)?.name || sponsorId;
+  }
+
+  accreditationLabel(accreditation: Accreditation): string {
+    return `${accreditation.accreditingOrganization} — ${accreditation.contactHours} contact hrs`;
   }
 
   ownerName(event: WebinarEvent): string {

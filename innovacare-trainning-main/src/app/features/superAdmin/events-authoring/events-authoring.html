@@ -30,7 +30,7 @@
 
       <label class="field">
         <span>Owning organization</span>
-        <select name="ownerOrgId" [(ngModel)]="form.ownerOrgId" required>
+        <select name="ownerOrgId" [ngModel]="form.ownerOrgId" (ngModelChange)="onOwnerOrgChange($event)" required>
           <option value="">Select organization</option>
           <option *ngFor="let org of organizations()" [value]="org.id">{{ org.name }}</option>
         </select>
@@ -93,6 +93,17 @@
         <span>Active and visible in catalogs</span>
       </label>
 
+      <label class="field">
+        <span>Accreditation</span>
+        <select name="accreditationId" [(ngModel)]="form.accreditationId" [disabled]="!form.ownerOrgId">
+          <option value="">None</option>
+          <option *ngFor="let accreditation of availableAccreditations()" [value]="accreditation.id">
+            {{ accreditationLabel(accreditation) }}
+          </option>
+        </select>
+        <small *ngIf="!form.ownerOrgId">Select an owning organization first.</small>
+      </label>
+
       <div class="org-picker">
         <h3>Assign to organizations</h3>
         <p>Members of these organizations see the member price; everyone else sees the guest price.</p>
@@ -106,6 +117,42 @@
             <span>{{ org.name }}</span>
           </label>
         </div>
+      </div>
+
+      <div class="org-picker">
+        <h3>Faculty / speakers</h3>
+        <p>Attach speaker profiles for bio, credentials, and disclosure display.</p>
+        <div class="org-list" *ngIf="availableFaculty().length; else noFaculty">
+          <label class="org-row" *ngFor="let faculty of availableFaculty()" [class.org-row--checked]="selectedFacultyIds().has(faculty.id || '')">
+            <input
+              type="checkbox"
+              [checked]="selectedFacultyIds().has(faculty.id || '')"
+              (change)="toggleFaculty(faculty.id, $any($event.target).checked)"
+            />
+            <span>{{ faculty.name }}</span>
+          </label>
+        </div>
+        <ng-template #noFaculty>
+          <p class="empty-hint">{{ form.ownerOrgId ? 'No faculty profiles for this organization yet.' : 'Select an owning organization first.' }}</p>
+        </ng-template>
+      </div>
+
+      <div class="org-picker">
+        <h3>Sponsors</h3>
+        <p>Attach commercial-support sponsors for disclosure display.</p>
+        <div class="org-list" *ngIf="availableSponsors().length; else noSponsors">
+          <label class="org-row" *ngFor="let sponsor of availableSponsors()" [class.org-row--checked]="selectedSponsorIds().has(sponsor.id || '')">
+            <input
+              type="checkbox"
+              [checked]="selectedSponsorIds().has(sponsor.id || '')"
+              (change)="toggleSponsor(sponsor.id, $any($event.target).checked)"
+            />
+            <span>{{ sponsor.name }}</span>
+          </label>
+        </div>
+        <ng-template #noSponsors>
+          <p class="empty-hint">{{ form.ownerOrgId ? 'No sponsors for this organization yet.' : 'Select an owning organization first.' }}</p>
+        </ng-template>
       </div>
 
       <button class="btn-primary" type="submit" [disabled]="busy()">
@@ -124,6 +171,9 @@
           <small>{{ formatDate(event) }} · {{ ownerName(event) }} · {{ event.status }}</small>
           <div class="org-chips" *ngIf="event.assignedOrgIds?.length">
             <span class="org-chip" *ngFor="let orgId of event.assignedOrgIds">{{ orgName(orgId) }}</span>
+          </div>
+          <div class="org-chips" *ngIf="event.accreditationId">
+            <span class="org-chip org-chip--accent">Accredited</span>
           </div>
         </div>
         <div class="event-row__actions">

@@ -231,6 +231,48 @@
           "order": "ASCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "faculty",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ownerOrgId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "name",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "sponsors",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ownerOrgId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "name",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "accreditations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "ownerOrgId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "accreditingOrganization",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": [

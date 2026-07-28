@@ -92,6 +92,23 @@ export const SUPER_ADMIN_ROUTES: Routes = [
           import('./events-authoring/events-authoring').then(m => m.EventsAuthoringComponent),
       },
       {
+        path: 'accreditation',
+        loadComponent: () =>
+          import('./accreditation-authoring/accreditation-authoring').then(
+            m => m.AccreditationAuthoringComponent
+          ),
+      },
+      {
+        path: 'faculty',
+        loadComponent: () =>
+          import('./faculty-authoring/faculty-authoring').then(m => m.FacultyAuthoringComponent),
+      },
+      {
+        path: 'sponsors',
+        loadComponent: () =>
+          import('./sponsors-authoring/sponsors-authoring').then(m => m.SponsorsAuthoringComponent),
+      },
+      {
         path: 'exam-authoring',
         loadComponent: () =>
           import('./exam-authoring/exam-authoring').then(m => m.ExamAuthoringComponent),
