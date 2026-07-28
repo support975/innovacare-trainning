@@ -1,9 +1,9 @@
 name: Deploy to production
 
-# Manual promotion only, gated by the "production" GitHub Environment —
-# configure required reviewers on that Environment in repo Settings so this
-# can't run unattended. Deploys hosting, Firestore/Storage/Database rules,
-# and Cloud Functions to the innovacare-training project.
+# Manual promotion only, gated by the "innovacaretrainning-pro" GitHub
+# Environment — configure required reviewers on that Environment in repo
+# Settings so this can't run unattended. Deploys hosting, Firestore/Storage/
+# Database rules, and Cloud Functions to the innovacare-training project.
 on:
   workflow_dispatch:
     inputs:
@@ -28,7 +28,7 @@ jobs:
   deploy:
     name: Build & deploy (production)
     runs-on: ubuntu-latest
-    environment: production
+    environment: innovacaretrainning-pro
     steps:
       - uses: actions/checkout@v4
         with:

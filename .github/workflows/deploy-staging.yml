@@ -28,7 +28,7 @@ jobs:
   deploy:
     name: Build & deploy (staging)
     runs-on: ubuntu-latest
-    environment: staging
+    environment: innovacaretrainning-staging
     steps:
       - uses: actions/checkout@v4
         with:
