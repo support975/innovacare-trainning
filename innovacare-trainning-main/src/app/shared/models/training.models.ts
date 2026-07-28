@@ -1,20 +1,56 @@
 export type Role = 'super_admin' | 'admin' | 'manager' | 'learner' | 'guest';
 
+export interface CommunicationConsent {
+  marketingEmail: boolean;
+  sms: boolean;
+  whatsapp: boolean;
+  consentedAt?: any;
+}
+
 export interface UserProfile {
   uid: string;
   role: 'super_admin'|'admin'|'manager'|'learner'|'guest';
 
   orgId?: string | null;     // 🔥 clé
   orgType?: 'health'|'IT'|'school';
-  
+  /** Distingue un membre réel d'une organisation d'un inscrit B2C rattaché à l'org publique. */
+  accountType?: 'org_member' | 'b2c_guest';
 
   site?: 'Perry'|'Kathleen'|'WarnerRobins';
-  license?: 'RN'|'LPN'|'CNA';
+
+  // Identité professionnelle — généralisée au-delà du seul marché US
+  profession?: 'nurse' | 'nurse_practitioner' | 'physician' | 'physical_therapist'
+    | 'administrator' | 'educator' | 'student' | 'other';
+  license?: 'RN'|'LPN'|'CNA'|'BSN'|'MSN'|'DNP'|'Other';
+  licenseNumber?: string;
+  licenseIssuingBody?: string;      // ex: "Cameroon Nursing Council"
+  licenseExpirationDate?: any;
+  employerName?: string;            // hôpital/université, même hors org Innovacare
+
+  // Géo / langue — nécessaire pour la stratégie Afrique + Analytics "par pays"
+  country?: string;                 // code ISO 3166-1 alpha-2
+  timezone?: string;                // pour les rappels de webinaire
+  preferredLanguage?: 'EN'|'FR'|'ES';
+
+  // Contact — nécessaire pour Twilio SMS/WhatsApp
+  phoneNumber?: string;
+  phoneVerified?: boolean;
+
+  // Consentement communication — requis avant tout envoi SMS/WhatsApp/newsletter
+  communicationConsent?: CommunicationConsent;
+
+  // Réutilisation Faculty (si ce learner devient aussi intervenant)
+  facultyId?: string | null;
 
   displayName?: string;
   email?: string;
+  photoUrl?: string;
 
   plan?: 'free'|'premium';   // pour B2C
+
+  createdAt?: any;
+  updatedAt?: any;
+  lastLoginAt?: any;
 }
 
 export interface Course {
