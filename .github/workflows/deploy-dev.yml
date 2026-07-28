@@ -17,6 +17,10 @@ defaults:
   run:
     working-directory: innovacare-trainning-main
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   deploy:
     name: Build & deploy (dev)
@@ -47,7 +51,9 @@ jobs:
 
       - uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_DEV }}
+          project_id: innovacaretrainning-dev
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: github-deployer@innovacaretrainning-dev.iam.gserviceaccount.com
 
       - name: Deploy to Firebase (dev)
         run: |
