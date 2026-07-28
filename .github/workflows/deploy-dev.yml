@@ -62,23 +62,8 @@ jobs:
         # "functions" diffs every codebase and non-interactively refuses to
         # proceed rather than silently deleting them — scoping to :default
         # skips that codebase entirely so those functions are left alone.
-        #
-        # --debug is TEMPORARY, to diagnose why createOrganizationAdminHttp
-        # keeps failing to get its public invoker IAM policy set while other
-        # functions succeed. Remove it once diagnosed. Piped through sed to
-        # redact any Bearer/Authorization value in place (not drop the whole
-        # line — the real error detail sometimes shares a line with it):
-        # --debug can print full request objects on fetch errors, including
-        # the live OAuth token (full cloud-platform scope), and this repo is
-        # public, so that must never reach the raw log. `set -o pipefail` so
-        # a failing deploy still fails the step even through the pipe.
         run: |
-          set -o pipefail
           npx firebase-tools@13 deploy \
             --project innovacaretrainning-dev \
             --only hosting,firestore,storage,database,functions:default \
-            --non-interactive \
-            --debug 2>&1 | sed -E \
-              -e 's/Bearer [A-Za-z0-9_.-]+/Bearer [REDACTED]/gi' \
-              -e 's/"Authorization":"[^"]*"/"Authorization":"[REDACTED]"/gi' \
-              -e "s/'Authorization': '[^']*'/'Authorization': '[REDACTED]'/gi"
+            --non-interactive
