@@ -1,7 +1,7 @@
 /* eslint-disable max-len, require-jsdoc, valid-jsdoc */
 /* functions/src/index.ts (Firebase Functions v2) */
 import * as admin from "firebase-admin";
-import {onDocumentCreated, onDocumentUpdated} from "firebase-functions/v2/firestore";
+import {onDocumentCreated, onDocumentUpdated, onDocumentWritten} from "firebase-functions/v2/firestore";
 import {onCall, onRequest, CallableRequest, HttpsError} from "firebase-functions/v2/https";
 import {setGlobalOptions} from "firebase-functions/v2/options";
 import {defineSecret} from "firebase-functions/params";
@@ -1747,6 +1747,69 @@ export const processOrganizationAdminCreateRequest = onDocumentCreated(
   },
 );
 
+/**
+ * Loads ancestorOrgIds for every organization once, for computing the
+ * "reachable" org set of a course's assignedOrgIds without a per-org read
+ * per call site.
+ */
+async function loadOrgAncestorsMap(): Promise<Map<string, string[]>> {
+  const snap = await db.collection("organizations").select("ancestorOrgIds").get();
+  const map = new Map<string, string[]>();
+  snap.forEach((orgDoc) => {
+    const ancestors = orgDoc.get("ancestorOrgIds");
+    map.set(orgDoc.id, Array.isArray(ancestors) ? ancestors.map((a) => String(a)) : []);
+  });
+  return map;
+}
+
+/**
+ * Union of {orgId, ...ancestorOrgIds(orgId)} for every orgId in the input —
+ * every org that should be able to read a course assigned to these orgs,
+ * including a council ancestor of any of them.
+ */
+function computeReachableOrgIds(orgIds: string[], orgAncestors: Map<string, string[]>): string[] {
+  const reachable = new Set<string>();
+  for (const orgId of orgIds) {
+    reachable.add(orgId);
+    for (const ancestorId of orgAncestors.get(orgId) ?? []) {
+      reachable.add(ancestorId);
+    }
+  }
+  return Array.from(reachable).sort();
+}
+
+// Keeps courses/{courseId}.assignedOrgReachableIds (read by firestore.rules'
+// isCourseReachableByMyOrg) in sync whenever assignedOrgIds changes, so a
+// council ancestor admin can read a course assigned to a descendant facility
+// without granting every admin read access to every course on the platform.
+export const onCourseAssignedOrgIdsChange = onDocumentWritten(
+  "courses/{courseId}",
+  async (event) => {
+    const after = event.data?.after;
+    if (!after?.exists) return;
+
+    const beforeOrgIdsRaw = event.data?.before?.get("assignedOrgIds");
+    const afterOrgIdsRaw = after.get("assignedOrgIds");
+    const beforeOrgIds = Array.isArray(beforeOrgIdsRaw) ? beforeOrgIdsRaw.map(String).sort() : [];
+    const afterOrgIds = Array.isArray(afterOrgIdsRaw) ? afterOrgIdsRaw.map(String).sort() : [];
+
+    const existingReachableRaw = after.get("assignedOrgReachableIds");
+    const existingReachable = Array.isArray(existingReachableRaw) ? existingReachableRaw.map(String).sort() : [];
+
+    // Nothing to recompute if assignedOrgIds is unchanged and reachableIds
+    // already reflects it (avoids re-triggering on our own write below).
+    const orgIdsUnchanged = JSON.stringify(beforeOrgIds) === JSON.stringify(afterOrgIds);
+    if (orgIdsUnchanged && existingReachable.length > 0) return;
+
+    const orgAncestors = await loadOrgAncestorsMap();
+    const reachable = computeReachableOrgIds(afterOrgIds, orgAncestors);
+
+    if (JSON.stringify(reachable) === JSON.stringify(existingReachable)) return;
+
+    await after.ref.update({assignedOrgReachableIds: reachable});
+  },
+);
+
 export const processCourseAssignmentBackfillRequest = onDocumentCreated(
   "courseAssignmentBackfillRequests/{requestId}",
   async (event) => {
@@ -1827,9 +1890,13 @@ export const processCourseAssignmentBackfillRequest = onDocumentCreated(
         updatedLearningPaths++;
       }
 
+      const orgAncestors = await loadOrgAncestorsMap();
+
       for (const [courseId, orgIds] of courseOrgIds.entries()) {
+        const sortedOrgIds = Array.from(orgIds).sort();
         writer.set(db.doc(`courses/${courseId}`), {
-          assignedOrgIds: Array.from(orgIds).sort(),
+          assignedOrgIds: sortedOrgIds,
+          assignedOrgReachableIds: computeReachableOrgIds(sortedOrgIds, orgAncestors),
           updatedAt: nowTs(),
         }, {merge: true});
         updatedCourses++;

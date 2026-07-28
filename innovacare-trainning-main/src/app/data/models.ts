@@ -395,7 +395,22 @@ export type Block =
       }[];
     }
   | { id?: string; type: 'callout'; style?: 'info'|'warn'|'success'; html: string; required?: boolean }
-  | { id?: string; type: 'quiz'; mode: 'single'|'multi'| 'caseStudy'; question: string; linkedQuizId?: string; required?: boolean; choices: { id:string; text:string; correct:boolean }[] };
+  | { id?: string; type: 'quiz'; mode: 'single'|'multi'| 'caseStudy'; question: string; linkedQuizId?: string; required?: boolean; choices: { id:string; text:string; correct:boolean }[] }
+  | {
+      id?: string;
+      type: 'carousel';
+      title?: string;
+      required?: boolean;
+      slides: {
+        id: string;
+        imageUrl?: string;
+        heading?: string;
+        bodyHtml?: string;
+        buttonLabel?: string;
+        buttonAction?: 'url' | 'nextLesson' | 'markComplete';
+        buttonUrl?: string;
+      }[];
+    };
 
 
   export interface Enrollment {

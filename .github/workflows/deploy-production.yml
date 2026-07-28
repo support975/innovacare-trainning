@@ -1,0 +1,70 @@
+name: Deploy to production
+
+# Manual promotion only, gated by the "production" GitHub Environment —
+# configure required reviewers on that Environment in repo Settings so this
+# can't run unattended. Deploys hosting, Firestore/Storage/Database rules,
+# and Cloud Functions to the innovacare-training project.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch, tag, or commit SHA to deploy to production (should already be verified on staging)'
+        required: false
+        default: main
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+defaults:
+  run:
+    working-directory: innovacare-trainning-main
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: Build & deploy (production)
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: innovacare-trainning-main/package-lock.json
+
+      - name: Install app dependencies
+        run: npm ci
+
+      - name: Build (production configuration)
+        run: npx ng build --configuration production
+
+      - name: Install functions dependencies (default codebase)
+        working-directory: innovacare-trainning-main/functions
+        run: npm ci
+
+      - name: Install functions dependencies (innovacare-training codebase)
+        working-directory: innovacare-trainning-main/innovacare-training
+        run: npm ci
+
+      - uses: google-github-actions/auth@v2
+        with:
+          project_id: innovacare-training
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          # Verify this matches the actual "firebase-adminsdk-*" account on
+          # this project's IAM & Admin → Service accounts page before first use.
+          service_account: firebase-adminsdk-fbsvc@innovacare-training.iam.gserviceaccount.com
+
+      - name: Deploy to Firebase (production)
+        run: |
+          npx firebase-tools@13 deploy \
+            --project innovacare-training \
+            --only hosting,firestore,storage,database,functions \
+            --non-interactive

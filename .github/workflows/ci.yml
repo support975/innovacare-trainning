@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+defaults:
+  run:
+    working-directory: innovacare-trainning-main
+
+jobs:
+  build-app:
+    name: Build Angular app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: innovacare-trainning-main/package-lock.json
+
+      - run: npm ci
+      - run: npx ng build --configuration production
+
+  build-functions:
+    name: Build & lint Cloud Functions (default codebase)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: innovacare-trainning-main/functions
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: innovacare-trainning-main/functions/package-lock.json
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+  build-functions-innovacare-training:
+    name: Build & lint Cloud Functions (innovacare-training codebase)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: innovacare-trainning-main/innovacare-training
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: innovacare-trainning-main/innovacare-training/package-lock.json
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build

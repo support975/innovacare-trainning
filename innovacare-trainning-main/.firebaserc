@@ -2,7 +2,8 @@
   "projects": {
     "default": "innovacare-training",
     "training": "innovacare-training",
-    "dev": "innovacaretrainning-dev"
+    "dev": "innovacaretrainning-dev",
+    "staging": "innovacaretrainninng-staging"
   },
   "targets": {},
   "etags": {}

@@ -152,7 +152,7 @@
 
   <!-- Heading / Text / Image / Audio / Callout -->
   <div class="block"
-      *ngIf="b.type !== 'quiz' && b.type !== 'video' && b.type !== 'slideDeck' && b.type !== 'cardStack' && b.type !== 'accordion' && b.type !== 'tabs'"
+      *ngIf="b.type !== 'quiz' && b.type !== 'video' && b.type !== 'slideDeck' && b.type !== 'cardStack' && b.type !== 'accordion' && b.type !== 'tabs' && b.type !== 'carousel'"
        [innerHTML]="blockHtml(b)">
   </div>
 
@@ -443,6 +443,71 @@
         >
           {{ slideIndex + 1 }}
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Carousel -->
+  <div class="block carousel-shell" *ngIf="b.type === 'carousel'">
+    <div
+      class="carousel"
+      *ngIf="activeCarouselSlide(cur.id, bi, b) as slide"
+      (pointerdown)="onCarouselPointerDown(cur.id, bi, $event)"
+      (pointerup)="onCarouselPointerUp(cur.id, bi, b, $event)"
+    >
+      <h3 class="carousel__title" *ngIf="b.title">{{ b.title }}</h3>
+
+      <div class="carousel__stage">
+        <img
+          class="carousel__image"
+          *ngIf="slide.imageUrl"
+          [src]="slide.imageUrl"
+          [alt]="slide.heading || ''"
+          draggable="false"
+        />
+
+        <button
+          type="button"
+          class="carousel__arrow carousel__arrow--prev"
+          *ngIf="carouselSlides(b).length > 1"
+          (click)="prevCarouselSlide(cur.id, bi, b)"
+          [attr.aria-label]="t('player.previousSlide')"
+        >
+          ‹
+        </button>
+        <button
+          type="button"
+          class="carousel__arrow carousel__arrow--next"
+          *ngIf="carouselSlides(b).length > 1"
+          (click)="nextCarouselSlide(cur.id, bi, b)"
+          [attr.aria-label]="t('player.nextSlide')"
+        >
+          ›
+        </button>
+
+        <div class="carousel__copy">
+          <h4 *ngIf="slide.heading">{{ slide.heading }}</h4>
+          <div *ngIf="slide.bodyHtml" [innerHTML]="slideNotesHtml(slide.bodyHtml)"></div>
+          <button
+            type="button"
+            class="carousel__cta"
+            *ngIf="slide.buttonLabel"
+            (click)="onCarouselAction(cur, slide)"
+          >
+            {{ slide.buttonLabel }}
+          </button>
+        </div>
+      </div>
+
+      <div class="carousel__dots" *ngIf="carouselSlides(b).length > 1">
+        <button
+          type="button"
+          *ngFor="let dotSlide of carouselSlides(b); let slideIndex = index"
+          class="carousel__dot"
+          [class.active]="carouselIndex(cur.id, bi, b) === slideIndex"
+          (click)="setCarouselIndex(cur.id, bi, b, slideIndex)"
+          [attr.aria-label]="t('player.showSlide', { number: slideIndex + 1 })"
+        ></button>
       </div>
     </div>
   </div>

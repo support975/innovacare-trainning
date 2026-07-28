@@ -1,0 +1,70 @@
+name: Promote to staging
+
+# Manual promotion only. Staging is its own separate Firebase project
+# (innovacaretrainninng-staging) with its own Firestore/Storage/Database/
+# Functions — not shared with dev — so this deploys the full stack there,
+# same shape as deploy-dev.yml / deploy-production.yml.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch, tag, or commit SHA to deploy to staging'
+        required: false
+        default: main
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+defaults:
+  run:
+    working-directory: innovacare-trainning-main
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: Build & deploy (staging)
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: innovacare-trainning-main/package-lock.json
+
+      - name: Install app dependencies
+        run: npm ci
+
+      - name: Build (optimized, pointed at the staging Firebase backend)
+        run: npx ng build --configuration staging
+
+      - name: Install functions dependencies (default codebase)
+        working-directory: innovacare-trainning-main/functions
+        run: npm ci
+
+      - name: Install functions dependencies (innovacare-training codebase)
+        working-directory: innovacare-trainning-main/innovacare-training
+        run: npm ci
+
+      - uses: google-github-actions/auth@v2
+        with:
+          project_id: innovacaretrainninng-staging
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          # Verify this matches the actual "firebase-adminsdk-*" account on
+          # this project's IAM & Admin → Service accounts page before first use.
+          service_account: firebase-adminsdk-fbsvc@innovacaretrainninng-staging.iam.gserviceaccount.com
+
+      - name: Deploy to Firebase (staging)
+        run: |
+          npx firebase-tools@13 deploy \
+            --project innovacaretrainninng-staging \
+            --only hosting,firestore,storage,database,functions \
+            --non-interactive

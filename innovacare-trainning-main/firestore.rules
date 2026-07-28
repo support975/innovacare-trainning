@@ -196,6 +196,19 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/organizationCourseAssignments/$(myOrgId() + '_' + courseId)).data.active != false;
     }
 
+    // A council ancestor admin can read a course assigned to one of its
+    // descendant facilities without being granted access to every course on
+    // the platform. assignedOrgReachableIds is a denormalized union of
+    // {assignedOrgId, ...ancestorOrgIds(assignedOrgId)} for every org the
+    // course is assigned to, kept in sync by onCourseAssignedOrgIdsChange in
+    // functions/src/index.ts whenever assignedOrgIds changes.
+    function isCourseReachableByMyOrg(courseData) {
+      return isSignedIn()
+        && myOrgId() != null
+        && myRole() in ['admin', 'manager']
+        && myOrgId() in courseData.get('assignedOrgReachableIds', []);
+    }
+
     function isLearningPathMappedToMyOrg(pathId) {
       return isSignedIn()
         && myOrgId() != null
@@ -219,13 +232,13 @@ service cloud.firestore {
       return (!isSignedIn() && isPublicCourse(courseData))
         || (courseData.active == true && hasPaidIndividualEnrollment(courseId))
         || isSuperAdmin()
-        // Matches the existing blanket admin WRITE grant on courses/{courseId}
-        // below — reads shouldn't be more restrictive than writes for the
-        // same role, and this is also what lets a council admin "acting as"
-        // a descendant facility read courses assigned to that facility.
-        || isAdminOrAbove()
         || isCourseAssignedToMyOrg(courseData)
         || isCourseMappedToMyOrg(courseId)
+        // Scoped replacement for the old blanket isAdminOrAbove() grant: a
+        // council ancestor admin can read courses assigned to a descendant
+        // facility (what "act-as-admin" needs), but this no longer lets any
+        // admin at any org read every course on the platform.
+        || isCourseReachableByMyOrg(courseData)
         || (isSignedIn()
             && myOrgId() != null
             && exists(/databases/$(database)/documents/users/$(request.auth.uid)/enrollments/$(courseId)))

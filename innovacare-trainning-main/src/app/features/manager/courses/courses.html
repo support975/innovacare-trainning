@@ -313,6 +313,7 @@
                     <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'cardStack')">+ Card stack</button>
                     <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'quizIntro')">+ Quiz intro</button>
                     <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'slideDeck')">+ Slide deck</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'carousel')">+ Carousel</button>
                     <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'callout')">+ Callout</button>
                     <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'quiz')">+ Quiz</button>
                   </div>
@@ -339,6 +340,7 @@
                       <option value="cardStack">Card stack</option>
                       <option value="quizIntro">Quiz intro</option>
                       <option value="slideDeck">Slide deck</option>
+                      <option value="carousel">Carousel</option>
                       <option value="callout">Callout</option>
                       <option value="quiz">Quiz</option>
                     </select>
@@ -606,6 +608,51 @@
                           </div>
 
                           <button type="button" class="btn-outline-sm" (click)="addSlide(si, li, bi)">+ Add slide</button>
+                        </div>
+                      </div>
+
+                      <div class="preview">
+                        <div class="preview-title">Preview</div>
+                        <div class="preview-box" [innerHTML]="previewFor(b)"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Carousel -->
+                  <div *ngIf="b.value.type === 'carousel'" class="block-body">
+                    <div class="editor-grid">
+                      <div class="editor">
+                        <input class="field-input" formControlName="title" placeholder="Carousel title (optional)" />
+
+                        <div class="choices" formArrayName="carouselSlides">
+                          <div
+                            class="choice"
+                            *ngFor="let slide of b.controls.carouselSlides.controls; let slideIndex = index"
+                            [formGroup]="slide"
+                          >
+                            <input class="field-input w-full" formControlName="imageUrl" placeholder="Slide image URL" />
+                            <input class="field-input w-full" formControlName="heading" placeholder="Slide heading" />
+                            <textarea class="field-input mono" rows="3" formControlName="bodyHtml" placeholder="<p>Slide body HTML</p>"></textarea>
+
+                            <div class="grid two">
+                              <input class="field-input w-full" formControlName="buttonLabel" placeholder="Button label (optional)" />
+                              <select class="field-input w-full" formControlName="buttonAction">
+                                <option value="url">Open link</option>
+                                <option value="nextLesson">Go to next lesson</option>
+                                <option value="markComplete">Mark lesson complete</option>
+                              </select>
+                            </div>
+                            <input
+                              class="field-input w-full"
+                              formControlName="buttonUrl"
+                              placeholder="https://... (only used for 'Open link')"
+                              *ngIf="slide.value.buttonAction === 'url'"
+                            />
+
+                            <button type="button" class="btn-ghost-sm" (click)="removeCarouselSlide(si, li, bi, slideIndex)">Remove slide</button>
+                          </div>
+
+                          <button type="button" class="btn-outline-sm" (click)="addCarouselSlide(si, li, bi)">+ Add slide</button>
                         </div>
                       </div>
 
