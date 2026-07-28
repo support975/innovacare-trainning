@@ -139,6 +139,7 @@ export class LearnerShell {
   private readonly allLinks: LearnerNavItem[] = [
     { path: '/learner', labelKey: 'shell.dashboard' },
     { path: '/learner/assignments', labelKey: 'shell.assignments' },
+    { path: '/learner/events', labelKey: 'shell.events' },
     { path: '/learner/profile', labelKey: 'shell.profileLink' },
     { path: '/learner/policies', labelKey: 'shell.policies' }
   ];
@@ -157,7 +158,7 @@ export class LearnerShell {
   readonly links = computed(() =>
     this.localizeNavItems(this.isIndividualLearner()
       ? this.allLinks.filter((item) =>
-          ['/learner', '/learner/assignments'].includes(item.path)
+          ['/learner', '/learner/assignments', '/learner/events'].includes(item.path)
         )
       : this.allLinks)
   );
