@@ -55,13 +55,8 @@ jobs:
           credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_STAGING }}
 
       - name: Deploy to Firebase (staging)
-        # NOTE: "database" (Realtime Database) is deliberately left out here —
-        # unlike dev/prod, this is a brand-new project and RTDB isn't
-        # provisioned by default. Add ",database" to --only once it's enabled
-        # (Firebase console → Realtime Database → Create Database) and
-        # database.rules.json has been reviewed for this project.
         run: |
           npx firebase-tools@13 deploy \
             --project innovacaretrainninng-staging \
-            --only hosting,firestore,storage,functions \
+            --only hosting,firestore,storage,database,functions \
             --non-interactive
