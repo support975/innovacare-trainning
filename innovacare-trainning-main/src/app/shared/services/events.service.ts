@@ -4,12 +4,19 @@ import {
   addDoc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp,
   DocumentReference,
 } from '@angular/fire/firestore';
+import { Functions, httpsCallable } from '@angular/fire/functions';
 import { Observable } from 'rxjs';
 import { WebinarEvent, EventRegistration } from '../../data/models';
+
+interface CreateEventCheckoutSessionResponse {
+  sessionId: string;
+  url: string | null;
+}
 
 @Injectable({ providedIn: 'root' })
 export class EventsService {
   private firestore = inject(Firestore);
+  private functions = inject(Functions);
   private eventsCollection = collection(this.firestore, 'events');
   private registrationsCollection = collection(this.firestore, 'eventRegistrations');
 
@@ -99,5 +106,21 @@ export class EventsService {
       updatedAt: serverTimestamp(),
     });
     return ref.id;
+  }
+
+  /**
+   * Creates a one-time Stripe Checkout session for a paid registration.
+   * The registration must already exist (paymentStatus: 'pending', from
+   * register()) — the Cloud Function re-derives the price from the event's
+   * pricing and the registration's tier, so the amount is never trusted
+   * from the client.
+   */
+  async createCheckoutSession(eventId: string, registrationId: string): Promise<CreateEventCheckoutSessionResponse> {
+    const callable = httpsCallable<{ eventId: string; registrationId: string }, CreateEventCheckoutSessionResponse>(
+      this.functions,
+      'createEventCheckoutSession',
+    );
+    const result = await callable({ eventId, registrationId });
+    return result.data;
   }
 }

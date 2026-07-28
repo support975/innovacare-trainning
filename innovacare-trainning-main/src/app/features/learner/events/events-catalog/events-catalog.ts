@@ -88,23 +88,30 @@ export class EventsCatalog {
     const eventId = vm.event.id;
     if (!profile || !eventId) return;
 
-    if (!this.isFree(vm)) {
-      this.notice.set('Online payment for this event is coming soon.');
-      return;
-    }
-
     this.registering.set(eventId);
     this.notice.set('');
     try {
-      await this.eventsService.register({
+      const free = this.isFree(vm);
+      const registrationId = await this.eventsService.register({
         eventId,
         uid: profile.uid,
         orgId: profile.orgId ?? null,
         tier: vm.isMember ? 'member' : 'guest',
-        paymentStatus: 'free',
+        paymentStatus: free ? 'free' : 'pending',
       });
-      this.registeredEventIds.update((set) => new Set(set).add(eventId));
-      this.notice.set('You are registered. Check your email for the confirmation.');
+
+      if (free) {
+        this.registeredEventIds.update((set) => new Set(set).add(eventId));
+        this.notice.set('You are registered. Check your email for the confirmation.');
+        return;
+      }
+
+      const { url } = await this.eventsService.createCheckoutSession(eventId, registrationId);
+      if (!url) {
+        this.notice.set('Could not start checkout. Please try again.');
+        return;
+      }
+      window.location.href = url;
     } catch (e: any) {
       this.notice.set(e?.message || 'Registration failed. Please try again.');
     } finally {

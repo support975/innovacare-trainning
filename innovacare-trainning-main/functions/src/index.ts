@@ -648,6 +648,24 @@ export const stripeWebhook = onRequest(
           customerEmail: session.customer_details?.email || session.customer_email,
         });
       }
+
+      if (session.metadata?.kind === "event_registration" && session.metadata?.registrationId) {
+        const paymentIntentId = typeof session.payment_intent === "string" ?
+          session.payment_intent :
+          session.payment_intent?.id;
+
+        // Confirmation email/SMS is sent by onEventRegistrationConfirmed,
+        // triggered by this paymentStatus write (same trigger also fires for
+        // free registrations directly, on create).
+        await db.doc(`eventRegistrations/${session.metadata.registrationId}`).set(
+          {
+            paymentStatus: "paid",
+            stripePaymentIntentId: paymentIntentId || null,
+            updatedAt: nowTs(),
+          },
+          {merge: true},
+        );
+      }
     }
 
     if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.deleted") {
@@ -732,6 +750,97 @@ export const createStripeCheckoutSession = onCall(
       requestedByUid: request.auth?.uid || null,
       requestedByEmail: request.auth?.token.email || null,
       createdAt: nowTs(),
+      updatedAt: nowTs(),
+    });
+
+    return {
+      sessionId: session.id,
+      url: session.url,
+    };
+  },
+);
+
+// One-time payment checkout for a paid event registration (mode: "payment"),
+// distinct from createStripeCheckoutSession above which is subscription-only
+// (org billing plans). The registration doc must already exist
+// (paymentStatus: "pending") before calling this — see events.service.ts's
+// register().
+export const createEventCheckoutSession = onCall(
+  {cors: callableCors, secrets: [STRIPE_SECRET_KEY]},
+  async (request: CallableRequest<{eventId: string; registrationId: string}>) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "Sign in required.");
+    }
+
+    const eventId = cleanOptionalString(request.data?.eventId, 200);
+    const registrationId = cleanOptionalString(request.data?.registrationId, 200);
+    if (!eventId || !registrationId) {
+      throw new HttpsError("invalid-argument", "eventId and registrationId are required.");
+    }
+
+    const eventSnap = await db.doc(`events/${eventId}`).get();
+    if (!eventSnap.exists) {
+      throw new HttpsError("not-found", "Event not found.");
+    }
+    const eventData = eventSnap.data() || {};
+
+    const regRef = db.doc(`eventRegistrations/${registrationId}`);
+    const regSnap = await regRef.get();
+    if (!regSnap.exists) {
+      throw new HttpsError("not-found", "Registration not found.");
+    }
+    const regData = regSnap.data() || {};
+    if (regData.uid !== uid) {
+      throw new HttpsError("permission-denied", "This is not your registration.");
+    }
+    if (regData.eventId !== eventId) {
+      throw new HttpsError("failed-precondition", "Registration does not match the given event.");
+    }
+
+    const tier = regData.tier === "member" ? "member" : "guest";
+    const priceValue = tier === "member" ?
+      eventData.pricing?.memberPrice :
+      eventData.pricing?.guestPrice;
+    const amountCents = Math.round(Number(priceValue || 0) * 100);
+    if (!amountCents || amountCents <= 0) {
+      throw new HttpsError("failed-precondition", "This event is free for this registrant — no payment needed.");
+    }
+
+    const stripe = stripeClient();
+    const returnBase = safeCheckoutReturnBase(request.rawRequest.headers.origin);
+    const customerEmail = String(request.auth?.token.email || "");
+
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      success_url: `${returnBase}/learner/events?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${returnBase}/learner/events?checkout=cancelled&eventId=${eventId}`,
+      customer_email: customerEmail || undefined,
+      client_reference_id: uid,
+      line_items: [
+        {
+          quantity: 1,
+          price_data: {
+            currency: "usd",
+            unit_amount: amountCents,
+            product_data: {
+              name: cleanOptionalString(eventData.title, 200) || "Webinar registration",
+              metadata: {app: "innovacare-training", eventId, registrationId},
+            },
+          },
+        },
+      ],
+      metadata: {
+        app: "innovacare-training",
+        kind: "event_registration",
+        eventId,
+        registrationId,
+        uid,
+      },
+    });
+
+    await regRef.update({
+      stripeSessionId: session.id,
       updatedAt: nowTs(),
     });
 
@@ -1836,6 +1945,74 @@ export const onEventAssignedOrgIdsChange = onDocumentWritten(
     if (JSON.stringify(reachable) === JSON.stringify(existingReachable)) return;
 
     await after.ref.update({assignedOrgReachableIds: reachable});
+  },
+);
+
+// Sends the "you're registered" confirmation email/SMS exactly once per
+// registration, the moment paymentStatus first becomes "free" (on create) or
+// "paid" (on update from "pending", written by stripeWebhook above) —
+// handles both the free and paid registration paths through one trigger,
+// rather than sending confirmation from two different call sites.
+export const onEventRegistrationConfirmed = onDocumentWritten(
+  "eventRegistrations/{registrationId}",
+  async (event) => {
+    const after = event.data?.after;
+    if (!after?.exists) return;
+
+    const afterData = after.data() || {};
+    if (afterData.confirmationSentAt) return;
+
+    const wasConfirmed = event.data?.before?.exists &&
+      ["free", "paid"].includes(String(event.data.before.data()?.paymentStatus || ""));
+    const isConfirmed = ["free", "paid"].includes(String(afterData.paymentStatus || ""));
+    if (!isConfirmed || wasConfirmed) return;
+
+    const eventId = String(afterData.eventId || "");
+    const uid = String(afterData.uid || "");
+    if (!eventId || !uid) return;
+
+    const [eventSnap, userSnap] = await Promise.all([
+      db.doc(`events/${eventId}`).get(),
+      db.doc(`users/${uid}`).get(),
+    ]);
+    if (!eventSnap.exists) return;
+
+    const eventData = eventSnap.data() || {};
+    const userData = userSnap.exists ? userSnap.data() || {} : {};
+    const email = String(userData.email || "").trim();
+    const displayName = String(userData.displayName || "").trim() || "there";
+    const title = cleanOptionalString(eventData.title, 200) || "this webinar";
+    const schedule = eventData.schedule || {};
+    const joinUrl = eventData.zoom?.joinUrl || null;
+
+    if (email) {
+      await db.collection("mail").add({
+        to: [email],
+        message: {
+          subject: `You're registered: ${title}`,
+          html: `
+            <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;color:#1a2b4a">
+              <h2 style="color:#1a3f6f">You're registered!</h2>
+              <p>Hello ${displayName},</p>
+              <p>Your registration for <strong>${title}</strong> is confirmed.</p>
+              <p><strong>When:</strong> ${schedule.startTime || ""}–${schedule.endTime || ""} (${schedule.timezone || ""})</p>
+              ${joinUrl ? `<p><a href="${joinUrl}">Join the webinar</a></p>` : "<p>The join link will be sent closer to the event date.</p>"}
+            </div>
+          `,
+        },
+      });
+    }
+
+    const phone = String(userData.phoneNumber || "").trim();
+    const smsConsent = userData.communicationConsent?.sms === true;
+    if (phone && smsConsent) {
+      await db.collection("sms").add({
+        to: phone,
+        body: `Innovacare: You're registered for "${title}". Check your email for details and the join link.`,
+      });
+    }
+
+    await after.ref.set({confirmationSentAt: nowTs()}, {merge: true});
   },
 );
 
