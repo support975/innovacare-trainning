@@ -58,7 +58,9 @@ jobs:
         with:
           project_id: innovacare-training
           workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: github-deployer@innovacare-training.iam.gserviceaccount.com
+          # Verify this matches the actual "firebase-adminsdk-*" account on
+          # this project's IAM & Admin → Service accounts page before first use.
+          service_account: firebase-adminsdk-fbsvc@innovacare-training.iam.gserviceaccount.com
 
       - name: Deploy to Firebase (production)
         run: |
