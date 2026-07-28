@@ -123,6 +123,81 @@ export interface Sponsor {
   updatedAt?: any;
 }
 
+/**
+ * A live webinar/event, independent of Course. Named WebinarEvent (not
+ * Event) to avoid colliding with the DOM's global Event type used throughout
+ * Angular event handlers.
+ *
+ * Distribution mirrors Course exactly: ownerOrgId + assignedOrgIds +
+ * assignedOrgReachableIds (kept in sync by onEventAssignedOrgIdsChange, same
+ * shape as onCourseAssignedOrgIdsChange) + isPublic. Guest/individual
+ * registration reuses the existing accountType:'individual', orgId:null
+ * pattern from core/auth.ts's public self-serve signup — no separate
+ * "public org" concept.
+ */
+export interface WebinarEvent {
+  id?: string;
+  title: string;
+  description?: string;
+  ownerOrgId: string;
+  assignedOrgIds?: string[];
+  assignedOrgReachableIds?: string[];
+  isPublic?: boolean;
+
+  facultyIds?: string[];
+  sponsorIds?: string[];
+  accreditationId?: string;
+
+  schedule: {
+    date: any;            // Firestore Timestamp, event date
+    startTime: string;    // e.g. "13:00"
+    endTime: string;
+    timezone: string;     // IANA tz, e.g. "America/New_York"
+  };
+
+  zoom?: {
+    meetingType?: 'meeting' | 'webinar';
+    /** Phase 1: a static shared link. Never the host URL — that must stay server-side. */
+    joinUrl?: string;
+  };
+
+  pricing: {
+    memberPrice: number | null;  // null = free for members
+    guestPrice: number;          // individuals/guests always pay this
+  };
+  capacity?: number;
+  waitlistEnabled?: boolean;
+
+  recordingUrl?: string;
+  autoConvertToCourse?: boolean;
+
+  status: 'draft' | 'published' | 'live' | 'completed' | 'cancelled';
+  active: boolean;
+
+  createdAt?: any;
+  updatedAt?: any;
+}
+
+export interface EventRegistration {
+  id?: string;
+  eventId: string;
+  uid: string;
+  /** null for individual/guest registrants — matches Course enrollment's orgId:null pattern. */
+  orgId?: string | null;
+  tier: 'member' | 'guest';
+
+  paymentStatus: 'free' | 'pending' | 'paid';
+  stripeSessionId?: string;
+  stripePaymentIntentId?: string;
+
+  attended?: boolean | null;   // set later by the Zoom attendance webhook (phase 2)
+  evaluationSubmitted?: boolean;
+  certificateId?: string | null;
+
+  createdAt?: any;
+  updatedAt?: any;
+}
+
 export interface Section {
   [x: string]: any;
   id: string;                   // stable key (slug/uuid)

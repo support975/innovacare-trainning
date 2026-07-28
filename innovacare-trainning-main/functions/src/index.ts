@@ -1810,6 +1810,35 @@ export const onCourseAssignedOrgIdsChange = onDocumentWritten(
   },
 );
 
+// Same purpose as onCourseAssignedOrgIdsChange above, for events/{eventId}
+// (webinars). Kept as a separate trigger rather than a shared helper because
+// onDocumentWritten is bound to a single collection path.
+export const onEventAssignedOrgIdsChange = onDocumentWritten(
+  "events/{eventId}",
+  async (event) => {
+    const after = event.data?.after;
+    if (!after?.exists) return;
+
+    const beforeOrgIdsRaw = event.data?.before?.get("assignedOrgIds");
+    const afterOrgIdsRaw = after.get("assignedOrgIds");
+    const beforeOrgIds = Array.isArray(beforeOrgIdsRaw) ? beforeOrgIdsRaw.map(String).sort() : [];
+    const afterOrgIds = Array.isArray(afterOrgIdsRaw) ? afterOrgIdsRaw.map(String).sort() : [];
+
+    const existingReachableRaw = after.get("assignedOrgReachableIds");
+    const existingReachable = Array.isArray(existingReachableRaw) ? existingReachableRaw.map(String).sort() : [];
+
+    const orgIdsUnchanged = JSON.stringify(beforeOrgIds) === JSON.stringify(afterOrgIds);
+    if (orgIdsUnchanged && existingReachable.length > 0) return;
+
+    const orgAncestors = await loadOrgAncestorsMap();
+    const reachable = computeReachableOrgIds(afterOrgIds, orgAncestors);
+
+    if (JSON.stringify(reachable) === JSON.stringify(existingReachable)) return;
+
+    await after.ref.update({assignedOrgReachableIds: reachable});
+  },
+);
+
 export const processCourseAssignmentBackfillRequest = onDocumentCreated(
   "courseAssignmentBackfillRequests/{requestId}",
   async (event) => {
