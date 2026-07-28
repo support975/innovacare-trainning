@@ -1,9 +1,9 @@
 name: Deploy to dev
 
 # Every push to main deploys straight to the dev Firebase project
-# (innovacaretrainning-dev) — hosting (dev site), Firestore/Storage rules,
-# and Cloud Functions. Promoting to staging or production is a separate,
-# manual workflow (see deploy-staging.yml / deploy-production.yml).
+# (innovacaretrainning-dev) — hosting (dev site), Firestore/Storage/Database
+# rules, and Cloud Functions. Promoting to staging or production is a
+# separate, manual workflow (see deploy-staging.yml / deploy-production.yml).
 on:
   push:
     branches: [main]
@@ -53,5 +53,5 @@ jobs:
         run: |
           npx firebase-tools@13 deploy \
             --project innovacaretrainning-dev \
-            --only hosting:dev,firestore,storage,functions \
+            --only hosting:dev,firestore,storage,database,functions \
             --non-interactive
