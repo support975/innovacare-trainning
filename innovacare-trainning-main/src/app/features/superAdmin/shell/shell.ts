@@ -80,6 +80,21 @@ export class Shell {
           icon: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z',
         },
         {
+          label: 'Accreditation',
+          path: '/super-admin/accreditation',
+          icon: 'M12 2 3 6v6c0 5 4 8.5 9 10 5-1.5 9-5 9-10V6l-9-4Zm-1.5 9.5 2 2 4-4',
+        },
+        {
+          label: 'Faculty',
+          path: '/super-admin/faculty',
+          icon: 'M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm6 0a3 3 0 1 0 0-6M3 20a6 6 0 0 1 12 0m3-6a5 5 0 0 1 3 4.5',
+        },
+        {
+          label: 'Sponsors',
+          path: '/super-admin/sponsors',
+          icon: 'M12 2 3 6v6c0 5 4 8.5 9 10 5-1.5 9-5 9-10V6l-9-4Z',
+        },
+        {
           label: 'Exam Authoring',
           path: '/super-admin/exam-authoring',
           icon: 'M5 4h14v16H5V4Zm3 4h8m-8 4h8m-8 4h5M16 15l1 1 2-3',

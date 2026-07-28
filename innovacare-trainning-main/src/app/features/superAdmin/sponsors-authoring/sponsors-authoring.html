@@ -1,0 +1,110 @@
+<main class="sponsors-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Sponsors</p>
+      <h1>Commercial support</h1>
+      <p class="sub">Create once, then attach to any webinar's Sponsors tab for commercial-support disclosure.</p>
+    </div>
+    <button class="btn-ghost" type="button" (click)="resetForm()">New sponsor</button>
+  </header>
+
+  <div class="notice" *ngIf="notice()" [class.notice--error]="error()">
+    {{ notice() }}
+  </div>
+
+  <label class="field filter-field">
+    <span>Filter by organization</span>
+    <select [ngModel]="selectedOrgId()" (ngModelChange)="onOrgFilterChange($event)">
+      <option value="">Select organization</option>
+      <option *ngFor="let org of organizations()" [value]="org.id">{{ org.name }}</option>
+    </select>
+  </label>
+
+  <section class="workspace">
+    <form class="panel form-panel" (ngSubmit)="save()">
+      <div class="panel-head">
+        <h2>{{ form.id ? 'Edit sponsor' : 'Create sponsor' }}</h2>
+      </div>
+
+      <label class="field">
+        <span>Owning organization</span>
+        <select name="ownerOrgId" [(ngModel)]="form.ownerOrgId" required>
+          <option value="">Select organization</option>
+          <option *ngFor="let org of organizations()" [value]="org.id">{{ org.name }}</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Sponsor name</span>
+        <input name="name" [(ngModel)]="form.name" placeholder="Arjo Inc." required />
+      </label>
+
+      <div class="field-grid">
+        <label class="field">
+          <span>Logo URL</span>
+          <input name="logoUrl" [(ngModel)]="form.logoUrl" />
+        </label>
+        <label class="field">
+          <span>Website</span>
+          <input name="website" [(ngModel)]="form.website" />
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Description</span>
+        <textarea name="description" [(ngModel)]="form.description" rows="2"></textarea>
+      </label>
+
+      <label class="field">
+        <span>Support level</span>
+        <select name="supportLevel" [(ngModel)]="form.supportLevel">
+          <option value="">None</option>
+          <option value="platinum">Platinum</option>
+          <option value="gold">Gold</option>
+          <option value="silver">Silver</option>
+          <option value="grant">Grant</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Commercial disclosure</span>
+        <textarea name="commercialDisclosure" [(ngModel)]="form.commercialDisclosure" rows="2"></textarea>
+      </label>
+
+      <label class="field">
+        <span>Grant information</span>
+        <textarea name="grantInformation" [(ngModel)]="form.grantInformation" rows="2"></textarea>
+      </label>
+
+      <button class="btn-primary" type="submit" [disabled]="busy()">
+        {{ busy() ? 'Saving...' : (form.id ? 'Save sponsor' : 'Create sponsor') }}
+      </button>
+    </form>
+
+    <section class="panel records-list">
+      <div class="panel-head">
+        <h2>Sponsors for this organization</h2>
+      </div>
+
+      <article class="record-row" *ngFor="let record of records()">
+        <div class="record-row__body">
+          <strong>{{ record.name }}</strong>
+          <small>{{ record.supportLevel || 'No support level set' }}</small>
+        </div>
+        <div class="record-row__actions">
+          <button class="btn-ghost" type="button" (click)="edit(record)">Edit</button>
+          <button class="btn-ghost btn-ghost--danger" type="button" [disabled]="busy()" (click)="remove(record)">Delete</button>
+        </div>
+      </article>
+
+      <div class="empty" *ngIf="!selectedOrgId()">
+        <h2>Select an organization</h2>
+        <p>Choose an organization above to see its sponsors.</p>
+      </div>
+      <div class="empty" *ngIf="selectedOrgId() && !records().length">
+        <h2>No sponsors yet</h2>
+        <p>Create the first sponsor for this organization.</p>
+      </div>
+    </section>
+  </section>
+</main>

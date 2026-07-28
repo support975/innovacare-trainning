@@ -1,0 +1,121 @@
+<main class="faculty-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Faculty</p>
+      <h1>Speaker profiles</h1>
+      <p class="sub">Create once, then attach to any webinar's Faculty tab — bio, credentials, and disclosures are reused across events.</p>
+    </div>
+    <button class="btn-ghost" type="button" (click)="resetForm()">New profile</button>
+  </header>
+
+  <div class="notice" *ngIf="notice()" [class.notice--error]="error()">
+    {{ notice() }}
+  </div>
+
+  <label class="field filter-field">
+    <span>Filter by organization</span>
+    <select [ngModel]="selectedOrgId()" (ngModelChange)="onOrgFilterChange($event)">
+      <option value="">Select organization</option>
+      <option *ngFor="let org of organizations()" [value]="org.id">{{ org.name }}</option>
+    </select>
+  </label>
+
+  <section class="workspace">
+    <form class="panel form-panel" (ngSubmit)="save()">
+      <div class="panel-head">
+        <h2>{{ form.id ? 'Edit profile' : 'Create profile' }}</h2>
+      </div>
+
+      <label class="field">
+        <span>Owning organization</span>
+        <select name="ownerOrgId" [(ngModel)]="form.ownerOrgId" required>
+          <option value="">Select organization</option>
+          <option *ngFor="let org of organizations()" [value]="org.id">{{ org.name }}</option>
+        </select>
+      </label>
+
+      <div class="field-grid">
+        <label class="field">
+          <span>Name</span>
+          <input name="name" [(ngModel)]="form.name" placeholder="Joyce M. Black" required />
+        </label>
+        <label class="field">
+          <span>Title / credentials suffix</span>
+          <input name="title" [(ngModel)]="form.title" placeholder="PhD, RN, FAAN, CWS" />
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Photo URL</span>
+        <input name="photoUrl" [(ngModel)]="form.photoUrl" placeholder="https://..." />
+      </label>
+
+      <label class="field">
+        <span>Bio</span>
+        <textarea name="bio" [(ngModel)]="form.bio" rows="3"></textarea>
+      </label>
+
+      <div class="field-grid">
+        <label class="field">
+          <span>Credentials</span>
+          <input name="credentials" [(ngModel)]="form.credentials" />
+        </label>
+        <label class="field">
+          <span>Employer / affiliation</span>
+          <input name="organization" [(ngModel)]="form.organization" />
+        </label>
+      </div>
+
+      <div class="field-grid">
+        <label class="field">
+          <span>CV URL</span>
+          <input name="cvUrl" [(ngModel)]="form.cvUrl" />
+        </label>
+        <label class="field">
+          <span>Speaker profile URL</span>
+          <input name="speakerProfileUrl" [(ngModel)]="form.speakerProfileUrl" />
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Financial disclosure</span>
+        <textarea name="financialDisclosure" [(ngModel)]="form.financialDisclosure" rows="2"></textarea>
+      </label>
+
+      <label class="field">
+        <span>Conflict of interest</span>
+        <textarea name="conflictOfInterest" [(ngModel)]="form.conflictOfInterest" rows="2"></textarea>
+      </label>
+
+      <button class="btn-primary" type="submit" [disabled]="busy()">
+        {{ busy() ? 'Saving...' : (form.id ? 'Save profile' : 'Create profile') }}
+      </button>
+    </form>
+
+    <section class="panel records-list">
+      <div class="panel-head">
+        <h2>Profiles for this organization</h2>
+      </div>
+
+      <article class="record-row" *ngFor="let record of records()">
+        <div class="record-row__body">
+          <strong>{{ record.name }}</strong>
+          <small>{{ record.title || record.organization || 'No title set' }}</small>
+        </div>
+        <div class="record-row__actions">
+          <button class="btn-ghost" type="button" (click)="edit(record)">Edit</button>
+          <button class="btn-ghost btn-ghost--danger" type="button" [disabled]="busy()" (click)="remove(record)">Delete</button>
+        </div>
+      </article>
+
+      <div class="empty" *ngIf="!selectedOrgId()">
+        <h2>Select an organization</h2>
+        <p>Choose an organization above to see its faculty profiles.</p>
+      </div>
+      <div class="empty" *ngIf="selectedOrgId() && !records().length">
+        <h2>No profiles yet</h2>
+        <p>Create the first speaker profile for this organization.</p>
+      </div>
+    </section>
+  </section>
+</main>

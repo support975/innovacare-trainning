@@ -820,6 +820,14 @@ service cloud.firestore {
       allow write: if isSuperAdmin() || isAdminOrAbove();
     }
 
+    // Same reasoning as faculty/sponsors above: CE accreditation disclosures
+    // (COI, commercial support, disclaimer) must be visible to prospective
+    // attendees, signed out or not — public read, staff-only write.
+    match /accreditations/{accreditationId} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || isAdminOrAbove();
+    }
+
     match /certificates/{certificateId} {
       allow read: if isSuperAdmin()
         || isAdminOrAbove()
