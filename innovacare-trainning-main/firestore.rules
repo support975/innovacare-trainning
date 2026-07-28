@@ -742,6 +742,19 @@ service cloud.firestore {
       allow read, write: if isSuperAdmin();
     }
 
+    // ── FACULTY / SPONSORS (reusable profiles for webinars/events) ─────────
+    // Disclosures (financial/conflict-of-interest) are accreditation-required
+    // public information, same as course descriptions — public read, staff-only write.
+    match /faculty/{facultyId} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || isAdminOrAbove();
+    }
+
+    match /sponsors/{sponsorId} {
+      allow read: if true;
+      allow write: if isSuperAdmin() || isAdminOrAbove();
+    }
+
     match /certificates/{certificateId} {
       allow read: if isSuperAdmin()
         || isAdminOrAbove()

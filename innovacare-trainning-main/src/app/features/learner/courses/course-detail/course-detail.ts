@@ -22,7 +22,9 @@ import {
 
 /** ---- Models ---- */
 export type Lang = 'EN' | 'FR' | 'ES';
-export type OrgType = 'health' | 'IT' | 'school';
+export type OrgType = 'health' | 'IT' | 'school'
+  | 'professional_order' | 'nursing_council' | 'university' | 'hospital'
+  | 'ngo' | 'private_training_org' | 'scientific_society';
 
 export interface HealthMeta {
   healthCareType: 'SNF' | 'HomeHealth' | 'Hospice' | 'Hospital' | 'PrivatePractice' | 'PHCP';

@@ -77,7 +77,9 @@ export interface OrganizationCourseAssignment {
   assignedByEmail?: string | null;
   active?: boolean;
 }
-export type OrgType = 'health' | 'IT' | 'school';
+export type OrgType = 'health' | 'IT' | 'school'
+  | 'professional_order' | 'nursing_council' | 'university' | 'hospital'
+  | 'ngo' | 'private_training_org' | 'scientific_society';
 export type PlanType = 'free' | 'pro' | 'enterprise';
 export type UserRole = 'super_admin' | 'admin' | 'manager' | 'learner' | 'guest';
 

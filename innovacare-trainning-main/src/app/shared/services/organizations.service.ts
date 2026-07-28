@@ -5,7 +5,9 @@ import { Observable, map, startWith } from 'rxjs';
 export interface PublicOrganization {
   id: string;
   name: string;
-  type: 'health' | 'IT' | 'school';
+  type: 'health' | 'IT' | 'school'
+    | 'professional_order' | 'nursing_council' | 'university' | 'hospital'
+    | 'ngo' | 'private_training_org' | 'scientific_society';
   code?: string;
   active: boolean;
   plan: 'free' | 'pro' | 'enterprise';
