@@ -18,6 +18,40 @@
   border-bottom: 1px solid #e4ecf7;
 }
 
+.header-actions {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.json-panel {
+  margin-bottom: 0;
+}
+
+.json-textarea {
+  width: 100%;
+  min-height: 320px;
+  border: 1.5px solid #d6e0ee;
+  border-radius: 10px;
+  padding: 0.85rem;
+  background: #0d2240;
+  color: #b9f0ea;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+}
+
+.json-textarea:focus {
+  border-color: #00a79d;
+  box-shadow: 0 0 0 3px rgba(0,167,157,0.2);
+}
+
+.json-panel__actions {
+  display: flex;
+  gap: 0.6rem;
+}
+
 .eyebrow {
   margin: 0 0 0.35rem;
   color: #00a79d;
