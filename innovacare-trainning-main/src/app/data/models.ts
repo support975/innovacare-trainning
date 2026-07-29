@@ -197,6 +197,8 @@ export interface WebinarEvent {
     guestPrice: number;          // individuals/guests always pay this
   };
   capacity?: number;
+  /** Maintained server-side by onEventRegistrationCountChange — never written from the client. */
+  registeredCount?: number;
   waitlistEnabled?: boolean;
 
   recordingUrl?: string;

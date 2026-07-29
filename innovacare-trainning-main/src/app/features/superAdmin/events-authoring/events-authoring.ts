@@ -25,6 +25,7 @@ type EventForm = {
   timezone: string;
   memberPrice: number;
   guestPrice: number;
+  capacity: number | null;
   isPublic: boolean;
   zoomJoinUrl: string;
   active: boolean;
@@ -45,6 +46,7 @@ function emptyForm(): EventForm {
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York',
     memberPrice: 0,
     guestPrice: 0,
+    capacity: null,
     isPublic: true,
     zoomJoinUrl: '',
     active: true,
@@ -159,6 +161,7 @@ export class EventsAuthoringComponent {
       timezone: event.schedule?.timezone || emptyForm().timezone,
       memberPrice: event.pricing?.memberPrice ?? 0,
       guestPrice: event.pricing?.guestPrice ?? 0,
+      capacity: event.capacity ?? null,
       isPublic: event.isPublic !== false,
       zoomJoinUrl: event.zoom?.joinUrl || '',
       active: event.active !== false,
@@ -223,24 +226,29 @@ export class EventsAuthoringComponent {
         status: this.form.status,
       };
 
+      const capacity = this.form.capacity !== null && this.form.capacity > 0 ? this.form.capacity : null;
+
       if (wasEditing) {
-        // deleteField() when cleared, so removing the URL/accreditation/image
-        // on an existing event actually clears it — updateDoc() only touches
-        // keys present in the payload, it never removes fields on its own.
+        // deleteField() when cleared, so removing the URL/accreditation/image/
+        // capacity on an existing event actually clears it — updateDoc() only
+        // touches keys present in the payload, it never removes fields on its own.
         await this.eventsSvc.update(this.form.id, {
           ...basePayload,
           zoom: zoomJoinUrl ? { meetingType: 'webinar', joinUrl: zoomJoinUrl } : (deleteField() as any),
           accreditationId: accreditationId ? accreditationId : (deleteField() as any),
           imageUrl: imageUrl ? imageUrl : (deleteField() as any),
+          capacity: capacity !== null ? capacity : (deleteField() as any),
         });
       } else {
-        // Omit the zoom/accreditationId/imageUrl keys entirely on create (not
-        // set to undefined) — Firestore rejects undefined field values by default.
+        // Omit the zoom/accreditationId/imageUrl/capacity keys entirely on
+        // create (not set to undefined) — Firestore rejects undefined field
+        // values by default.
         const id = await this.eventsSvc.create({
           ...basePayload,
           ...(zoomJoinUrl ? { zoom: { meetingType: 'webinar' as const, joinUrl: zoomJoinUrl } } : {}),
           ...(accreditationId ? { accreditationId } : {}),
           ...(imageUrl ? { imageUrl } : {}),
+          ...(capacity !== null ? { capacity } : {}),
         });
         this.form.id = id;
       }

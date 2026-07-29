@@ -27,55 +27,102 @@
       <div class="container">
         <a class="back-link" routerLink="/webinars">← {{ t('publicWebinarDetail.back') }}</a>
 
+        <div class="hero-top">
+          <span class="badge badge--live">
+            <span class="live-dot" aria-hidden="true"></span>
+            {{ t('publicWebinarDetail.liveWebinar') }}
+          </span>
+          <span class="badge badge--free" *ngIf="isFree()">{{ t('publicWebinars.badge.free') }}</span>
+        </div>
+
         <div class="hero-grid">
           <div class="hero-copy">
-            <div class="hero-badges">
-              <span class="badge badge--accent" *ngIf="ev.accreditationId">{{ t('publicWebinars.badge.accredited') }}</span>
-              <span class="badge badge--free" *ngIf="isFree()">{{ t('publicWebinars.badge.free') }}</span>
-            </div>
             <h1>{{ ev.title }}</h1>
-            <p class="hero-date">{{ formatDate() }}</p>
-            <p class="hero-desc">{{ ev.description }}</p>
+
+            <div class="hero-meta">
+              <span class="meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+                {{ formatDate() }}
+              </span>
+              <span class="meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+                {{ ev.schedule.startTime }}–{{ ev.schedule.endTime }} {{ ev.schedule.timezone }}
+              </span>
+              <span class="meta-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15.5 0 18M12 3c-2.5 2.5-2.5 15.5 0 18"/></svg>
+                {{ t('publicWebinarDetail.glance.formatValue') }}
+              </span>
+            </div>
+
+            <div class="hero-pills" *ngIf="accreditationPills().length">
+              <span class="pill" *ngFor="let p of accreditationPills()">{{ p }}</span>
+            </div>
           </div>
 
-          <div class="register-card" [appTilt3d]="5">
-            <div class="register-card__inner">
-              <ng-container *ngIf="!alreadyRegistered(); else registeredState">
-                <div class="price-row">
-                  <div>
-                    <span class="price-label">{{ isMember() ? t('publicWebinarDetail.priceMember') : t('publicWebinarDetail.priceGuest') }}</span>
-                    <strong class="price-value">{{ isFree() ? t('publicWebinars.badge.free') : (price() | currency) }}</strong>
-                  </div>
-                </div>
-
-                <p class="signin-hint" *ngIf="!profile() && ev.pricing?.memberPrice !== ev.pricing?.guestPrice">
-                  {{ t('publicWebinarDetail.signInPrompt') }}
-                </p>
-
-                <button type="button" class="btn-primary btn-block" [disabled]="registering()" (click)="register()">
-                  {{ registering() ? t('publicWebinarDetail.registering') : (isFree() ? t('publicWebinarDetail.registerFree') : t('publicWebinarDetail.register')) }}
-                </button>
-
-                <p class="notice" *ngIf="notice()">{{ notice() }}</p>
-              </ng-container>
-
-              <ng-template #registeredState>
-                <div class="registered-state">
-                  <div class="registered-icon">✓</div>
-                  <strong>{{ t('publicWebinarDetail.registered') }}</strong>
-                  <p>{{ t('publicWebinarDetail.registeredBody') }}</p>
-                </div>
-              </ng-template>
-            </div>
+          <div class="hero-faculty" *ngIf="knownFaculty()[0] as lead">
+            <img class="hero-faculty__photo" *ngIf="lead.photoUrl" [src]="lead.photoUrl" [alt]="lead.name" />
+            <div class="hero-faculty__photo hero-faculty__photo--fallback" *ngIf="!lead.photoUrl">{{ lead.name.charAt(0) }}</div>
+            <strong>{{ lead.name }}</strong>
+            <span *ngIf="lead.title">{{ lead.title }}</span>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="content" *ngIf="knownFaculty().length || knownSponsors().length || accreditation()">
-      <div class="container content-grid">
-        <div class="content-main">
-          <div class="panel" *ngIf="knownFaculty().length">
+    <div class="container content-grid">
+      <div class="content-main">
+        <nav class="tabs" aria-label="Webinar details">
+          <button
+            type="button"
+            *ngFor="let tab of tabs()"
+            class="tab"
+            [class.tab--active]="activeTab() === tab.id"
+            (click)="setTab(tab.id)"
+          >
+            {{ tab.label }}
+          </button>
+        </nav>
+
+        <div class="tab-panel" *ngIf="activeTab() === 'overview'">
+          <div class="panel">
+            <h2>{{ t('publicWebinarDetail.about') }}</h2>
+            <p class="prose">{{ ev.description }}</p>
+
+            <div class="objectives" *ngIf="accreditation()?.learningObjectives?.length">
+              <h3>{{ t('publicWebinarDetail.objectives') }}</h3>
+              <ul>
+                <li *ngFor="let objective of accreditation()?.learningObjectives">{{ objective }}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" *ngIf="activeTab() === 'accreditation'">
+          <div class="panel" *ngIf="accreditation() as accr; else noAccreditation">
+            <h2>{{ t('publicWebinarDetail.accreditation') }}</h2>
+            <div class="accreditation-stats">
+              <div>
+                <strong>{{ accr.contactHours }}</strong>
+                <span>{{ t('publicWebinarDetail.contactHours') }}</span>
+              </div>
+              <div>
+                <strong>{{ accr.ceCredits }}</strong>
+                <span>{{ t('publicWebinarDetail.ceCredits') }}</span>
+              </div>
+            </div>
+            <p class="accreditor">{{ accr.accreditingOrganization }}</p>
+
+            <p class="disclosure" *ngIf="accr.conflictOfInterestStatement">{{ accr.conflictOfInterestStatement }}</p>
+            <p class="disclosure" *ngIf="accr.commercialSupportStatement">{{ accr.commercialSupportStatement }}</p>
+            <p class="disclosure" *ngIf="accr.disclaimer">{{ accr.disclaimer }}</p>
+          </div>
+          <ng-template #noAccreditation>
+            <div class="panel empty-panel">{{ t('publicWebinarDetail.noAccreditation') }}</div>
+          </ng-template>
+        </div>
+
+        <div class="tab-panel" *ngIf="activeTab() === 'faculty'">
+          <div class="panel" *ngIf="knownFaculty().length; else noFaculty">
             <h2>{{ t('publicWebinarDetail.faculty') }}</h2>
             <div class="faculty-list">
               <div class="faculty-card" *ngFor="let f of knownFaculty()" [appTilt3d]="4">
@@ -94,38 +141,13 @@
               </div>
             </div>
           </div>
-
-          <div class="panel" *ngIf="accreditation() as accr">
-            <h2>{{ t('publicWebinarDetail.accreditation') }}</h2>
-            <div class="accreditation-card">
-              <div class="accreditation-stats">
-                <div>
-                  <strong>{{ accr.contactHours }}</strong>
-                  <span>{{ t('publicWebinarDetail.contactHours') }}</span>
-                </div>
-                <div>
-                  <strong>{{ accr.ceCredits }}</strong>
-                  <span>{{ t('publicWebinarDetail.ceCredits') }}</span>
-                </div>
-              </div>
-              <p class="accreditor">{{ accr.accreditingOrganization }}</p>
-
-              <div class="objectives" *ngIf="accr.learningObjectives?.length">
-                <h3>{{ t('publicWebinarDetail.objectives') }}</h3>
-                <ul>
-                  <li *ngFor="let objective of accr.learningObjectives">{{ objective }}</li>
-                </ul>
-              </div>
-
-              <p class="disclosure" *ngIf="accr.conflictOfInterestStatement">{{ accr.conflictOfInterestStatement }}</p>
-              <p class="disclosure" *ngIf="accr.commercialSupportStatement">{{ accr.commercialSupportStatement }}</p>
-              <p class="disclosure" *ngIf="accr.disclaimer">{{ accr.disclaimer }}</p>
-            </div>
-          </div>
+          <ng-template #noFaculty>
+            <div class="panel empty-panel">{{ t('publicWebinarDetail.noFaculty') }}</div>
+          </ng-template>
         </div>
 
-        <aside class="content-side" *ngIf="knownSponsors().length">
-          <div class="panel">
+        <div class="tab-panel" *ngIf="activeTab() === 'supporters'">
+          <div class="panel" *ngIf="knownSponsors().length; else noSponsors">
             <h2>{{ t('publicWebinarDetail.sponsors') }}</h2>
             <div class="sponsor-list">
               <div class="sponsor-row" *ngFor="let s of knownSponsors()">
@@ -138,8 +160,103 @@
               </div>
             </div>
           </div>
-        </aside>
+          <ng-template #noSponsors>
+            <div class="panel empty-panel">{{ t('publicWebinarDetail.noSupporters') }}</div>
+          </ng-template>
+        </div>
+
+        <div class="tab-panel" *ngIf="activeTab() === 'faq'">
+          <div class="panel">
+            <h2>{{ t('publicWebinarDetail.faq.title') }}</h2>
+            <p class="prose">{{ t('publicWebinarDetail.faq.body') }}</p>
+            <a class="btn-ghost" href="mailto:support@innovacaretraining.com">{{ t('publicWebinarDetail.faq.contact') }}</a>
+          </div>
+        </div>
       </div>
-    </section>
+
+      <aside class="content-side">
+        <div class="panel register-panel" [appTilt3d]="4">
+          <h2>{{ t('publicWebinarDetail.registerCard.title') }}</h2>
+
+          <ng-container *ngIf="!alreadyRegistered(); else registeredState">
+            <div class="info-row">
+              <span>{{ t('publicWebinarDetail.registerCard.fee') }}</span>
+              <strong>{{ isFree() ? t('publicWebinars.badge.free') : (price() | currency) }}</strong>
+            </div>
+            <div class="info-row" *ngIf="spotsRemaining() !== null">
+              <span>{{ t('publicWebinarDetail.registerCard.spotsRemaining') }}</span>
+              <strong>{{ spotsRemaining() }} / {{ ev.capacity }}</strong>
+            </div>
+
+            <p class="signin-hint" *ngIf="!profile() && ev.pricing?.memberPrice !== ev.pricing?.guestPrice">
+              {{ t('publicWebinarDetail.signInPrompt') }}
+            </p>
+
+            <button type="button" class="btn-primary btn-block" [disabled]="registering()" (click)="register()">
+              {{ registering() ? t('publicWebinarDetail.registering') : (isFree() ? t('publicWebinarDetail.registerFree') : t('publicWebinarDetail.register')) }}
+            </button>
+
+            <p class="notice" *ngIf="notice()">{{ notice() }}</p>
+          </ng-container>
+
+          <ng-template #registeredState>
+            <div class="registered-state">
+              <div class="registered-icon">✓</div>
+              <strong>{{ t('publicWebinarDetail.registered') }}</strong>
+              <p>{{ t('publicWebinarDetail.registeredBody') }}</p>
+            </div>
+          </ng-template>
+
+          <button type="button" class="btn-ghost btn-block btn-calendar" (click)="addToCalendar()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+            {{ t('publicWebinarDetail.addToCalendar') }}
+          </button>
+        </div>
+
+        <div class="panel glance-panel">
+          <h2>{{ t('publicWebinarDetail.glance.title') }}</h2>
+          <dl>
+            <div class="glance-row">
+              <dt>{{ t('publicWebinarDetail.glance.date') }}</dt>
+              <dd>{{ formatDate() }}</dd>
+            </div>
+            <div class="glance-row">
+              <dt>{{ t('publicWebinarDetail.glance.time') }}</dt>
+              <dd>{{ ev.schedule.startTime }}–{{ ev.schedule.endTime }} {{ ev.schedule.timezone }}</dd>
+            </div>
+            <div class="glance-row" *ngIf="durationLabel()">
+              <dt>{{ t('publicWebinarDetail.glance.duration') }}</dt>
+              <dd>{{ durationLabel() }}</dd>
+            </div>
+            <div class="glance-row">
+              <dt>{{ t('publicWebinarDetail.glance.format') }}</dt>
+              <dd>{{ t('publicWebinarDetail.glance.formatValue') }}</dd>
+            </div>
+            <div class="glance-row" *ngIf="accreditation() as accr">
+              <dt>{{ t('publicWebinarDetail.glance.contactHours') }}</dt>
+              <dd>{{ accr.contactHours }}</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="panel share-panel">
+          <h2>{{ t('publicWebinarDetail.share.title') }}</h2>
+          <div class="share-row">
+            <a class="share-btn" [href]="shareLinks().facebook" target="_blank" rel="noopener" aria-label="Facebook">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 9h3V5h-3c-2.2 0-4 1.8-4 4v2H8v4h2v6h4v-6h3l1-4h-4V9c0-.6.4-1 1-1z"/></svg>
+            </a>
+            <a class="share-btn" [href]="shareLinks().twitter" target="_blank" rel="noopener" aria-label="X">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4l7.5 9.5L4.5 20H7l5.5-5.9L17 20h3l-7.8-9.9L19.5 4H17l-5 5.4L9 4H4z"/></svg>
+            </a>
+            <a class="share-btn" [href]="shareLinks().linkedin" target="_blank" rel="noopener" aria-label="LinkedIn">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.5 8.5H3.5V20h3V8.5zM5 3.5A1.8 1.8 0 1 0 5 7a1.8 1.8 0 0 0 0-3.5zM20.5 20v-6.3c0-3-1.6-4.4-3.8-4.4-1.75 0-2.53 1-2.97 1.65V9.5h-3S10.75 9.5 10.75 20h3v-6c0-.32.02-.63.1-.85.24-.63.8-1.28 1.73-1.28 1.22 0 1.72.93 1.72 2.3v5.83h3z"/></svg>
+            </a>
+            <a class="share-btn" [href]="shareLinks().email" aria-label="Email">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+            </a>
+          </div>
+        </div>
+      </aside>
+    </div>
   </ng-container>
 </main>

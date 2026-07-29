@@ -2016,6 +2016,26 @@ export const onEventRegistrationConfirmed = onDocumentWritten(
   },
 );
 
+// Keeps events/{eventId}.registeredCount in sync so the public detail page
+// can show "Spots Remaining" without needing read access to eventRegistrations
+// (which is staff/self-only — see firestore.rules). A registration claims its
+// spot at creation time regardless of paymentStatus; there is no cancellation
+// flow today, so only the create side needs to increment.
+export const onEventRegistrationCountChange = onDocumentCreated(
+  "eventRegistrations/{registrationId}",
+  async (event) => {
+    const snap = event.data;
+    if (!snap) return;
+
+    const eventId = String(snap.data()?.eventId || "");
+    if (!eventId) return;
+
+    await db.doc(`events/${eventId}`).update({
+      registeredCount: admin.firestore.FieldValue.increment(1),
+    });
+  },
+);
+
 export const processCourseAssignmentBackfillRequest = onDocumentCreated(
   "courseAssignmentBackfillRequests/{requestId}",
   async (event) => {

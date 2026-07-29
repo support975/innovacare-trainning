@@ -77,6 +77,12 @@
       </div>
 
       <label class="field">
+        <span>Capacity (optional — leave blank for unlimited)</span>
+        <input type="number" min="1" step="1" name="capacity" [ngModel]="form.capacity" (ngModelChange)="form.capacity = $event === '' ? null : $event" placeholder="e.g. 500" />
+        <small>Shown to visitors as "Spots Remaining" once registrations start coming in.</small>
+      </label>
+
+      <label class="field">
         <span>Zoom join link (static, phase 1)</span>
         <input name="zoomJoinUrl" [(ngModel)]="form.zoomJoinUrl" placeholder="https://zoom.us/j/..." />
       </label>
