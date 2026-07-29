@@ -87,6 +87,11 @@ export const SUPER_ADMIN_ROUTES: Routes = [
           import('./learning-paths/learning-paths').then(m => m.LearningPathsComponent),
       },
       {
+        path: 'industry-bundles',
+        loadComponent: () =>
+          import('./industry-bundles/industry-bundles').then(m => m.IndustryBundlesComponent),
+      },
+      {
         path: 'events',
         loadComponent: () =>
           import('./events-authoring/events-authoring').then(m => m.EventsAuthoringComponent),
