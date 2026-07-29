@@ -25,7 +25,7 @@ const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     'public.nav.language': 'Language',
 
     'publicWebinars.eyebrow': 'Live CE webinars',
-    'publicWebinars.title': 'Continuing education, live and in 3D focus',
+    'publicWebinars.title': 'Earn CE credit from clinicians who practice what they teach',
     'publicWebinars.cta.browse': 'Browse upcoming sessions',
     'publicWebinars.cta.host': 'Host a webinar with us',
     'publicWebinars.stat.live': 'Live sessions',
@@ -423,7 +423,7 @@ const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     'public.nav.language': 'Langue',
 
     'publicWebinars.eyebrow': 'Webinaires de formation continue',
-    'publicWebinars.title': 'La formation continue, en direct',
+    'publicWebinars.title': 'Obtenez des crédits de FC auprès d’experts qui pratiquent ce qu’ils enseignent',
     'publicWebinars.cta.browse': 'Voir les sessions à venir',
     'publicWebinars.cta.host': 'Organiser un webinaire avec nous',
     'publicWebinars.stat.live': 'Sessions en direct',
