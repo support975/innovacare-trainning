@@ -164,6 +164,7 @@ export class Courses {
   editId: string | null = null;
   loadingEdit = false;
   duplicatingId: string | null = null;
+  deletingId: string | null = null;
   importError = '';
   importSuccess = '';
   saveError = '';
@@ -2096,6 +2097,32 @@ export class Courses {
       await this.repo.add(cloned);
     } finally {
       this.duplicatingId = null;
+    }
+  }
+
+  /* ============================
+     Delete
+  ============================ */
+
+  async deleteCourse(c: Course) {
+    if (!this.canManageCourses) return;
+
+    const id = c.id;
+    if (!id) return;
+
+    const confirmed = window.confirm(
+      `Delete "${c.title}"? This permanently removes the course and its content. This cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    this.deletingId = id;
+    try {
+      await this.repo.remove(id);
+      if (this.editId === id) {
+        this.cancelEdit();
+      }
+    } finally {
+      this.deletingId = null;
     }
   }
 

@@ -1231,6 +1231,17 @@ select.field-input {
   color: #ffffff;
 }
 
+.btn-action--danger {
+  border-color: #e4ecf7;
+  color: #c0392b;
+}
+
+.btn-action--danger:hover {
+  border-color: #c0392b;
+  background: #c0392b;
+  color: #ffffff;
+}
+
 /* ---------------------------
    Empty state
 ---------------------------- */
