@@ -8,50 +8,29 @@
 
 <main class="webinars-page">
   <section class="hero">
-    <div class="hero-orb hero-orb--a" aria-hidden="true"></div>
-    <div class="hero-orb hero-orb--b" aria-hidden="true"></div>
+    <div class="hero-scrim" aria-hidden="true"></div>
 
-    <div class="container hero-grid">
-      <div class="hero-copy">
-        <span class="eyebrow">{{ t('publicWebinars.eyebrow') }}</span>
-        <h1>{{ t('publicWebinars.title') }}</h1>
-        <p>{{ t('publicWebinars.subtitle') }}</p>
+    <div class="container hero-content">
+      <span class="eyebrow">{{ t('publicWebinars.eyebrow') }}</span>
+      <h1>{{ t('publicWebinars.title') }}</h1>
 
-        <div class="hero-actions">
-          <a class="btn-primary" href="#upcoming">{{ t('publicWebinars.cta.browse') }}</a>
-          <a class="btn-ghost" routerLink="/home" fragment="cta-final">{{ t('publicWebinars.cta.host') }}</a>
-        </div>
-
-        <div class="hero-stats">
-          <div class="hero-stat">
-            <strong>{{ cards().length }}</strong>
-            <span>{{ t('publicWebinars.stat.live') }}</span>
-          </div>
-          <div class="hero-stat">
-            <strong>CE</strong>
-            <span>{{ t('publicWebinars.stat.accredited') }}</span>
-          </div>
-          <div class="hero-stat">
-            <strong>MD · RN</strong>
-            <span>{{ t('publicWebinars.stat.faculty') }}</span>
-          </div>
-        </div>
+      <div class="hero-actions">
+        <a class="btn-primary" href="#upcoming">{{ t('publicWebinars.cta.browse') }}</a>
+        <a class="btn-ghost" routerLink="/home" fragment="cta-final">{{ t('publicWebinars.cta.host') }}</a>
       </div>
 
-      <div class="hero-stage" aria-hidden="true">
-        <div class="stage-card stage-card--back">
-          <div class="stage-card__date">14<span>MAR</span></div>
-          <div class="stage-card__lines"><span></span><span></span></div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <strong>{{ cards().length }}</strong>
+          <span>{{ t('publicWebinars.stat.live') }}</span>
         </div>
-        <div class="stage-card stage-card--mid">
-          <div class="stage-card__date">02<span>APR</span></div>
-          <div class="stage-card__lines"><span></span><span></span></div>
+        <div class="hero-stat">
+          <strong>CE</strong>
+          <span>{{ t('publicWebinars.stat.accredited') }}</span>
         </div>
-        <div class="stage-card stage-card--front">
-          <div class="stage-card__badge">LIVE</div>
-          <div class="stage-card__date">21<span>APR</span></div>
-          <div class="stage-card__lines"><span></span><span></span><span></span></div>
-          <div class="stage-card__cta">Register</div>
+        <div class="hero-stat">
+          <strong>MD · RN</strong>
+          <span>{{ t('publicWebinars.stat.faculty') }}</span>
         </div>
       </div>
     </div>

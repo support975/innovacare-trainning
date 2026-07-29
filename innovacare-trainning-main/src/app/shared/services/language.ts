@@ -26,7 +26,6 @@ const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
 
     'publicWebinars.eyebrow': 'Live CE webinars',
     'publicWebinars.title': 'Continuing education, live and in 3D focus',
-    'publicWebinars.subtitle': 'Join accredited webinars led by real clinical faculty — free for members of participating organizations, open to every healthcare professional.',
     'publicWebinars.cta.browse': 'Browse upcoming sessions',
     'publicWebinars.cta.host': 'Host a webinar with us',
     'publicWebinars.stat.live': 'Live sessions',
@@ -425,7 +424,6 @@ const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
 
     'publicWebinars.eyebrow': 'Webinaires de formation continue',
     'publicWebinars.title': 'La formation continue, en direct',
-    'publicWebinars.subtitle': 'Participez à des webinaires accrédités animés par de vrais experts cliniques — gratuits pour les membres des organisations participantes, ouverts à tous les professionnels de la santé.',
     'publicWebinars.cta.browse': 'Voir les sessions à venir',
     'publicWebinars.cta.host': 'Organiser un webinaire avec nous',
     'publicWebinars.stat.live': 'Sessions en direct',
