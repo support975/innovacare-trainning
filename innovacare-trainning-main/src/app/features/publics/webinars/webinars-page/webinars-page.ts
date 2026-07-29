@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, HostListener, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -59,5 +59,39 @@ export class WebinarsPageComponent {
 
   formatTime(event: WebinarEvent): string {
     return `${event.schedule.startTime}–${event.schedule.endTime} ${event.schedule.timezone}`;
+  }
+
+  readonly openShareId = signal<string | null>(null);
+
+  toggleShare(eventId: string | undefined, domEvent: Event): void {
+    domEvent.preventDefault();
+    domEvent.stopPropagation();
+    if (!eventId) return;
+    this.openShareId.update((current) => (current === eventId ? null : eventId));
+  }
+
+  @HostListener('document:click')
+  closeShare(): void {
+    this.openShareId.set(null);
+  }
+
+  shareLinksFor(event: WebinarEvent): { whatsapp: string; facebook: string; linkedin: string } {
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const url = encodeURIComponent(`${origin}/webinars/${event.id}`);
+    const title = encodeURIComponent(event.title || 'Webinar');
+    return {
+      whatsapp: `https://wa.me/?text=${title}%20${url}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
+    };
+  }
+
+  // A share-menu <a> nested inside the card's own routerLink <a> would be
+  // invalid HTML (browsers handle nested anchors unpredictably) — open via
+  // window.open() from a <button> instead.
+  openShareLink(url: string, domEvent: Event): void {
+    domEvent.preventDefault();
+    domEvent.stopPropagation();
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
 }
