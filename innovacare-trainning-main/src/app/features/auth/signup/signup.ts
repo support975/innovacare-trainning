@@ -2,9 +2,11 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../core/auth';
 import { EnrollmentService } from '../../../shared/services/enrollement';
 import { CourseCatalogService } from '../../publics/catalogue-page';
+import { EventsService } from '../../../shared/services/events.service';
 
 @Component({
   standalone: true,
@@ -18,6 +20,7 @@ export class SignupComponent {
   private readonly auth = inject(AuthService);
   private readonly enrollment = inject(EnrollmentService);
   private readonly courseService = inject(CourseCatalogService);
+  private readonly eventsService = inject(EventsService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -25,6 +28,9 @@ export class SignupComponent {
   readonly error = signal<string | null>(null);
   readonly selectedCourseId = signal<string | null>(
     this.route.snapshot.queryParamMap.get('courseId')
+  );
+  readonly selectedEventId = signal<string | null>(
+    this.route.snapshot.queryParamMap.get('eventId')
   );
   readonly requestAccess = signal(
     this.route.snapshot.queryParamMap.get('requestAccess') === '1'
@@ -76,12 +82,51 @@ export class SignupComponent {
         return;
       }
 
+      const eventId = this.selectedEventId();
+      if (eventId) {
+        await this.registerForEvent(user.uid, eventId);
+        return;
+      }
+
       await this.router.navigate(['/learner'], { replaceUrl: true });
     } catch (error: any) {
       this.error.set(this.messageForError(error));
     } finally {
       this.loading.set(false);
     }
+  }
+
+  private async registerForEvent(uid: string, eventId: string): Promise<void> {
+    const event = await firstValueFrom(this.eventsService.getById(eventId));
+    if (!event) {
+      await this.router.navigate(['/webinars'], { replaceUrl: true });
+      return;
+    }
+
+    // New individual signups always land in the guest tier — there's no
+    // orgId yet for member pricing to apply against.
+    const guestPrice = event.pricing?.guestPrice ?? 0;
+    const free = guestPrice === 0;
+
+    const registrationId = await this.eventsService.register({
+      eventId,
+      uid,
+      orgId: null,
+      tier: 'guest',
+      paymentStatus: free ? 'free' : 'pending',
+    });
+
+    if (free) {
+      await this.router.navigate(['/webinars', eventId], { replaceUrl: true });
+      return;
+    }
+
+    const { url } = await this.eventsService.createCheckoutSession(eventId, registrationId);
+    if (url) {
+      window.location.href = url;
+      return;
+    }
+    await this.router.navigate(['/webinars', eventId], { replaceUrl: true });
   }
 
   private async requestOrganizationCourseAccess(courseId: string): Promise<void> {
@@ -115,6 +160,9 @@ export class SignupComponent {
     if (code.includes('permission-denied')) {
       if (this.selectedCourseId()) {
         return 'Your learner profile was created, but this course request could not be submitted. Confirm the organization course link with the admin.';
+      }
+      if (this.selectedEventId()) {
+        return 'Your learner profile was created, but this webinar registration could not be submitted. Please try registering again from the webinar page.';
       }
       return 'This course is not available for public access. Choose a public course or request access from the organization.';
     }

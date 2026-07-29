@@ -6,7 +6,7 @@ import { Router, RouterModule } from '@angular/router';
 import { DemoRequestDialog } from '../../../features/publics/demo-request-dialog/demo-request-dialog';
 import { AppLanguage, LanguageService } from '../../services/language';
 
-type PublicNavPage = 'home' | 'features' | 'industries' | 'catalogue' | 'pricing' | 'ordre';
+type PublicNavPage = 'home' | 'features' | 'industries' | 'catalogue' | 'webinars' | 'pricing' | 'ordre';
 
 @Component({
   selector: 'app-public-site-nav',
@@ -45,6 +45,7 @@ type PublicNavPage = 'home' | 'features' | 'industries' | 'catalogue' | 'pricing
           <a routerLink="/fonctionnalites" [class.is-active]="isActive('solutions')" (click)="closeMobileMenu()">{{ t('public.nav.solutions') }}</a>
           <a routerLink="/industries" [class.is-active]="isActive('industries')" (click)="closeMobileMenu()">{{ t('public.nav.industries') }}</a>
           <a routerLink="/catalogue" [class.is-active]="isActive('catalogue')" (click)="closeMobileMenu()">{{ t('public.nav.catalogue') }}</a>
+          <a routerLink="/webinars" [class.is-active]="isActive('webinars')" (click)="closeMobileMenu()">{{ t('public.nav.webinars') }}</a>
           <a routerLink="/pricing" [class.is-active]="isActive('pricing')" (click)="closeMobileMenu()">{{ t('public.nav.pricing') }}</a>
           <a routerLink="/ordre-professionnel" [class.is-active]="isActive('ordre')" (click)="closeMobileMenu()">{{ t('public.nav.ordre') }}</a>
           <a [routerLink]="['/home']" fragment="faq" [class.is-active]="isActive('faq')" (click)="closeMobileMenu()">{{ t('public.nav.faq') }}</a>
@@ -515,7 +516,7 @@ export class PublicSiteNavComponent {
     });
   }
 
-  isActive(item: 'home' | 'solutions' | 'industries' | 'catalogue' | 'pricing' | 'ordre' | 'faq'): boolean {
+  isActive(item: 'home' | 'solutions' | 'industries' | 'catalogue' | 'webinars' | 'pricing' | 'ordre' | 'faq'): boolean {
     const currentPath = this.currentPath();
     const currentFragment = this.currentFragment();
 
@@ -528,6 +529,8 @@ export class PublicSiteNavComponent {
         return currentPath === '/industries';
       case 'catalogue':
         return currentPath === '/catalogue' || currentPath.startsWith('/catalogue/');
+      case 'webinars':
+        return currentPath === '/webinars' || currentPath.startsWith('/webinars/');
       case 'pricing':
         return currentPath === '/pricing';
       case 'ordre':

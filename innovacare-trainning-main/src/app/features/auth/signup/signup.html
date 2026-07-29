@@ -18,6 +18,10 @@
           </ng-template>
         </div>
 
+        <div class="course-note" *ngIf="selectedEventId()">
+          Create your profile to register for this webinar. Free sessions confirm instantly; paid sessions continue to secure checkout.
+        </div>
+
         <form [formGroup]="form" (ngSubmit)="submit()" class="form">
           <div class="form-group">
             <label class="label" for="displayName">Full name</label>
