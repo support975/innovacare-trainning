@@ -1,4 +1,4 @@
-import { Component, computed, ElementRef, inject, QueryList, signal, ViewChildren } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, QueryList, signal, ViewChildren } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -102,6 +102,7 @@ export class CataloguePage  {
    @ViewChildren('revealRef') revealElements!: QueryList<ElementRef<HTMLElement>>;
 
   private readonly dialog = inject(MatDialog);
+  private readonly destroyRef = inject(DestroyRef);
 
   activeCategory = 2;
   activeTestimonial = 0;
@@ -385,7 +386,13 @@ export class CataloguePage  {
 
   private initRevealObserver(): void {
     if (typeof IntersectionObserver === 'undefined' || this.prefersReducedMotionOrSmallScreen()) {
+      // Async content (e.g. course cards loaded from Firestore after this
+      // runs) keeps arriving via *ngFor, so re-apply on every QueryList change
+      // instead of a single one-shot pass over whatever existed at this tick.
       queueMicrotask(() => {
+        this.revealElements.forEach((item) => item.nativeElement.classList.add('is-visible'));
+      });
+      this.revealElements.changes.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
         this.revealElements.forEach((item) => item.nativeElement.classList.add('is-visible'));
       });
       return;
@@ -407,6 +414,13 @@ export class CataloguePage  {
     );
 
     queueMicrotask(() => {
+      this.revealElements.forEach((item) => this.revealObserver?.observe(item.nativeElement));
+    });
+
+    // Cards for courses that arrive asynchronously (Firestore) are added to
+    // the DOM well after this initial pass - observe them as they show up,
+    // otherwise they sit permanently at the animation's opacity:0 start state.
+    this.revealElements.changes.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.revealElements.forEach((item) => this.revealObserver?.observe(item.nativeElement));
     });
   }
