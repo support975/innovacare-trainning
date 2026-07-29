@@ -192,6 +192,70 @@
   display: block;
 }
 
+.share-toggle {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(13, 34, 64, 0.55);
+  color: #ffffff;
+  cursor: pointer;
+  backdrop-filter: blur(2px);
+  transition: background 0.15s ease;
+}
+
+.share-toggle:hover {
+  background: rgba(13, 34, 64, 0.8);
+}
+
+.share-toggle svg {
+  width: 16px;
+  height: 16px;
+}
+
+.share-menu {
+  position: absolute;
+  top: 2.75rem;
+  right: 0.75rem;
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 14px 30px rgba(13, 34, 64, 0.22);
+  z-index: 2;
+}
+
+.share-menu__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: #f4f7fb;
+  color: #1a3f6f;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.share-menu__item:hover {
+  background: #0d2240;
+  color: #ffffff;
+}
+
+.share-menu__item svg {
+  width: 17px;
+  height: 17px;
+}
+
 .webinar-card__content {
   display: flex;
   flex-direction: column;
