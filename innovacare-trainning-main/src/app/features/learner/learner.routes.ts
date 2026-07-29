@@ -4,6 +4,7 @@ import { Routes } from '@angular/router';
 import { authCanMatch } from '../../core/auth.canmatch';
 import { nonIndividualLearnerCanMatch } from '../../core/non-individual-learner.canmatch';
 import { roleCanMatch } from '../../core/role.canmatch';
+import { learnerCertificationAuthorityCanMatch } from '../../core/learner-certification-authority.canmatch';
 import { LearnerShell } from './shell/learner-shell/learner-shell';
 
 export const learnerRoutes: Routes = [
@@ -36,6 +37,7 @@ export const learnerRoutes: Routes = [
       },
       {
         path: 'official-certifications',
+        canMatch: [learnerCertificationAuthorityCanMatch],
         loadComponent: () =>
           import('./official-certifications/official-certifications').then(
             m => m.LearnerOfficialCertificationsComponent
@@ -43,6 +45,7 @@ export const learnerRoutes: Routes = [
       },
       {
         path: 'onsite-exams',
+        canMatch: [learnerCertificationAuthorityCanMatch],
         loadComponent: () =>
           import('./onsite-exams/onsite-exams').then(
             m => m.LearnerOnsiteExamsComponent
@@ -50,6 +53,7 @@ export const learnerRoutes: Routes = [
       },
       {
         path: 'official-certifications/:applicationId/exam',
+        canMatch: [learnerCertificationAuthorityCanMatch],
         loadComponent: () =>
           import('./official-certifications/official-exam-launch').then(
             m => m.OfficialExamLaunchComponent
@@ -57,6 +61,7 @@ export const learnerRoutes: Routes = [
       },
       {
         path: 'official-certifications/:applicationId/blueprint-exam/:blueprintId',
+        canMatch: [learnerCertificationAuthorityCanMatch],
         loadComponent: () =>
           import('./official-certifications/blueprint-exam-runner').then(
             m => m.BlueprintExamRunnerComponent
@@ -64,6 +69,7 @@ export const learnerRoutes: Routes = [
       },
       {
         path: 'certification-candidate/:applicationId',
+        canMatch: [learnerCertificationAuthorityCanMatch],
         loadComponent: () =>
           import('./certification-candidate/candidate-profile').then(
             m => m.CandidateProfileComponent
@@ -71,6 +77,7 @@ export const learnerRoutes: Routes = [
       },
       {
         path: 'verify-member',
+        canMatch: [learnerCertificationAuthorityCanMatch],
         loadComponent: () =>
           import('../publics/member-verification/member-verification').then(
             m => m.MemberVerificationComponent

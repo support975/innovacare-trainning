@@ -16,6 +16,10 @@ interface LearnerNavItem {
 
 type OrganizationShellDoc = {
   name?: string;
+  certificationAuthorityEnabled?: boolean;
+  features?: {
+    officialCertifications?: boolean;
+  };
   branding?: {
     logoUrl?: string;
     primaryColor?: string;
@@ -57,6 +61,18 @@ export class LearnerShell {
   private readonly isIndividualLearner = computed(() => {
     const p = this.profile();
     return p?.accountType === 'individual' && !p?.orgId;
+  });
+  readonly certificationAuthorityEnabled = computed(() => {
+    const profile = this.profile();
+    const org = this.organization();
+    const hasPermission = (profile?.permissions || []).some((permission) =>
+      permission.startsWith('certification.')
+    );
+    return (
+      hasPermission ||
+      org?.certificationAuthorityEnabled === true ||
+      org?.features?.officialCertifications === true
+    );
   });
   readonly displayName = computed(() => {
     const profile = this.profile();
@@ -144,8 +160,12 @@ export class LearnerShell {
     { path: '/learner/policies', labelKey: 'shell.policies' }
   ];
 
+  /**
+   * No standalone "Certifications" entry — Transcripts' "Get Certificate"
+   * action already routes learners to /learner/certifications per
+   * completed course, so a second sidebar link is redundant.
+   */
   private readonly allResources: LearnerNavItem[] = [
-    { path: '/learner/certifications', labelKey: 'shell.certifications' },
     { path: '/learner/official-certifications', labelKey: 'shell.officialCertifications' },
     { path: '/learner/onsite-exams', labelKey: 'shell.onsiteExams' },
     { path: '/learner/verify-member', labelKey: 'shell.verifyMember' },
@@ -155,6 +175,13 @@ export class LearnerShell {
     { path: '/learner/rewards', labelKey: 'shell.rewards' }
   ];
 
+  /** Requires Organization.certificationAuthorityEnabled (or features.officialCertifications). */
+  private readonly certificationAuthorityPaths = new Set([
+    '/learner/official-certifications',
+    '/learner/onsite-exams',
+    '/learner/verify-member',
+  ]);
+
   readonly links = computed(() =>
     this.localizeNavItems(this.isIndividualLearner()
       ? this.allLinks.filter((item) =>
@@ -163,13 +190,17 @@ export class LearnerShell {
       : this.allLinks)
   );
 
-  readonly resources = computed(() =>
-    this.localizeNavItems(this.isIndividualLearner()
+  readonly resources = computed(() => {
+    const certificationAuthorityEnabled = this.certificationAuthorityEnabled();
+    const visible = this.isIndividualLearner()
       ? this.allResources.filter((item) =>
           ['/learner/transcript', '/learner/rewards'].includes(item.path)
         )
-      : this.allResources)
-  );
+      : this.allResources.filter(
+          (item) => !this.certificationAuthorityPaths.has(item.path) || certificationAuthorityEnabled
+        );
+    return this.localizeNavItems(visible);
+  });
 
   private localizeNavItems(items: LearnerNavItem[]) {
     this.languageCode();
