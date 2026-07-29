@@ -169,6 +169,7 @@ export interface WebinarEvent {
   id?: string;
   title: string;
   description?: string;
+  imageUrl?: string;     // banner/cover photo shown on catalogs and the detail page
   ownerOrgId: string;
   assignedOrgIds?: string[];
   assignedOrgReachableIds?: string[];

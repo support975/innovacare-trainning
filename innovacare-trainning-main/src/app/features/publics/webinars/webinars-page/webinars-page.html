@@ -51,24 +51,29 @@
           [appTilt3d]="7"
         >
           <div class="webinar-card__inner">
-            <div class="webinar-card__date">
-              <strong>{{ formatDateShort(vm.event).day }}</strong>
-              <span>{{ formatDateShort(vm.event).month }}</span>
-            </div>
-
-            <div class="webinar-card__body">
-              <div class="webinar-card__badges">
-                <span class="badge badge--free" *ngIf="vm.isFree">{{ t('publicWebinars.badge.free') }}</span>
-                <span class="badge badge--accent" *ngIf="vm.event.accreditationId">{{ t('publicWebinars.badge.accredited') }}</span>
+            <div class="webinar-card__media">
+              <img *ngIf="vm.event.imageUrl" [src]="vm.event.imageUrl" [alt]="vm.event.title" />
+              <div class="webinar-card__date">
+                <strong>{{ formatDateShort(vm.event).day }}</strong>
+                <span>{{ formatDateShort(vm.event).month }}</span>
               </div>
-              <h3>{{ vm.event.title }}</h3>
-              <p class="webinar-card__time">{{ formatTime(vm.event) }}</p>
-              <p class="webinar-card__desc">{{ vm.event.description }}</p>
             </div>
 
-            <div class="webinar-card__footer">
-              <span class="webinar-card__price" *ngIf="!vm.isFree">{{ vm.guestPrice | currency }}</span>
-              <span class="webinar-card__cta">{{ t('publicWebinars.card.cta') }} →</span>
+            <div class="webinar-card__content">
+              <div class="webinar-card__body">
+                <div class="webinar-card__badges">
+                  <span class="badge badge--free" *ngIf="vm.isFree">{{ t('publicWebinars.badge.free') }}</span>
+                  <span class="badge badge--accent" *ngIf="vm.event.accreditationId">{{ t('publicWebinars.badge.accredited') }}</span>
+                </div>
+                <h3>{{ vm.event.title }}</h3>
+                <p class="webinar-card__time">{{ formatTime(vm.event) }}</p>
+                <p class="webinar-card__desc">{{ vm.event.description }}</p>
+              </div>
+
+              <div class="webinar-card__footer">
+                <span class="webinar-card__price" *ngIf="!vm.isFree">{{ vm.guestPrice | currency }}</span>
+                <span class="webinar-card__cta">{{ t('publicWebinars.card.cta') }} →</span>
+              </div>
             </div>
           </div>
         </a>
