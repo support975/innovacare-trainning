@@ -79,6 +79,12 @@ export class EventsAuthoringComponent {
   readonly notice = signal('');
   readonly error = signal(false);
 
+  readonly jsonPanelOpen = signal(false);
+  readonly jsonText = signal(this.jsonPlaceholder());
+  readonly jsonBusy = signal(false);
+  readonly jsonNotice = signal('');
+  readonly jsonError = signal(false);
+
   // Faculty/Sponsors/Accreditation are scoped to the form's owning organization,
   // so the picker lists must react to ownerOrgId changes even though the form
   // itself is a plain (non-signal) object bound via ngModel.
@@ -114,6 +120,145 @@ export class EventsAuthoringComponent {
     });
     return map;
   });
+
+  private jsonPlaceholder(): string {
+    return JSON.stringify(
+      [
+        {
+          title: 'Understanding Microclimate: Using Support Surface Technology',
+          description: 'What attendees will learn.',
+          imageUrl: '',
+          ownerOrgId: 'PASTE_ORG_ID_HERE',
+          assignedOrgIds: [],
+          isPublic: true,
+          facultyIds: [],
+          sponsorIds: [],
+          accreditationId: '',
+          schedule: { date: '2026-08-13', startTime: '13:00', endTime: '14:00', timezone: 'America/New_York' },
+          zoomJoinUrl: '',
+          pricing: { memberPrice: null, guestPrice: 0 },
+          capacity: null,
+          status: 'draft',
+          active: true,
+        },
+      ],
+      null,
+      2
+    );
+  }
+
+  toggleJsonPanel(): void {
+    this.jsonPanelOpen.update((open) => !open);
+    this.jsonNotice.set('');
+    this.jsonError.set(false);
+  }
+
+  async importFromJson(): Promise<void> {
+    this.jsonNotice.set('');
+    this.jsonError.set(false);
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(this.jsonText());
+    } catch {
+      this.jsonError.set(true);
+      this.jsonNotice.set('Invalid JSON — please check the syntax.');
+      return;
+    }
+
+    const entries = Array.isArray(parsed) ? parsed : [parsed];
+    if (!entries.length) {
+      this.jsonError.set(true);
+      this.jsonNotice.set('No events found in the pasted JSON.');
+      return;
+    }
+
+    const validOrgIds = new Set(
+      this.organizations()
+        .map((org) => org.id)
+        .filter((id): id is string => !!id)
+    );
+
+    this.jsonBusy.set(true);
+    let created = 0;
+    const failures: string[] = [];
+
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i] as any;
+      const label = entry?.title ? `"${entry.title}"` : `entry #${i + 1}`;
+      try {
+        const payload = this.buildPayloadFromJsonEntry(entry, validOrgIds);
+        await this.eventsSvc.create(payload);
+        created++;
+      } catch (err: any) {
+        failures.push(`${label}: ${err?.message || 'unknown error'}`);
+      }
+    }
+
+    this.jsonBusy.set(false);
+
+    if (failures.length) {
+      this.jsonError.set(true);
+      this.jsonNotice.set(
+        `Created ${created} of ${entries.length} event(s). Failed: ${failures.join('; ')}`
+      );
+    } else {
+      this.jsonNotice.set(`Created ${created} event${created === 1 ? '' : 's'} from JSON.`);
+      this.jsonText.set(this.jsonPlaceholder());
+      this.jsonPanelOpen.set(false);
+    }
+  }
+
+  private buildPayloadFromJsonEntry(
+    entry: any,
+    validOrgIds: Set<string>
+  ): Omit<WebinarEvent, 'id' | 'createdAt' | 'updatedAt'> {
+    const title = String(entry?.title || '').trim();
+    const ownerOrgId = String(entry?.ownerOrgId || '').trim();
+    const schedule = entry?.schedule || {};
+    const dateStr = String(schedule?.date || '').trim();
+    const startTime = String(schedule?.startTime || '').trim();
+    const endTime = String(schedule?.endTime || '').trim();
+    const timezone = String(schedule?.timezone || '').trim();
+
+    if (!title) throw new Error('title is required');
+    if (!ownerOrgId) throw new Error('ownerOrgId is required');
+    if (!validOrgIds.has(ownerOrgId)) throw new Error(`ownerOrgId "${ownerOrgId}" does not match a known organization`);
+    if (!dateStr || !startTime || !endTime || !timezone) {
+      throw new Error('schedule.date, schedule.startTime, schedule.endTime, and schedule.timezone are required');
+    }
+    const date = new Date(`${dateStr}T00:00:00`);
+    if (Number.isNaN(date.getTime())) throw new Error(`schedule.date "${dateStr}" is not a valid date (use YYYY-MM-DD)`);
+
+    const zoomJoinUrl = String(entry?.zoomJoinUrl || entry?.zoom?.joinUrl || '').trim();
+    const accreditationId = String(entry?.accreditationId || '').trim();
+    const imageUrl = String(entry?.imageUrl || '').trim();
+    const capacityRaw = entry?.capacity;
+    const capacity = typeof capacityRaw === 'number' && capacityRaw > 0 ? capacityRaw : null;
+    const memberPriceRaw = entry?.pricing?.memberPrice;
+    const memberPrice = typeof memberPriceRaw === 'number' && memberPriceRaw > 0 ? memberPriceRaw : null;
+    const guestPrice = typeof entry?.pricing?.guestPrice === 'number' ? entry.pricing.guestPrice : 0;
+
+    return {
+      title,
+      description: String(entry?.description || '').trim(),
+      ownerOrgId,
+      assignedOrgIds: Array.isArray(entry?.assignedOrgIds) ? entry.assignedOrgIds.map(String) : [],
+      facultyIds: Array.isArray(entry?.facultyIds) ? entry.facultyIds.map(String) : [],
+      sponsorIds: Array.isArray(entry?.sponsorIds) ? entry.sponsorIds.map(String) : [],
+      isPublic: entry?.isPublic !== false,
+      schedule: { date: Timestamp.fromDate(date), startTime, endTime, timezone },
+      pricing: { memberPrice, guestPrice },
+      active: entry?.active !== false,
+      status: (['draft', 'published', 'live', 'completed', 'cancelled'] as const).includes(entry?.status)
+        ? entry.status
+        : 'draft',
+      ...(zoomJoinUrl ? { zoom: { meetingType: 'webinar' as const, joinUrl: zoomJoinUrl } } : {}),
+      ...(accreditationId ? { accreditationId } : {}),
+      ...(imageUrl ? { imageUrl } : {}),
+      ...(capacity !== null ? { capacity } : {}),
+    };
+  }
 
   toggleOrg(orgId: string | undefined, checked: boolean): void {
     if (!orgId) return;

@@ -5,12 +5,47 @@
       <h1>Webinars &amp; seminars</h1>
       <p class="sub">Create a webinar, assign it to organizations, and optionally make it public for B2C registration.</p>
     </div>
-    <button class="btn-ghost" type="button" (click)="resetForm()">New event</button>
+    <div class="header-actions">
+      <button class="btn-ghost" type="button" (click)="toggleJsonPanel()">
+        {{ jsonPanelOpen() ? 'Hide JSON import' : 'Import from JSON' }}
+      </button>
+      <button class="btn-ghost" type="button" (click)="resetForm()">New event</button>
+    </div>
   </header>
 
   <div class="notice" *ngIf="notice()" [class.notice--error]="error()">
     {{ notice() }}
   </div>
+
+  <section class="panel json-panel" *ngIf="jsonPanelOpen()">
+    <div class="panel-head">
+      <h2>Import event(s) from JSON</h2>
+      <p>
+        Paste a single event object or an array of events. Dates use <code>YYYY-MM-DD</code>;
+        <code>ownerOrgId</code> must match an existing organization's ID.
+      </p>
+    </div>
+
+    <textarea
+      class="json-textarea"
+      rows="16"
+      spellcheck="false"
+      [ngModel]="jsonText()"
+      (ngModelChange)="jsonText.set($event)"
+      name="jsonImportText"
+    ></textarea>
+
+    <div class="notice" *ngIf="jsonNotice()" [class.notice--error]="jsonError()">
+      {{ jsonNotice() }}
+    </div>
+
+    <div class="json-panel__actions">
+      <button class="btn-primary" type="button" [disabled]="jsonBusy()" (click)="importFromJson()">
+        {{ jsonBusy() ? 'Importing...' : 'Create from JSON' }}
+      </button>
+      <button class="btn-ghost" type="button" [disabled]="jsonBusy()" (click)="toggleJsonPanel()">Cancel</button>
+    </div>
+  </section>
 
   <section class="workspace">
     <form class="panel form-panel" (ngSubmit)="save()">

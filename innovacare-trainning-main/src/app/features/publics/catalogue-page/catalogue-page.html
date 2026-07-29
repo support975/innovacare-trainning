@@ -48,6 +48,53 @@
     </div>
   </div>
 
+  <div class="container section section--compact">
+    <div class="tab-nav">
+      <span class="tab-nav__label">Catégorie</span>
+      <div class="category-tabs" role="tablist" aria-label="Filtrer par catégorie">
+        <button
+          type="button"
+          role="tab"
+          class="category-tab"
+          *ngFor="let tab of categoryTabs"
+          [class.category-tab--active]="selectedType() === tab.value"
+          [attr.aria-selected]="selectedType() === tab.value"
+          (click)="setType(tab.value)"
+        >
+          <span class="category-tab__icon" aria-hidden="true">{{ tab.icon }}</span>
+          {{ tab.label }}
+        </button>
+      </div>
+    </div>
+
+    <div class="tab-nav" *ngIf="availableSectors().length">
+      <span class="tab-nav__label">Secteur</span>
+      <div class="sector-tabs" role="tablist" aria-label="Filtrer par secteur">
+        <button
+          type="button"
+          role="tab"
+          class="sector-tab"
+          [class.sector-tab--active]="selectedSector() === 'all'"
+          [attr.aria-selected]="selectedSector() === 'all'"
+          (click)="setSector('all')"
+        >
+          Tous secteurs
+        </button>
+        <button
+          type="button"
+          role="tab"
+          class="sector-tab"
+          *ngFor="let sector of availableSectors()"
+          [class.sector-tab--active]="selectedSector() === sector"
+          [attr.aria-selected]="selectedSector() === sector"
+          (click)="setSector(sector)"
+        >
+          {{ sectorLabel(sector) }}
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="container section">
     <div id="filters" class="filter-shell">
       <div class="filter-grid">
@@ -59,17 +106,6 @@
             (ngModelChange)="setSearchTerm($event)"
             placeholder="Titre, tag, audience, lecturer, topic..."
           />
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Type</mat-label>
-          <mat-select [ngModel]="selectedType()" (ngModelChange)="setType($event)">
-            <mat-option value="all">Tous les types</mat-option>
-            <mat-option value="Health">Health</mat-option>
-            <mat-option value="Hr">Hr</mat-option>
-            <mat-option value="safety">Safety</mat-option>
-            <mat-option value="It">IT</mat-option>
-          </mat-select>
         </mat-form-field>
 
         <mat-form-field appearance="outline">
@@ -135,37 +171,51 @@
       <h2>Les modules les plus visibles</h2>
     </div>
 
-    <div class="featured-grid">
-      <article class="featured-course-card" *ngFor="let course of featuredCourses()">
-        <div class="featured-course-card__image-wrap">
-          <img
-            class="featured-course-card__image"
-            [src]="course.imageUrl || 'https://via.placeholder.com/1200x800?text=Innovacare+Training'"
-            [alt]="course.title"
-          />
-          <div class="featured-course-card__badge">{{ course.type }}</div>
-        </div>
+    <div class="course-grid">
+      <article
+        class="course-card-3d"
+        *ngFor="let course of featuredCourses(); let i = index"
+        #revealRef
+        [style.--card-delay.ms]="i * 70"
+        [appTilt3d]="7"
+        (click)="openCourse(course.id)"
+      >
+        <span class="course-card-3d__ring" aria-hidden="true"></span>
+        <span class="course-card-3d__shard" aria-hidden="true"></span>
+        <span class="course-card-3d__shard" aria-hidden="true"></span>
+        <span class="course-card-3d__shard" aria-hidden="true"></span>
+        <span class="course-card-3d__shard" aria-hidden="true"></span>
+        <span class="course-card-3d__shard" aria-hidden="true"></span>
+        <span class="course-card-3d__shard" aria-hidden="true"></span>
 
-        <div class="featured-course-card__body">
-          <h3>{{ course.title }}</h3>
-          <p>{{ course.subtitle || course.description }}</p>
-
-          <div class="course-info-grid">
-            <span><mat-icon>category</mat-icon>{{ course.type }}</span>
-            <span><mat-icon>translate</mat-icon>{{ course.lang }}</span>
-            <span><mat-icon>schedule</mat-icon>{{ course.durationMin }} min</span>
-            <span><mat-icon>movie</mat-icon>{{ course.kind }}</span>
-            <span><mat-icon>checklist</mat-icon>{{ totalLessonCount(course) }} lessons</span>
-            <span><mat-icon>workspace_premium</mat-icon>{{ course.passingScore }}% pass</span>
+        <div class="course-card-3d__inner">
+          <div class="course-card-3d__image-wrap">
+            <img
+              class="course-card-3d__image"
+              [src]="course.imageUrl || 'https://via.placeholder.com/1200x800?text=Innovacare+Training'"
+              [alt]="course.title"
+            />
+            <span class="course-card-3d__badge">{{ course.type }}</span>
           </div>
 
-          <mat-chip-set>
-            <mat-chip *ngFor="let tag of course.tags || []">{{ tag }}</mat-chip>
-          </mat-chip-set>
+          <div class="course-card-3d__body">
+            <h3>{{ course.title }}</h3>
+            <p>{{ course.subtitle || course.description }}</p>
 
-          <button mat-flat-button color="primary" type="button" (click)="openCourse(course.id)">
-            Voir le cours
-          </button>
+            <div class="course-info-grid">
+              <span><mat-icon>schedule</mat-icon>{{ course.durationMin }} min</span>
+              <span><mat-icon>checklist</mat-icon>{{ totalLessonCount(course) }} lessons</span>
+              <span><mat-icon>workspace_premium</mat-icon>{{ course.passingScore }}% pass</span>
+            </div>
+
+            <mat-chip-set>
+              <mat-chip *ngFor="let tag of (course.tags || []).slice(0, 3)">{{ tag }}</mat-chip>
+            </mat-chip-set>
+
+            <button mat-flat-button color="primary" type="button" (click)="openCourse(course.id); $event.stopPropagation()">
+              Voir le cours
+            </button>
+          </div>
         </div>
       </article>
     </div>
@@ -179,44 +229,56 @@
       </div>
     </div>
 
-    <div class="course-list" *ngIf="!loading(); else loadingTpl">
-      <article class="course-list-card" *ngFor="let course of filteredCourses()">
-        <div class="course-list-card__thumb">
-          <img
-            [src]="course.imageUrl || 'https://via.placeholder.com/1200x800?text=Innovacare+Training'"
-            [alt]="course.title"
-          />
-        </div>
+    <div class="course-grid" *ngIf="!loading(); else loadingTpl">
+      <article
+        class="course-card-3d"
+        *ngFor="let course of filteredCourses(); let i = index"
+        #revealRef
+        [style.--card-delay.ms]="(i % 12) * 70"
+        [appTilt3d]="7"
+        (click)="openCourse(course.id)"
+      >
+        <span class="course-card-3d__ring" aria-hidden="true"></span>
+        <span class="course-card-3d__shard" aria-hidden="true"></span>
+        <span class="course-card-3d__shard" aria-hidden="true"></span>
+        <span class="course-card-3d__shard" aria-hidden="true"></span>
+        <span class="course-card-3d__shard" aria-hidden="true"></span>
+        <span class="course-card-3d__shard" aria-hidden="true"></span>
+        <span class="course-card-3d__shard" aria-hidden="true"></span>
 
-        <div class="course-list-card__main">
-          <div class="course-list-card__header">
-            <div>
-              <h3>{{ course.title }}</h3>
-              <p>{{ course.subtitle || course.description }}</p>
+        <div class="course-card-3d__inner">
+          <div class="course-card-3d__image-wrap">
+            <img
+              class="course-card-3d__image"
+              [src]="course.imageUrl || 'https://via.placeholder.com/1200x800?text=Innovacare+Training'"
+              [alt]="course.title"
+            />
+            <span class="course-card-3d__badge">{{ course.type }}</span>
+          </div>
+
+          <div class="course-card-3d__body">
+            <h3>{{ course.title }}</h3>
+            <p>{{ course.subtitle || course.description }}</p>
+
+            <div class="course-info-grid">
+              <span><mat-icon>schedule</mat-icon>{{ course.durationMin }} min</span>
+              <span><mat-icon>checklist</mat-icon>{{ totalLessonCount(course) }} lessons</span>
+              <span><mat-icon>workspace_premium</mat-icon>{{ course.passingScore }}% pass</span>
+            </div>
+
+            <mat-chip-set>
+              <mat-chip *ngFor="let tag of (course.tags || []).slice(0, 3)">{{ tag }}</mat-chip>
+            </mat-chip-set>
+
+            <div class="course-card-3d__actions">
+              <button mat-flat-button color="primary" type="button" (click)="openCourse(course.id); $event.stopPropagation()">
+                Voir le cours
+              </button>
+              <button mat-stroked-button type="button" (click)="addToPathway(course); $event.stopPropagation()">
+                Ajouter au parcours
+              </button>
             </div>
           </div>
-
-          <div class="course-info-grid">
-            <span><mat-icon>category</mat-icon>{{ course.type }}</span>
-            <span><mat-icon>translate</mat-icon>{{ course.lang }}</span>
-            <span><mat-icon>schedule</mat-icon>{{ course.durationMin }} min</span>
-            <span><mat-icon>movie</mat-icon>{{ course.kind }}</span>
-            <span><mat-icon>checklist</mat-icon>{{ totalLessonCount(course) }} lessons</span>
-            <span><mat-icon>workspace_premium</mat-icon>{{ course.passingScore }}% pass</span>
-          </div>
-
-          <mat-chip-set>
-            <mat-chip *ngFor="let tag of course.tags || []">{{ tag }}</mat-chip>
-          </mat-chip-set>
-        </div>
-
-        <div class="course-list-card__actions">
-          <button mat-flat-button color="primary" type="button" (click)="openCourse(course.id)">
-            Voir le cours
-          </button>
-          <button mat-stroked-button type="button" (click)="addToPathway(course)">
-            Ajouter au parcours
-          </button>
         </div>
       </article>
     </div>

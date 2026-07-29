@@ -17,6 +17,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { DemoRequestDialog } from '../demo-request-dialog/demo-request-dialog';
 import { PublicSiteNavComponent } from '../../../shared/components/public-site-nav/public-site-nav';
 import { PublicTranslateDirective } from '../../../shared/directives/public-translate.directive';
+import { Tilt3dDirective } from '../../../shared/directives/tilt-3d.directive';
 
 
 interface HeroHighlight {
@@ -91,6 +92,7 @@ interface FaqItem {
     RouterModule,
     PublicSiteNavComponent,
     PublicTranslateDirective,
+    Tilt3dDirective,
   ],
   templateUrl: './catalogue-page.html',
   styleUrl: './catalogue-page.css',
@@ -449,7 +451,37 @@ export class CataloguePage  {
   readonly selectedLang = signal<'all' | 'EN' | 'FR' | 'ES'>('all');
   readonly selectedAudience = signal('all');
   readonly selectedCareSetting = signal('all');
+  readonly selectedSector = signal<string>('all');
   readonly sortBy = signal<'featured' | 'title' | 'duration' | 'ceCredit'>('featured');
+
+  readonly categoryTabs: { value: 'all' | 'It' | 'Health' | 'Hr' | 'safety'; label: string; icon: string }[] = [
+    { value: 'all', label: 'Toutes catégories', icon: '◎' },
+    { value: 'Health', label: 'Santé', icon: '✚' },
+    { value: 'Hr', label: 'Ressources humaines', icon: '◈' },
+    { value: 'safety', label: 'Sécurité', icon: '🛡' },
+    { value: 'It', label: 'IT', icon: '⌘' },
+  ];
+
+  // Known industry-sector keywords we look for inside course.tags. Course
+  // has no dedicated "sector" field (only IndustryBundle does, and that
+  // collection is super-admin only) - tags are the only public-readable
+  // signal, so the sector strip only ever shows sectors actually present.
+  private readonly knownSectorTags = ['restauration', 'construction', 'hospitality', 'hotellerie'];
+
+  readonly availableSectors = computed(() => {
+    const present = new Set<string>();
+    this.courses().forEach((course) => {
+      (course.tags ?? []).forEach((tag) => {
+        const normalized = tag.trim().toLowerCase();
+        if (this.knownSectorTags.includes(normalized)) present.add(normalized);
+      });
+    });
+    return Array.from(present).sort((a, b) => a.localeCompare(b));
+  });
+
+  sectorLabel(tag: string): string {
+    return tag.charAt(0).toUpperCase() + tag.slice(1);
+  }
 
   readonly availableAudiences = computed(() => {
     const values = new Set<string>();
@@ -480,6 +512,7 @@ export class CataloguePage  {
     const selectedLang = this.selectedLang();
     const selectedAudience = this.selectedAudience();
     const selectedCareSetting = this.selectedCareSetting();
+    const selectedSector = this.selectedSector();
     const sortBy = this.sortBy();
 
     if (search) {
@@ -524,6 +557,12 @@ export class CataloguePage  {
     if (selectedCareSetting !== 'all') {
       items = items.filter((course) =>
         (course.healthMeta?.careSetting ?? []).includes(selectedCareSetting)
+      );
+    }
+
+    if (selectedSector !== 'all') {
+      items = items.filter((course) =>
+        (course.tags ?? []).some((tag) => tag.trim().toLowerCase() === selectedSector)
       );
     }
 
@@ -591,6 +630,10 @@ export class CataloguePage  {
     this.selectedCareSetting.set(value);
   }
 
+  setSector(value: string): void {
+    this.selectedSector.set(value);
+  }
+
   setSort(value: 'featured' | 'title' | 'duration' | 'ceCredit'): void {
     this.sortBy.set(value);
   }
@@ -602,6 +645,7 @@ export class CataloguePage  {
     this.selectedLang.set('all');
     this.selectedAudience.set('all');
     this.selectedCareSetting.set('all');
+    this.selectedSector.set('all');
     this.sortBy.set('featured');
   }
 

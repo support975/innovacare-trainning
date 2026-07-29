@@ -1111,6 +1111,18 @@ service cloud.firestore {
       allow create, update, delete: if isSuperAdmin();
     }
 
+    match /industryBundles/{bundleId} {
+      allow read: if isSuperAdmin();
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    match /organizationIndustryBundleAssignments/{assignmentId} {
+      allow read: if isSuperAdmin()
+        || (isSignedIn() && myOrgId() != null && resource.data.orgId == myOrgId());
+
+      allow create, update, delete: if isSuperAdmin();
+    }
+
     match /organizationCourseAssignments/{assignmentId} {
       allow read: if isSuperAdmin()
         || (isSignedIn() && myOrgId() != null && resource.data.orgId == myOrgId());
