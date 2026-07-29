@@ -108,6 +108,102 @@ export class WebinarDetailPageComponent {
 
   readonly alreadyRegistered = computed(() => this.myRegistrations().length > 0 || this.justRegistered());
 
+  readonly spotsRemaining = computed<number | null>(() => {
+    const event = this.event();
+    if (!event?.capacity) return null;
+    return Math.max(0, event.capacity - (event.registeredCount || 0));
+  });
+
+  readonly durationLabel = computed(() => {
+    const event = this.event();
+    if (!event) return '';
+    const [sh, sm] = (event.schedule.startTime || '0:0').split(':').map(Number);
+    const [eh, em] = (event.schedule.endTime || '0:0').split(':').map(Number);
+    const minutes = eh * 60 + em - (sh * 60 + sm);
+    if (!Number.isFinite(minutes) || minutes <= 0) return '';
+    if (minutes < 60) return `${minutes} min`;
+    const hours = Math.floor(minutes / 60);
+    const rest = minutes % 60;
+    return rest ? `${hours}h ${rest}min` : `${hours}h`;
+  });
+
+  readonly accreditationPills = computed(() => {
+    const accr = this.accreditation();
+    if (!accr) return [] as string[];
+    const pills: string[] = [];
+    if (accr.providerNumber) pills.push(`${accr.accreditingOrganization} · #${accr.providerNumber}`);
+    else pills.push(accr.accreditingOrganization);
+    (accr.applicableBoards || []).forEach((board: string) => pills.push(board));
+    (accr.applicableCertifications || []).forEach((cert: string) => pills.push(cert));
+    return pills;
+  });
+
+  readonly shareUrl = computed(() => (typeof window !== 'undefined' ? window.location.href : ''));
+
+  readonly shareLinks = computed(() => {
+    const url = encodeURIComponent(this.shareUrl());
+    const title = encodeURIComponent(this.event()?.title || 'Webinar');
+    return {
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+      twitter: `https://twitter.com/intent/tweet?url=${url}&text=${title}`,
+      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
+      email: `mailto:?subject=${title}&body=${url}`,
+    };
+  });
+
+  readonly tabs = computed(() => {
+    const list: { id: string; label: string }[] = [{ id: 'overview', label: this.t('publicWebinarDetail.tab.overview') }];
+    if (this.accreditation()) list.push({ id: 'accreditation', label: this.t('publicWebinarDetail.tab.accreditation') });
+    if (this.knownFaculty().length) list.push({ id: 'faculty', label: this.t('publicWebinarDetail.tab.faculty') });
+    if (this.knownSponsors().length) list.push({ id: 'supporters', label: this.t('publicWebinarDetail.tab.supporters') });
+    list.push({ id: 'faq', label: this.t('publicWebinarDetail.tab.faq') });
+    return list;
+  });
+
+  readonly activeTab = signal('overview');
+
+  setTab(id: string): void {
+    this.activeTab.set(id);
+  }
+
+  addToCalendar(): void {
+    const event = this.event();
+    const date = event?.schedule?.date?.toDate?.() as Date | undefined;
+    if (!event || !date) return;
+
+    const toIcsDate = (base: Date, time: string): string => {
+      const [h, m] = time.split(':').map(Number);
+      const d = new Date(base);
+      d.setHours(h || 0, m || 0, 0, 0);
+      return d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    };
+
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Innovacare Training//Webinars//EN',
+      'BEGIN:VEVENT',
+      `UID:${event.id}@innovacaretraining`,
+      `DTSTART:${toIcsDate(date, event.schedule.startTime)}`,
+      `DTEND:${toIcsDate(date, event.schedule.endTime)}`,
+      `SUMMARY:${(event.title || '').replace(/\r?\n/g, ' ')}`,
+      `DESCRIPTION:${(event.description || '').replace(/\r?\n/g, '\\n')}`,
+      event.zoom?.joinUrl ? `URL:${event.zoom.joinUrl}` : '',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ]
+      .filter(Boolean)
+      .join('\r\n');
+
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${(event.title || 'webinar').replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.ics`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   t(key: string): string {
     return this.language.t(key);
   }
@@ -116,13 +212,12 @@ export class WebinarDetailPageComponent {
     const event = this.event();
     const date = event?.schedule?.date?.toDate?.() as Date | undefined;
     if (!date || !event) return '';
-    const datePart = date.toLocaleDateString(undefined, {
+    return date.toLocaleDateString(undefined, {
       weekday: 'long',
       month: 'long',
       day: 'numeric',
       year: 'numeric',
     });
-    return `${datePart} · ${event.schedule.startTime}–${event.schedule.endTime} ${event.schedule.timezone}`;
   }
 
   knownFaculty(): Faculty[] {

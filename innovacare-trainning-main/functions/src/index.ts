@@ -21,11 +21,19 @@ const storage = admin.storage();
 // Set your region (or pass { region: 'us-central1' } per onCall below)
 setGlobalOptions({region: "us-central1"});
 
+// Every project alias in .firebaserc gets both of Firebase Hosting's default
+// domains — missing one here CORS-blocks every onCall function below for
+// that whole environment (this list is shared across checkout, exam
+// grading, org admin/user creation, lesson audio, and smart reminders).
 const callableCors = [
   "https://www.innovacaretrainning.com",
   "https://innovacaretrainning.com",
   "https://innovacare-training.web.app",
   "https://innovacare-training.firebaseapp.com",
+  "https://innovacaretrainning-dev.web.app",
+  "https://innovacaretrainning-dev.firebaseapp.com",
+  "https://innovacaretrainninng-staging.web.app",
+  "https://innovacaretrainninng-staging.firebaseapp.com",
   "http://localhost:4200",
   "http://127.0.0.1:4200",
 ];
@@ -2013,6 +2021,26 @@ export const onEventRegistrationConfirmed = onDocumentWritten(
     }
 
     await after.ref.set({confirmationSentAt: nowTs()}, {merge: true});
+  },
+);
+
+// Keeps events/{eventId}.registeredCount in sync so the public detail page
+// can show "Spots Remaining" without needing read access to eventRegistrations
+// (which is staff/self-only — see firestore.rules). A registration claims its
+// spot at creation time regardless of paymentStatus; there is no cancellation
+// flow today, so only the create side needs to increment.
+export const onEventRegistrationCountChange = onDocumentCreated(
+  "eventRegistrations/{registrationId}",
+  async (event) => {
+    const snap = event.data;
+    if (!snap) return;
+
+    const eventId = String(snap.data()?.eventId || "");
+    if (!eventId) return;
+
+    await db.doc(`events/${eventId}`).update({
+      registeredCount: admin.firestore.FieldValue.increment(1),
+    });
   },
 );
 
