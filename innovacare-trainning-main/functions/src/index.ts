@@ -21,11 +21,19 @@ const storage = admin.storage();
 // Set your region (or pass { region: 'us-central1' } per onCall below)
 setGlobalOptions({region: "us-central1"});
 
+// Every project alias in .firebaserc gets both of Firebase Hosting's default
+// domains — missing one here CORS-blocks every onCall function below for
+// that whole environment (this list is shared across checkout, exam
+// grading, org admin/user creation, lesson audio, and smart reminders).
 const callableCors = [
   "https://www.innovacaretrainning.com",
   "https://innovacaretrainning.com",
   "https://innovacare-training.web.app",
   "https://innovacare-training.firebaseapp.com",
+  "https://innovacaretrainning-dev.web.app",
+  "https://innovacaretrainning-dev.firebaseapp.com",
+  "https://innovacaretrainninng-staging.web.app",
+  "https://innovacaretrainninng-staging.firebaseapp.com",
   "http://localhost:4200",
   "http://127.0.0.1:4200",
 ];

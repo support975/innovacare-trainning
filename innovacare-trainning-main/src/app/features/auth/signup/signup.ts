@@ -167,6 +167,15 @@ export class SignupComponent {
       return 'This course is not available for public access. Choose a public course or request access from the organization.';
     }
 
-    return error?.message ?? 'Unable to create your learner profile.';
+    if (this.selectedEventId() && (code.includes('internal') || code.includes('unavailable') || code.includes('functions/'))) {
+      return 'Your learner profile was created, but we couldn’t start checkout for this webinar. Please sign in and try registering again from the webinar page.';
+    }
+
+    // Firebase surfaces some failures (network/CORS, unhandled function
+    // errors) with a bare technical code as the message — e.g. "internal" —
+    // never show that raw string to the user.
+    const message = String(error?.message ?? '').trim();
+    const looksTechnical = !message || /^[a-z0-9_-]+$/i.test(message) || message.length > 160;
+    return looksTechnical ? 'Unable to create your learner profile. Please try again.' : message;
   }
 }
