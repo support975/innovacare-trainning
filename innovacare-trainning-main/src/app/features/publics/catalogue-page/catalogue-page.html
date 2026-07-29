@@ -176,7 +176,7 @@
         class="course-card-3d"
         *ngFor="let course of featuredCourses(); let i = index"
         #revealRef
-        [style.--card-delay.ms]="i * 70"
+        [style.--card-delay.ms]="i * 120"
         [appTilt3d]="7"
         (click)="openCourse(course.id)"
       >
@@ -234,7 +234,7 @@
         class="course-card-3d"
         *ngFor="let course of filteredCourses(); let i = index"
         #revealRef
-        [style.--card-delay.ms]="(i % 12) * 70"
+        [style.--card-delay.ms]="(i % 12) * 120"
         [appTilt3d]="7"
         (click)="openCourse(course.id)"
       >

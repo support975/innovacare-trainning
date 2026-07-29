@@ -565,17 +565,17 @@
 }
 
 .course-card-3d.is-visible .course-card-3d__inner {
-  animation: card-reassemble 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: card-reassemble 1.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   animation-delay: var(--card-delay, 0ms);
 }
 
 .course-card-3d.is-visible .course-card-3d__shard {
-  animation: shard-burst 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: shard-burst 1.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   animation-delay: var(--card-delay, 0ms);
 }
 
 .course-card-3d.is-visible .course-card-3d__ring {
-  animation: ring-pulse 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: ring-pulse 1.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   animation-delay: var(--card-delay, 0ms);
 }
 
