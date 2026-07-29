@@ -40,8 +40,27 @@
   justify-content: space-between;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  padding: 1.25rem;
+  overflow: hidden;
   background: #fff;
+}
+
+.event-card__media {
+  height: 140px;
+}
+
+.event-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.event-card__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  padding: 1.25rem;
 }
 
 .event-card__title {

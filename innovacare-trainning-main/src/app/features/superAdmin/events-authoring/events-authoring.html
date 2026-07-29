@@ -29,6 +29,15 @@
       </label>
 
       <label class="field">
+        <span>Cover image URL</span>
+        <input name="imageUrl" [(ngModel)]="form.imageUrl" placeholder="https://..." />
+        <small>Shown as the banner on the public webinar page and catalog cards.</small>
+      </label>
+      <div class="cover-preview" *ngIf="form.imageUrl">
+        <img [src]="form.imageUrl" alt="Event cover preview" />
+      </div>
+
+      <label class="field">
         <span>Owning organization</span>
         <select name="ownerOrgId" [ngModel]="form.ownerOrgId" (ngModelChange)="onOwnerOrgChange($event)" required>
           <option value="">Select organization</option>
@@ -123,13 +132,18 @@
         <h3>Faculty / speakers</h3>
         <p>Attach speaker profiles for bio, credentials, and disclosure display.</p>
         <div class="org-list" *ngIf="availableFaculty().length; else noFaculty">
-          <label class="org-row" *ngFor="let faculty of availableFaculty()" [class.org-row--checked]="selectedFacultyIds().has(faculty.id || '')">
+          <label class="org-row org-row--people" *ngFor="let faculty of availableFaculty()" [class.org-row--checked]="selectedFacultyIds().has(faculty.id || '')">
             <input
               type="checkbox"
               [checked]="selectedFacultyIds().has(faculty.id || '')"
               (change)="toggleFaculty(faculty.id, $any($event.target).checked)"
             />
-            <span>{{ faculty.name }}</span>
+            <img class="people-thumb" *ngIf="faculty.photoUrl" [src]="faculty.photoUrl" [alt]="faculty.name" />
+            <span class="people-thumb people-thumb--fallback" *ngIf="!faculty.photoUrl">{{ initials(faculty.name) }}</span>
+            <span class="people-copy">
+              <strong>{{ faculty.name }}</strong>
+              <small *ngIf="faculty.title">{{ faculty.title }}</small>
+            </span>
           </label>
         </div>
         <ng-template #noFaculty>
@@ -141,13 +155,18 @@
         <h3>Sponsors</h3>
         <p>Attach commercial-support sponsors for disclosure display.</p>
         <div class="org-list" *ngIf="availableSponsors().length; else noSponsors">
-          <label class="org-row" *ngFor="let sponsor of availableSponsors()" [class.org-row--checked]="selectedSponsorIds().has(sponsor.id || '')">
+          <label class="org-row org-row--people" *ngFor="let sponsor of availableSponsors()" [class.org-row--checked]="selectedSponsorIds().has(sponsor.id || '')">
             <input
               type="checkbox"
               [checked]="selectedSponsorIds().has(sponsor.id || '')"
               (change)="toggleSponsor(sponsor.id, $any($event.target).checked)"
             />
-            <span>{{ sponsor.name }}</span>
+            <img class="people-thumb people-thumb--square" *ngIf="sponsor.logoUrl" [src]="sponsor.logoUrl" [alt]="sponsor.name" />
+            <span class="people-thumb people-thumb--square people-thumb--fallback" *ngIf="!sponsor.logoUrl">{{ initials(sponsor.name) }}</span>
+            <span class="people-copy">
+              <strong>{{ sponsor.name }}</strong>
+              <small *ngIf="sponsor.supportLevel">{{ sponsor.supportLevel }}</small>
+            </span>
           </label>
         </div>
         <ng-template #noSponsors>
@@ -166,6 +185,8 @@
       </div>
 
       <article class="event-row" *ngFor="let event of events()" [class.event-row--inactive]="event.active === false">
+        <img class="event-row__thumb" *ngIf="event.imageUrl" [src]="event.imageUrl" [alt]="event.title" />
+        <div class="event-row__thumb event-row__thumb--fallback" *ngIf="!event.imageUrl">🎙️</div>
         <div class="event-row__body">
           <strong>{{ event.title }}</strong>
           <small>{{ formatDate(event) }} · {{ ownerName(event) }} · {{ event.status }}</small>

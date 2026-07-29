@@ -87,6 +87,25 @@ h1 {
   letter-spacing: 0.07em;
 }
 
+.field small {
+  color: #8ea0b8;
+  font-size: 0.78rem;
+}
+
+.cover-preview {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e4ecf7;
+  max-height: 200px;
+}
+
+.cover-preview img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
 input,
 textarea,
 select {
@@ -178,6 +197,52 @@ select:focus {
   border-color: #b3e8e5;
 }
 
+.org-row--people {
+  grid-template-columns: auto auto 1fr;
+}
+
+.people-thumb {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.people-thumb--square {
+  border-radius: 8px;
+  object-fit: contain;
+  background: #f8fafd;
+  border: 1px solid #eef2f7;
+}
+
+.people-thumb--fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0d2240 0%, #1b4f7b 100%);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.people-copy {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.people-copy strong {
+  color: #1a2b4a;
+  font-size: 0.92rem;
+}
+
+.people-copy small {
+  color: #8ea0b8;
+  font-size: 0.78rem;
+  text-transform: capitalize;
+}
+
 .btn-primary,
 .btn-ghost {
   min-height: 40px;
@@ -242,6 +307,22 @@ select:focus {
 
 .event-row--inactive {
   opacity: 0.6;
+}
+
+.event-row__thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.event-row__thumb--fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef4fb;
+  font-size: 1.3rem;
 }
 
 .event-row__body {

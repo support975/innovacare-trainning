@@ -18,8 +18,12 @@
   </div>
 
   <ng-container *ngIf="event() as ev">
-    <section class="hero">
-      <div class="hero-orb" aria-hidden="true"></div>
+    <section
+      class="hero"
+      [class.hero--photo]="ev.imageUrl"
+      [style.background-image]="ev.imageUrl ? ('linear-gradient(115deg, rgba(6,20,41,0.86) 0%, rgba(9,32,64,0.6) 45%, rgba(9,32,64,0.28) 100%), url(' + ev.imageUrl + ')') : null"
+    >
+      <div class="hero-orb" *ngIf="!ev.imageUrl" aria-hidden="true"></div>
       <div class="container">
         <a class="back-link" routerLink="/webinars">← {{ t('publicWebinarDetail.back') }}</a>
 
