@@ -62,6 +62,31 @@ jobs:
           # this project's IAM & Admin → Service accounts page before first use.
           service_account: firebase-adminsdk-fbsvc@innovacaretrainninng-staging.iam.gserviceaccount.com
 
+      - name: Verify Cloud Functions secrets exist
+        # functions/src/index.ts declares these via defineSecret(). If any is
+        # missing from this project's Secret Manager, `firebase deploy` tries
+        # to prompt for a value interactively — --non-interactive does NOT
+        # suppress that specific prompt (firebase-tools limitation), so the
+        # job just hangs on stdin until the runner kills it (exit code 130),
+        # instead of failing clearly. Check up front and fail fast with exact
+        # remediation commands.
+        run: |
+          set -e
+          MISSING=""
+          for SECRET in STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET SENDGRID_API_KEY SENDGRID_FROM_EMAIL TWILIO_ACCOUNT_SID TWILIO_AUTH_TOKEN TWILIO_FROM_NUMBER; do
+            if ! gcloud secrets describe "$SECRET" --project innovacaretrainninng-staging >/dev/null 2>&1; then
+              MISSING="$MISSING $SECRET"
+            fi
+          done
+          if [ -n "$MISSING" ]; then
+            echo "::error::Missing Secret Manager secret(s) in project innovacaretrainninng-staging:$MISSING"
+            echo "Create each one (run locally, requires firebase login + project access), then re-run this workflow:"
+            for SECRET in $MISSING; do
+              echo "  firebase functions:secrets:set $SECRET --project innovacaretrainninng-staging"
+            done
+            exit 1
+          fi
+
       - name: Deploy to Firebase (staging)
         # functions:default (not bare "functions") because the innovacare-training
         # codebase's source was never checked into this repo (its index.ts is
