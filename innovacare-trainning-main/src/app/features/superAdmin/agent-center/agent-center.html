@@ -1,0 +1,228 @@
+<div class="agent-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Super Admin · Agentic Operations</p>
+      <h1>Agent Center</h1>
+      <p>Coordinate intake, marketing follow-up, notifications, email and reminder tasks from one queue.</p>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="btn-ghost" (click)="backfill()" [disabled]="busy()">Refresh from intake</button>
+      <span class="live-pill">Automation queue</span>
+    </div>
+  </header>
+
+  <section class="stat-row">
+    <article class="stat-card">
+      <strong>{{ stats().total }}</strong>
+      <span>Total tasks</span>
+    </article>
+    <article class="stat-card">
+      <strong>{{ stats().active }}</strong>
+      <span>Active</span>
+    </article>
+    <article class="stat-card stat-card--urgent">
+      <strong>{{ stats().urgent }}</strong>
+      <span>Urgent</span>
+    </article>
+    <article class="stat-card">
+      <strong>{{ stats().email }}</strong>
+      <span>Email follow-ups</span>
+    </article>
+    <article class="stat-card">
+      <strong>{{ stats().reminders }}</strong>
+      <span>Reminder work</span>
+    </article>
+    <article class="stat-card">
+      <strong>{{ stats().agents }}</strong>
+      <span>Available agents</span>
+    </article>
+  </section>
+
+  <div class="notice notice--ok" *ngIf="notice()">{{ notice() }}</div>
+  <div class="notice notice--error" *ngIf="error()">{{ error() }}</div>
+
+  <section class="panel agent-roster">
+    <div class="roster-head">
+      <div>
+        <p class="eyebrow">Agent roster</p>
+        <h2>Six operating agents</h2>
+        <p>Launch a task for the agent you need, then review and execute it from the queue.</p>
+      </div>
+      <label class="field roster-topic">
+        <span>Task topic</span>
+        <input
+          [ngModel]="agentTopic()"
+          (ngModelChange)="agentTopic.set($event)"
+          placeholder="What should the agents work on?"
+        />
+      </label>
+    </div>
+
+    <div class="agent-card-grid">
+      <article class="agent-card" *ngFor="let item of blueprints">
+        <div>
+          <span class="agent-label">{{ item.label }}</span>
+          <h3>{{ item.name }}</h3>
+          <p>{{ item.summary }}</p>
+        </div>
+        <div class="agent-output">
+          <span>Output</span>
+          <strong>{{ item.output }}</strong>
+        </div>
+        <button type="button" class="btn-primary" (click)="createAgentTask(item)" [disabled]="busy()">
+          Create task
+        </button>
+      </article>
+    </div>
+  </section>
+
+  <section class="agent-grid">
+    <aside class="panel queue-panel">
+      <div class="filters">
+        <input
+          type="search"
+          placeholder="Search tasks, leads, organizations..."
+          [value]="search()"
+          (input)="search.set($any($event.target).value)"
+        />
+        <select [value]="statusFilter()" (change)="statusFilter.set($any($event.target).value)">
+          <option *ngFor="let option of statusOptions" [value]="option.value">{{ option.label }}</option>
+        </select>
+        <select [value]="intentFilter()" (change)="intentFilter.set($any($event.target).value)">
+          <option *ngFor="let option of intentOptions" [value]="option.value">{{ option.label }}</option>
+        </select>
+      </div>
+
+      <div class="task-list" *ngIf="filtered().length; else emptyQueue">
+        <button
+          type="button"
+          class="task-row"
+          *ngFor="let task of filtered()"
+          [class.active]="selectedId() === task.id"
+          (click)="select(task)"
+        >
+          <span [class]="'intent-dot intent-dot--' + task.intent"></span>
+          <span class="task-main">
+            <strong>{{ task.title }}</strong>
+            <small>{{ task.summary }}</small>
+            <span class="meta-row">
+              <span [class]="'badge badge--' + statusOf(task)">{{ statusOf(task) }}</span>
+              <span [class]="'priority priority--' + priorityOf(task)">{{ priorityOf(task) }}</span>
+              <span>{{ task.intent.replace('_', ' ') }}</span>
+            </span>
+          </span>
+        </button>
+      </div>
+
+      <ng-template #emptyQueue>
+        <div class="empty-state">
+          <strong>No agent tasks found</strong>
+          <span>New website contacts and demo requests will create tasks automatically.</span>
+        </div>
+      </ng-template>
+    </aside>
+
+    <section class="panel detail-panel" *ngIf="selected() as task; else noTask">
+      <div class="detail-head">
+        <div>
+          <p class="eyebrow">{{ task.intent.replace('_', ' ') }}</p>
+          <h2>{{ task.title }}</h2>
+          <p>{{ task.summary }}</p>
+        </div>
+        <span [class]="'badge badge--' + statusOf(task)">{{ statusOf(task) }}</span>
+      </div>
+
+      <div class="info-grid">
+        <div>
+          <span>Lead</span>
+          <strong>{{ task.leadName || 'Not captured' }}</strong>
+        </div>
+        <div>
+          <span>Email</span>
+          <strong>{{ task.leadEmail || 'Not captured' }}</strong>
+        </div>
+        <div>
+          <span>Organization</span>
+          <strong>{{ task.organizationName || 'Not linked' }}</strong>
+        </div>
+        <div>
+          <span>Source</span>
+          <strong>{{ task.sourceType }} / {{ task.sourceId }}</strong>
+        </div>
+        <div>
+          <span>Priority</span>
+          <strong>{{ priorityOf(task) }}</strong>
+        </div>
+        <div>
+          <span>Created</span>
+          <strong>{{ formatDate(task.createdAt) }}</strong>
+        </div>
+      </div>
+
+      <article class="recommendation">
+        <span>Recommended next step</span>
+        <p>{{ task.recommendedAction || 'Review and choose the next action.' }}</p>
+      </article>
+
+      <div class="composer-grid">
+        <label class="field">
+          <span>Email subject</span>
+          <input [ngModel]="emailSubject()" (ngModelChange)="emailSubject.set($event)" />
+        </label>
+        <label class="field field--wide">
+          <span>Email HTML</span>
+          <textarea rows="8" [ngModel]="emailHtml()" (ngModelChange)="emailHtml.set($event)"></textarea>
+        </label>
+      </div>
+
+      <div class="action-panel">
+        <label class="field">
+          <span>User UID for in-app notification</span>
+          <input
+            placeholder="Target learner/admin uid"
+            [ngModel]="notificationUid()"
+            (ngModelChange)="notificationUid.set($event)"
+          />
+        </label>
+        <label class="field">
+          <span>Organization ID for reminder scan</span>
+          <input
+            placeholder="orgId"
+            [ngModel]="orgId()"
+            (ngModelChange)="orgId.set($event)"
+          />
+        </label>
+      </div>
+
+      <div class="button-row">
+        <button type="button" class="btn-ghost" (click)="markInProgress(task)" [disabled]="busy()">
+          In progress
+        </button>
+        <button type="button" class="btn-primary" (click)="queueEmail(task)" [disabled]="busy() || !canEmail(task)">
+          Queue email
+        </button>
+        <button type="button" class="btn-ghost" (click)="createNotification(task)" [disabled]="busy()">
+          Create notification
+        </button>
+        <button type="button" class="btn-ghost" (click)="requestReminderScan(task)" [disabled]="busy()">
+          Reminder scan
+        </button>
+        <button type="button" class="btn-ghost" (click)="complete(task)" [disabled]="busy()">
+          Complete
+        </button>
+        <button type="button" class="btn-danger" (click)="dismiss(task)" [disabled]="busy()">
+          Dismiss
+        </button>
+      </div>
+
+      <p class="delivery-note" *ngIf="task.deliveryRef">Last delivery: {{ task.deliveryRef }}</p>
+    </section>
+
+    <ng-template #noTask>
+      <section class="panel detail-panel empty-state">
+        <strong>Select an agent task</strong>
+        <span>Choose a task from the queue to review the suggested action.</span>
+      </section>
+    </ng-template>
+  </section>
+</div>
