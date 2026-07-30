@@ -17,6 +17,16 @@ export const SUPER_ADMIN_ROUTES: Routes = [
           import('./dashboard/dashboard').then(m => m.Dashboard),
       },
       {
+        path: 'agent-center',
+        loadComponent: () =>
+          import('./agent-center/agent-center').then(m => m.AgentCenterComponent),
+      },
+      {
+        path: 'content-studio',
+        loadComponent: () =>
+          import('./content-studio/content-studio').then(m => m.ContentStudioComponent),
+      },
+      {
         path: 'organizations',
         loadComponent: () =>
           import('./organizations/organizations').then(m => m.Organizations),

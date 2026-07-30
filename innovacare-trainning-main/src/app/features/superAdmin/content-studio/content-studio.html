@@ -1,0 +1,354 @@
+<section class="studio-shell">
+  <header class="studio-hero">
+    <div>
+      <p class="eyebrow">Marketing operations</p>
+      <h1>Content Studio</h1>
+      <p>Create SEO articles, newsletters, and share-ready posts for Facebook, LinkedIn and WhatsApp.</p>
+    </div>
+    <div class="hero-card">
+      <span>Published articles</span>
+      <strong>{{ publishedArticles().length }}</strong>
+      <small>Public blog and social share inventory</small>
+    </div>
+  </header>
+
+  <div class="notice" *ngIf="notice()">{{ notice() }}</div>
+
+  <div class="studio-grid">
+    <aside class="panel agent-panel">
+      <div class="panel-heading">
+        <p class="eyebrow">Content agent</p>
+        <h2>Generate draft pack</h2>
+      </div>
+
+      <label>
+        Topic
+        <input
+          [ngModel]="draftTopic()"
+          (ngModelChange)="draftTopic.set($event)"
+          placeholder="Training compliance for small businesses"
+        />
+      </label>
+      <label>
+        Audience
+        <input
+          [ngModel]="draftAudience()"
+          (ngModelChange)="draftAudience.set($event)"
+          placeholder="business owners, HR managers"
+        />
+      </label>
+      <label>
+        Tone
+        <input
+          [ngModel]="draftTone()"
+          (ngModelChange)="draftTone.set($event)"
+          placeholder="clear, practical, premium"
+        />
+      </label>
+
+      <button class="primary full" type="button" (click)="generateDraftPack()">Generate draft pack</button>
+
+      <div class="mode-tabs" role="tablist" aria-label="Studio mode">
+        <button type="button" [class.active]="mode() === 'article'" (click)="mode.set('article')">Article</button>
+        <button type="button" [class.active]="mode() === 'newsletter'" (click)="mode.set('newsletter')">Newsletter</button>
+      </div>
+
+      <section class="inventory">
+        <div class="inventory-title">
+          <h3>Content inventory</h3>
+          <button type="button" class="ghost" (click)="newArticle()">New article</button>
+        </div>
+        <button
+          *ngFor="let item of articles()"
+          type="button"
+          class="inventory-item"
+          [class.active]="item.slug === selectedSlug()"
+          (click)="selectArticle(item)"
+        >
+          <span>{{ item.status }}</span>
+          <strong>{{ item.title || 'Untitled article' }}</strong>
+          <small>/blog/{{ item.slug }}</small>
+        </button>
+        <p class="empty" *ngIf="!articles().length">No articles yet.</p>
+      </section>
+    </aside>
+
+    <main class="workspace">
+      <form class="panel editor" *ngIf="mode() === 'article'" (ngSubmit)="saveArticle('draft')">
+        <div class="panel-heading split">
+          <div>
+            <p class="eyebrow">Blog</p>
+            <h2>Article editor</h2>
+          </div>
+          <button type="button" class="ghost" (click)="newArticle()">New article</button>
+        </div>
+
+        <div class="field-grid two">
+          <label>
+            Title
+            <input
+              [ngModel]="article().title"
+              name="title"
+              (ngModelChange)="setArticleField('title', $event)"
+              placeholder="Your article headline"
+              required
+            />
+          </label>
+          <label>
+            Slug
+            <input
+              [ngModel]="article().slug"
+              name="slug"
+              (ngModelChange)="setArticleField('slug', $event)"
+              placeholder="auto-generated-from-title"
+            />
+          </label>
+          <label>
+            Author
+            <input [ngModel]="article().author" name="author" (ngModelChange)="setArticleField('author', $event)" />
+          </label>
+          <label>
+            Locale
+            <select [ngModel]="article().locale" name="locale" (ngModelChange)="setArticleField('locale', $event)">
+              <option value="en">English</option>
+              <option value="fr">French</option>
+            </select>
+          </label>
+          <label>
+            Category
+            <input [ngModel]="article().category" name="category" (ngModelChange)="setArticleField('category', $event)" />
+          </label>
+          <label>
+            Tags
+            <input
+              [ngModel]="article().tags.join(', ')"
+              name="tags"
+              (ngModelChange)="setTags($event)"
+              placeholder="training, compliance, onboarding"
+            />
+          </label>
+        </div>
+
+        <label>
+          Excerpt / summary
+          <textarea
+            class="short"
+            [ngModel]="article().excerpt"
+            name="excerpt"
+            (ngModelChange)="setArticleField('excerpt', $event)"
+            placeholder="One or two sentences shown on the blog card."
+          ></textarea>
+        </label>
+
+        <label>
+          Article body
+          <textarea
+            class="body-editor"
+            [ngModel]="article().bodyMarkdown"
+            name="bodyMarkdown"
+            (ngModelChange)="setArticleField('bodyMarkdown', $event)"
+          ></textarea>
+        </label>
+
+        <section class="sub-panel">
+          <h3>Featured media</h3>
+          <div class="field-grid two">
+            <label>
+              Hero image URL
+              <input
+                [ngModel]="article().heroImageUrl"
+                name="heroImageUrl"
+                (ngModelChange)="setArticleField('heroImageUrl', $event)"
+                placeholder="https://res.cloudinary.com/..."
+              />
+            </label>
+            <label>
+              Video URL
+              <input
+                [ngModel]="article().videoUrl"
+                name="videoUrl"
+                (ngModelChange)="setArticleField('videoUrl', $event)"
+                placeholder="https://youtu.be/..."
+              />
+            </label>
+          </div>
+          <label>
+            Featured image alt text
+            <input
+              [ngModel]="article().heroImageAlt"
+              name="heroImageAlt"
+              (ngModelChange)="setArticleField('heroImageAlt', $event)"
+              placeholder="Describe the image for accessibility and Google image search."
+            />
+          </label>
+          <div class="media-preview" [class.has-image]="article().heroImageUrl">
+            <img *ngIf="article().heroImageUrl" [src]="article().heroImageUrl" [alt]="article().heroImageAlt || article().title" />
+            <div *ngIf="!article().heroImageUrl">
+              <strong>{{ article().category || 'Innovacare Training' }}</strong>
+              <span>No image yet. Add a public image URL for stronger social sharing.</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="sub-panel">
+          <div class="seo-heading">
+            <h3>Google SEO and Open Graph</h3>
+            <strong [class.good]="seoScore() >= 80">{{ seoScore() }}/100</strong>
+          </div>
+          <div class="seo-checks">
+            <span [class.good]="article().title.length >= 20">Title</span>
+            <span [class.good]="article().seoTitle.length >= 45 && article().seoTitle.length <= 65">SEO title</span>
+            <span [class.good]="article().metaDescription.length >= 120 && article().metaDescription.length <= 160">Meta description</span>
+            <span [class.good]="!!article().heroImageUrl">Featured image</span>
+            <span [class.good]="(article().heroImageAlt || '').length >= 20">Alt text</span>
+            <span [class.good]="article().tags.length >= 3">Tags</span>
+          </div>
+
+          <div class="field-grid two">
+            <label>
+              SEO title
+              <input
+                [ngModel]="article().seoTitle"
+                name="seoTitle"
+                (ngModelChange)="setArticleField('seoTitle', $event)"
+                placeholder="Article title for search engines"
+              />
+              <small>{{ article().seoTitle.length }}/65 chars</small>
+            </label>
+            <label>
+              Canonical path
+              <input
+                [ngModel]="article().canonicalPath"
+                name="canonicalPath"
+                (ngModelChange)="setArticleField('canonicalPath', $event)"
+                placeholder="/blog/your-slug"
+              />
+            </label>
+          </div>
+          <label>
+            Meta description
+            <textarea
+              class="short"
+              [ngModel]="article().metaDescription"
+              name="metaDescription"
+              (ngModelChange)="setArticleField('metaDescription', $event)"
+            ></textarea>
+            <small>{{ article().metaDescription.length }}/160 chars</small>
+          </label>
+          <div class="field-grid two">
+            <label>
+              Open Graph title
+              <input [ngModel]="article().ogTitle" name="ogTitle" (ngModelChange)="setArticleField('ogTitle', $event)" />
+            </label>
+            <label>
+              Reading minutes
+              <input type="number" min="1" [ngModel]="article().readingMinutes" name="readingMinutes" (ngModelChange)="setArticleField('readingMinutes', +$event)" />
+            </label>
+          </div>
+          <label>
+            Open Graph description
+            <textarea class="short" [ngModel]="article().ogDescription" name="ogDescription" (ngModelChange)="setArticleField('ogDescription', $event)"></textarea>
+          </label>
+
+          <label class="check-row">
+            <input type="checkbox" [ngModel]="article().featured" name="featured" (ngModelChange)="setArticleField('featured', $event)" />
+            Featured article
+          </label>
+
+          <div class="social-card">
+            <div class="social-image">
+              <img *ngIf="article().heroImageUrl" [src]="article().heroImageUrl" [alt]="article().heroImageAlt || article().title" />
+              <span *ngIf="!article().heroImageUrl">Innovacare Training</span>
+            </div>
+            <div>
+              <small>innovacare-training.web.app</small>
+              <strong>{{ article().ogTitle || article().title || 'Open Graph Title' }}</strong>
+              <p>{{ article().ogDescription || article().metaDescription || 'Open Graph description for social sharing.' }}</p>
+            </div>
+          </div>
+
+          <div class="share-row">
+            <a [href]="shareLinks().facebook" target="_blank" rel="noopener">Facebook</a>
+            <a [href]="shareLinks().linkedin" target="_blank" rel="noopener">LinkedIn</a>
+            <a [href]="shareLinks().whatsapp" target="_blank" rel="noopener">WhatsApp</a>
+            <a [href]="shareLinks().x" target="_blank" rel="noopener">X</a>
+          </div>
+        </section>
+
+        <section class="sub-panel preview">
+          <h3>Article preview</h3>
+          <article [innerHTML]="markdownPreview(article().bodyMarkdown)"></article>
+        </section>
+
+        <div class="actions">
+          <a class="ghost link-button" [href]="publicUrl()" target="_blank" rel="noopener">Open public URL</a>
+          <button class="ghost" type="submit" [disabled]="busy()">Save draft</button>
+          <button class="primary" type="button" [disabled]="busy()" (click)="saveArticle('published')">Publish article</button>
+        </div>
+      </form>
+
+      <form class="panel editor" *ngIf="mode() === 'newsletter'" (ngSubmit)="saveNewsletter('draft')">
+        <div class="panel-heading split">
+          <div>
+            <p class="eyebrow">Newsletter</p>
+            <h2>Campaign editor</h2>
+          </div>
+          <button type="button" class="ghost" (click)="newNewsletter()">New campaign</button>
+        </div>
+
+        <div class="field-grid two">
+          <label>
+            Subject line
+            <input [ngModel]="newsletter().subject" name="subject" (ngModelChange)="setNewsletterField('subject', $event)" />
+          </label>
+          <label>
+            Preview text
+            <input [ngModel]="newsletter().previewText" name="previewText" (ngModelChange)="setNewsletterField('previewText', $event)" />
+          </label>
+          <label>
+            Locale
+            <select [ngModel]="newsletter().locale" name="newsletterLocale" (ngModelChange)="setNewsletterField('locale', $event)">
+              <option value="en">English</option>
+              <option value="fr">French</option>
+            </select>
+          </label>
+          <label>
+            Audience segment
+            <input [ngModel]="newsletter().audienceSegment" name="audienceSegment" (ngModelChange)="setNewsletterField('audienceSegment', $event)" />
+          </label>
+          <label>
+            Tags
+            <input [ngModel]="newsletter().tags.join(', ')" name="newsletterTags" (ngModelChange)="setNewsletterTags($event)" />
+          </label>
+          <label>
+            Linked article
+            <select [ngModel]="newsletter().linkedArticleSlug" name="linkedArticleSlug" (ngModelChange)="setNewsletterField('linkedArticleSlug', $event)">
+              <option value="">No linked article</option>
+              <option *ngFor="let item of publishedArticles()" [value]="item.slug">{{ item.title }}</option>
+            </select>
+          </label>
+        </div>
+
+        <label>
+          Hero image URL
+          <input [ngModel]="newsletter().heroImageUrl" name="newsletterHero" (ngModelChange)="setNewsletterField('heroImageUrl', $event)" />
+        </label>
+
+        <label>
+          Newsletter body
+          <textarea class="body-editor" [ngModel]="newsletter().bodyMarkdown" name="newsletterBody" (ngModelChange)="setNewsletterField('bodyMarkdown', $event)"></textarea>
+        </label>
+
+        <section class="sub-panel preview">
+          <h3>Email preview</h3>
+          <article [innerHTML]="markdownPreview(newsletter().bodyMarkdown)"></article>
+        </section>
+
+        <div class="actions">
+          <button class="ghost" type="submit" [disabled]="busy()">Save draft</button>
+          <button class="primary" type="button" [disabled]="busy()" (click)="saveNewsletter('queued')">Queue campaign</button>
+        </div>
+      </form>
+    </main>
+  </div>
+</section>

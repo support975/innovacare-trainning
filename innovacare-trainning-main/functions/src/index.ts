@@ -13,6 +13,7 @@ import sgMail from "@sendgrid/mail";
 import twilio from "twilio";
 import {GoogleCloudTtsProvider} from "./tts/google-cloud-tts-provider.js";
 import {TtsProvider} from "./tts/tts-provider.js";
+import {createPublicBlogArticleHandler} from "./public-blog.js";
 
 /* ─────────── Init & global opts ─────────── */
 admin.initializeApp();
@@ -3486,3 +3487,159 @@ function getNotificationEmailTemplate(
 
   return {subject: "Notification", html: "<p>Notification</p>"};
 }
+
+/* ─────────── Agent Center / Content Studio / public blog ─────────── */
+
+async function isPublisherUid(uid: string): Promise<boolean> {
+  const userSnap = await db.doc(`users/${uid}`).get();
+  if (!userSnap.exists) return false;
+  const role = String(userSnap.get("role") || "");
+  return role === "super_admin";
+}
+
+type AgentActionPayload = {
+  taskId: string;
+  action: "queue_email" | "create_notification" | "request_reminder_scan" | "complete" | "dismiss";
+  subject?: string;
+  html?: string;
+  text?: string;
+  to?: string[];
+  notificationTitle?: string;
+  notificationBody?: string;
+  notificationUid?: string;
+  orgId?: string;
+};
+
+export const backfillAgentTasks = onCall(
+  {cors: callableCors},
+  async (request: CallableRequest<{limit?: number}>) => {
+    const uid = request.auth?.uid;
+    if (!uid) throw new HttpsError("unauthenticated", "Sign in required.");
+    if (!(await isPublisherUid(uid))) {
+      throw new HttpsError("permission-denied", "Super admin access required.");
+    }
+
+    const max = Math.min(Math.max(Number(request.data?.limit || 25), 1), 100);
+    const requestsSnap = await db
+      .collection("demoRequests")
+      .orderBy("createdAt", "desc")
+      .limit(max)
+      .get();
+
+    let createdOrUpdated = 0;
+    for (const requestDoc of requestsSnap.docs) {
+      const data = requestDoc.data();
+      const taskId = `demoRequest_${requestDoc.id}`;
+      await db.doc(`agentTasks/${taskId}`).set({
+        sourceType: "demoRequest",
+        sourceId: requestDoc.id,
+        intent: "lead_follow_up",
+        title: `Follow up: ${String(data.organizationName || data.leadName || "Demo request").trim()}`,
+        summary: String(data.message || "Review this demo request and prepare a follow-up.").trim(),
+        priority: "normal",
+        status: "ready",
+        channel: "email",
+        leadName: data.leadName || null,
+        leadEmail: data.email || null,
+        organizationName: data.organizationName || null,
+        organizationType: data.organizationType || null,
+        orgId: data.orgId || null,
+        recommendedAction: "Send a personalized follow-up email.",
+        metadata: {
+          selectedPlan: data.selectedPlan || null,
+          phone: data.phone || null,
+        },
+        createdAt: data.createdAt || nowTs(),
+        updatedAt: nowTs(),
+      }, {merge: true});
+      createdOrUpdated += 1;
+    }
+
+    return {ok: true, createdOrUpdated};
+  },
+);
+
+export const runAgentTaskAction = onCall(
+  {cors: callableCors},
+  async (request: CallableRequest<AgentActionPayload>) => {
+    const uid = request.auth?.uid;
+    if (!uid) throw new HttpsError("unauthenticated", "Sign in required.");
+    if (!(await isPublisherUid(uid))) {
+      throw new HttpsError("permission-denied", "Super admin access required.");
+    }
+
+    const taskId = String(request.data?.taskId || "").trim();
+    const action = request.data?.action;
+    if (!taskId || !action) {
+      throw new HttpsError("invalid-argument", "taskId and action are required.");
+    }
+
+    const taskRef = db.doc(`agentTasks/${taskId}`);
+    const taskSnap = await taskRef.get();
+    if (!taskSnap.exists) throw new HttpsError("not-found", "Agent task not found.");
+
+    let deliveryRef: string | null = null;
+    if (action === "queue_email") {
+      const recipients = Array.isArray(request.data.to) ? request.data.to.filter(Boolean) : [];
+      if (!recipients.length) {
+        throw new HttpsError("invalid-argument", "At least one recipient is required.");
+      }
+      const mailRef = await db.collection("mail").add({
+        to: recipients,
+        message: {
+          subject: String(request.data.subject || "Innovacare Training").trim(),
+          html: String(request.data.html || request.data.text || "").trim(),
+          text: String(request.data.text || "").trim() || undefined,
+        },
+        createdBy: uid,
+        createdAt: nowTs(),
+      });
+      deliveryRef = `mail/${mailRef.id}`;
+    }
+
+    if (action === "create_notification") {
+      const targetUid = String(request.data.notificationUid || uid).trim();
+      const notificationRef = await db.collection("notifications").add({
+        uid: targetUid,
+        orgId: request.data.orgId || null,
+        title: String(request.data.notificationTitle || "Innovacare update").trim(),
+        body: String(request.data.notificationBody || "").trim(),
+        read: false,
+        createdBy: uid,
+        createdAt: nowTs(),
+      });
+      deliveryRef = `notifications/${notificationRef.id}`;
+    }
+
+    await taskRef.set({
+      status: action === "dismiss" ? "dismissed" : "completed",
+      deliveryRef,
+      lastAction: {
+        action,
+        actorUid: uid,
+        at: nowTs(),
+      },
+      updatedAt: nowTs(),
+    }, {merge: true});
+
+    return {ok: true, deliveryRef};
+  },
+);
+
+function escapeHtml(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+export const publicBlogArticle = onRequest(
+  createPublicBlogArticleHandler({
+    db,
+    publicAppUrl: PUBLIC_APP_URL,
+    escapeHtml,
+    nowTs,
+  }),
+);

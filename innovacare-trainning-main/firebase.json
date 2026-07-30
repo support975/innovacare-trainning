@@ -61,6 +61,13 @@
         }
       },
       {
+        "source": "/blog/:slug",
+        "function": {
+          "functionId": "publicBlogArticle",
+          "region": "us-central1"
+        }
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }

@@ -188,8 +188,13 @@ export const routes: Routes = [
     path: 'catalogue',
     loadComponent: () =>
       import('./features/publics/catalogue-page/catalogue-page').then(
-        (m) => m.CataloguePage 
+        (m) => m.CataloguePage
       ),
+  },
+  {
+    path: 'blog',
+    loadComponent: () =>
+      import('./features/publics/blog/blog-list').then((m) => m.PublicBlogListComponent),
   },
    {
     path: 'catalogue/:id',
