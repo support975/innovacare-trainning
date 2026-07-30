@@ -186,6 +186,7 @@ export class ManagerShell {
       label: 'Communications',
       items: [
         { path: '/manager/notify', label: 'Notifications', icon: '✉', hint: 'Broadcast reminders and updates', feature: 'manager.notify', actingModeSupported: false },
+        { path: '/manager/communication-center', label: 'Communication Center', icon: '📣', hint: 'Draft newsletters, campaigns and audience segments', feature: 'manager.notify', actingModeSupported: false },
         { path: '/manager/wounds', label: 'Quick Practice Zone', icon: '✚', hint: 'Org quick sheets and task refreshers', feature: 'manager.clinicalResources', actingModeSupported: false },
       ],
     },
