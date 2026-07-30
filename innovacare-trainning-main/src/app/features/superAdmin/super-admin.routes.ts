@@ -67,16 +67,6 @@ export const SUPER_ADMIN_ROUTES: Routes = [
           import('./maintenance/maintenance').then(m => m.MaintenanceSettingsPage),
       },
       {
-        path: 'agent-center',
-        loadComponent: () =>
-          import('./agent-center/agent-center').then(m => m.AgentCenterComponent),
-      },
-      {
-        path: 'content-studio',
-        loadComponent: () =>
-          import('./content-studio/content-studio').then(m => m.ContentStudioComponent),
-      },
-      {
         path: 'organizations/create',
         loadComponent: () =>
           import('./organizationsPage/create/create').then(m => m.Create),

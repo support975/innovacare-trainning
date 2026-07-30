@@ -1136,19 +1136,6 @@ service cloud.firestore {
       allow create, update, delete: if isSuperAdmin();
     }
 
-    match /agentTasks/{taskId} {
-      allow read, create, update, delete: if isSuperAdmin();
-    }
-
-    match /marketingArticles/{slug} {
-      allow read: if (resource.data.status == 'published') || isSuperAdmin();
-      allow create, update, delete: if isSuperAdmin();
-    }
-
-    match /marketingNewsletters/{newsletterId} {
-      allow read, create, update, delete: if isSuperAdmin();
-    }
-
     match /organizationCourseAssignments/{assignmentId} {
       allow read: if isSuperAdmin()
         || (isSignedIn() && myOrgId() != null && resource.data.orgId == myOrgId());
