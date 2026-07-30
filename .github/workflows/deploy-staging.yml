@@ -62,6 +62,36 @@ jobs:
           # this project's IAM & Admin → Service accounts page before first use.
           service_account: firebase-adminsdk-fbsvc@innovacaretrainninng-staging.iam.gserviceaccount.com
 
+      - name: Ensure Cloud Functions build service accounts can build
+        # Gen 2 Functions builds run through Cloud Build and Artifact Registry.
+        # New Firebase projects can miss these bindings, which makes every
+        # function creation fail after source upload with "missing permission
+        # on the build service account". Keep this idempotent so reruns are
+        # safe after IAM already exists.
+        run: |
+          set -e
+          PROJECT_ID="innovacaretrainninng-staging"
+          PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')"
+          BUILD_ACCOUNTS=(
+            "${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com"
+            "${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+          )
+          BUILD_ROLES=(
+            "roles/logging.logWriter"
+            "roles/artifactregistry.writer"
+            "roles/storage.objectViewer"
+          )
+
+          for ACCOUNT in "${BUILD_ACCOUNTS[@]}"; do
+            for ROLE in "${BUILD_ROLES[@]}"; do
+              gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+                --member="serviceAccount:${ACCOUNT}" \
+                --role="$ROLE" \
+                --condition=None \
+                --quiet >/dev/null
+            done
+          done
+
       - name: Verify Cloud Functions secrets exist
         # functions/src/index.ts declares these via defineSecret(). If any is
         # missing from this project's Secret Manager, `firebase deploy` tries
