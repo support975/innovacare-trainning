@@ -1,0 +1,69 @@
+# electron-builder.yml — InnovaLauncher packaging config
+appId: app.innovacare.launcher
+productName: InnovaLauncher
+copyright: Copyright (c) InnovaCare
+directories:
+  output: release
+  buildResources: build
+files:
+  - dist/**/*
+  - package.json
+extraMetadata:
+  main: dist/main/index.js
+
+# --- Windows ---
+# MSI target enables silent enterprise deployment (Intune/SCCM):
+#   msiexec /i InnovaLauncher.msi /qn ENVID=prod-eastern
+# NSIS is offered as a secondary installer for manual/support use.
+win:
+  target:
+    - target: msi
+      arch: [x64]
+    - target: nsis
+      arch: [x64]
+  # EV cert signing — credentials must come from env vars, never committed.
+  # electron-builder reads CSC_LINK / CSC_KEY_PASSWORD automatically, or a
+  # cloud HSM signing tool can be wired in via signtoolOptions/sign hook.
+  signingHashAlgorithms: [sha256]
+  certificateSubjectName: ${env.WIN_CERT_SUBJECT_NAME}
+  rfc3161TimeStampServer: http://timestamp.digicert.com
+msi:
+  oneClick: false
+  perMachine: true
+  # ENVID is surfaced as an MSI public property (see scripts note in README);
+  # the launcher reads HKLM\SOFTWARE\InnovaCare\InnovaLauncher\DefaultEnvId
+  # written by a custom action bound to that property on first run.
+  upgradeCode: 6D2E9F2B-6C7B-4C9A-9C0D-4E2C6B2D6F31
+nsis:
+  oneClick: false
+  perMachine: true
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+
+# --- macOS ---
+mac:
+  target:
+    - target: dmg
+      arch: [universal]
+  category: public.app-category.medical
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  notarize:
+    # Reads APPLE_ID / APPLE_APP_SPECIFIC_PASSWORD / APPLE_TEAM_ID env vars.
+    teamId: ${env.APPLE_TEAM_ID}
+dmg:
+  sign: false
+
+# --- Auto-update feed ---
+# Firebase Hosting serves static files, so the "generic" provider (a plain
+# HTTPS directory listing latest.yml/latest-mac.yml + installers) is used.
+# `channel`/`rolloutPercentage` below implement staged rollout: electron-updater
+# reads rolloutPercentage from the channel's YAML and hashes the machine's
+# stable id against it before offering the update.
+publish:
+  provider: generic
+  url: https://config.innovacare.app/updates/
+  channel: latest

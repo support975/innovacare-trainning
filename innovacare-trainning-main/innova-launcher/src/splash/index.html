@@ -1,0 +1,54 @@
+<!-- src/splash/index.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>InnovaLauncher</title>
+  <!-- No inline scripts/styles beyond this file's own linked resources —
+       keeps this window's CSP-equivalent posture as tight as the main
+       window's, even though nothing here talks to the network directly. -->
+  <link rel="stylesheet" href="splash.css" />
+</head>
+<body>
+  <div id="app" class="screen" data-mode="picker">
+    <header class="brand">
+      <div class="wordmark">InnovaCare</div>
+      <div class="subtitle">InnovaLauncher</div>
+    </header>
+
+    <div id="warning-ribbon" class="warning-ribbon" hidden></div>
+
+    <main id="picker-view">
+      <label for="env-select">Environment</label>
+      <select id="env-select"></select>
+      <button id="connect-button" type="button">Connect</button>
+    </main>
+
+    <main id="status-view" hidden>
+      <div class="spinner" aria-hidden="true"></div>
+      <div id="status-line" class="status-line">Checking for updates…</div>
+    </main>
+
+    <main id="lock-view" hidden>
+      <div class="lock-icon" aria-hidden="true">&#128274;</div>
+      <div class="status-line">Session locked due to inactivity</div>
+      <button id="unlock-button" type="button">Unlock</button>
+    </main>
+
+    <main id="error-view" hidden>
+      <div class="status-line error">Something went wrong</div>
+      <div id="error-message" class="error-detail"></div>
+      <div class="error-code">
+        Error code: <code id="error-code"></code><br />
+        Correlation ID: <code id="correlation-id"></code>
+      </div>
+      <button id="copy-error-button" type="button">Copy details</button>
+      <button id="retry-button" type="button">Retry</button>
+    </main>
+
+    <footer class="version" id="version-line"></footer>
+  </div>
+
+  <script type="module" src="splash.js"></script>
+</body>
+</html>

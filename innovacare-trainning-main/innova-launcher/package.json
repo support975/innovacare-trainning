@@ -1,0 +1,40 @@
+{
+  "name": "innova-launcher",
+  "version": "1.0.0",
+  "description": "InnovaLauncher — secure Chromium-based desktop client for InnovaClinic",
+  "private": true,
+  "author": "InnovaCare",
+  "license": "UNLICENSED",
+  "main": "dist/main/index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "npm run build && electron . --env=train-central",
+    "build": "npm run build:main && npm run build:splash-script && npm run build:splash-assets",
+    "build:main": "tsc -p tsconfig.json",
+    "build:splash-script": "tsc -p tsconfig.splash.json",
+    "build:splash-assets": "mkdir -p dist/splash && cp src/splash/index.html dist/splash/index.html && cp src/splash/splash.css dist/splash/splash.css",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.splash.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "sign-manifest": "tsx scripts/sign-manifest.ts",
+    "package:win": "npm run build && electron-builder --win",
+    "package:mac": "npm run build && electron-builder --mac",
+    "package:all": "npm run build && electron-builder -mw"
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9",
+    "semver": "^7.6.3",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "@types/semver": "^7.5.8",
+    "electron": "^32.1.2",
+    "electron-builder": "^25.1.8",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2",
+    "vitest": "^2.1.1"
+  }
+}
