@@ -1,0 +1,165 @@
+/* src/splash/splash.css */
+:root {
+  color-scheme: light dark;
+  --ink: #1b1f24;
+  --muted: #6b7684;
+  --brand: #0f6e5f;
+  --bg: #ffffff;
+  --amber: #f5a623;
+  --red: #d0021b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  user-select: none;
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 16px 24px;
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  -webkit-app-region: drag;
+}
+
+.wordmark {
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--brand);
+}
+
+.subtitle {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.warning-ribbon {
+  margin-top: 6px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  color: #1b1f24;
+  background: var(--amber);
+}
+
+.warning-ribbon.tier-test {
+  background: var(--red);
+  color: #fff;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+#picker-view {
+  align-items: stretch;
+}
+
+label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+select, button {
+  font-size: 14px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #cfd6dd;
+  background: #fff;
+}
+
+button {
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+button.secondary {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid #cfd6dd;
+}
+
+.status-line {
+  font-size: 14px;
+}
+
+.status-line.error {
+  color: var(--red);
+  font-weight: 600;
+}
+
+.error-detail {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.error-code {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.lock-icon {
+  font-size: 32px;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 3px solid #e3e7eb;
+  border-top-color: var(--brand);
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.version {
+  font-size: 10px;
+  color: var(--muted);
+  text-align: center;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #f0f2f4;
+    --bg: #14181c;
+    --muted: #8b95a1;
+  }
+  select, button.secondary {
+    background: #1d2227;
+    border-color: #2a3037;
+  }
+}
