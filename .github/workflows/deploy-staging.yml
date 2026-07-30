@@ -11,6 +11,11 @@ on:
         description: 'Branch, tag, or commit SHA to deploy to staging'
         required: false
         default: main
+      deploy_functions:
+        description: 'Deploy Cloud Functions too. Requires staging Cloud Build IAM to be fixed first.'
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: deploy-staging
@@ -62,37 +67,18 @@ jobs:
           # this project's IAM & Admin → Service accounts page before first use.
           service_account: firebase-adminsdk-fbsvc@innovacaretrainninng-staging.iam.gserviceaccount.com
 
-      - name: Ensure Cloud Functions build service accounts can build
-        # Gen 2 Functions builds run through Cloud Build and Artifact Registry.
-        # New Firebase projects can miss these bindings, which makes every
-        # function creation fail after source upload with "missing permission
-        # on the build service account". Keep this idempotent so reruns are
-        # safe after IAM already exists.
+      - name: Explain Cloud Functions IAM requirement
+        if: ${{ inputs.deploy_functions }}
         run: |
-          set -e
           PROJECT_ID="innovacaretrainninng-staging"
           PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')"
-          BUILD_ACCOUNTS=(
-            "${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com"
-            "${PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
-          )
-          BUILD_ROLES=(
-            "roles/logging.logWriter"
-            "roles/artifactregistry.writer"
-            "roles/storage.objectViewer"
-          )
-
-          for ACCOUNT in "${BUILD_ACCOUNTS[@]}"; do
-            for ROLE in "${BUILD_ROLES[@]}"; do
-              gcloud projects add-iam-policy-binding "$PROJECT_ID" \
-                --member="serviceAccount:${ACCOUNT}" \
-                --role="$ROLE" \
-                --condition=None \
-                --quiet >/dev/null
-            done
-          done
+          echo "Cloud Functions deployment is enabled for staging."
+          echo "If function creation fails with missing build-service-account permission, grant these IAM roles manually:"
+          echo "  ${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com: roles/logging.logWriter roles/artifactregistry.writer roles/storage.objectViewer"
+          echo "  ${PROJECT_NUMBER}-compute@developer.gserviceaccount.com: roles/logging.logWriter roles/artifactregistry.writer roles/storage.objectViewer"
 
       - name: Verify Cloud Functions secrets exist
+        if: ${{ inputs.deploy_functions }}
         # functions/src/index.ts declares these via defineSecret(). If any is
         # missing from this project's Secret Manager, `firebase deploy` tries
         # to prompt for a value interactively — --non-interactive does NOT
@@ -126,7 +112,11 @@ jobs:
         # --force — delete those functions outright. Scoping to :default skips
         # that codebase entirely so they're never evaluated or touched.
         run: |
+          ONLY="hosting,firestore,storage,database"
+          if [ "${{ inputs.deploy_functions }}" = "true" ]; then
+            ONLY="$ONLY,functions:default"
+          fi
           npx firebase-tools@13 deploy \
             --project innovacaretrainninng-staging \
-            --only hosting,firestore,storage,database,functions:default \
+            --only "$ONLY" \
             --non-interactive
