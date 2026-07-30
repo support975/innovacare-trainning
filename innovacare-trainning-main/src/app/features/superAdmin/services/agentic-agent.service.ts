@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Auth } from '@angular/fire/auth';
+
 import {
   Firestore,
   addDoc,
@@ -10,9 +10,9 @@ import {
   orderBy,
   query,
   serverTimestamp,
-  setDoc,
   updateDoc,
 } from '@angular/fire/firestore';
+import { Functions, httpsCallable } from '@angular/fire/functions';
 import { Observable } from 'rxjs';
 
 export type AgentTaskIntent =
@@ -92,7 +92,7 @@ export interface AgentTaskActionPayload {
 @Injectable({ providedIn: 'root' })
 export class AgenticAgentService {
   private readonly afs = inject(Firestore);
-  private readonly auth = inject(Auth);
+  private readonly functions = inject(Functions);
   private readonly colRef = collection(this.afs, 'agentTasks');
 
   list(max = 120): Observable<AgentTask[]> {
@@ -100,112 +100,20 @@ export class AgenticAgentService {
     return collectionData(q, { idField: 'id' }) as Observable<AgentTask[]>;
   }
 
-  async runAction(payload: AgentTaskActionPayload): Promise<unknown> {
-    const taskRef = doc(this.afs, `agentTasks/${payload.taskId}`);
-    const deliveryRef = `${payload.action}_${Date.now()}`;
-    const currentUser = this.auth.currentUser;
-
-    if (payload.action === 'queue_email') {
-      await addDoc(collection(this.afs, 'mail'), {
-        to: payload.to || [],
-        message: {
-          subject: payload.subject || 'Innovacare Training follow-up',
-          html: payload.html || '',
-          text: payload.text || '',
-        },
-        metadata: {
-          source: 'agent-center',
-          sourceTaskId: payload.taskId,
-        },
-        createdAt: serverTimestamp(),
-      });
-    }
-
-    if (payload.action === 'create_notification') {
-      await addDoc(collection(this.afs, 'notifications'), {
-        title: payload.notificationTitle || 'Innovacare Training update',
-        body: payload.notificationBody || payload.text || '',
-        audience: payload.notificationUid
-          ? { type: 'user', uid: payload.notificationUid }
-          : { type: 'organization', orgId: payload.orgId || null },
-        severity: 'info',
-        link: '/super-admin/agent-center',
-        createdBy: {
-          uid: currentUser?.uid || 'super-admin',
-          name: currentUser?.displayName || currentUser?.email || 'Super Admin',
-        },
-        createdAt: serverTimestamp(),
-      });
-    }
-
-    if (payload.action === 'request_reminder_scan') {
-      await addDoc(collection(this.afs, 'smartReminderScanRequests'), {
-        orgId: payload.orgId || '',
-        status: 'pending',
-        requestedByUid: currentUser?.uid || '',
-        requestedByEmail: currentUser?.email || '',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
-    }
-
-    const nextStatus =
-      payload.action === 'complete'
-        ? 'completed'
-        : payload.action === 'dismiss'
-          ? 'dismissed'
-          : 'in_progress';
-
-    await updateDoc(taskRef, {
-      status: nextStatus,
-      deliveryRef,
-      updatedAt: serverTimestamp(),
-      lastAction: {
-        action: payload.action,
-        at: serverTimestamp(),
-      },
-    });
-
-    return { ok: true, deliveryRef };
+  runAction(payload: AgentTaskActionPayload): Promise<unknown> {
+    const callable = httpsCallable<AgentTaskActionPayload, unknown>(
+      this.functions,
+      'runAgentTaskAction'
+    );
+    return callable(payload).then((result) => result.data);
   }
 
-  async backfill(limit = 50): Promise<{ ok: boolean; createdOrUpdated: number }> {
-    const demoTasks = [
-      {
-        sourceType: 'manual' as const,
-        sourceId: `seo_article_${Date.now()}`,
-        intent: 'seo_article' as AgentTaskIntent,
-        title: 'Create SEO article pack',
-        summary: 'Prepare a searchable article and social snippets to promote Innovacare Training.',
-        priority: 'normal' as AgentTaskPriority,
-        status: 'ready' as AgentTaskStatus,
-        channel: 'mixed' as const,
-        recommendedAction: 'Draft article, meta description, and LinkedIn/Facebook/WhatsApp copy.',
-      },
-      {
-        sourceType: 'manual' as const,
-        sourceId: `reminder_${Date.now()}`,
-        intent: 'notification_reminder' as AgentTaskIntent,
-        title: 'Review learner reminder opportunities',
-        summary: 'Check overdue, inactive, and upcoming learner assignments for reminder outreach.',
-        priority: 'high' as AgentTaskPriority,
-        status: 'ready' as AgentTaskStatus,
-        channel: 'reminder' as const,
-        recommendedAction: 'Create a reminder scan request for the target organization.',
-      },
-    ].slice(0, Math.max(1, Math.min(limit, 2)));
-
-    await Promise.all(
-      demoTasks.map((task) =>
-        setDoc(doc(this.afs, `agentTasks/${task.sourceId}`), {
-          ...task,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        }, { merge: true })
-      )
+  backfill(limit = 50): Promise<{ ok: boolean; createdOrUpdated: number }> {
+    const callable = httpsCallable<{ limit: number }, { ok: boolean; createdOrUpdated: number }>(
+      this.functions,
+      'backfillAgentTasks'
     );
-
-    return { ok: true, createdOrUpdated: demoTasks.length };
+    return callable({ limit }).then((result) => result.data);
   }
 
   markInProgress(taskId: string): Promise<void> {

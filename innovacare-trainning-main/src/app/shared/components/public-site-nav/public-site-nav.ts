@@ -6,7 +6,7 @@ import { Router, RouterModule } from '@angular/router';
 import { DemoRequestDialog } from '../../../features/publics/demo-request-dialog/demo-request-dialog';
 import { AppLanguage, LanguageService } from '../../services/language';
 
-type PublicNavPage = 'home' | 'features' | 'industries' | 'catalogue' | 'webinars' | 'pricing' | 'ordre';
+type PublicNavPage = 'home' | 'features' | 'industries' | 'catalogue' | 'webinars' | 'pricing' | 'ordre' | 'blog';
 
 @Component({
   selector: 'app-public-site-nav',

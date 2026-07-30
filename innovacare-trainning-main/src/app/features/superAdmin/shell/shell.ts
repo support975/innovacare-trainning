@@ -45,6 +45,16 @@ export class Shell {
           icon: 'M4 5h7v7H4V5Zm9 0h7v4h-7V5ZM4 14h7v5H4v-5Zm9-3h7v8h-7v-8Z',
         },
         {
+          label: 'Agent Center',
+          path: '/super-admin/agent-center',
+          icon: 'M12 2a5 5 0 0 1 5 5v1a5 5 0 0 1-10 0V7a5 5 0 0 1 5-5Zm-7 18a7 7 0 0 1 14 0',
+        },
+        {
+          label: 'Content Studio',
+          path: '/super-admin/content-studio',
+          icon: 'M4 4h16v16H4V4Zm4 4h8m-8 4h8m-8 4h5',
+        },
+        {
           label: 'Organizations',
           path: '/super-admin/organizations',
           icon: 'M4 20V8l8-4 8 4v12h-5v-6H9v6H4Zm6-10h4m-4 3h4',
@@ -53,16 +63,6 @@ export class Shell {
           label: 'Users & Roles',
           path: '/super-admin/users',
           icon: 'M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm6-1a2.5 2.5 0 1 0 0-5M3.5 19a5.5 5.5 0 0 1 11 0M14 17.5a4.5 4.5 0 0 1 6.5 1.5',
-        },
-        {
-          label: 'Agent Center',
-          path: '/super-admin/agent-center',
-          icon: 'M12 3 4 7v6c0 4.4 3.4 7.2 8 8 4.6-.8 8-3.6 8-8V7l-8-4Zm-3 9 2 2 4-5',
-        },
-        {
-          label: 'Content Studio',
-          path: '/super-admin/content-studio',
-          icon: 'M5 4h14v16H5V4Zm3 4h8m-8 4h8m-8 4h5',
         },
       ],
     },
