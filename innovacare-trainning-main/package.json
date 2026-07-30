@@ -11,7 +11,12 @@
     "mobile:audit": "node tools/mobile-audit.mjs",
     "verify:mobile": "npm run build && npm run mobile:audit",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "cap:sync": "ng build --configuration production && cap sync",
+    "cap:open:android": "npm run cap:sync && cap open android",
+    "cap:open:ios": "npm run cap:sync && cap open ios",
+    "cap:run:android": "npm run cap:sync && cap run android",
+    "cap:run:ios": "npm run cap:sync && cap run ios"
   },
   "prettier": {
     "printWidth": 100,
@@ -36,6 +41,11 @@
     "@angular/material": "^20.2.5",
     "@angular/platform-browser": "^20.3.0",
     "@angular/router": "^20.3.0",
+    "@angular/service-worker": "20.3.2",
+    "@capacitor/android": "8.4.1",
+    "@capacitor/cli": "8.4.1",
+    "@capacitor/core": "8.4.1",
+    "@capacitor/ios": "8.4.1",
     "echarts": "^6.0.0",
     "firebase": "^11.10.0",
     "html2canvas": "^1.4.1",
