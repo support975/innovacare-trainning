@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
 import * as admin from "firebase-admin";
+import sanitizeHtml from "sanitize-html";
 
 type PublicMarketingArticle = {
   title?: string;
@@ -9,7 +10,7 @@ type PublicMarketingArticle = {
   locale?: string;
   category?: string;
   excerpt?: string;
-  bodyMarkdown?: string;
+  bodyHtml?: string;
   tags?: string[];
   heroImageUrl?: string;
   heroImageAlt?: string;
@@ -54,49 +55,29 @@ const publicBlogSlugFromRequest = (url: string) => {
   return decodeURIComponent(String(slug || "")).replace(/[^a-z0-9-]/gi, "").toLowerCase();
 };
 
-const markdownToPublicHtml = (markdown: unknown, escapeHtml: (value: unknown) => string) => {
-  const lines = String(markdown || "").split(/\r?\n/);
-  const chunks: string[] = [];
-  let listOpen = false;
-
-  const closeList = () => {
-    if (listOpen) {
-      chunks.push("</ul>");
-      listOpen = false;
-    }
-  };
-
-  for (const rawLine of lines) {
-    const line = rawLine.trim();
-    if (!line) {
-      closeList();
-      continue;
-    }
-    if (line.startsWith("## ")) {
-      closeList();
-      chunks.push(`<h2>${escapeHtml(line.slice(3))}</h2>`);
-      continue;
-    }
-    if (line.startsWith("### ")) {
-      closeList();
-      chunks.push(`<h3>${escapeHtml(line.slice(4))}</h3>`);
-      continue;
-    }
-    if (line.startsWith("- ")) {
-      if (!listOpen) {
-        chunks.push("<ul>");
-        listOpen = true;
-      }
-      chunks.push(`<li>${escapeHtml(line.slice(2))}</li>`);
-      continue;
-    }
-    closeList();
-    chunks.push(`<p>${escapeHtml(line)}</p>`);
-  }
-
-  closeList();
-  return chunks.join("\n");
-};
+// The Content Studio editor (superAdmin-only, gated by firestore.rules) writes
+// real HTML here via a WYSIWYG editor, not hand-typed markdown. Firestore
+// rules already restrict writes to super admins, but this sanitizes at render
+// time too — a defense-in-depth net against a compromised admin session
+// injecting something that would otherwise run in every visitor's browser.
+const sanitizeArticleHtml = (html: unknown): string => sanitizeHtml(String(html || ""), {
+  allowedTags: [
+    "p", "br", "span", "strong", "b", "em", "i", "u", "s",
+    "h2", "h3", "h4", "ul", "ol", "li", "blockquote",
+    "a", "img", "figure", "figcaption", "iframe", "pre", "code",
+  ],
+  allowedAttributes: {
+    a: ["href", "target", "rel"],
+    img: ["src", "alt", "width", "height"],
+    iframe: ["src", "width", "height", "frameborder", "allowfullscreen"],
+    span: ["class"],
+  },
+  allowedIframeHostnames: ["www.youtube.com", "youtube.com", "player.vimeo.com"],
+  allowedSchemes: ["http", "https"],
+  transformTags: {
+    a: sanitizeHtml.simpleTransform("a", {rel: "noopener noreferrer", target: "_blank"}),
+  },
+});
 
 const renderPublicBlogHtml = (
   article: PublicMarketingArticle,
@@ -149,7 +130,7 @@ const renderPublicBlogHtml = (
   <style>
     body{margin:0;background:#f7f9fc;color:#10213f;font-family:Inter,Arial,sans-serif;line-height:1.65}
     .nav{border-bottom:1px solid #dbe3ef;background:#fff}.nav-inner{max-width:980px;margin:0 auto;padding:18px 20px;display:flex;justify-content:space-between;gap:16px;align-items:center}.brand{font-weight:900;color:#0d2240;text-decoration:none}.nav a{color:#075fc7;font-weight:800;text-decoration:none}
-    main{max-width:980px;margin:0 auto;padding:42px 20px 72px}.eyebrow{color:#0f766e;text-transform:uppercase;letter-spacing:.12em;font-size:.78rem;font-weight:900}h1{font-size:clamp(2.2rem,6vw,4.4rem);line-height:1;margin:.2rem 0 1rem;letter-spacing:0}h2{margin-top:2rem;color:#0d2240}.lede{font-size:1.15rem;color:#52637a;max-width:820px}.meta{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}.meta span,.tag{border-radius:999px;background:#edf7f6;color:#0f766e;padding:7px 10px;font-weight:800;font-size:.78rem}.hero{overflow:hidden;margin:28px 0;border-radius:8px;background:linear-gradient(135deg,#0d2240,#0f766e);color:#fff}.hero img{display:block;width:100%;max-height:520px;object-fit:cover}.hero-fallback{min-height:260px;display:grid;place-items:center;font-weight:900;font-size:1.5rem}.video{display:inline-flex;margin:0 0 22px;padding:11px 14px;border-radius:8px;background:#075fc7;color:#fff;font-weight:900;text-decoration:none}.article{background:#fff;border:1px solid #dbe3ef;border-radius:8px;padding:clamp(20px,4vw,42px);box-shadow:0 12px 34px rgba(15,23,42,.07)}.article p{margin:1rem 0}.article ul{padding-left:1.25rem}.tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:30px}.cta{margin-top:34px;padding:24px;border-radius:8px;background:#0d2240;color:#fff}.cta a{display:inline-flex;margin-top:10px;padding:11px 14px;border-radius:8px;background:#fff;color:#0d2240;font-weight:900;text-decoration:none}@media(max-width:640px){main{padding-top:28px}.nav-inner{align-items:flex-start;flex-direction:column}.article{padding:18px}}
+    main{max-width:980px;margin:0 auto;padding:42px 20px 72px}.eyebrow{color:#0f766e;text-transform:uppercase;letter-spacing:.12em;font-size:.78rem;font-weight:900}h1{font-size:clamp(2.2rem,6vw,4.4rem);line-height:1;margin:.2rem 0 1rem;letter-spacing:0}h2{margin-top:2rem;color:#0d2240}.lede{font-size:1.15rem;color:#52637a;max-width:820px}.meta{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}.meta span,.tag{border-radius:999px;background:#edf7f6;color:#0f766e;padding:7px 10px;font-weight:800;font-size:.78rem}.hero{overflow:hidden;margin:28px 0;border-radius:8px;background:linear-gradient(135deg,#0d2240,#0f766e);color:#fff}.hero img{display:block;width:100%;max-height:520px;object-fit:cover}.hero-fallback{min-height:260px;display:grid;place-items:center;font-weight:900;font-size:1.5rem}.video{display:inline-flex;margin:0 0 22px;padding:11px 14px;border-radius:8px;background:#075fc7;color:#fff;font-weight:900;text-decoration:none}.article{background:#fff;border:1px solid #dbe3ef;border-radius:8px;padding:clamp(20px,4vw,42px);box-shadow:0 12px 34px rgba(15,23,42,.07)}.article p{margin:1rem 0}.article ul,.article ol{padding-left:1.25rem}.article h3{margin-top:1.75rem;color:#0d2240}.article h4{margin-top:1.4rem;color:#0d2240}.article img{max-width:100%;height:auto;border-radius:8px;margin:1rem 0}.article blockquote{margin:1.25rem 0;padding:.25rem 1.25rem;border-left:4px solid #0f766e;color:#3c526d;font-style:italic}.article a{color:#075fc7}.article iframe{max-width:100%;aspect-ratio:16/9;width:100%;height:auto;border:0;border-radius:8px;margin:1rem 0}.article pre{background:#0d2240;color:#e7edf7;padding:16px;border-radius:8px;overflow-x:auto}.article code{font-family:Consolas,"Courier New",monospace}.tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:30px}.cta{margin-top:34px;padding:24px;border-radius:8px;background:#0d2240;color:#fff}.cta a{display:inline-flex;margin-top:10px;padding:11px 14px;border-radius:8px;background:#fff;color:#0d2240;font-weight:900;text-decoration:none}@media(max-width:640px){main{padding-top:28px}.nav-inner{align-items:flex-start;flex-direction:column}.article{padding:18px}}
   </style>
 </head>
 <body>
@@ -161,7 +142,7 @@ const renderPublicBlogHtml = (
     <div class="meta"><span>${escapeHtml(article.author || "Innovacare Training")}</span><span>${escapeHtml(String(article.readingMinutes || 1))} min read</span></div>
     <div class="hero">${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(article.heroImageAlt || displayTitle)}">` : `<div class="hero-fallback">${escapeHtml(article.category || "Innovacare Training")}</div>`}</div>
     ${videoUrl ? `<a class="video" href="${escapeHtml(videoUrl)}" target="_blank" rel="noopener">Watch the related video</a>` : ""}
-    <article class="article">${markdownToPublicHtml(article.bodyMarkdown, escapeHtml)}</article>
+    <article class="article">${sanitizeArticleHtml(article.bodyHtml)}</article>
     <div class="tags">${tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}</div>
     <section class="cta"><strong>Build a stronger training system.</strong><br>Use Innovacare Training to manage learning, practice sheets, reminders, compliance evidence and certifications.<br><a href="${publicAppUrl}/pricing">Explore plans</a></section>
   </main>

@@ -50,6 +50,17 @@ service firebase.storage {
         && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['admin', 'manager'];
     }
 
+    // Content Studio article/newsletter images (uploaded via the rich text
+    // editor). World-readable — they need to render on the public blog and
+    // in emails without auth. Writable only by super admins, matching
+    // firestore.rules' isSuperAdmin() gate on the marketingArticles collection.
+    match /marketingArticles/{pathId}/{fileName} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && firestore.exists(/databases/(default)/documents/users/$(request.auth.uid))
+        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['super_admin', 'superAdmin'];
+    }
+
     match /{allPaths=**} {
       allow read, write: if false;
     }

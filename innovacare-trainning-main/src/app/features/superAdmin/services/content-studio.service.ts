@@ -23,7 +23,7 @@ export interface MarketingArticle {
   locale: 'en' | 'fr';
   category: string;
   excerpt: string;
-  bodyMarkdown: string;
+  bodyHtml: string;
   tags: string[];
   heroImageUrl?: string;
   heroImageAlt?: string;
@@ -50,7 +50,7 @@ export interface MarketingNewsletter {
   tags: string[];
   linkedArticleSlug?: string;
   heroImageUrl?: string;
-  bodyMarkdown: string;
+  bodyHtml: string;
   status: 'draft' | 'queued' | 'sent' | 'archived';
   createdAt?: any;
   updatedAt?: any;
@@ -77,7 +77,7 @@ export class ContentStudioService {
       slug,
       tags: article.tags || [],
       canonicalPath: article.canonicalPath || `/blog/${slug}`,
-      readingMinutes: article.readingMinutes || estimateReadingMinutes(article.bodyMarkdown),
+      readingMinutes: article.readingMinutes || estimateReadingMinutes(article.bodyHtml),
       updatedAt: serverTimestamp(),
       ...(article.status === 'published' ? { publishedAt: serverTimestamp() } : {}),
       ...(!article.id ? { createdAt: serverTimestamp(), views: 0 } : {}),
@@ -112,7 +112,8 @@ export function slugify(value: string): string {
     .slice(0, 90) || `article-${Date.now()}`;
 }
 
-export function estimateReadingMinutes(markdown: string): number {
-  const words = String(markdown || '').trim().split(/\s+/).filter(Boolean).length;
+export function estimateReadingMinutes(html: string): number {
+  const text = String(html || '').replace(/<[^>]*>/g, ' ');
+  const words = text.trim().split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.ceil(words / 220));
 }
