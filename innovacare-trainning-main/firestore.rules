@@ -1000,6 +1000,19 @@ service cloud.firestore {
       allow read, update, delete: if isSuperAdmin();
     }
 
+    match /agentTasks/{taskId} {
+      allow read, create, update, delete: if isSuperAdmin();
+    }
+
+    match /marketingArticles/{slug} {
+      allow read: if (resource.data.status == 'published') || isSuperAdmin();
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    match /marketingNewsletters/{newsletterId} {
+      allow read, create, update, delete: if isSuperAdmin();
+    }
+
     // Consumed by the sendQueuedSms Cloud Function (Twilio) for SMS notifications.
     match /sms/{smsId} {
       allow create: if isManagerOrAbove();

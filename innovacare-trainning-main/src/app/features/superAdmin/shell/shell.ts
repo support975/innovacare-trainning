@@ -64,6 +64,16 @@ export class Shell {
           path: '/super-admin/users',
           icon: 'M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm6-1a2.5 2.5 0 1 0 0-5M3.5 19a5.5 5.5 0 0 1 11 0M14 17.5a4.5 4.5 0 0 1 6.5 1.5',
         },
+        {
+          label: 'Agent Center',
+          path: '/super-admin/agent-center',
+          icon: 'M12 3 4 7v6c0 4.4 3.4 7.2 8 8 4.6-.8 8-3.6 8-8V7l-8-4Zm-3 9 2 2 4-5',
+        },
+        {
+          label: 'Content Studio',
+          path: '/super-admin/content-studio',
+          icon: 'M5 4h14v16H5V4Zm3 4h8m-8 4h8m-8 4h5',
+        },
       ],
     },
     {

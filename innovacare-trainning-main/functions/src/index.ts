@@ -56,6 +56,13 @@ const PUBLIC_APP_URL = "https://www.innovacaretrainning.com";
 const setEq = (a: string[], b: string[]) => a.length === b.length && a.every((x) => b.includes(x));
 
 const nowTs = () => admin.firestore.FieldValue.serverTimestamp();
+const escapeHtml = (value: unknown) =>
+  String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 const REMINDER_DAY_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_SMART_REMINDER_SETTINGS: Required<SmartReminderSettings> = {
   enabled: true,
@@ -3244,6 +3251,18 @@ export const onExamCompleted = onDocumentCreated(
       console.error("Error sending exam result email:", error);
     }
   }
+);
+
+export const publicBlogArticle = onRequest(
+  {
+    invoker: "public",
+  },
+  createPublicBlogArticleHandler({
+    db,
+    publicAppUrl: PUBLIC_APP_URL,
+    escapeHtml,
+    nowTs,
+  })
 );
 
 /* eslint max-len: ["error", { "code": 120, "ignoreUrls": true }] */
