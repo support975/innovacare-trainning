@@ -73,7 +73,7 @@ jobs:
         run: |
           set -e
           MISSING=""
-          for SECRET in STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET SENDGRID_API_KEY SENDGRID_FROM_EMAIL TWILIO_ACCOUNT_SID TWILIO_AUTH_TOKEN TWILIO_FROM_NUMBER; do
+          for SECRET in STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET SENDGRID_API_KEY SENDGRID_FROM_EMAIL TWILIO_ACCOUNT_SID TWILIO_AUTH_TOKEN TWILIO_FROM_NUMBER ANTHROPIC_API_KEY; do
             if ! gcloud secrets describe "$SECRET" --project innovacaretrainninng-staging >/dev/null 2>&1; then
               MISSING="$MISSING $SECRET"
             fi

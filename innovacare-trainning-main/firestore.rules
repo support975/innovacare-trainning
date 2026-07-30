@@ -593,6 +593,25 @@ service cloud.firestore {
         || (isSignedIn() && request.auth.uid == uid);
     }
 
+    // ── AI ASSISTANT DATA (InnovaAssist) ────────────────────────────────────
+    match /users/{uid}/aiChats/{chatId} {
+      allow read: if isSuperAdmin() || isAdminOrAbove() || (isSignedIn() && request.auth.uid == uid);
+      allow create: if isSignedIn() && request.auth.uid == uid;
+      allow delete: if isSuperAdmin() || (isSignedIn() && request.auth.uid == uid);
+    }
+
+    match /users/{uid}/quizSessions/{sessionId} {
+      allow read: if isSuperAdmin() || isAdminOrAbove() || (isSignedIn() && request.auth.uid == uid);
+      allow create, update: if isSignedIn() && request.auth.uid == uid;
+      allow delete: if isSuperAdmin() || (isSignedIn() && request.auth.uid == uid);
+    }
+
+    match /users/{uid}/generatedNotes/{noteId} {
+      allow read: if isSuperAdmin() || isAdminOrAbove() || (isSignedIn() && request.auth.uid == uid);
+      allow create: if isSignedIn() && request.auth.uid == uid;
+      allow delete: if isSuperAdmin() || (isSignedIn() && request.auth.uid == uid);
+    }
+
     match /users/{uid}/wallet/{walletId} {
       allow read: if isSuperAdmin()
         || isAdminOrAbove()
