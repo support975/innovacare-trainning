@@ -6,13 +6,14 @@ import { filter, map } from 'rxjs';
 import { CookieConsentComponent } from './shared/cookie-consent/cookie-consent';
 import { MaintenanceBanner } from './shared/maintenance/maintenance-banner/maintenance-banner';
 import { MaintenancePage } from './shared/maintenance/maintenance-page/maintenance-page';
+import { ChatbotComponent } from './shared/components/chatbot/chatbot.component';
 import { AuthService } from './core/auth';
 import { MaintenanceService } from './core/maintenance.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, CookieConsentComponent, MaintenanceBanner, MaintenancePage],
+  imports: [CommonModule, RouterOutlet, CookieConsentComponent, MaintenanceBanner, MaintenancePage, ChatbotComponent],
   templateUrl: './app.html',
   styleUrls: ['./app.css']
 })

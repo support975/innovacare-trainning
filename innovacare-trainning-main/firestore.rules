@@ -66,6 +66,107 @@ service cloud.firestore {
         || isCouncilAncestorAdmin(orgId);
     }
 
+    // ── COMMUNICATION CENTER (draft-only, no send provider) ─────────────────
+    // Newsletter/campaign/segment/template/approval/audit drafts, scoped to
+    // the caller's own org (or a council ancestor's descendant region via
+    // isOrgStaffFor). Every doc must self-declare safety.mode == 'draft_only'
+    // with no live send capability — this is a scaffold, not a production
+    // sending system.
+    function canReadCommunicationOrg(orgId) {
+      return isSuperAdmin() || (orgId is string && orgId.size() > 0 && isOrgStaffFor(orgId));
+    }
+
+    function canWriteCommunicationOrg(orgId) {
+      return isSuperAdmin() || (orgId is string && orgId.size() > 0 && isOrgStaffFor(orgId));
+    }
+
+    function validCommunicationSafety(data) {
+      return data.keys().hasAll(['safety'])
+        && data.safety is map
+        && data.safety.mode == 'draft_only'
+        && data.safety.mockOnly == true
+        && data.safety.provider == 'none'
+        && data.safety.canAutoSend == false;
+    }
+
+    function validCommunicationDraftWrite() {
+      return request.resource.data.orgId is string
+        && request.resource.data.orgId.size() > 0
+        && validCommunicationSafety(request.resource.data);
+    }
+
+    function validCommunicationDraftResource() {
+      return resource.data.orgId is string
+        && resource.data.orgId.size() > 0
+        && validCommunicationSafety(resource.data);
+    }
+
+    function isCommunicationDraftStatus(status) {
+      return status == 'draft'
+        || status == 'approval_pending'
+        || status == 'approved'
+        || status == 'archived';
+    }
+
+    function isApprovalPriority(priority) {
+      return priority == 'low'
+        || priority == 'normal'
+        || priority == 'high'
+        || priority == 'critical';
+    }
+
+    function validTemplateDraftWrite() {
+      return request.resource.data.status is string
+        && isCommunicationDraftStatus(request.resource.data.status);
+    }
+
+    function validSegmentDraftWrite() {
+      return request.resource.data.status is string
+        && isCommunicationDraftStatus(request.resource.data.status);
+    }
+
+    function validNewsletterDraftWrite() {
+      return request.resource.data.status is string
+        && isCommunicationDraftStatus(request.resource.data.status);
+    }
+
+    function validCampaignDraftWrite() {
+      return request.resource.data.status is string
+        && (
+          request.resource.data.status == 'draft'
+          || request.resource.data.status == 'approval_pending'
+          || request.resource.data.status == 'approved'
+          || (
+            request.resource.data.status == 'scheduled'
+            && request.resource.data.scheduledAt is string
+            && resource != null
+            && resource.data.status == 'approved'
+          )
+        );
+    }
+
+    function validApprovalDraftWrite() {
+      return request.resource.data.status is string
+        && (
+          request.resource.data.status == 'pending'
+          || request.resource.data.status == 'approved'
+          || request.resource.data.status == 'rejected'
+        )
+        && request.resource.data.priority is string
+        && isApprovalPriority(request.resource.data.priority);
+    }
+
+    function validAuditDraftWrite() {
+      return request.resource.data.actionType is string
+        && (
+          request.resource.data.actionType == 'draft_created'
+          || request.resource.data.actionType == 'draft_updated'
+          || request.resource.data.actionType == 'approval_requested'
+          || request.resource.data.actionType == 'approval_decision'
+          || request.resource.data.actionType == 'preview_generated'
+        );
+    }
+
     // ── ORG HIERARCHY (council / regional sub-orgs) ─────────────────────────
     // A "council" org (canCreateSubOrgs == true, Super-Admin-granted only) may
     // create its own child orgs. ancestorOrgIds is the materialized path from
@@ -591,6 +692,25 @@ service cloud.firestore {
       allow create, update, delete: if isSuperAdmin()
         || isAdminOrAbove()
         || (isSignedIn() && request.auth.uid == uid);
+    }
+
+    // ── AI ASSISTANT DATA (InnovaAssist) ────────────────────────────────────
+    match /users/{uid}/aiChats/{chatId} {
+      allow read: if isSuperAdmin() || isAdminOrAbove() || (isSignedIn() && request.auth.uid == uid);
+      allow create: if isSignedIn() && request.auth.uid == uid;
+      allow delete: if isSuperAdmin() || (isSignedIn() && request.auth.uid == uid);
+    }
+
+    match /users/{uid}/quizSessions/{sessionId} {
+      allow read: if isSuperAdmin() || isAdminOrAbove() || (isSignedIn() && request.auth.uid == uid);
+      allow create, update: if isSignedIn() && request.auth.uid == uid;
+      allow delete: if isSuperAdmin() || (isSignedIn() && request.auth.uid == uid);
+    }
+
+    match /users/{uid}/generatedNotes/{noteId} {
+      allow read: if isSuperAdmin() || isAdminOrAbove() || (isSignedIn() && request.auth.uid == uid);
+      allow create: if isSignedIn() && request.auth.uid == uid;
+      allow delete: if isSuperAdmin() || (isSignedIn() && request.auth.uid == uid);
     }
 
     match /users/{uid}/wallet/{walletId} {
@@ -1397,6 +1517,113 @@ service cloud.firestore {
 
     match /adminNotifications/{id} {
       allow read, write: if isAdminOrAbove();
+    }
+
+    // ── COMMUNICATION CENTER collections ────────────────────────────────────
+    match /communication_templates/{docId} {
+      allow get: if validCommunicationDraftResource() && canReadCommunicationOrg(resource.data.orgId);
+      allow list: if canReadCommunicationOrg(resource.data.orgId);
+      allow create: if validCommunicationDraftWrite() && validTemplateDraftWrite() && canWriteCommunicationOrg(request.resource.data.orgId);
+      allow update, delete: if validCommunicationDraftResource()
+        && validCommunicationDraftWrite()
+        && validTemplateDraftWrite()
+        && request.resource.data.orgId == resource.data.orgId
+        && canWriteCommunicationOrg(resource.data.orgId);
+    }
+
+    match /newsletters/{docId} {
+      allow get: if validCommunicationDraftResource() && canReadCommunicationOrg(resource.data.orgId);
+      allow list: if canReadCommunicationOrg(resource.data.orgId);
+      allow create: if validCommunicationDraftWrite() && validNewsletterDraftWrite() && canWriteCommunicationOrg(request.resource.data.orgId);
+      allow update, delete: if validCommunicationDraftResource()
+        && validCommunicationDraftWrite()
+        && validNewsletterDraftWrite()
+        && request.resource.data.orgId == resource.data.orgId
+        && canWriteCommunicationOrg(resource.data.orgId);
+    }
+
+    match /newsletter_campaigns/{docId} {
+      allow get: if validCommunicationDraftResource() && canReadCommunicationOrg(resource.data.orgId);
+      allow list: if canReadCommunicationOrg(resource.data.orgId);
+      allow create: if validCommunicationDraftWrite() && validCampaignDraftWrite() && canWriteCommunicationOrg(request.resource.data.orgId);
+      allow update, delete: if validCommunicationDraftResource()
+        && validCommunicationDraftWrite()
+        && validCampaignDraftWrite()
+        && request.resource.data.orgId == resource.data.orgId
+        && canWriteCommunicationOrg(resource.data.orgId);
+    }
+
+    match /newsletter_recipients/{docId} {
+      allow get: if validCommunicationDraftResource() && canReadCommunicationOrg(resource.data.orgId);
+      allow list: if canReadCommunicationOrg(resource.data.orgId);
+      allow create: if validCommunicationDraftWrite() && canWriteCommunicationOrg(request.resource.data.orgId);
+      allow update, delete: if validCommunicationDraftResource()
+        && validCommunicationDraftWrite()
+        && request.resource.data.orgId == resource.data.orgId
+        && canWriteCommunicationOrg(resource.data.orgId);
+    }
+
+    match /newsletter_events/{docId} {
+      allow get: if validCommunicationDraftResource() && canReadCommunicationOrg(resource.data.orgId);
+      allow list: if canReadCommunicationOrg(resource.data.orgId);
+      allow create: if validCommunicationDraftWrite() && canWriteCommunicationOrg(request.resource.data.orgId);
+      allow update, delete: if validCommunicationDraftResource()
+        && validCommunicationDraftWrite()
+        && request.resource.data.orgId == resource.data.orgId
+        && canWriteCommunicationOrg(resource.data.orgId);
+    }
+
+    match /newsletter_analytics/{docId} {
+      allow get: if validCommunicationDraftResource() && canReadCommunicationOrg(resource.data.orgId);
+      allow list: if canReadCommunicationOrg(resource.data.orgId);
+      allow create: if validCommunicationDraftWrite() && canWriteCommunicationOrg(request.resource.data.orgId);
+      allow update, delete: if validCommunicationDraftResource()
+        && validCommunicationDraftWrite()
+        && request.resource.data.orgId == resource.data.orgId
+        && canWriteCommunicationOrg(resource.data.orgId);
+    }
+
+    match /communication_segments/{docId} {
+      allow get: if validCommunicationDraftResource() && canReadCommunicationOrg(resource.data.orgId);
+      allow list: if canReadCommunicationOrg(resource.data.orgId);
+      allow create: if validCommunicationDraftWrite() && validSegmentDraftWrite() && canWriteCommunicationOrg(request.resource.data.orgId);
+      allow update, delete: if validCommunicationDraftResource()
+        && validCommunicationDraftWrite()
+        && validSegmentDraftWrite()
+        && request.resource.data.orgId == resource.data.orgId
+        && canWriteCommunicationOrg(resource.data.orgId);
+    }
+
+    match /communication_automations/{docId} {
+      allow get: if validCommunicationDraftResource() && canReadCommunicationOrg(resource.data.orgId);
+      allow list: if canReadCommunicationOrg(resource.data.orgId);
+      allow create: if validCommunicationDraftWrite() && canWriteCommunicationOrg(request.resource.data.orgId);
+      allow update, delete: if validCommunicationDraftResource()
+        && validCommunicationDraftWrite()
+        && request.resource.data.orgId == resource.data.orgId
+        && canWriteCommunicationOrg(resource.data.orgId);
+    }
+
+    match /communication_approvals/{docId} {
+      allow get: if validCommunicationDraftResource() && canReadCommunicationOrg(resource.data.orgId);
+      allow list: if canReadCommunicationOrg(resource.data.orgId);
+      allow create: if validCommunicationDraftWrite() && validApprovalDraftWrite() && canWriteCommunicationOrg(request.resource.data.orgId);
+      allow update, delete: if validCommunicationDraftResource()
+        && validCommunicationDraftWrite()
+        && validApprovalDraftWrite()
+        && request.resource.data.orgId == resource.data.orgId
+        && canWriteCommunicationOrg(resource.data.orgId);
+    }
+
+    match /communication_audits/{docId} {
+      allow get: if validCommunicationDraftResource() && canReadCommunicationOrg(resource.data.orgId);
+      allow list: if canReadCommunicationOrg(resource.data.orgId);
+      allow create: if validCommunicationDraftWrite() && validAuditDraftWrite() && canWriteCommunicationOrg(request.resource.data.orgId);
+      allow update, delete: if validCommunicationDraftResource()
+        && validCommunicationDraftWrite()
+        && validAuditDraftWrite()
+        && request.resource.data.orgId == resource.data.orgId
+        && canWriteCommunicationOrg(resource.data.orgId);
     }
 
     // ── LEARNER IN-APP NOTIFICATIONS ────────────────────────────────────────

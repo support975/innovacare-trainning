@@ -206,6 +206,13 @@ const routes: Routes = [
         loadComponent: () =>
           import('./council/facility-detail/facility-detail').then(m => m.FacilityDetail),
       },
+      {
+        path: 'communication-center',
+        loadChildren: () =>
+          import('./communication-center/communication-center.routes').then(
+            m => m.COMMUNICATION_CENTER_ROUTES
+          ),
+      },
     ]
   }
 ];
