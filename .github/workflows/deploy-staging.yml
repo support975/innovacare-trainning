@@ -113,10 +113,15 @@ jobs:
         # that codebase entirely so they're never evaluated or touched.
         run: |
           ONLY="hosting,firestore,storage,database"
+          CONFIG="firebase.json"
           if [ "${{ inputs.deploy_functions }}" = "true" ]; then
             ONLY="$ONLY,functions:default"
+          else
+            node -e "const fs=require('fs'); const config=JSON.parse(fs.readFileSync('firebase.json','utf8')); config.hosting.rewrites=(config.hosting.rewrites||[]).filter((rewrite)=>!rewrite.function); fs.writeFileSync('firebase.staging-ci.json', JSON.stringify(config, null, 2));"
+            CONFIG="firebase.staging-ci.json"
           fi
           npx firebase-tools@13 deploy \
             --project innovacaretrainninng-staging \
+            --config "$CONFIG" \
             --only "$ONLY" \
             --non-interactive
