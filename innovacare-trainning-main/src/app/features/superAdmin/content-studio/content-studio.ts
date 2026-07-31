@@ -1,7 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { Storage, ref, uploadBytes, getDownloadURL } from '@angular/fire/storage';
+import { QuillModule, QuillModules } from 'ngx-quill';
+import Quill, { Range } from 'quill';
 import {
   ContentStudioService,
   MarketingArticle,
@@ -13,12 +17,50 @@ import {
 @Component({
   selector: 'app-content-studio',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, QuillModule],
   templateUrl: './content-studio.html',
   styleUrl: './content-studio.css',
 })
 export class ContentStudioComponent {
   private readonly studio = inject(ContentStudioService);
+  private readonly storage = inject(Storage);
+  private readonly sanitizer = inject(DomSanitizer);
+
+  private articleQuill: Quill | null = null;
+  private newsletterQuill: Quill | null = null;
+  readonly uploadingImage = signal(false);
+
+  readonly quillModules: QuillModules = {
+    toolbar: {
+      container: [
+        [{ header: [2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['blockquote'],
+        ['link', 'image', 'video'],
+        ['clean'],
+      ],
+      handlers: {
+        image: () => this.pickAndUploadImage('article'),
+      },
+    },
+  };
+
+  readonly newsletterQuillModules: QuillModules = {
+    toolbar: {
+      container: [
+        [{ header: [2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['blockquote'],
+        ['link', 'image'],
+        ['clean'],
+      ],
+      handlers: {
+        image: () => this.pickAndUploadImage('newsletter'),
+      },
+    },
+  };
 
   readonly articles = toSignal(this.studio.listArticles(), { initialValue: [] as MarketingArticle[] });
   readonly newsletters = toSignal(this.studio.listNewsletters(), { initialValue: [] as MarketingNewsletter[] });
@@ -51,7 +93,7 @@ export class ContentStudioComponent {
     effect(() => {
       const current = this.article();
       const nextSlug = current.slug || slugify(current.title);
-      const nextReading = estimateReadingMinutes(current.bodyMarkdown);
+      const nextReading = estimateReadingMinutes(current.bodyHtml);
       if (current.slug !== nextSlug || current.readingMinutes !== nextReading) {
         this.article.set({
           ...current,
@@ -82,6 +124,48 @@ export class ContentStudioComponent {
     this.mode.set('newsletter');
   }
 
+  onArticleEditorCreated(editor: Quill): void {
+    this.articleQuill = editor;
+  }
+
+  onNewsletterEditorCreated(editor: Quill): void {
+    this.newsletterQuill = editor;
+  }
+
+  sanitizedPreview(html: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(html || '');
+  }
+
+  private pickAndUploadImage(target: 'article' | 'newsletter'): void {
+    const editor = target === 'article' ? this.articleQuill : this.newsletterQuill;
+    if (!editor) return;
+
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+
+      const range: Range = editor.getSelection(true) ?? { index: editor.getLength(), length: 0 };
+      this.uploadingImage.set(true);
+      try {
+        const pathId = target === 'article' ? (this.article().slug || 'draft') : 'newsletters';
+        const filePath = `marketingArticles/${pathId}/${Date.now()}_${file.name}`;
+        const storageRef = ref(this.storage, filePath);
+        await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(storageRef);
+        editor.insertEmbed(range.index, 'image', url, 'user');
+        editor.setSelection(range.index + 1, 0, 'user');
+      } catch (err: any) {
+        this.setNotice(err?.message || 'Image upload failed.');
+      } finally {
+        this.uploadingImage.set(false);
+      }
+    };
+    input.click();
+  }
+
   generateDraftPack(): void {
     const topic = this.draftTopic().trim() || 'Training compliance';
     const audience = this.draftAudience().trim() || 'business leaders';
@@ -89,25 +173,23 @@ export class ContentStudioComponent {
     const title = `${topic}: a practical guide for ${audience}`;
     const slug = slugify(title);
     const body = [
-      `## Introduction`,
-      `Organizations are under pressure to train people faster, keep evidence clean, and make recurring work easier to repeat. ${topic} is not only a learning problem; it is an operational discipline.`,
-      ``,
-      `## Why it matters now`,
-      `Teams need simple access to approved guidance, visible progress, and reminders before issues become compliance gaps. A modern training portal gives managers one place to assign learning, track completion, and document readiness.`,
-      ``,
-      `## What to put in place`,
-      `- A clear onboarding path for every role`,
-      `- Short practice sheets for recurring tasks`,
-      `- Official certification or assessment where proof matters`,
-      `- Automated reminders for overdue training`,
-      `- Reports that leaders can understand quickly`,
-      ``,
-      `## How Innovacare Training helps`,
-      `Innovacare Training combines course delivery, policy acknowledgements, quick practice content, certification workflows, and manager evidence in one platform. The result is a more consistent way to prepare teams and prove that preparation.`,
-      ``,
-      `## Next step`,
-      `Book a short demo to see how the platform can support your organization, whether you operate in healthcare, education, staffing, compliance, or another service business.`,
-    ].join('\n\n');
+      `<h2>Introduction</h2>`,
+      `<p>Organizations are under pressure to train people faster, keep evidence clean, and make recurring work easier to repeat. ${topic} is not only a learning problem; it is an operational discipline.</p>`,
+      `<h2>Why it matters now</h2>`,
+      `<p>Teams need simple access to approved guidance, visible progress, and reminders before issues become compliance gaps. A modern training portal gives managers one place to assign learning, track completion, and document readiness.</p>`,
+      `<h2>What to put in place</h2>`,
+      `<ul>`,
+      `<li>A clear onboarding path for every role</li>`,
+      `<li>Short practice sheets for recurring tasks</li>`,
+      `<li>Official certification or assessment where proof matters</li>`,
+      `<li>Automated reminders for overdue training</li>`,
+      `<li>Reports that leaders can understand quickly</li>`,
+      `</ul>`,
+      `<h2>How Innovacare Training helps</h2>`,
+      `<p>Innovacare Training combines course delivery, policy acknowledgements, quick practice content, certification workflows, and manager evidence in one platform. The result is a more consistent way to prepare teams and prove that preparation.</p>`,
+      `<h2>Next step</h2>`,
+      `<p>Book a short demo to see how the platform can support your organization, whether you operate in healthcare, education, staffing, compliance, or another service business.</p>`,
+    ].join('\n');
 
     this.article.set({
       ...this.blankArticle(),
@@ -115,7 +197,7 @@ export class ContentStudioComponent {
       slug,
       category: 'Training Operations',
       excerpt: `A ${tone} guide for ${audience} on using training systems to improve readiness, compliance and team consistency.`,
-      bodyMarkdown: body,
+      bodyHtml: body,
       tags: ['training', 'compliance', 'onboarding', 'operations'],
       seoTitle: title.slice(0, 60),
       metaDescription: `Learn how ${audience} can use Innovacare Training to improve onboarding, compliance evidence, reminders and practical learning workflows.`.slice(0, 155),
@@ -136,7 +218,7 @@ export class ContentStudioComponent {
         ...current,
         status,
         slug: current.slug || slugify(current.title),
-        readingMinutes: estimateReadingMinutes(current.bodyMarkdown),
+        readingMinutes: estimateReadingMinutes(current.bodyHtml),
       });
       this.selectedSlug.set(slug);
       this.setNotice(status === 'published' ? 'Article published.' : 'Article saved.');
@@ -171,19 +253,6 @@ export class ContentStudioComponent {
     this.setNewsletterField('tags', value.split(',').map((item) => item.trim()).filter(Boolean));
   }
 
-  markdownPreview(markdown: string): string {
-    return markdown
-      .split('\n')
-      .map((line) => {
-        if (line.startsWith('## ')) return `<h2>${this.escape(line.slice(3))}</h2>`;
-        if (line.startsWith('- ')) return `<li>${this.escape(line.slice(2))}</li>`;
-        if (!line.trim()) return '';
-        return `<p>${this.escape(line)}</p>`;
-      })
-      .join('')
-      .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
-  }
-
   private computeSeoScore(article: MarketingArticle): number {
     const checks = [
       article.title.length >= 20,
@@ -193,7 +262,7 @@ export class ContentStudioComponent {
       !!article.heroImageUrl,
       !!article.heroImageAlt && article.heroImageAlt.length >= 20,
       article.tags.length >= 3,
-      article.bodyMarkdown.split(/\s+/).filter(Boolean).length >= 350,
+      article.bodyHtml.replace(/<[^>]*>/g, ' ').split(/\s+/).filter(Boolean).length >= 350,
       article.ogTitle.length >= 20,
       article.ogDescription.length >= 80,
     ];
@@ -209,7 +278,7 @@ export class ContentStudioComponent {
       locale: 'en',
       category: 'Training Operations',
       excerpt: '',
-      bodyMarkdown: '## Introduction\n\nWrite your article here.\n\n## Key points\n\n- First point\n- Second point\n\n## Next step\n\nInvite the reader to book a demo.',
+      bodyHtml: '<h2>Introduction</h2><p>Write your article here.</p><h2>Key points</h2><ul><li>First point</li><li>Second point</li></ul><h2>Next step</h2><p>Invite the reader to book a demo.</p>',
       tags: [],
       heroImageUrl: '',
       heroImageAlt: '',
@@ -233,17 +302,9 @@ export class ContentStudioComponent {
       tags: ['training', 'update'],
       linkedArticleSlug: '',
       heroImageUrl: '',
-      bodyMarkdown: '## What is new\n\nShare your update here.\n\n## Useful resource\n\nLink readers to a published article.\n\n## Next step\n\nInvite readers to book a demo.',
+      bodyHtml: '<h2>What is new</h2><p>Share your update here.</p><h2>Useful resource</h2><p>Link readers to a published article.</p><h2>Next step</h2><p>Invite readers to book a demo.</p>',
       status: 'draft',
     };
-  }
-
-  private escape(value: string): string {
-    return String(value || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
   }
 
   private setNotice(message: string): void {

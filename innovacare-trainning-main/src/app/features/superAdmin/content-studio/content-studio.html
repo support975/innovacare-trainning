@@ -142,12 +142,17 @@
 
         <label>
           Article body
-          <textarea
+          <span class="uploading-hint" *ngIf="uploadingImage()">Uploading image…</span>
+          <quill-editor
             class="body-editor"
-            [ngModel]="article().bodyMarkdown"
-            name="bodyMarkdown"
-            (ngModelChange)="setArticleField('bodyMarkdown', $event)"
-          ></textarea>
+            [ngModel]="article().bodyHtml"
+            name="bodyHtml"
+            (ngModelChange)="setArticleField('bodyHtml', $event)"
+            [modules]="quillModules"
+            format="html"
+            placeholder="Write your article. Use the toolbar to add headings, lists, links, images and video."
+            (onEditorCreated)="onArticleEditorCreated($event)"
+          ></quill-editor>
         </label>
 
         <section class="sub-panel">
@@ -277,7 +282,7 @@
 
         <section class="sub-panel preview">
           <h3>Article preview</h3>
-          <article [innerHTML]="markdownPreview(article().bodyMarkdown)"></article>
+          <article [innerHTML]="sanitizedPreview(article().bodyHtml)"></article>
         </section>
 
         <div class="actions">
@@ -336,12 +341,22 @@
 
         <label>
           Newsletter body
-          <textarea class="body-editor" [ngModel]="newsletter().bodyMarkdown" name="newsletterBody" (ngModelChange)="setNewsletterField('bodyMarkdown', $event)"></textarea>
+          <span class="uploading-hint" *ngIf="uploadingImage()">Uploading image…</span>
+          <quill-editor
+            class="body-editor"
+            [ngModel]="newsletter().bodyHtml"
+            name="newsletterBody"
+            (ngModelChange)="setNewsletterField('bodyHtml', $event)"
+            [modules]="newsletterQuillModules"
+            format="html"
+            placeholder="Write your newsletter. Use the toolbar to add headings, lists, links and images."
+            (onEditorCreated)="onNewsletterEditorCreated($event)"
+          ></quill-editor>
         </label>
 
         <section class="sub-panel preview">
           <h3>Email preview</h3>
-          <article [innerHTML]="markdownPreview(newsletter().bodyMarkdown)"></article>
+          <article [innerHTML]="sanitizedPreview(newsletter().bodyHtml)"></article>
         </section>
 
         <div class="actions">
