@@ -3531,6 +3531,124 @@ type AgentActionPayload = {
   orgId?: string;
 };
 
+const agentSafeEmail = (value: unknown) => cleanOptionalString(value, 180).toLowerCase();
+
+const buildLeadFollowUpHtml = (input: {
+  leadName?: string;
+  organizationName?: string;
+  plan?: string;
+  message?: string;
+}) => {
+  const name = escapeHtml(input.leadName || "there");
+  const org = escapeHtml(input.organizationName || "your organization");
+  const plan = input.plan ? ` for the ${escapeHtml(input.plan)} plan` : "";
+  const message = input.message ?
+    `<p style="color:#475569"><strong>Request note:</strong> ${escapeHtml(input.message)}</p>` :
+    "";
+  return `
+    <div style="font-family:Arial,sans-serif;color:#0f172a;line-height:1.55">
+      <p>Hello ${name},</p>
+      <p>Thank you for reaching out about Innovacare Training${plan}. I reviewed the request for ${org} and can help you choose the right setup for onboarding, compliance and recurring staff training.</p>
+      ${message}
+      <p>Please reply with two times that work for a short walkthrough, or share the main training workflow you want to automate first.</p>
+      <p>Best regards,<br>Innovacare Training Team</p>
+    </div>
+  `;
+};
+
+// Auto-creates an agentTask the moment a lead lands, mirroring backfillAgentTasks'
+// document shape below so both paths feed the same Agent Center queue.
+export const createAgentTaskFromDemoRequest = onDocumentCreated(
+  "demoRequests/{requestId}",
+  async (event) => {
+    const snap = event.data;
+    if (!snap) return;
+    const data = snap.data();
+    const requestId = String(event.params.requestId);
+    const fullName = cleanOptionalString(data.fullName, 120);
+    const workEmail = agentSafeEmail(data.workEmail);
+    const orgName = cleanOptionalString(data.organizationName, 160);
+    const orgType = cleanOptionalString(data.organizationType, 120);
+    const selectedPlan = cleanOptionalString(data.selectedPlan, 80);
+    const message = cleanOptionalString(data.message, 1000);
+    const priority = selectedPlan.toLowerCase().includes("enterprise") ? "urgent" : "high";
+
+    await db.doc(`agentTasks/demoRequest_${requestId}`).set({
+      sourceType: "demoRequest",
+      sourceId: requestId,
+      intent: "marketing_follow_up",
+      title: `Follow up with ${orgName || fullName || "new demo lead"}`,
+      summary: `${fullName || "A lead"} requested a demo${selectedPlan ? ` for ${selectedPlan}` : ""}.`,
+      priority,
+      status: "ready",
+      channel: "email",
+      leadName: fullName || null,
+      leadEmail: workEmail || null,
+      organizationName: orgName || null,
+      organizationType: orgType || null,
+      orgId: null,
+      recommendedAction: "Send a personalized demo follow-up email and move the request to contacted.",
+      metadata: {
+        source: cleanOptionalString(data.source, 120),
+        selectedPlan,
+        message,
+        suggestedSubject: `Innovacare Training demo for ${orgName || "your organization"}`,
+        suggestedHtml: buildLeadFollowUpHtml({
+          leadName: fullName,
+          organizationName: orgName,
+          plan: selectedPlan,
+          message,
+        }),
+      },
+      createdAt: data.createdAt || nowTs(),
+      updatedAt: nowTs(),
+    }, {merge: true});
+  },
+);
+
+export const createAgentTaskFromContact = onDocumentCreated(
+  "contacts/{contactId}",
+  async (event) => {
+    const snap = event.data;
+    if (!snap) return;
+    const data = snap.data();
+    const contactId = String(event.params.contactId);
+    const name = cleanOptionalString(data.name, 120);
+    const email = agentSafeEmail(data.email);
+    const reason = cleanOptionalString(data.reason, 120);
+    const message = cleanOptionalString(data.message, 1000);
+
+    await db.doc(`agentTasks/contact_${contactId}`).set({
+      sourceType: "contact",
+      sourceId: contactId,
+      intent: "intake",
+      title: `Review intake from ${name || email || "website contact"}`,
+      summary: reason || message.slice(0, 180) || "New website contact needs review.",
+      priority: reason.toLowerCase().includes("urgent") ? "urgent" : "normal",
+      status: "ready",
+      channel: email ? "email" : "notification",
+      leadName: name || null,
+      leadEmail: email || null,
+      organizationName: null,
+      organizationType: null,
+      orgId: null,
+      recommendedAction: email ?
+        "Review the message and send a short response." :
+        "Review the message and assign a manual follow-up.",
+      metadata: {
+        reason,
+        message,
+        phone: cleanOptionalString(data.phone, 80),
+        page: cleanOptionalString(data.page, 180),
+        suggestedSubject: "Innovacare Training follow-up",
+        suggestedHtml: buildLeadFollowUpHtml({leadName: name, message}),
+      },
+      createdAt: data.createdAt || nowTs(),
+      updatedAt: nowTs(),
+    }, {merge: true});
+  },
+);
+
 export const backfillAgentTasks = onCall(
   {cors: callableCors},
   async (request: CallableRequest<{limit?: number}>) => {
@@ -3555,13 +3673,13 @@ export const backfillAgentTasks = onCall(
         sourceType: "demoRequest",
         sourceId: requestDoc.id,
         intent: "lead_follow_up",
-        title: `Follow up: ${String(data.organizationName || data.leadName || "Demo request").trim()}`,
+        title: `Follow up: ${String(data.organizationName || data.fullName || "Demo request").trim()}`,
         summary: String(data.message || "Review this demo request and prepare a follow-up.").trim(),
         priority: "normal",
         status: "ready",
         channel: "email",
-        leadName: data.leadName || null,
-        leadEmail: data.email || null,
+        leadName: data.fullName || null,
+        leadEmail: data.workEmail || null,
         organizationName: data.organizationName || null,
         organizationType: data.organizationType || null,
         orgId: data.orgId || null,
