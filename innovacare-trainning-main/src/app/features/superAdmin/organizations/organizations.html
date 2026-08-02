@@ -69,7 +69,7 @@
 
     <!-- Table -->
     <div *ngIf="!loading()">
-      <div *ngIf="result().items.length > 0; else emptyOrgs">
+      <div *ngIf="result().items.length > 0; else emptyOrgs" class="table-wrap">
         <table class="table">
           <thead>
             <tr>

@@ -8,6 +8,7 @@
 .panel__head { padding: 1rem 1.25rem; border-bottom: 1px solid #f0f4fb; background: #fafcff; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
 .panel__title { font-size: 0.95rem; font-weight: 800; color: #1a3f6f; }
 .panel__sub { font-size: 0.75rem; color: #8ea0b8; margin-top: 2px; }
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
 .table thead tr { background: #f8fafd; }
 .table th { padding: 0.75rem 1.1rem; text-align: left; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #8ea0b8; border-bottom: 1px solid #f0f4fb; white-space: nowrap; }
