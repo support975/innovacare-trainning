@@ -1,172 +1,209 @@
-<div class="landing-page">
-  <!-- Navigation Bar -->
-  <nav class="navbar">
-    <div class="navbar-container">
-      <div class="navbar-logo">
-        <a routerLink="/home" class="logo-link">
-          <span class="logo-icon">🏛️</span>
-          <span class="logo-text">Ordre Professionnel</span>
-        </a>
-      </div>
-      <div class="navbar-links">
-        <a routerLink="/home" class="nav-link">Back to Home</a>
-        <a routerLink="/login" class="btn btn-outline">Sign In</a>
-      </div>
-    </div>
-  </nav>
+<app-public-site-nav
+  page="ordre"
+  contextLabel="Espace ordres professionnels"
+  contextValue="Gouvernance, régions et conformité"
+  mobileMetaLabel="Plateforme LMS santé"
+  mobileMetaValue="Pour les ordres et associations professionnelles"
+></app-public-site-nav>
 
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="hero-content">
-      <h1 class="hero-title">Professional Training & Certification Platform</h1>
-      <p class="hero-subtitle">Excellence in Professional Development for Healthcare Professionals</p>
-      <div class="hero-buttons">
-        <button routerLink="/register-organization" class="btn btn-primary btn-large">
-          Register to Your Organization
-        </button>
-        <button routerLink="/login-org" class="btn btn-secondary btn-large">
-          Organization Login
-        </button>
+<main class="landing-page" appPublicTranslate>
+  <section class="hero-section">
+    <div class="container hero-grid">
+      <div class="hero-copy reveal" #revealRef>
+        <span class="eyebrow">Pour les ordres et associations professionnelles</span>
+        <h1>Donnez à votre ordre professionnel une plateforme de formation à la hauteur de sa mission</h1>
+        <p>
+          Innovacare Training permet à votre ordre de déployer une structure régionale déléguée,
+          de suivre la conformité de chaque membre et de délivrer des certifications officielles —
+          le tout sous votre propre image de marque.
+        </p>
+
+        <div class="hero-actions">
+          <button class="btn btn-primary" type="button" (click)="goToRegister()">
+            Enregistrer votre organisation
+          </button>
+          <button class="btn btn-secondary" type="button" (click)="goToOrgLogin()">
+            Connexion organisation
+          </button>
+        </div>
+
+        <div class="hero-highlights">
+          <article class="mini-chip" *ngFor="let item of heroHighlights; trackBy: trackByIndex">
+            <span class="mini-chip__icon">{{ item.icon }}</span>
+            <span>{{ item.label }}</span>
+          </article>
+        </div>
       </div>
-    </div>
-    <div class="hero-image">
-      <div class="hero-placeholder">
-        <span class="icon-large">📚</span>
+
+      <div class="hero-visual reveal reveal-delay-2" #revealRef>
+        <div class="org-panel">
+          <div class="org-panel__row org-panel__row--head">
+            <span class="org-panel__dot"></span>
+            <span class="org-panel__dot"></span>
+            <span class="org-panel__dot"></span>
+          </div>
+          <div class="org-panel__body">
+            <div class="org-node org-node--root">
+              <span class="org-node__icon">◆</span>
+              <div>
+                <strong>Votre ordre professionnel</strong>
+                <span>Organisation racine</span>
+              </div>
+            </div>
+            <div class="org-branches">
+              <div class="org-node">
+                <span class="org-node__icon">◈</span>
+                <div>
+                  <strong>Région Montréal</strong>
+                  <span>412 membres · 96% conformes</span>
+                </div>
+              </div>
+              <div class="org-node">
+                <span class="org-node__icon">◈</span>
+                <div>
+                  <strong>Région Québec</strong>
+                  <span>187 membres · 91% conformes</span>
+                </div>
+              </div>
+              <div class="org-node">
+                <span class="org-node__icon">◈</span>
+                <div>
+                  <strong>Région Outaouais</strong>
+                  <span>93 membres · 88% conformes</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Features Section -->
-  <section class="features">
-    <div class="features-container">
-      <h2 class="section-title">Why Choose Our Platform?</h2>
+  <section class="stats-band">
+    <div class="container stats-grid">
+      <article class="stat-item">
+        <strong>1</strong>
+        <span>Organisation racine, régions illimitées</span>
+      </article>
+      <article class="stat-item">
+        <strong>100%</strong>
+        <span>Image de marque personnalisable</span>
+      </article>
+      <article class="stat-item">
+        <strong>Temps réel</strong>
+        <span>Suivi de conformité consolidé</span>
+      </article>
+      <article class="stat-item">
+        <strong>Auditable</strong>
+        <span>Chaque action est journalisée</span>
+      </article>
+    </div>
+  </section>
+
+  <section class="trust-strip section-tight">
+    <div class="container trust-grid reveal" #revealRef>
+      <article class="trust-card" *ngFor="let item of trustItems; trackBy: trackByIndex">
+        <span class="trust-card__icon">{{ item.icon }}</span>
+        <span>{{ item.label }}</span>
+      </article>
+    </div>
+  </section>
+
+  <section class="features-section">
+    <div class="container">
+      <div class="section-head reveal" #revealRef>
+        <span class="eyebrow eyebrow--light">Ce que votre ordre obtient</span>
+        <h2>Une plateforme pensée pour la gouvernance d’un ordre professionnel</h2>
+        <p>Pas seulement un LMS — un outil de gouvernance pour piloter la formation et la conformité de tous vos membres.</p>
+      </div>
+
       <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon">🎓</div>
-          <h3 class="feature-title">Professional Certifications</h3>
-          <p class="feature-text">Gain recognized professional certifications from official certification authorities.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">📊</div>
-          <h3 class="feature-title">Track Progress</h3>
-          <p class="feature-text">Monitor your learning progress and achievements in real-time.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">🏆</div>
-          <h3 class="feature-title">Earn Rewards</h3>
-          <p class="feature-text">Collect badges, certificates, and credit hours for your professional development.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">👥</div>
-          <h3 class="feature-title">Collaborate</h3>
-          <p class="feature-text">Connect with your organization and fellow professionals in your field.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">📱</div>
-          <h3 class="feature-title">Learn Anywhere</h3>
-          <p class="feature-text">Access courses and materials from any device, anytime, anywhere.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">🔒</div>
-          <h3 class="feature-title">Secure & Compliant</h3>
-          <p class="feature-text">Enterprise-grade security with full compliance and audit trails.</p>
-        </div>
+        <article
+          class="feature-card reveal"
+          #revealRef
+          *ngFor="let feature of features; trackBy: trackByIndex"
+        >
+          <span class="feature-card__icon">{{ feature.icon }}</span>
+          <h3>{{ feature.title }}</h3>
+          <p>{{ feature.description }}</p>
+        </article>
       </div>
     </div>
   </section>
 
-  <!-- How It Works Section -->
-  <section class="how-it-works">
-    <div class="how-container">
-      <h2 class="section-title">Getting Started is Easy</h2>
+  <section class="steps-section">
+    <div class="container">
+      <div class="section-head reveal" #revealRef>
+        <span class="eyebrow eyebrow--light">Mise en route</span>
+        <h2>De l’inscription à la conformité, en quatre étapes</h2>
+      </div>
+
       <div class="steps-grid">
-        <div class="step">
-          <div class="step-number">1</div>
-          <h3 class="step-title">Find Your Organization</h3>
-          <p class="step-text">Search and select your professional organization by name or code.</p>
-        </div>
-        <div class="step">
-          <div class="step-number">2</div>
-          <h3 class="step-title">Create Your Account</h3>
-          <p class="step-text">Register with your email and set a secure password.</p>
-        </div>
-        <div class="step">
-          <div class="step-number">3</div>
-          <h3 class="step-title">Start Learning</h3>
-          <p class="step-text">Access courses, exams, and certifications immediately.</p>
-        </div>
-        <div class="step">
-          <div class="step-number">4</div>
-          <h3 class="step-title">Earn Certifications</h3>
-          <p class="step-text">Complete courses and earn official professional certifications.</p>
-        </div>
+        <article class="step-card reveal" #revealRef *ngFor="let step of steps; trackBy: trackByIndex">
+          <span class="step-card__number">{{ step.number }}</span>
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.description }}</p>
+        </article>
       </div>
     </div>
   </section>
 
-  <!-- Organizations Section -->
-  <section class="organizations">
-    <div class="org-container">
-      <h2 class="section-title">Trusted by Professional Organizations</h2>
-      <p class="org-subtitle">Join thousands of professionals across multiple disciplines</p>
-      <div class="org-list">
-        <div class="org-item">
-          <span class="org-badge">📋</span>
-          <span class="org-name">Ordre des Infirmières</span>
-        </div>
-        <div class="org-item">
-          <span class="org-badge">⚕️</span>
-          <span class="org-name">Ordre des Médecins</span>
-        </div>
-        <div class="org-item">
-          <span class="org-badge">🦷</span>
-          <span class="org-name">Ordre des Dentistes</span>
-        </div>
-        <div class="org-item">
-          <span class="org-badge">💊</span>
-          <span class="org-name">Ordre des Pharmaciens</span>
-        </div>
+  <section class="categories-section">
+    <div class="container">
+      <div class="section-head reveal" #revealRef>
+        <span class="eyebrow eyebrow--light">Conçu pour votre secteur</span>
+        <h2>Une plateforme adaptée aux ordres de la santé</h2>
+      </div>
+
+      <div class="categories-grid reveal" #revealRef>
+        <article class="category-chip" *ngFor="let category of orderCategories; trackBy: trackByIndex">
+          <span class="category-chip__icon">{{ category.icon }}</span>
+          <span>{{ category.label }}</span>
+        </article>
       </div>
     </div>
   </section>
 
-  <!-- CTA Section -->
-  <section class="cta">
-    <div class="cta-content">
-      <h2 class="cta-title">Ready to Advance Your Career?</h2>
-      <p class="cta-text">Join our professional learning community today</p>
-      <button routerLink="/register-organization" class="btn btn-primary btn-large">
-        Get Started Now
-      </button>
+  <section class="cta-section">
+    <div class="container cta-content reveal" #revealRef>
+      <h2>Prêt à structurer la formation de votre ordre?</h2>
+      <p>Parlons de la structure régionale, de la conformité et des certifications propres à votre organisation.</p>
+      <div class="cta-actions">
+        <button class="btn btn-primary" type="button" (click)="goToRegister()">
+          Enregistrer votre organisation
+        </button>
+        <button class="btn btn-ghost" type="button" (click)="openDemoDialog()">
+          Demander une démo
+        </button>
+      </div>
     </div>
   </section>
+</main>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="footer-content">
-      <div class="footer-section">
-        <h4 class="footer-title">About Us</h4>
-        <p class="footer-text">Leading platform for professional training and certification.</p>
-      </div>
-      <div class="footer-section">
-        <h4 class="footer-title">Quick Links</h4>
-        <ul class="footer-links">
-          <li><a href="#" class="footer-link">Privacy Policy</a></li>
-          <li><a href="#" class="footer-link">Terms of Service</a></li>
-          <li><a href="#" class="footer-link">Contact Us</a></li>
-        </ul>
-      </div>
-      <div class="footer-section">
-        <h4 class="footer-title">Support</h4>
-        <ul class="footer-links">
-          <li><a href="#" class="footer-link">Help Center</a></li>
-          <li><a href="#" class="footer-link">Documentation</a></li>
-          <li><a href="#" class="footer-link">FAQ</a></li>
-        </ul>
-      </div>
+<footer class="landing-footer" appPublicTranslate>
+  <div class="container footer-grid">
+    <div>
+      <div class="footer-brand">Innovacare <span>Training</span></div>
+      <p>La plateforme de formation et de conformité pour les organisations de santé et leurs ordres professionnels.</p>
     </div>
-    <div class="footer-bottom">
-      <p class="footer-copyright">&copy; 2025 Ordre Professionnel. All rights reserved.</p>
+    <div class="footer-links-group">
+      <h4>Plateforme</h4>
+      <a routerLink="/home">Accueil</a>
+      <a routerLink="/fonctionnalites">Fonctionnalités</a>
+      <a routerLink="/catalogue">Catalogue de cours</a>
+      <a routerLink="/pricing">Tarification</a>
     </div>
-  </footer>
-</div>
+    <div class="footer-links-group">
+      <h4>Votre organisation</h4>
+      <a routerLink="/register-organization">Enregistrer votre ordre</a>
+      <a routerLink="/login-org">Connexion organisation</a>
+      <a routerLink="/webinars">Webinaires</a>
+    </div>
+    <div class="footer-links-group">
+      <h4>Compte</h4>
+      <a routerLink="/login">Se connecter</a>
+      <a routerLink="/home" fragment="faq">Questions fréquentes</a>
+    </div>
+  </div>
+  <div class="container footer-bottom">© 2026 Innovacare Training. Tous droits réservés.</div>
+</footer>
