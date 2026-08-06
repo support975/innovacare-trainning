@@ -175,6 +175,40 @@
       </div>
 
       <aside class="content-side">
+        <div class="panel countdown-panel" *ngIf="countdown() as cd">
+          <ng-container *ngIf="!cd.live && !cd.ended">
+            <p class="countdown-label">{{ t('publicWebinarDetail.countdown.title') }}</p>
+            <div class="countdown-grid">
+              <div class="countdown-unit">
+                <strong>{{ cd.days }}</strong>
+                <span>{{ t('publicWebinarDetail.countdown.days') }}</span>
+              </div>
+              <div class="countdown-unit">
+                <strong>{{ pad2(cd.hours) }}</strong>
+                <span>{{ t('publicWebinarDetail.countdown.hours') }}</span>
+              </div>
+              <div class="countdown-unit">
+                <strong>{{ pad2(cd.mins) }}</strong>
+                <span>{{ t('publicWebinarDetail.countdown.mins') }}</span>
+              </div>
+              <div class="countdown-unit">
+                <strong>{{ pad2(cd.secs) }}</strong>
+                <span>{{ t('publicWebinarDetail.countdown.secs') }}</span>
+              </div>
+            </div>
+            <p class="countdown-note">{{ t('publicWebinarDetail.countdown.sessionNote') }}</p>
+          </ng-container>
+
+          <div class="countdown-live" *ngIf="cd.live">
+            <span class="live-pulse" aria-hidden="true"></span>
+            {{ t('publicWebinarDetail.countdown.live') }}
+          </div>
+
+          <div class="countdown-ended" *ngIf="cd.ended">
+            {{ t('publicWebinarDetail.countdown.ended') }}
+          </div>
+        </div>
+
         <div class="panel register-panel" [appTilt3d]="4">
           <h2>{{ t('publicWebinarDetail.registerCard.title') }}</h2>
 

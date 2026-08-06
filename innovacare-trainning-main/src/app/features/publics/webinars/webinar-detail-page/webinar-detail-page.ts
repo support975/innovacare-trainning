@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
@@ -21,7 +21,7 @@ import { Accreditation, EventRegistration, Faculty, Sponsor, WebinarEvent } from
   templateUrl: './webinar-detail-page.html',
   styleUrl: './webinar-detail-page.css',
 })
-export class WebinarDetailPageComponent {
+export class WebinarDetailPageComponent implements OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
@@ -34,6 +34,9 @@ export class WebinarDetailPageComponent {
   readonly registering = signal(false);
   readonly justRegistered = signal(false);
   readonly notice = signal('');
+
+  readonly now = signal(new Date());
+  private readonly countdownTimer = setInterval(() => this.now.set(new Date()), 1000);
 
   readonly profile = toSignal(this.auth.profile$, { initialValue: null });
 
@@ -50,6 +53,46 @@ export class WebinarDetailPageComponent {
   readonly loading = computed(() => this.eventResult() === null);
   readonly notFound = computed(() => !this.loading() && this.eventResult() === undefined);
   readonly event = computed<WebinarEvent | null>(() => this.eventResult() || null);
+
+  readonly startDateTime = computed<Date | null>(() => {
+    const event = this.event();
+    const date = event?.schedule?.date?.toDate?.() as Date | undefined;
+    if (!event || !date) return null;
+    const [h, m] = (event.schedule.startTime || '0:0').split(':').map(Number);
+    const start = new Date(date);
+    start.setHours(h || 0, m || 0, 0, 0);
+    return start;
+  });
+
+  readonly endDateTime = computed<Date | null>(() => {
+    const event = this.event();
+    const date = event?.schedule?.date?.toDate?.() as Date | undefined;
+    if (!event || !date) return null;
+    const [h, m] = (event.schedule.endTime || '0:0').split(':').map(Number);
+    const end = new Date(date);
+    end.setHours(h || 0, m || 0, 0, 0);
+    return end;
+  });
+
+  readonly countdown = computed(() => {
+    const start = this.startDateTime();
+    const end = this.endDateTime();
+    const now = this.now();
+    if (!start) return null;
+
+    const live = now >= start && (!end || now < end);
+    const ended = !!end && now >= end;
+    const totalSeconds = Math.max(0, Math.floor((start.getTime() - now.getTime()) / 1000));
+
+    return {
+      live,
+      ended,
+      days: Math.floor(totalSeconds / 86400),
+      hours: Math.floor((totalSeconds % 86400) / 3600),
+      mins: Math.floor((totalSeconds % 3600) / 60),
+      secs: totalSeconds % 60,
+    };
+  });
 
   readonly faculty = toSignal(
     toObservable(this.event).pipe(
@@ -218,6 +261,14 @@ export class WebinarDetailPageComponent {
       day: 'numeric',
       year: 'numeric',
     });
+  }
+
+  pad2(value: number): string {
+    return String(value).padStart(2, '0');
+  }
+
+  ngOnDestroy(): void {
+    clearInterval(this.countdownTimer);
   }
 
   knownFaculty(): Faculty[] {
