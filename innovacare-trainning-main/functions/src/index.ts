@@ -2436,10 +2436,12 @@ export const seedDemoData = onCall(async (request) => {
 /* ─────────── Public self-serve demo sandbox ───────────
    A visitor clicks "Test the demo" on the public site, signs in with
    Firebase Anonymous Auth, then calls this. It creates an isolated demo
-   Organization, promotes the caller to admin of it, and seeds a handful
-   of fake employees + enrollments against the shared demo course so the
+   Organization, promotes the caller to admin of it, and seeds fake
+   employees + an org-scoped, assignable course + a few enrollments so the
    existing /manager dashboard shows realistic, non-empty data with zero
-   new UI. Demo orgs auto-expire via cleanupExpiredDemoOrgs below.
+   new UI. The admin can also flip into the learner experience (see
+   demoSwitchIdentity below) using one of the seeded fake employees.
+   Demo orgs auto-expire via cleanupExpiredDemoOrgs below.
 */
 const DEMO_TTL_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
 
@@ -2466,6 +2468,16 @@ export const startDemo = onCall({cors: callableCors, invoker: "public"}, async (
   const expiresAt = admin.firestore.Timestamp.fromMillis(Date.now() + DEMO_TTL_MS);
   const orgRef = db.collection("organizations").doc();
   const orgId = orgRef.id;
+  const courseRef = db.collection("courses").doc();
+
+  const employeeIds: string[] = [];
+  const employeeRoles: ("manager" | "learner")[] = [];
+  const employeeRefs = DEMO_FAKE_EMPLOYEES.map(() => db.collection("users").doc());
+  employeeRefs.forEach((ref, index) => {
+    employeeIds.push(ref.id);
+    employeeRoles.push(DEMO_FAKE_EMPLOYEES[index].role);
+  });
+  const demoLearnerUid = employeeIds[employeeRoles.indexOf("learner")];
 
   const batch = db.batch();
 
@@ -2479,6 +2491,9 @@ export const startDemo = onCall({cors: callableCors, invoker: "public"}, async (
     active: false,
     isDemo: true,
     demoExpiresAt: expiresAt,
+    demoAdminUid: uid,
+    demoLearnerUid,
+    demoCourseId: courseRef.id,
     canWhiteLabel: false,
     certificationAuthorityEnabled: false,
     createdAt: now,
@@ -2497,12 +2512,9 @@ export const startDemo = onCall({cors: callableCors, invoker: "public"}, async (
     updatedAt: now,
   }, {merge: true});
 
-  const employeeIds: string[] = [];
-  for (const employee of DEMO_FAKE_EMPLOYEES) {
-    const empRef = db.collection("users").doc();
-    employeeIds.push(empRef.id);
-    batch.set(empRef, {
-      uid: empRef.id,
+  DEMO_FAKE_EMPLOYEES.forEach((employee, index) => {
+    batch.set(employeeRefs[index], {
+      uid: employeeIds[index],
       displayName: employee.name,
       role: employee.role,
       orgId,
@@ -2514,21 +2526,73 @@ export const startDemo = onCall({cors: callableCors, invoker: "public"}, async (
       createdAt: now,
       updatedAt: now,
     });
-  }
+  });
+
+  // A real, org-scoped course the admin can see in the Course Library and
+  // hand out from the Assignment Center — not the shared, unrelated
+  // /courses/demo-course used by the unrelated seedDemoData helper above.
+  batch.set(courseRef, {
+    title: "Infection Control Fundamentals",
+    subtitle: "Sample course seeded for this demo",
+    description: "A short sample course so you can see how course content, sections and lessons look and feel.",
+    lang: "EN",
+    durationMin: 25,
+    ceCredit: 0,
+    active: true,
+    kind: "Course",
+    tags: ["demo"],
+    isPublic: false,
+    orgId,
+    assignedOrgIds: [orgId],
+    sections: [
+      {
+        id: "s1",
+        title: "Getting Started",
+        order: 1,
+        lessons: [
+          {
+            id: "l1",
+            title: "Why Infection Control Matters",
+            order: 1,
+            estMin: 10,
+            blocks: [
+              {id: "b1", type: "heading", level: 2, text: "Welcome"},
+              {
+                id: "b2",
+                type: "text",
+                html: "<p>This is sample lesson content seeded for your demo workspace. Real courses in " +
+                  "your account will look and behave exactly like this.</p>",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    lecturer: "Demo Faculty",
+    disclosures: [],
+    targetAudience: [],
+    prerequisites: [],
+    requirements: [],
+    accomodations: "",
+    createdAt: now,
+    updatedAt: now,
+  });
 
   await batch.commit();
 
-  // Best-effort: seed a few enrollments against the shared demo course so
-  // dashboard/compliance views aren't empty. Skip quietly if it doesn't exist.
-  const courseSnap = await db.doc("courses/demo-course").get();
-  if (courseSnap.exists) {
-    const progressByIndex = [100, 60, 20, 0];
-    const enrollBatch = db.batch();
-    employeeIds.slice(0, progressByIndex.length).forEach((employeeId, index) => {
+  // Seed a few enrollments against the org-scoped demo course so
+  // dashboard/compliance views aren't empty, leaving the rest unassigned
+  // so the admin can experience assigning the course themselves.
+  const progressByIndex = [100, 60, 20];
+  const enrollBatch = db.batch();
+  employeeIds
+    .filter((employeeId) => employeeId !== demoLearnerUid)
+    .slice(0, progressByIndex.length)
+    .forEach((employeeId, index) => {
       const progressPct = progressByIndex[index];
-      enrollBatch.set(db.doc(`users/${employeeId}/enrollments/demo-course`), {
-        id: "demo-course",
-        courseId: "demo-course",
+      enrollBatch.set(db.doc(`users/${employeeId}/enrollments/${courseRef.id}`), {
+        id: courseRef.id,
+        courseId: courseRef.id,
         uid: employeeId,
         orgId,
         status: progressPct >= 100 ? "completed" : progressPct > 0 ? "in-progress" : "not-started",
@@ -2540,15 +2604,55 @@ export const startDemo = onCall({cors: callableCors, invoker: "public"}, async (
         ...(progressPct >= 100 ? {completedAt: now} : {}),
       });
     });
-    await enrollBatch.commit();
-  }
+  await enrollBatch.commit();
 
   return {orgId, alreadyActive: false};
 });
 
+interface DemoSwitchPayload {
+  targetRole?: "admin" | "learner";
+}
+
+/* ─────────── Demo sandbox: switch between admin and learner view ───────────
+   Lets the demo admin preview the learner experience (and switch back)
+   without a second signup. Mints a Firebase custom token for the other
+   seeded identity tied to the same demo org — the two uids stored on the
+   org doc by startDemo above — so it's a real, guard-respecting auth
+   session swap, not a UI-only impersonation.
+*/
+export const demoSwitchIdentity = onCall({cors: callableCors, invoker: "public"}, async (request: CallableRequest<DemoSwitchPayload>) => {
+  const uid = request.auth?.uid;
+  if (!uid) throw new HttpsError("unauthenticated", "Sign in required.");
+
+  const targetRole = request.data?.targetRole;
+  if (targetRole !== "admin" && targetRole !== "learner") {
+    throw new HttpsError("invalid-argument", "targetRole must be 'admin' or 'learner'.");
+  }
+
+  const callerSnap = await db.doc(`users/${uid}`).get();
+  const caller = callerSnap.data();
+  if (!callerSnap.exists || !caller?.isDemo || !caller?.orgId) {
+    throw new HttpsError("failed-precondition", "Not in a demo sandbox.");
+  }
+
+  const orgSnap = await db.doc(`organizations/${caller.orgId}`).get();
+  const org = orgSnap.data();
+  if (!orgSnap.exists || !org?.isDemo || !org?.demoAdminUid || !org?.demoLearnerUid) {
+    throw new HttpsError("failed-precondition", "Demo sandbox not found.");
+  }
+  if (uid !== org.demoAdminUid && uid !== org.demoLearnerUid) {
+    throw new HttpsError("permission-denied", "Not part of this demo sandbox.");
+  }
+
+  const targetUid = targetRole === "admin" ? org.demoAdminUid as string : org.demoLearnerUid as string;
+  const token = await admin.auth().createCustomToken(targetUid, {isDemo: true});
+  return {token};
+});
+
 /* ─────────── Scheduled cleanup: expire demo sandboxes ───────────
-   Deletes demo organizations (and their fake seeded users/enrollments)
-   once demoExpiresAt has passed, keeping real business metrics untouched.
+   Deletes demo organizations (and their fake seeded users/course/
+   enrollments) once demoExpiresAt has passed, keeping real business
+   metrics untouched.
 */
 export const cleanupExpiredDemoOrgs = onSchedule("every day 03:00", async () => {
   const expiredOrgs = await db.collection("organizations")
@@ -2557,6 +2661,7 @@ export const cleanupExpiredDemoOrgs = onSchedule("every day 03:00", async () => 
     .get();
 
   for (const orgDoc of expiredOrgs.docs) {
+    const org = orgDoc.data();
     const usersSnap = await db.collection("users").where("orgId", "==", orgDoc.id).get();
 
     for (const userDoc of usersSnap.docs) {
@@ -2565,6 +2670,18 @@ export const cleanupExpiredDemoOrgs = onSchedule("every day 03:00", async () => 
       enrollmentsSnap.docs.forEach((enrollDoc) => delBatch.delete(enrollDoc.ref));
       delBatch.delete(userDoc.ref);
       await delBatch.commit();
+
+      // Best-effort: the admin (and any fake employee the admin switched
+      // into via demoSwitchIdentity) may have a real Auth account by now.
+      try {
+        await admin.auth().deleteUser(userDoc.id);
+      } catch {
+        // No Auth account for this fake employee — nothing to clean up.
+      }
+    }
+
+    if (org?.demoCourseId) {
+      await db.doc(`courses/${org.demoCourseId}`).delete();
     }
 
     await orgDoc.ref.delete();
