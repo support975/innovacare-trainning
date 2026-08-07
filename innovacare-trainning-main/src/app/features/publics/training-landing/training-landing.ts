@@ -13,7 +13,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { DemoRequestDialog } from '../demo-request-dialog/demo-request-dialog';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { PublicSiteNavComponent } from '../../../shared/components/public-site-nav/public-site-nav';
 import { PublicTranslateDirective } from '../../../shared/directives/public-translate.directive';
 
@@ -76,7 +76,7 @@ interface FaqItem {
 @Component({
   selector: 'app-training-landing',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatDialogModule, MatIconModule, FormsModule, PublicSiteNavComponent, PublicTranslateDirective],
+  imports: [CommonModule, RouterModule, MatButtonModule, MatDialogModule, MatIconModule, FormsModule, PublicSiteNavComponent, PublicTranslateDirective],
   templateUrl: './training-landing.html',
   styleUrls: ['./training-landing.css'],
 })

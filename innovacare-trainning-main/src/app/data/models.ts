@@ -42,6 +42,11 @@ export interface Organization {
   /** Super-Admin-only: this org may create its own child orgs ("council"). */
   canCreateSubOrgs?: boolean;
 
+  /** Self-serve sandbox org created via the public "Test the demo" flow, seeded with fake data. */
+  isDemo?: boolean;
+  /** Firestore Timestamp; the scheduled cleanup job deletes the org and its seeded data after this. */
+  demoExpiresAt?: any;
+
   createdAt: any;
 }
 export interface Course {

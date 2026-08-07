@@ -45,6 +45,12 @@ export const routes: Routes = [
   },
 
   {
+    path: 'try-demo',
+    loadComponent: () =>
+      import('./features/publics/try-demo/try-demo').then(m => m.TryDemoComponent)
+  },
+
+  {
     path: 'kiosk',
     loadComponent: () =>
       import('./features/learner/kiosk-setup/kiosk-setup')

@@ -22,6 +22,8 @@ type OrganizationShellDoc = {
   learnerLimit?: number | null;
   certificationAuthorityEnabled?: boolean;
   canCreateSubOrgs?: boolean;
+  isDemo?: boolean;
+  demoExpiresAt?: { toDate?: () => Date } | null;
   features?: {
     officialCertifications?: boolean;
   };
@@ -94,6 +96,15 @@ export class ManagerShell {
   readonly isActing = this.orgContext.isActing;
   readonly actingOrgName = this.orgContext.actingOrgName;
   exitActing() { this.orgContext.stopActing(); }
+
+  readonly isDemo = computed(() => this.profile()?.isDemo === true || this.organization()?.isDemo === true);
+
+  readonly demoDaysLeft = computed(() => {
+    const expiresAt = this.organization()?.demoExpiresAt?.toDate?.();
+    if (!expiresAt) return null;
+    const days = Math.ceil((expiresAt.getTime() - Date.now()) / 86_400_000);
+    return Math.max(0, days);
+  });
 
   readonly displayName = computed(() => {
     const profile = this.profile();

@@ -1,0 +1,64 @@
+.stage {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #0d2240 0%, #1b4f7b 100%);
+}
+
+.card {
+  width: 100%;
+  max-width: 440px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+  padding: 32px;
+  text-align: center;
+}
+
+h1 { margin: 0 0 10px; font-size: 20px; color: #0d2240; }
+
+.muted { color: #667085; margin: 0; }
+
+.error { color: #e11d48; margin: 0 0 16px; }
+
+.spinner {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  border: 4px solid #e5e7eb;
+  border-top-color: #00a79d;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: #00a79d;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn.outline {
+  background: transparent;
+  color: #00a79d;
+  border-color: #00a79d;
+}

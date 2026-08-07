@@ -29,6 +29,8 @@ export interface AppProfile {
   permissions?: string[];
   accountType?: 'organization' | 'individual' | 'guest';
   onboardingSource?: string;
+  /** Signed into a self-serve demo sandbox org (see startDemo Cloud Function). */
+  isDemo?: boolean;
 }
 
 export interface IndividualLearnerRegistration {
