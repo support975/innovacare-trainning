@@ -87,6 +87,14 @@
 
   <!-- MAIN CONTENT -->
   <main class="content">
+    <div class="demo-banner" *ngIf="isDemo()">
+      <span class="demo-banner__icon">🧪</span>
+      <span class="demo-banner__text">
+        You're exploring a free demo workspace with sample data
+        <ng-container *ngIf="demoDaysLeft() as days">— expires in {{ days }} day{{ days === 1 ? '' : 's' }}</ng-container>.
+      </span>
+      <a class="demo-banner__cta" routerLink="/register-organization">Sign up for real</a>
+    </div>
     <div class="acting-banner" *ngIf="isActing()">
       <span class="acting-banner__icon">🏛️</span>
       <span class="acting-banner__text">Managing <strong>{{ actingOrgName() }}</strong> as admin</span>

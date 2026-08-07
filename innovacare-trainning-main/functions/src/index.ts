@@ -2433,6 +2433,144 @@ export const seedDemoData = onCall(async (request) => {
   return {ok: true, courseId, examId};
 });
 
+/* ─────────── Public self-serve demo sandbox ───────────
+   A visitor clicks "Test the demo" on the public site, signs in with
+   Firebase Anonymous Auth, then calls this. It creates an isolated demo
+   Organization, promotes the caller to admin of it, and seeds a handful
+   of fake employees + enrollments against the shared demo course so the
+   existing /manager dashboard shows realistic, non-empty data with zero
+   new UI. Demo orgs auto-expire via cleanupExpiredDemoOrgs below.
+*/
+const DEMO_TTL_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
+
+const DEMO_FAKE_EMPLOYEES: {name: string; role: "manager" | "learner"}[] = [
+  {name: "Ava Thompson", role: "manager"},
+  {name: "Liam Carter", role: "learner"},
+  {name: "Sophia Martinez", role: "learner"},
+  {name: "Noah Bennett", role: "learner"},
+  {name: "Emma Rodriguez", role: "learner"},
+  {name: "Mason Lee", role: "learner"},
+];
+
+export const startDemo = onCall({cors: callableCors, invoker: "public"}, async (request) => {
+  const uid = request.auth?.uid;
+  if (!uid) throw new HttpsError("unauthenticated", "Sign in required.");
+
+  const existingUser = await db.doc(`users/${uid}`).get();
+  const existingData = existingUser.data();
+  if (existingUser.exists && existingData?.isDemo && existingData?.orgId) {
+    return {orgId: existingData.orgId as string, alreadyActive: true};
+  }
+
+  const now = admin.firestore.FieldValue.serverTimestamp();
+  const expiresAt = admin.firestore.Timestamp.fromMillis(Date.now() + DEMO_TTL_MS);
+  const orgRef = db.collection("organizations").doc();
+  const orgId = orgRef.id;
+
+  const batch = db.batch();
+
+  batch.set(orgRef, {
+    name: "Your Company (Demo)",
+    type: "health",
+    plan: "enterprise",
+    // Kept out of the public org picker (signup/login) and the courses
+    // "active orgs" queries — the demo admin still reaches it directly by
+    // orgId via their own users/{uid} profile, so this doesn't block access.
+    active: false,
+    isDemo: true,
+    demoExpiresAt: expiresAt,
+    canWhiteLabel: false,
+    certificationAuthorityEnabled: false,
+    createdAt: now,
+  });
+
+  batch.set(db.doc(`users/${uid}`), {
+    uid,
+    displayName: "Demo Admin",
+    role: "admin",
+    orgId,
+    orgType: "health",
+    accountType: "organization",
+    isDemo: true,
+    active: true,
+    createdAt: now,
+    updatedAt: now,
+  }, {merge: true});
+
+  const employeeIds: string[] = [];
+  for (const employee of DEMO_FAKE_EMPLOYEES) {
+    const empRef = db.collection("users").doc();
+    employeeIds.push(empRef.id);
+    batch.set(empRef, {
+      uid: empRef.id,
+      displayName: employee.name,
+      role: employee.role,
+      orgId,
+      orgType: "health",
+      accountType: "organization",
+      isDemo: true,
+      isFakeDemoRecord: true,
+      active: true,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+
+  await batch.commit();
+
+  // Best-effort: seed a few enrollments against the shared demo course so
+  // dashboard/compliance views aren't empty. Skip quietly if it doesn't exist.
+  const courseSnap = await db.doc("courses/demo-course").get();
+  if (courseSnap.exists) {
+    const progressByIndex = [100, 60, 20, 0];
+    const enrollBatch = db.batch();
+    employeeIds.slice(0, progressByIndex.length).forEach((employeeId, index) => {
+      const progressPct = progressByIndex[index];
+      enrollBatch.set(db.doc(`users/${employeeId}/enrollments/demo-course`), {
+        id: "demo-course",
+        courseId: "demo-course",
+        uid: employeeId,
+        orgId,
+        status: progressPct >= 100 ? "completed" : progressPct > 0 ? "in-progress" : "not-started",
+        progressPct,
+        unlockedIndex: 0,
+        doneLessons: [],
+        mode: "organization",
+        startedAt: now,
+        ...(progressPct >= 100 ? {completedAt: now} : {}),
+      });
+    });
+    await enrollBatch.commit();
+  }
+
+  return {orgId, alreadyActive: false};
+});
+
+/* ─────────── Scheduled cleanup: expire demo sandboxes ───────────
+   Deletes demo organizations (and their fake seeded users/enrollments)
+   once demoExpiresAt has passed, keeping real business metrics untouched.
+*/
+export const cleanupExpiredDemoOrgs = onSchedule("every day 03:00", async () => {
+  const expiredOrgs = await db.collection("organizations")
+    .where("isDemo", "==", true)
+    .where("demoExpiresAt", "<=", admin.firestore.Timestamp.now())
+    .get();
+
+  for (const orgDoc of expiredOrgs.docs) {
+    const usersSnap = await db.collection("users").where("orgId", "==", orgDoc.id).get();
+
+    for (const userDoc of usersSnap.docs) {
+      const enrollmentsSnap = await userDoc.ref.collection("enrollments").get();
+      const delBatch = db.batch();
+      enrollmentsSnap.docs.forEach((enrollDoc) => delBatch.delete(enrollDoc.ref));
+      delBatch.delete(userDoc.ref);
+      await delBatch.commit();
+    }
+
+    await orgDoc.ref.delete();
+  }
+});
+
 /* ─────────── Transactional email (SendGrid) ───────────
  * Client code queues outgoing email by writing a document to the top-level
  * `mail` collection: { to: string[], message: { subject: string, html: string } }.

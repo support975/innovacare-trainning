@@ -1,0 +1,18 @@
+<div class="stage">
+  <div class="card">
+    <ng-container *ngIf="loading()">
+      <div class="spinner" aria-hidden="true"></div>
+      <h1>Setting up your demo workspace…</h1>
+      <p class="muted">Creating a sample company with fake employees and courses so you can explore freely.</p>
+    </ng-container>
+
+    <ng-container *ngIf="!loading()">
+      <h1>We couldn't start the demo</h1>
+      <p class="error">{{ error() }}</p>
+      <div class="actions">
+        <button class="btn" type="button" (click)="launch()">Try again</button>
+        <a class="btn outline" routerLink="/home">Back to home</a>
+      </div>
+    </ng-container>
+  </div>
+</div>
