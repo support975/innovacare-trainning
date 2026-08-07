@@ -51,13 +51,17 @@ export class LearnerShell {
   private readonly profile = toSignal(this.auth.profile$, { initialValue: null });
   readonly isDemo = computed(() => this.profile()?.isDemo === true);
   readonly switchingDemoView = signal(false);
+  readonly demoSwitchError = signal('');
 
   async backToAdmin(): Promise<void> {
     if (this.switchingDemoView()) return;
     this.switchingDemoView.set(true);
+    this.demoSwitchError.set('');
     try {
       await this.demoSvc.switchTo('admin');
       await this.router.navigate(['/manager/dashboard']);
+    } catch (e: any) {
+      this.demoSwitchError.set(e?.message || 'Could not switch back to the admin view. Please try again.');
     } finally {
       this.switchingDemoView.set(false);
     }

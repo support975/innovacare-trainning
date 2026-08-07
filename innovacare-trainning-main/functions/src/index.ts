@@ -2635,16 +2635,38 @@ export const demoSwitchIdentity = onCall({cors: callableCors, invoker: "public"}
     throw new HttpsError("failed-precondition", "Not in a demo sandbox.");
   }
 
-  const orgSnap = await db.doc(`organizations/${caller.orgId}`).get();
+  const orgRef = db.doc(`organizations/${caller.orgId}`);
+  const orgSnap = await orgRef.get();
   const org = orgSnap.data();
-  if (!orgSnap.exists || !org?.isDemo || !org?.demoAdminUid || !org?.demoLearnerUid) {
+  if (!orgSnap.exists || !org?.isDemo) {
     throw new HttpsError("failed-precondition", "Demo sandbox not found.");
   }
-  if (uid !== org.demoAdminUid && uid !== org.demoLearnerUid) {
+
+  // demoAdminUid/demoLearnerUid were added when this org was seeded. Demo
+  // orgs created before that field existed won't have them — derive and
+  // backfill from the org's own users instead of failing outright.
+  let demoAdminUid = org.demoAdminUid as string | undefined;
+  let demoLearnerUid = org.demoLearnerUid as string | undefined;
+  if (!demoAdminUid || !demoLearnerUid) {
+    const orgUsersSnap = await db.collection("users").where("orgId", "==", caller.orgId).get();
+    orgUsersSnap.docs.forEach((userDoc) => {
+      const data = userDoc.data();
+      if (!demoAdminUid && data.role === "admin") demoAdminUid = userDoc.id;
+      if (!demoLearnerUid && data.role === "learner" && data.isFakeDemoRecord) demoLearnerUid = userDoc.id;
+    });
+    if (demoAdminUid && demoLearnerUid) {
+      await orgRef.set({demoAdminUid, demoLearnerUid}, {merge: true});
+    }
+  }
+
+  if (!demoAdminUid || !demoLearnerUid) {
+    throw new HttpsError("failed-precondition", "Demo sandbox not found.");
+  }
+  if (uid !== demoAdminUid && uid !== demoLearnerUid) {
     throw new HttpsError("permission-denied", "Not part of this demo sandbox.");
   }
 
-  const targetUid = targetRole === "admin" ? org.demoAdminUid as string : org.demoLearnerUid as string;
+  const targetUid = targetRole === "admin" ? demoAdminUid : demoLearnerUid;
   const token = await admin.auth().createCustomToken(targetUid, {isDemo: true});
   return {token};
 });

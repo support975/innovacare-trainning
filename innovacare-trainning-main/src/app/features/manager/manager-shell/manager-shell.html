@@ -93,6 +93,7 @@
         You're exploring a free demo workspace with sample data
         <ng-container *ngIf="demoDaysLeft() as days">— expires in {{ days }} day{{ days === 1 ? '' : 's' }}</ng-container>.
       </span>
+      <span class="demo-banner__error" *ngIf="demoSwitchError()">{{ demoSwitchError() }}</span>
       <button class="demo-banner__secondary" type="button" [disabled]="switchingDemoView()" (click)="viewAsLearner()">
         {{ switchingDemoView() ? 'Switching…' : 'View as Learner' }}
       </button>
