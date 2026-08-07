@@ -592,3 +592,8 @@
 
 .demo-banner__cta:hover { background: #3730a3; }
 .demo-banner__cta[disabled] { opacity: 0.6; cursor: not-allowed; }
+
+.demo-banner__error {
+  color: #b91c1c;
+  font-weight: 600;
+}
