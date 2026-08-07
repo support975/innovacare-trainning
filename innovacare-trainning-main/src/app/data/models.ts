@@ -46,6 +46,12 @@ export interface Organization {
   isDemo?: boolean;
   /** Firestore Timestamp; the scheduled cleanup job deletes the org and its seeded data after this. */
   demoExpiresAt?: any;
+  /** uid of the real (anonymous-auth) visitor running the demo as admin. */
+  demoAdminUid?: string;
+  /** uid of the seeded fake employee used for the "View as Learner" preview. */
+  demoLearnerUid?: string;
+  /** courses/{id} seeded alongside this demo org, assignable from its Assignment Center. */
+  demoCourseId?: string;
 
   createdAt: any;
 }

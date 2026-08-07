@@ -8,6 +8,7 @@ import { BreakpointObserver } from '@angular/cdk/layout';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../../../core/auth';
 import { AppLanguage, LanguageService } from '../../../../shared/services/language';
+import { DemoService } from '../../../../shared/services/demo.service';
 
 interface LearnerNavItem {
   path: string;
@@ -44,9 +45,23 @@ export class LearnerShell {
   private readonly auth = inject(AuthService);
   private readonly language = inject(LanguageService);
   private readonly firestore = inject(Firestore);
+  private readonly demoSvc = inject(DemoService);
   private readonly mobileQuery = '(max-width: 860px)';
 
   private readonly profile = toSignal(this.auth.profile$, { initialValue: null });
+  readonly isDemo = computed(() => this.profile()?.isDemo === true);
+  readonly switchingDemoView = signal(false);
+
+  async backToAdmin(): Promise<void> {
+    if (this.switchingDemoView()) return;
+    this.switchingDemoView.set(true);
+    try {
+      await this.demoSvc.switchTo('admin');
+      await this.router.navigate(['/manager/dashboard']);
+    } finally {
+      this.switchingDemoView.set(false);
+    }
+  }
   private readonly organization = toSignal(
     this.auth.profile$.pipe(
       switchMap((profile) => {

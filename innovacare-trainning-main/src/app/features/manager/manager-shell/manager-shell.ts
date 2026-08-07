@@ -9,6 +9,7 @@ import { map, of, switchMap } from 'rxjs';
 import { AuthService } from '../../../core/auth';
 import { ActingOrgService } from '../../../core/organization/services/acting-org.service';
 import { LanguageService } from '../../../shared/services/language';
+import { DemoService } from '../../../shared/services/demo.service';
 import { NotificationBellPlainComponent } from '../../../shared/components/notifications/notification-bell-plain/notification-bell-plain';
 import {
   PlanFeature,
@@ -69,6 +70,7 @@ export class ManagerShell {
   private readonly authSvc = inject(AuthService);
   private readonly firestore = inject(Firestore);
   private readonly orgContext = inject(ActingOrgService);
+  private readonly demoSvc = inject(DemoService);
   readonly lang = inject(LanguageService);
 
   sidebarOpen = signal(false);
@@ -105,6 +107,19 @@ export class ManagerShell {
     const days = Math.ceil((expiresAt.getTime() - Date.now()) / 86_400_000);
     return Math.max(0, days);
   });
+
+  readonly switchingDemoView = signal(false);
+
+  async viewAsLearner(): Promise<void> {
+    if (this.switchingDemoView()) return;
+    this.switchingDemoView.set(true);
+    try {
+      await this.demoSvc.switchTo('learner');
+      await this.router.navigate(['/learner']);
+    } finally {
+      this.switchingDemoView.set(false);
+    }
+  }
 
   readonly displayName = computed(() => {
     const profile = this.profile();
