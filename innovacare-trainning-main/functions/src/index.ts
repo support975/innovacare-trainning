@@ -2667,8 +2667,16 @@ export const demoSwitchIdentity = onCall({cors: callableCors, invoker: "public"}
   }
 
   const targetUid = targetRole === "admin" ? demoAdminUid : demoLearnerUid;
-  const token = await admin.auth().createCustomToken(targetUid, {isDemo: true});
-  return {token};
+  try {
+    const token = await admin.auth().createCustomToken(targetUid, {isDemo: true});
+    return {token};
+  } catch (error) {
+    console.error("demoSwitchIdentity: createCustomToken failed", error);
+    // Most common cause: the Cloud Functions runtime service account is
+    // missing the "Service Account Token Creator" (roles/iam.serviceAccountTokenCreator)
+    // IAM role on itself, which admin.auth().createCustomToken() requires.
+    throw new HttpsError("internal", "Could not create the demo session. Please try again shortly.");
+  }
 });
 
 /* ─────────── Scheduled cleanup: expire demo sandboxes ───────────
