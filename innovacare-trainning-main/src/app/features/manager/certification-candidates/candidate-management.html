@@ -243,16 +243,22 @@
               {{ isCredentialExpired(card.expiresAt) ? 'Expired' : 'Active' }}
             </span>
           </div>
-          <div class="credential-card__name" [title]="candidateDisplayName">{{ candidateDisplayName }}</div>
-          <div class="credential-card__profession" *ngIf="app.profileSnapshot?.['profession']">
-            {{ app.profileSnapshot?.['profession'] }}
+          <div class="credential-card__body">
+            <img *ngIf="candidatePhotoUrl" class="credential-card__photo" [src]="candidatePhotoUrl" crossorigin="anonymous" alt="" />
+            <div class="credential-card__info">
+              <div class="credential-card__name" [title]="candidateDisplayName">{{ candidateDisplayName }}</div>
+              <div class="credential-card__profession" *ngIf="app.profileSnapshot?.['profession']">
+                {{ app.profileSnapshot?.['profession'] }}
+              </div>
+              <div class="credential-card__org" *ngIf="organizationName()">{{ organizationName() }}</div>
+              <div class="credential-card__number">{{ card.number }}</div>
+              <div class="credential-card__dates">
+                <span>Issued: {{ asDate(card.issuedAt) | date: 'mediumDate' }}</span>
+                <span>Expires: {{ asDate(card.expiresAt) | date: 'mediumDate' }}</span>
+              </div>
+            </div>
           </div>
-          <div class="credential-card__org" *ngIf="organizationName()">{{ organizationName() }}</div>
-          <div class="credential-card__number">{{ card.number }}</div>
-          <div class="credential-card__dates">
-            <span>Issued: {{ asDate(card.issuedAt) | date: 'mediumDate' }}</span>
-            <span>Expires: {{ asDate(card.expiresAt) | date: 'mediumDate' }}</span>
-          </div>
+          <img *ngIf="cardQrDataUrl()" class="credential-card__qr" [src]="cardQrDataUrl()" alt="Scan to verify this membership" />
         </div>
 
         <div class="credential-card" id="admin-certificate-card" *ngIf="certificate as cert">
@@ -264,16 +270,22 @@
               {{ isCredentialExpired(cert.expiresAt) ? 'Expired' : 'Active' }}
             </span>
           </div>
-          <div class="credential-card__name" [title]="candidateDisplayName">{{ candidateDisplayName }}</div>
-          <div class="credential-card__profession" *ngIf="app.profileSnapshot?.['profession']">
-            {{ app.profileSnapshot?.['profession'] }}
+          <div class="credential-card__body">
+            <img *ngIf="candidatePhotoUrl" class="credential-card__photo" [src]="candidatePhotoUrl" crossorigin="anonymous" alt="" />
+            <div class="credential-card__info">
+              <div class="credential-card__name" [title]="candidateDisplayName">{{ candidateDisplayName }}</div>
+              <div class="credential-card__profession" *ngIf="app.profileSnapshot?.['profession']">
+                {{ app.profileSnapshot?.['profession'] }}
+              </div>
+              <div class="credential-card__org" *ngIf="organizationName()">{{ organizationName() }}</div>
+              <div class="credential-card__number">{{ cert.number }}</div>
+              <div class="credential-card__dates">
+                <span>Issued: {{ asDate(cert.issuedAt) | date: 'mediumDate' }}</span>
+                <span>Expires: {{ asDate(cert.expiresAt) | date: 'mediumDate' }}</span>
+              </div>
+            </div>
           </div>
-          <div class="credential-card__org" *ngIf="organizationName()">{{ organizationName() }}</div>
-          <div class="credential-card__number">{{ cert.number }}</div>
-          <div class="credential-card__dates">
-            <span>Issued: {{ asDate(cert.issuedAt) | date: 'mediumDate' }}</span>
-            <span>Expires: {{ asDate(cert.expiresAt) | date: 'mediumDate' }}</span>
-          </div>
+          <img *ngIf="certQrDataUrl()" class="credential-card__qr" [src]="certQrDataUrl()" alt="Scan to verify this certificate" />
         </div>
       </div>
 

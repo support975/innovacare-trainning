@@ -50,6 +50,23 @@
       </div>
     </section>
 
+    <!-- Photo -->
+    <section class="section photo-section">
+      <h2 class="section-title">Photo</h2>
+      <p class="section-subtitle">Used on your digital membership card and certificate of good standing.</p>
+      <div class="photo-upload-row">
+        <img *ngIf="candidatePhotoUrl" class="photo-preview" [src]="candidatePhotoUrl" alt="Your photo" />
+        <label class="upload-label">
+          <div class="upload-box upload-box--small">
+            <span class="upload-icon">🖼️</span>
+            <span class="upload-text">{{ candidatePhotoUrl ? 'Change photo' : 'Upload photo' }}</span>
+            <span class="upload-hint">{{ uploadingPhoto() ? 'Uploading...' : 'Click to upload' }}</span>
+          </div>
+          <input type="file" accept="image/*" hidden (change)="uploadPhoto($event)" [disabled]="uploadingPhoto()" />
+        </label>
+      </div>
+    </section>
+
     <!-- Documents Upload -->
     <section class="section documents-section">
       <h2 class="section-title">Required Documents</h2>
@@ -169,32 +186,44 @@
           <div class="credential-card__header">
             <span class="credential-card__label">Membership Card</span>
           </div>
-          <div class="credential-card__name" [title]="candidateDisplayName">{{ candidateDisplayName }}</div>
-          <div class="credential-card__profession" *ngIf="app.profileSnapshot?.['profession']">
-            {{ app.profileSnapshot?.['profession'] }}
+          <div class="credential-card__body">
+            <img *ngIf="candidatePhotoUrl" class="credential-card__photo" [src]="candidatePhotoUrl" crossorigin="anonymous" alt="" />
+            <div class="credential-card__info">
+              <div class="credential-card__name" [title]="candidateDisplayName">{{ candidateDisplayName }}</div>
+              <div class="credential-card__profession" *ngIf="app.profileSnapshot?.['profession']">
+                {{ app.profileSnapshot?.['profession'] }}
+              </div>
+              <div class="credential-card__org" *ngIf="organizationName()">{{ organizationName() }}</div>
+              <div class="credential-card__number">{{ card.number }}</div>
+              <div class="credential-card__dates">
+                <span>Issued: {{ asDate(card.issuedAt) | date: 'mediumDate' }}</span>
+                <span>Expires: {{ asDate(card.expiresAt) | date: 'mediumDate' }}</span>
+              </div>
+            </div>
           </div>
-          <div class="credential-card__org" *ngIf="organizationName()">{{ organizationName() }}</div>
-          <div class="credential-card__number">{{ card.number }}</div>
-          <div class="credential-card__dates">
-            <span>Issued: {{ asDate(card.issuedAt) | date: 'mediumDate' }}</span>
-            <span>Expires: {{ asDate(card.expiresAt) | date: 'mediumDate' }}</span>
-          </div>
+          <img *ngIf="cardQrDataUrl()" class="credential-card__qr" [src]="cardQrDataUrl()" alt="Scan to verify this membership" />
         </div>
 
         <div class="credential-card" id="learner-certificate-card" *ngIf="app.certificate as cert">
           <div class="credential-card__header">
             <span class="credential-card__label">Certificate of Good Standing</span>
           </div>
-          <div class="credential-card__name" [title]="candidateDisplayName">{{ candidateDisplayName }}</div>
-          <div class="credential-card__profession" *ngIf="app.profileSnapshot?.['profession']">
-            {{ app.profileSnapshot?.['profession'] }}
+          <div class="credential-card__body">
+            <img *ngIf="candidatePhotoUrl" class="credential-card__photo" [src]="candidatePhotoUrl" crossorigin="anonymous" alt="" />
+            <div class="credential-card__info">
+              <div class="credential-card__name" [title]="candidateDisplayName">{{ candidateDisplayName }}</div>
+              <div class="credential-card__profession" *ngIf="app.profileSnapshot?.['profession']">
+                {{ app.profileSnapshot?.['profession'] }}
+              </div>
+              <div class="credential-card__org" *ngIf="organizationName()">{{ organizationName() }}</div>
+              <div class="credential-card__number">{{ cert.number }}</div>
+              <div class="credential-card__dates">
+                <span>Issued: {{ asDate(cert.issuedAt) | date: 'mediumDate' }}</span>
+                <span>Expires: {{ asDate(cert.expiresAt) | date: 'mediumDate' }}</span>
+              </div>
+            </div>
           </div>
-          <div class="credential-card__org" *ngIf="organizationName()">{{ organizationName() }}</div>
-          <div class="credential-card__number">{{ cert.number }}</div>
-          <div class="credential-card__dates">
-            <span>Issued: {{ asDate(cert.issuedAt) | date: 'mediumDate' }}</span>
-            <span>Expires: {{ asDate(cert.expiresAt) | date: 'mediumDate' }}</span>
-          </div>
+          <img *ngIf="certQrDataUrl()" class="credential-card__qr" [src]="certQrDataUrl()" alt="Scan to verify this certificate" />
         </div>
       </div>
 

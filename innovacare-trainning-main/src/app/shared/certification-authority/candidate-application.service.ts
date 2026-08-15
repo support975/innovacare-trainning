@@ -289,6 +289,16 @@ export class CandidateApplicationService {
     } as any);
   }
 
+  /** Update the candidate's photo (shown on the membership card and certificate). */
+  async updatePhoto(id: string, photoUrl: string): Promise<void> {
+    const app = await this.getApplication(id);
+    if (!app) throw new Error('Application not found.');
+    await updateDoc(doc(this.db, `candidateApplications/${id}`), {
+      profileSnapshot: { ...(app.profileSnapshot || {}), photoUrl },
+      updatedAt: serverTimestamp(),
+    } as any);
+  }
+
   async lookupMemberByNumber(organizationId: string, membershipNumber: string): Promise<CandidateApplication | null> {
     const q = query(
       collection(this.db, 'candidateApplications'),
