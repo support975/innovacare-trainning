@@ -6,7 +6,8 @@ import {onCall, onRequest, CallableRequest, HttpsError} from "firebase-functions
 import {setGlobalOptions} from "firebase-functions/v2/options";
 import {defineSecret} from "firebase-functions/params";
 import {onSchedule} from "firebase-functions/v2/scheduler";
-import {PDFDocument, StandardFonts, rgb} from "pdf-lib";
+import {PDFDocument, PDFFont, StandardFonts, rgb} from "pdf-lib";
+import QRCode from "qrcode";
 import {nanoid} from "nanoid";
 import Stripe from "stripe";
 import sgMail from "@sendgrid/mail";
@@ -2983,10 +2984,35 @@ function buildExamResultEmailHtml(input: {
   `;
 }
 
+function memberVerificationUrl(membershipNumber: string): string {
+  return `${PUBLIC_APP_URL}/verify-member/${encodeURIComponent(membershipNumber)}`;
+}
+
+async function fetchImageBytes(url: string): Promise<{bytes: Uint8Array; contentType: string} | null> {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const contentType = res.headers.get("content-type") || "";
+    return {bytes: new Uint8Array(await res.arrayBuffer()), contentType};
+  } catch {
+    return null;
+  }
+}
+
+function truncateToWidth(font: PDFFont, text: string, size: number, maxWidth: number): string {
+  if (font.widthOfTextAtSize(text, size) <= maxWidth) return text;
+  let result = text;
+  while (result.length > 1 && font.widthOfTextAtSize(`${result}…`, size) > maxWidth) {
+    result = result.slice(0, -1);
+  }
+  return `${result}…`;
+}
+
 /* ─────────── Credential PDFs by Email ───────────
  * Admin queues a request in credentialEmailRequests/{id}; this generates the
- * digital membership card and certificate of good standing as PDFs (pdf-lib)
- * and emails them to the candidate as attachments.
+ * digital membership card and certificate of good standing as PDFs (pdf-lib),
+ * each carrying the member's photo and a QR code linking to the public
+ * verification page, and emails them to the candidate as attachments.
  */
 async function buildCredentialPdfs(input: {
   candidateName: string;
@@ -2996,9 +3022,31 @@ async function buildCredentialPdfs(input: {
   certificateNumber: string;
   issuedAt: Date;
   expiresAt: Date;
+  photoUrl?: string;
 }): Promise<{cardB64: string; certB64: string}> {
   const issued = input.issuedAt.toLocaleDateString("en-GB");
   const expires = input.expiresAt.toLocaleDateString("en-GB");
+
+  // Best-effort: neither the photo nor the QR code is essential to the
+  // credential — if either fails to fetch/generate, the PDF still renders.
+  const photo = input.photoUrl ? await fetchImageBytes(input.photoUrl) : null;
+  const cardQrPng = await QRCode.toBuffer(memberVerificationUrl(input.membershipNumber), {
+    margin: 1, color: {dark: "#0d2240", light: "#ffffff"},
+  }).catch(() => null);
+  const certQrPng = await QRCode.toBuffer(memberVerificationUrl(input.certificateNumber), {
+    margin: 1, color: {dark: "#0d2240", light: "#ffffff"},
+  }).catch(() => null);
+
+  const embedPhoto = async (doc: PDFDocument) => {
+    if (!photo) return null;
+    try {
+      return photo.contentType.includes("png") ?
+        await doc.embedPng(photo.bytes) :
+        await doc.embedJpg(photo.bytes);
+    } catch {
+      return null;
+    }
+  };
 
   // Membership card — credit-card-like landscape
   const cardDoc = await PDFDocument.create();
@@ -3011,13 +3059,26 @@ async function buildCredentialPdfs(input: {
   card.drawRectangle({x: 0, y: 168, width: 340, height: 46, color: rgb(0.066, 0.161, 0.42)});
   card.drawText(input.organizationName || "Innovacare", {x: 16, y: 186, size: 13, font: bold, color: white});
   card.drawText("DIGITAL MEMBERSHIP CARD", {x: 16, y: 172, size: 8, font: reg, color: lightBlue});
-  card.drawText(input.candidateName.toUpperCase(), {x: 16, y: 128, size: 15, font: bold, color: white});
+
+  const cardPhoto = await embedPhoto(cardDoc);
+  const cardTextMaxWidth = cardPhoto ? 252 : 308;
+  card.drawText(truncateToWidth(bold, input.candidateName.toUpperCase(), 15, cardTextMaxWidth),
+    {x: 16, y: 128, size: 15, font: bold, color: white});
   if (input.profession) {
-    card.drawText(input.profession, {x: 16, y: 112, size: 10, font: reg, color: lightBlue});
+    card.drawText(truncateToWidth(reg, input.profession, 10, cardTextMaxWidth),
+      {x: 16, y: 112, size: 10, font: reg, color: lightBlue});
   }
   card.drawText(`No: ${input.membershipNumber}`, {x: 16, y: 78, size: 12, font: bold, color: rgb(0.99, 0.75, 0.14)});
   card.drawText(`Issued: ${issued}`, {x: 16, y: 40, size: 9, font: reg, color: white});
   card.drawText(`Valid until: ${expires}`, {x: 16, y: 26, size: 9, font: reg, color: white});
+  if (cardPhoto) {
+    card.drawImage(cardPhoto, {x: 340 - 16 - 48, y: 214 - 46 - 6 - 48, width: 48, height: 48});
+  }
+  if (cardQrPng) {
+    const cardQr = await cardDoc.embedPng(cardQrPng);
+    card.drawRectangle({x: 340 - 16 - 40, y: 12, width: 40, height: 40, color: white});
+    card.drawImage(cardQr, {x: 340 - 16 - 38, y: 14, width: 36, height: 36});
+  }
   const cardB64 = Buffer.from(await cardDoc.save()).toString("base64");
 
   // Certificate of good standing — A4 landscape
@@ -3041,7 +3102,17 @@ async function buildCredentialPdfs(input: {
   center("is a member in good standing of this professional organization.", 315, 14);
   center(`Membership No: ${input.membershipNumber}   •   Certificate No: ${input.certificateNumber}`, 275, 13, certBold, navy);
   center(`Issued on ${issued}   •   Valid until ${expires}`, 245, 12);
-  center("This digital certificate can be verified online using the membership number.", 120, 10);
+  center("This digital certificate can be verified online — scan the QR code or visit the link below.", 120, 10);
+  center(memberVerificationUrl(input.certificateNumber), 105, 9, certReg, navy);
+
+  const certPhoto = await embedPhoto(certDoc);
+  if (certPhoto) {
+    page.drawImage(certPhoto, {x: 50, y: 505, width: 60, height: 60});
+  }
+  if (certQrPng) {
+    const certQr = await certDoc.embedPng(certQrPng);
+    page.drawImage(certQr, {x: 842 - 50 - 60, y: 505, width: 60, height: 60});
+  }
   const certB64 = Buffer.from(await certDoc.save()).toString("base64");
 
   return {cardB64, certB64};
@@ -3092,6 +3163,7 @@ export const processCredentialEmailRequest = onDocumentCreated(
         certificateNumber: String(cert.number),
         issuedAt: toDate(card.issuedAt),
         expiresAt: toDate(card.expiresAt),
+        photoUrl: app.profileSnapshot?.photoUrl || undefined,
       });
 
       sgMail.setApiKey(SENDGRID_API_KEY.value());

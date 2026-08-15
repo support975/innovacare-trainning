@@ -51,6 +51,18 @@ export const routes: Routes = [
   },
 
   {
+    path: 'verify-member',
+    loadComponent: () =>
+      import('./features/publics/member-verification/member-verification').then(m => m.MemberVerificationComponent)
+  },
+
+  {
+    path: 'verify-member/:memberNumber',
+    loadComponent: () =>
+      import('./features/publics/member-verification/member-verification').then(m => m.MemberVerificationComponent)
+  },
+
+  {
     path: 'kiosk',
     loadComponent: () =>
       import('./features/learner/kiosk-setup/kiosk-setup')

@@ -11,6 +11,7 @@ import {
   CandidateApplication,
 } from '../../../shared/certification-authority/certification.models';
 import { downloadElementAsPdf } from '../../../shared/utils/credential-pdf';
+import { credentialQrDataUrl } from '../../../shared/utils/credential-qr';
 
 @Component({
   selector: 'app-candidate-management',
@@ -44,6 +45,8 @@ export class CandidateManagementComponent implements OnInit {
     profession: '',
     membershipNumber: '',
   };
+  cardQrDataUrl = signal('');
+  certQrDataUrl = signal('');
 
   ngOnInit() {
     this.applicationId = this.route.snapshot.paramMap.get('applicationId') || '';
@@ -63,6 +66,7 @@ export class CandidateManagementComponent implements OnInit {
           this.credentialForm.profession = app.profileSnapshot?.['profession'] || '';
           this.credentialForm.membershipNumber = app.membershipCard?.number || '';
           void this.loadOrganizationName(app.organizationId);
+          void this.loadCredentialQrCodes(app);
         }
       },
       error: (err) => {
@@ -75,6 +79,19 @@ export class CandidateManagementComponent implements OnInit {
       next: (docs) => this.documents.set(docs || []),
       error: () => this.error.set('Failed to load documents'),
     });
+  }
+
+  private async loadCredentialQrCodes(app: CandidateApplication) {
+    try {
+      if (app.membershipCard?.number) {
+        this.cardQrDataUrl.set(await credentialQrDataUrl(app.membershipCard.number));
+      }
+      if (app.certificate?.number) {
+        this.certQrDataUrl.set(await credentialQrDataUrl(app.certificate.number));
+      }
+    } catch (err) {
+      console.warn('Unable to generate verification QR code', err);
+    }
   }
 
   private async loadOrganizationName(organizationId: string) {
@@ -100,6 +117,10 @@ export class CandidateManagementComponent implements OnInit {
 
   get candidateEmail(): string {
     return this.candidate()?.profileSnapshot?.['email'] || '';
+  }
+
+  get candidatePhotoUrl(): string {
+    return this.candidate()?.profileSnapshot?.['photoUrl'] || '';
   }
 
   get paymentDocument(): ApplicationDocument | undefined {

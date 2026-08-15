@@ -14,6 +14,7 @@ import {
   CandidateApplication,
 } from '../../../shared/certification-authority/certification.models';
 import { downloadElementAsPdf } from '../../../shared/utils/credential-pdf';
+import { credentialQrDataUrl } from '../../../shared/utils/credential-qr';
 
 type RenewalCourseRow = {
   courseId: string;
@@ -70,6 +71,9 @@ export class CandidateProfileComponent implements OnInit {
   submittingRenewal = signal(false);
 
   organizationName = signal('');
+  uploadingPhoto = signal(false);
+  cardQrDataUrl = signal('');
+  certQrDataUrl = signal('');
 
   ngOnInit() {
     this.applicationId = this.route.snapshot.paramMap.get('applicationId') || '';
@@ -89,6 +93,7 @@ export class CandidateProfileComponent implements OnInit {
         if (app) {
           void this.loadRenewalRequirements(app);
           void this.loadOrganizationName(app.organizationId);
+          void this.loadCredentialQrCodes(app);
         }
       },
       error: (err) => {
@@ -204,6 +209,19 @@ export class CandidateProfileComponent implements OnInit {
     }
   }
 
+  private async loadCredentialQrCodes(app: CandidateApplication) {
+    try {
+      if (app.membershipCard?.number) {
+        this.cardQrDataUrl.set(await credentialQrDataUrl(app.membershipCard.number));
+      }
+      if (app.certificate?.number) {
+        this.certQrDataUrl.set(await credentialQrDataUrl(app.certificate.number));
+      }
+    } catch (err) {
+      console.warn('Unable to generate verification QR code', err);
+    }
+  }
+
   private async loadOrganizationName(organizationId: string) {
     if (!organizationId) return;
     try {
@@ -227,6 +245,31 @@ export class CandidateProfileComponent implements OnInit {
 
   get candidateEmail(): string {
     return this.candidate()?.profileSnapshot?.['email'] || '';
+  }
+
+  get candidatePhotoUrl(): string {
+    return this.candidate()?.profileSnapshot?.['photoUrl'] || '';
+  }
+
+  async uploadPhoto(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    this.uploadingPhoto.set(true);
+    this.error.set(null);
+
+    try {
+      const filePath = `candidateApplications/${this.applicationId}/photo_${Date.now()}_${file.name}`;
+      const storageRef = ref(this.storage, filePath);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      await this.applicationsSvc.updatePhoto(this.applicationId, url);
+    } catch (err: any) {
+      this.error.set(err?.message || 'Failed to upload photo');
+    } finally {
+      this.uploadingPhoto.set(false);
+      event.target.value = '';
+    }
   }
 
   get paymentDocument(): ApplicationDocument | undefined {

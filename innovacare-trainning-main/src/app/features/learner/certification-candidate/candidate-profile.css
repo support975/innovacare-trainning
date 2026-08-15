@@ -246,6 +246,31 @@
   font-size: 0.85rem;
 }
 
+.photo-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.photo-preview {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e5e7eb;
+}
+
+.upload-box--small {
+  padding: 0.9rem 1.5rem;
+  flex-direction: row;
+  gap: 0.6rem;
+}
+
+.upload-box--small .upload-icon {
+  font-size: 1.5rem;
+}
+
 .uploaded-documents {
   margin-top: 2rem;
   padding-top: 2rem;
@@ -614,7 +639,9 @@
 }
 
 .credential-card {
+  position: relative;
   padding: 1.5rem;
+  padding-bottom: 4.75rem;
   border-radius: 14px;
   background: linear-gradient(135deg, #1a3f6f 0%, #00a79d 100%);
   color: white;
@@ -624,6 +651,37 @@
 
 .credential-card__header {
   margin-bottom: 0.85rem;
+}
+
+.credential-card__body {
+  display: flex;
+  gap: 0.9rem;
+  align-items: flex-start;
+}
+
+.credential-card__photo {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.65);
+  flex-shrink: 0;
+}
+
+.credential-card__info {
+  min-width: 0;
+  flex: 1;
+}
+
+.credential-card__qr {
+  position: absolute;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  width: 56px;
+  height: 56px;
+  background: #fff;
+  padding: 4px;
+  border-radius: 6px;
 }
 
 .credential-card__label {

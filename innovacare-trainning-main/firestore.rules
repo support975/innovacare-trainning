@@ -1140,12 +1140,13 @@ service cloud.firestore {
     }
 
     // Sanitized, non-sensitive lookup entries (name, profession, org, status,
-    // dates only — no email/phone/documents) keyed by membership number, so
-    // any signed-in user can verify a member without exposing their full
-    // candidateApplications record. Written whenever a certification is
+    // dates only — no email/phone/documents) keyed by membership number.
+    // Publicly readable on purpose: the public /verify-member page (and the
+    // QR code printed on membership cards/certificates) must work for
+    // anonymous visitors with no login. Written whenever a certification is
     // approved or renewed.
     match /memberDirectory/{membershipNumber} {
-      allow read: if isSignedIn();
+      allow read: if true;
       allow create, update: if request.resource.data.organizationId is string
         && isCertificationAuthorityFor(request.resource.data.organizationId);
       allow delete: if isSuperAdmin();

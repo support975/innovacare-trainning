@@ -1,6 +1,7 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { MemberVerificationService, VerifyMembershipResponse } from './member-verification.service';
 
 import { ToDatePipe } from '../../../shared/pipes/to-date.pipe';
@@ -11,14 +12,23 @@ import { ToDatePipe } from '../../../shared/pipes/to-date.pipe';
   templateUrl: './member-verification.html',
   styleUrl: './member-verification.css',
 })
-export class MemberVerificationComponent {
+export class MemberVerificationComponent implements OnInit {
   private readonly verificationSvc = inject(MemberVerificationService);
+  private readonly route = inject(ActivatedRoute);
 
   membershipNumber = '';
   searching = signal(false);
   searched = signal(false);
   error = signal<string | null>(null);
   result = signal<VerifyMembershipResponse | null>(null);
+
+  ngOnInit(): void {
+    const fromRoute = this.route.snapshot.paramMap.get('memberNumber');
+    if (fromRoute) {
+      this.membershipNumber = fromRoute;
+      void this.search();
+    }
+  }
 
   async search() {
     const number = this.membershipNumber.trim();
