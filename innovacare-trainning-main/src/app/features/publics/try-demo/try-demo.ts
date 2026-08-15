@@ -2,11 +2,12 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { DemoService } from '../../../shared/services/demo.service';
+import { PublicTranslateDirective } from '../../../shared/directives/public-translate.directive';
 
 @Component({
   selector: 'app-try-demo',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, PublicTranslateDirective],
   templateUrl: './try-demo.html',
   styleUrl: './try-demo.css',
 })
@@ -28,7 +29,7 @@ export class TryDemoComponent implements OnInit {
       await this.demo.start();
       await this.router.navigate(['/manager/dashboard']);
     } catch (e: any) {
-      this.error.set(e?.message || 'Could not start the demo. Please try again.');
+      this.error.set(e?.message || "Impossible de démarrer la démonstration. Veuillez réessayer.");
       this.loading.set(false);
     }
   }

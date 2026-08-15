@@ -110,10 +110,10 @@
   <main class="content" role="main">
     <div class="demo-banner" *ngIf="isDemo()">
       <span class="demo-banner__icon">🧪</span>
-      <span class="demo-banner__text">You're previewing the learner experience of this demo workspace.</span>
+      <span class="demo-banner__text">{{ t('demo.banner.learnerPreview') }}</span>
       <span class="demo-banner__error" *ngIf="demoSwitchError()">{{ demoSwitchError() }}</span>
       <button class="demo-banner__cta" type="button" [disabled]="switchingDemoView()" (click)="backToAdmin()">
-        {{ switchingDemoView() ? 'Switching…' : 'Back to Admin view' }}
+        {{ switchingDemoView() ? t('demo.banner.switching') : t('demo.banner.backToAdmin') }}
       </button>
     </div>
     <router-outlet></router-outlet>

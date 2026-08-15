@@ -61,7 +61,7 @@ export class LearnerShell {
       await this.demoSvc.switchTo('admin');
       await this.router.navigate(['/manager/dashboard']);
     } catch (e: any) {
-      this.demoSwitchError.set(e?.message || 'Could not switch back to the admin view. Please try again.');
+      this.demoSwitchError.set(e?.message || this.language.t('demo.banner.switchErrorAdmin'));
     } finally {
       this.switchingDemoView.set(false);
     }
