@@ -238,10 +238,11 @@
   <ng-template #notFoundTpl>
     <div class="container">
       <div class="access-request-card">
-        <h2>Organization course access</h2>
+        <h2>Accès aux cours de l'organisation</h2>
         <p>
-          This course is not public. Individual learners must request access, wait for admin
-          approval, complete payment, then the course will appear in assignments.
+          Ce cours n'est pas public. Les apprenants individuels doivent demander l'accès, attendre
+          l'approbation d'un administrateur, compléter le paiement, puis le cours apparaîtra dans
+          leurs assignations.
         </p>
         <button
           *ngIf="requestedCourseId()"
@@ -252,11 +253,11 @@
           [disabled]="accessRequesting()"
         >
           <mat-icon>lock_open</mat-icon>
-          {{ accessRequesting() ? 'Submitting...' : 'Request access' }}
+          {{ accessRequesting() ? 'Envoi en cours...' : "Demander l'accès" }}
         </button>
         <a routerLink="/catalogue" class="back-link access-request-card__back">
           <mat-icon>arrow_back</mat-icon>
-          <span>Back to public catalogue</span>
+          <span>Retour au catalogue public</span>
         </a>
       </div>
     </div>
@@ -264,7 +265,7 @@
 </section>
 
 <ng-template #loadingTpl>
-  <div class="container">
+  <div class="container" appPublicTranslate>
     <p>Chargement du cours...</p>
   </div>
 </ng-template>
