@@ -4223,7 +4223,7 @@ export const chatWithAI = onCall(
     const systemPrompt = buildSystemPrompt(context);
 
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
+      model: "claude-sonnet-5",
       max_tokens: 2048,
       system: systemPrompt,
       messages: messages as Anthropic.MessageParam[],
@@ -4281,7 +4281,7 @@ ${courseContext ? `Course context: ${courseContext}` : ""}
 Focus on clinically relevant, evidence-based content. Make distractors plausible.`;
 
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
+      model: "claude-sonnet-5",
       max_tokens: 1500,
       messages: [{role: "user", content: prompt}],
     });
@@ -4348,7 +4348,7 @@ Provide a structured evaluation with:
 Be encouraging but clinically precise. Use professional nursing terminology.`;
 
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
+      model: "claude-sonnet-5",
       max_tokens: 1200,
       messages: [{role: "user", content: prompt}],
     });
@@ -4427,7 +4427,7 @@ Use professional clinical language, SNF-appropriate terminology, and be thorough
 Do NOT include any placeholder text like [brackets] in the final output.`;
 
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
+      model: "claude-sonnet-5",
       max_tokens: 1500,
       messages: [{role: "user", content: prompt}],
     });
