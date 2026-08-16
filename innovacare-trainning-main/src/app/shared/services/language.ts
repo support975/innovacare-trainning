@@ -1773,6 +1773,7 @@ const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     'Organization Onboarding Agent': 'Agent d’intégration d’organisation',
     'Organization and admin account created successfully. Save the temporary password now.': 'Organisation et compte administrateur créés avec succès. Enregistrez le mot de passe temporaire maintenant.',
     'Organization compliance': 'Conformité de l’organisation',
+    'e.g. Sunrise Health System': 'ex. Sunrise Health System',
     'Organization course access requests': 'Demandes d’accès aux cours de l’organisation',
     'Organization missing from your profile.': 'Organisation manquante de votre profil.',
     'Organization name': 'Nom de l’organisation',
