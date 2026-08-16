@@ -8,6 +8,7 @@ import { FacultyService } from '../../../shared/services/faculty.service';
 import { SuperAdminOrganizationsService } from '../services/super-admin-organizations';
 import type { SuperAdminOrganization } from '../models/super-admin.models';
 import type { Faculty } from '../../../data/models';
+import { LanguageService } from '../../../shared/services/language';
 
 type FacultyForm = {
   id: string;
@@ -51,6 +52,7 @@ function emptyForm(): FacultyForm {
 export class FacultyAuthoringComponent {
   private readonly facultySvc = inject(FacultyService);
   private readonly orgsSvc = inject(SuperAdminOrganizationsService);
+  readonly lang = inject(LanguageService);
 
   readonly organizations = toSignal(this.orgsSvc.list(), { initialValue: [] as SuperAdminOrganization[] });
   readonly selectedOrgId = signal('');
@@ -105,7 +107,7 @@ export class FacultyAuthoringComponent {
     const name = this.form.name.trim();
     if (!ownerOrgId || !name) {
       this.error.set(true);
-      this.notice.set('Owning organization and name are required.');
+      this.notice.set(this.lang.t('Owning organization and name are required.'));
       return;
     }
 
@@ -132,10 +134,10 @@ export class FacultyAuthoringComponent {
         const id = await this.facultySvc.create(payload);
         this.form.id = id;
       }
-      this.notice.set(wasEditing ? 'Faculty profile saved.' : 'Faculty profile created.');
+      this.notice.set(wasEditing ? this.lang.t('Faculty profile saved.') : this.lang.t('Faculty profile created.'));
     } catch (err: any) {
       this.error.set(true);
-      this.notice.set(err?.message || 'Unable to save faculty profile.');
+      this.notice.set(err?.message || this.lang.t('Unable to save faculty profile.'));
     } finally {
       this.busy.set(false);
     }
@@ -148,11 +150,11 @@ export class FacultyAuthoringComponent {
     this.error.set(false);
     try {
       await this.facultySvc.delete(record.id);
-      this.notice.set('Faculty profile deleted.');
+      this.notice.set(this.lang.t('Faculty profile deleted.'));
       if (this.form.id === record.id) this.resetForm();
     } catch (err: any) {
       this.error.set(true);
-      this.notice.set(err?.message || 'Unable to delete faculty profile.');
+      this.notice.set(err?.message || this.lang.t('Unable to delete faculty profile.'));
     } finally {
       this.busy.set(false);
     }

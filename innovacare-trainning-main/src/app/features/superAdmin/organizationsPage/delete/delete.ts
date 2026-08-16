@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { SuperAdminOrganizationsService } from '../../services/super-admin-organizations';
 import { SuperAdminOrganization } from '../../models/super-admin.models';
+import { LanguageService } from '../../../../shared/services/language';
 
 @Component({
   selector: 'app-delete',
@@ -14,6 +15,7 @@ export class Delete implements OnInit {
   private orgSvc = inject(SuperAdminOrganizationsService);
   private route  = inject(ActivatedRoute);
   private router = inject(Router);
+  readonly lang  = inject(LanguageService);
 
   orgId   = '';
   org     = signal<SuperAdminOrganization | null>(null);
@@ -32,7 +34,7 @@ export class Delete implements OnInit {
       await this.orgSvc.delete(this.orgId);
       this.router.navigate(['/super-admin/organizations']);
     } catch (e: any) {
-      this.notice.set(e?.message || 'Delete failed.'); this.busy.set(false);
+      this.notice.set(e?.message || this.lang.t('Delete failed.')); this.busy.set(false);
     }
   }
 }

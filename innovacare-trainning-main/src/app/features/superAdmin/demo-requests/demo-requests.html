@@ -1,13 +1,13 @@
 <div class="sa-page">
   <div class="page-header">
     <div>
-      <p class="page-eyebrow">Super Admin · Intake</p>
-      <h1 class="page-title">Demo Requests</h1>
-      <p class="page-sub">Receive, qualify, respond to, and close public demo leads from one queue.</p>
+      <p class="page-eyebrow">{{ lang.t('Super Admin · Intake') }}</p>
+      <h1 class="page-title">{{ lang.t('Demo Requests') }}</h1>
+      <p class="page-sub">{{ lang.t('Receive, qualify, respond to, and close public demo leads from one queue.') }}</p>
     </div>
     <div class="live-pill">
       <span></span>
-      Live intake
+      {{ lang.t('Live intake') }}
     </div>
   </div>
 
@@ -16,35 +16,35 @@
       <div class="stat-card__icon stat-icon--navy">∑</div>
       <div>
         <div class="stat-card__value">{{ kpis().total }}</div>
-        <div class="stat-card__label">Total requests</div>
+        <div class="stat-card__label">{{ lang.t('Total requests') }}</div>
       </div>
     </article>
     <article class="stat-card">
       <div class="stat-card__icon stat-icon--orange">!</div>
       <div>
         <div class="stat-card__value">{{ kpis().new }}</div>
-        <div class="stat-card__label">New</div>
+        <div class="stat-card__label">{{ lang.t('New') }}</div>
       </div>
     </article>
     <article class="stat-card">
       <div class="stat-card__icon stat-icon--teal">↗</div>
       <div>
         <div class="stat-card__value">{{ kpis().contacted }}</div>
-        <div class="stat-card__label">Contacted</div>
+        <div class="stat-card__label">{{ lang.t('Contacted') }}</div>
       </div>
     </article>
     <article class="stat-card">
       <div class="stat-card__icon stat-icon--navy">✓</div>
       <div>
         <div class="stat-card__value">{{ kpis().converted }}</div>
-        <div class="stat-card__label">Converted</div>
+        <div class="stat-card__label">{{ lang.t('Converted') }}</div>
       </div>
     </article>
     <article class="stat-card">
       <div class="stat-card__icon stat-icon--red">↑</div>
       <div>
         <div class="stat-card__value">{{ kpis().urgent }}</div>
-        <div class="stat-card__label">Urgent</div>
+        <div class="stat-card__label">{{ lang.t('Urgent') }}</div>
       </div>
     </article>
   </div>
@@ -61,7 +61,7 @@
           <input
             class="search-input"
             type="text"
-            placeholder="Search name, email, company..."
+            [placeholder]="lang.t('Search name, email, company...')"
             [value]="search()"
             (input)="search.set($any($event.target).value)"
           />
@@ -71,8 +71,8 @@
           [value]="statusFilter()"
           (change)="statusFilter.set($any($event.target).value)"
         >
-          <option value="all">All statuses</option>
-          <option *ngFor="let option of statusOptions" [value]="option.value">{{ option.label }}</option>
+          <option value="all">{{ lang.t('All statuses') }}</option>
+          <option *ngFor="let option of statusOptions" [value]="option.value">{{ lang.t(option.label) }}</option>
         </select>
       </div>
 
@@ -100,8 +100,8 @@
       <ng-template #emptyQueue>
         <div class="empty-state">
           <div class="empty-state__icon">□</div>
-          <strong>No requests found</strong>
-          <span>New public demo requests will appear here automatically.</span>
+          <strong>{{ lang.t('No requests found') }}</strong>
+          <span>{{ lang.t('New public demo requests will appear here automatically.') }}</span>
         </div>
       </ng-template>
     </aside>
@@ -109,7 +109,7 @@
     <section class="panel detail-panel" *ngIf="selected() as request; else noSelection">
       <div class="detail-head">
         <div>
-          <p class="page-eyebrow">Request details</p>
+          <p class="page-eyebrow">{{ lang.t('Request details') }}</p>
           <h2>{{ request.organizationName }}</h2>
           <p>{{ request.fullName }} · {{ request.workEmail }}</p>
         </div>
@@ -118,75 +118,75 @@
 
       <div class="detail-actions">
         <label class="field">
-          <span class="field__label">Status</span>
+          <span class="field__label">{{ lang.t('Status') }}</span>
           <select
             class="field__select"
             [value]="statusOf(request)"
             [disabled]="saving()"
             (change)="updateStatus(request, $any($event.target).value)"
           >
-            <option *ngFor="let option of statusOptions" [value]="option.value">{{ option.label }}</option>
+            <option *ngFor="let option of statusOptions" [value]="option.value">{{ lang.t(option.label) }}</option>
           </select>
         </label>
         <label class="field">
-          <span class="field__label">Priority</span>
+          <span class="field__label">{{ lang.t('Priority') }}</span>
           <select
             class="field__select"
             [value]="priorityOf(request)"
             [disabled]="saving()"
             (change)="updatePriority(request, $any($event.target).value)"
           >
-            <option *ngFor="let option of priorityOptions" [value]="option.value">{{ option.label }}</option>
+            <option *ngFor="let option of priorityOptions" [value]="option.value">{{ lang.t(option.label) }}</option>
           </select>
         </label>
       </div>
 
       <div class="info-grid">
         <div>
-          <span>Email</span>
+          <span>{{ lang.t('Email') }}</span>
           <strong>{{ request.workEmail }}</strong>
         </div>
         <div>
-          <span>Phone</span>
+          <span>{{ lang.t('Phone') }}</span>
           <strong>{{ request.phone || '—' }}</strong>
         </div>
         <div>
-          <span>Organization type</span>
+          <span>{{ lang.t('Organization type') }}</span>
           <strong>{{ request.organizationType }}</strong>
         </div>
         <div>
-          <span>Selected plan</span>
-          <strong>{{ request.selectedPlan || 'Not selected' }}</strong>
+          <span>{{ lang.t('Selected plan') }}</span>
+          <strong>{{ request.selectedPlan || lang.t('Not selected') }}</strong>
         </div>
         <div>
-          <span>Source</span>
+          <span>{{ lang.t('Source') }}</span>
           <strong>{{ request.source || 'landing-page' }}</strong>
         </div>
         <div>
-          <span>Received</span>
+          <span>{{ lang.t('Received') }}</span>
           <strong>{{ formatDate(request.createdAt) }}</strong>
         </div>
       </div>
 
       <article class="message-card">
-        <span class="field__label">Original message</span>
+        <span class="field__label">{{ lang.t('Original message') }}</span>
         <p>{{ request.message }}</p>
       </article>
 
       <div class="workbench">
         <label class="field">
-          <span class="field__label">Treatment notes</span>
+          <span class="field__label">{{ lang.t('Treatment notes') }}</span>
           <textarea
             class="field__textarea"
             rows="5"
             [ngModel]="internalNotes()"
             (ngModelChange)="internalNotes.set($event)"
-            placeholder="Qualification, decision, next step, payment notes..."
+            [placeholder]="lang.t('Qualification, decision, next step, payment notes...')"
           ></textarea>
         </label>
 
         <label class="field">
-          <span class="field__label">Response draft</span>
+          <span class="field__label">{{ lang.t('Response draft') }}</span>
           <textarea
             class="field__textarea response-textarea"
             rows="8"
@@ -198,13 +198,13 @@
 
       <div class="button-row">
         <button class="btn-ghost" type="button" (click)="saveTreatment(request)" [disabled]="saving()">
-          Save treatment
+          {{ lang.t('Save treatment') }}
         </button>
         <button class="btn-ghost" type="button" (click)="call(request)" [disabled]="!request.phone">
-          Call
+          {{ lang.t('Call') }}
         </button>
         <button class="btn-primary" type="button" (click)="respond(request)" [disabled]="saving()">
-          Respond by email
+          {{ lang.t('Respond by email') }}
         </button>
       </div>
     </section>
@@ -213,8 +213,8 @@
       <section class="panel detail-panel">
         <div class="empty-state">
           <div class="empty-state__icon">◇</div>
-          <strong>Select a request</strong>
-          <span>Choose a lead from the intake queue to review and respond.</span>
+          <strong>{{ lang.t('Select a request') }}</strong>
+          <span>{{ lang.t('Choose a lead from the intake queue to review and respond.') }}</span>
         </div>
       </section>
     </ng-template>
