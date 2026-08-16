@@ -1,4 +1,4 @@
-<div class="org-login-container">
+<div class="org-login-container" appPublicTranslate>
   <div class="org-login-wrapper">
     <div class="org-login-card">
       <!-- Header -->
@@ -6,12 +6,12 @@
         <div class="back-link-wrap">
           <a routerLink="/" class="back-link">
             <span class="back-icon">←</span>
-            Back
+            Retour
           </a>
         </div>
         <div class="logo-section">
-          <h1 class="title">Organization Login</h1>
-          <p class="subtitle">Sign in to your professional organization account</p>
+          <h1 class="title">Connexion organisation</h1>
+          <p class="subtitle">Connectez-vous à votre compte d'organisation professionnelle</p>
         </div>
       </div>
 
@@ -21,7 +21,7 @@
 
           <!-- Organization Selection -->
           <div class="form-group">
-            <label class="label">Organization</label>
+            <label class="label">Organisation</label>
             <div class="org-search-wrapper">
               <div class="org-input-container">
                 <span class="input-icon">🏢</span>
@@ -29,7 +29,7 @@
                   class="input org-search-input"
                   type="text"
                   formControlName="orgSearch"
-                  placeholder="Search your organization..."
+                  placeholder="Rechercher votre organisation..."
                   autocomplete="off"
                 />
                 <button
@@ -37,7 +37,7 @@
                   type="button"
                   class="clear-btn"
                   (click)="clearSelection()"
-                  title="Clear selection">
+                  title="Effacer la sélection">
                   ✕
                 </button>
               </div>
@@ -58,7 +58,7 @@
 
               <!-- No results -->
               <div class="org-no-results" *ngIf="showOrgDropdown() && organizations().length === 0 && searchTerm()">
-                <p class="no-results-text">No organizations found</p>
+                <p class="no-results-text">Aucune organisation trouvée</p>
               </div>
 
               <!-- Selected Organization Display -->
@@ -73,31 +73,31 @@
               </div>
             </div>
             <small class="help error-text" *ngIf="form.get('orgSearch')?.invalid && form.get('orgSearch')?.touched">
-              ⚠️ Please select an organization
+              ⚠️ Veuillez sélectionner une organisation
             </small>
           </div>
 
           <!-- Email Field -->
           <div class="form-group">
-            <label class="label">Email Address</label>
+            <label class="label">Adresse courriel</label>
             <div class="input-wrapper">
               <span class="input-icon">✉️</span>
               <input
                 class="input"
                 type="email"
                 formControlName="email"
-                placeholder="your.email@organization.com"
+                placeholder="votre.courriel@organisation.com"
                 autocomplete="email"
               />
             </div>
             <small class="help error-text" *ngIf="form.get('email')?.invalid && form.get('email')?.touched">
-              ⚠️ Valid email address required
+              ⚠️ Adresse courriel valide requise
             </small>
           </div>
 
           <!-- Password Field -->
           <div class="form-group">
-            <label class="label">Password</label>
+            <label class="label">Mot de passe</label>
             <div class="input-wrapper">
               <span class="input-icon">🔒</span>
               <input
@@ -109,7 +109,7 @@
               />
             </div>
             <small class="help error-text" *ngIf="form.get('password')?.invalid && form.get('password')?.touched">
-              ⚠️ Minimum 6 characters required
+              ⚠️ 6 caractères minimum requis
             </small>
           </div>
 
@@ -124,28 +124,28 @@
             class="btn btn-primary btn-block"
             type="submit"
             [disabled]="loading() || !selectedOrg()">
-            <span *ngIf="!loading()">Sign In</span>
-            <span *ngIf="loading()">Signing in...</span>
+            <span *ngIf="!loading()">Se connecter</span>
+            <span *ngIf="loading()">Connexion en cours...</span>
           </button>
 
           <!-- Divider -->
           <div class="divider">
-            <span>or</span>
+            <span>ou</span>
           </div>
 
           <!-- Links -->
           <div class="footer-links">
             <p class="footer-link-item">
-              New to your organization?
-              <a routerLink="/register-organization" class="link">Register here</a>
+              Nouveau dans votre organisation ?
+              <a routerLink="/register-organization" class="link">Inscrivez-vous ici</a>
             </p>
             <p class="footer-link-item">
-              Forgot your password?
-              <a routerLink="/reset" class="link">Reset it here</a>
+              Mot de passe oublié ?
+              <a routerLink="/reset" class="link">Réinitialisez-le ici</a>
             </p>
             <p class="footer-link-item">
-              Looking for individual access?
-              <a routerLink="/signup" class="link">Create a learner profile</a>
+              Vous cherchez un accès individuel ?
+              <a routerLink="/signup" class="link">Créer un profil apprenant</a>
             </p>
           </div>
         </form>

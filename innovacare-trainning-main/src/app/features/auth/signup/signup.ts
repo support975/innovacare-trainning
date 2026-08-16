@@ -7,11 +7,12 @@ import { AuthService } from '../../../core/auth';
 import { EnrollmentService } from '../../../shared/services/enrollement';
 import { CourseCatalogService } from '../../publics/catalogue-page';
 import { EventsService } from '../../../shared/services/events.service';
+import { PublicTranslateDirective } from '../../../shared/directives/public-translate.directive';
 
 @Component({
   standalone: true,
   selector: 'app-signup',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, PublicTranslateDirective],
   templateUrl: './signup.html',
   styleUrls: ['./signup.css'],
 })
@@ -150,25 +151,25 @@ export class SignupComponent {
     const code = String(error?.code ?? '');
 
     if (code.includes('auth/email-already-in-use')) {
-      return 'An account already exists for this email. Sign in instead.';
+      return 'Un compte existe déjà pour ce courriel. Connectez-vous plutôt.';
     }
 
     if (code.includes('auth/weak-password')) {
-      return 'Use a stronger password with at least 8 characters.';
+      return 'Utilisez un mot de passe plus robuste d\'au moins 8 caractères.';
     }
 
     if (code.includes('permission-denied')) {
       if (this.selectedCourseId()) {
-        return 'Your learner profile was created, but this course request could not be submitted. Confirm the organization course link with the admin.';
+        return 'Votre profil apprenant a été créé, mais cette demande de cours n\'a pas pu être soumise. Confirmez le lien du cours avec l\'administrateur de l\'organisation.';
       }
       if (this.selectedEventId()) {
-        return 'Your learner profile was created, but this webinar registration could not be submitted. Please try registering again from the webinar page.';
+        return 'Votre profil apprenant a été créé, mais cette inscription au webinaire n\'a pas pu être soumise. Veuillez réessayer de vous inscrire depuis la page du webinaire.';
       }
-      return 'This course is not available for public access. Choose a public course or request access from the organization.';
+      return 'Ce cours n\'est pas disponible en accès public. Choisissez un cours public ou demandez l\'accès à l\'organisation.';
     }
 
     if (this.selectedEventId() && (code.includes('internal') || code.includes('unavailable') || code.includes('functions/'))) {
-      return 'Your learner profile was created, but we couldn’t start checkout for this webinar. Please sign in and try registering again from the webinar page.';
+      return 'Votre profil apprenant a été créé, mais nous n\'avons pas pu démarrer le paiement pour ce webinaire. Veuillez vous connecter et réessayer de vous inscrire depuis la page du webinaire.';
     }
 
     // Firebase surfaces some failures (network/CORS, unhandled function
@@ -176,6 +177,6 @@ export class SignupComponent {
     // never show that raw string to the user.
     const message = String(error?.message ?? '').trim();
     const looksTechnical = !message || /^[a-z0-9_-]+$/i.test(message) || message.length > 160;
-    return looksTechnical ? 'Unable to create your learner profile. Please try again.' : message;
+    return looksTechnical ? 'Impossible de créer votre profil apprenant. Veuillez réessayer.' : message;
   }
 }

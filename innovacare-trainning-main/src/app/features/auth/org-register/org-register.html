@@ -1,12 +1,12 @@
-<div class="org-register-container">
+<div class="org-register-container" appPublicTranslate>
   <div class="org-register-wrapper">
     <!-- Registration Complete -->
     <div class="registration-complete" *ngIf="registrationComplete()">
       <div class="success-card">
         <div class="success-icon">✓</div>
-        <h2 class="success-title">Welcome to {{ selectedOrg()?.name }}!</h2>
-        <p class="success-message">Your account has been created successfully.</p>
-        <p class="success-submessage">Redirecting to your dashboard...</p>
+        <h2 class="success-title">Bienvenue chez {{ selectedOrg()?.name }} !</h2>
+        <p class="success-message">Votre compte a été créé avec succès.</p>
+        <p class="success-submessage">Redirection vers votre tableau de bord...</p>
         <div class="success-spinner"></div>
       </div>
     </div>
@@ -18,24 +18,24 @@
         <div class="back-link-wrap">
           <a routerLink="/" class="back-link">
             <span class="back-icon">←</span>
-            Back to Home
+            Retour à l'accueil
           </a>
         </div>
         <div class="logo-section">
-          <h1 class="title">Register to Your Organization</h1>
-          <p class="subtitle">Create your professional account</p>
+          <h1 class="title">Inscription à votre organisation</h1>
+          <p class="subtitle">Créez votre compte professionnel</p>
         </div>
 
         <!-- Progress Indicator -->
         <div class="progress-container">
           <div class="progress-step" [class.active]="currentStep() === 'org-selection'">
             <div class="progress-number">1</div>
-            <div class="progress-label">Select Organization</div>
+            <div class="progress-label">Sélectionner l'organisation</div>
           </div>
           <div class="progress-divider"></div>
           <div class="progress-step" [class.active]="currentStep() === 'account-details'">
             <div class="progress-number">2</div>
-            <div class="progress-label">Create Account</div>
+            <div class="progress-label">Créer le compte</div>
           </div>
         </div>
       </div>
@@ -46,11 +46,11 @@
 
           <!-- Step 1: Organization Selection -->
           <div class="form-step" *ngIf="currentStep() === 'org-selection'">
-            <div class="step-title">Find Your Organization</div>
-            <p class="step-description">Search for your professional organization by name, code, or type.</p>
+            <div class="step-title">Trouvez votre organisation</div>
+            <p class="step-description">Recherchez votre organisation professionnelle par nom, code ou type.</p>
 
             <div class="form-group">
-              <label class="label">Your Organization</label>
+              <label class="label">Votre organisation</label>
               <div class="org-search-wrapper">
                 <div class="org-input-container">
                   <span class="input-icon">🏢</span>
@@ -58,7 +58,7 @@
                     class="input org-search-input"
                     type="text"
                     formControlName="orgSearch"
-                    placeholder="Search by name or code..."
+                    placeholder="Rechercher par nom ou code..."
                     autocomplete="off"
                   />
                   <button
@@ -66,7 +66,7 @@
                     type="button"
                     class="clear-btn"
                     (click)="clearSelection()"
-                    title="Clear selection">
+                    title="Effacer la sélection">
                     ✕
                   </button>
                 </div>
@@ -87,8 +87,8 @@
 
                 <!-- No results -->
                 <div class="org-no-results" *ngIf="showOrgDropdown() && organizations().length === 0 && searchTerm()">
-                  <p class="no-results-text">No organizations found</p>
-                  <p class="no-results-hint">Try searching with a different name or code</p>
+                  <p class="no-results-text">Aucune organisation trouvée</p>
+                  <p class="no-results-hint">Essayez de rechercher avec un autre nom ou code</p>
                 </div>
 
                 <!-- Selected Organization Display -->
@@ -103,7 +103,7 @@
                 </div>
               </div>
               <small class="help error-text" *ngIf="form.get('orgSearch')?.invalid && form.get('orgSearch')?.touched">
-                ⚠️ Please select an organization
+                ⚠️ Veuillez sélectionner une organisation
               </small>
             </div>
 
@@ -113,63 +113,63 @@
               class="btn btn-primary btn-block"
               [disabled]="!selectedOrg()"
               (click)="currentStep.set('account-details')">
-              Continue to Account Details
+              Continuer vers les détails du compte
             </button>
           </div>
 
           <!-- Step 2: Account Details -->
           <div class="form-step" *ngIf="currentStep() === 'account-details'">
-            <div class="step-title">Create Your Account</div>
-            <p class="step-description">Set up your professional account for {{ selectedOrg()?.name }}</p>
+            <div class="step-title">Créez votre compte</div>
+            <p class="step-description">Configurez votre compte professionnel pour {{ selectedOrg()?.name }}</p>
 
             <!-- Selected Org Display -->
             <div class="selected-org-card">
               <div class="selected-org-icon">🏢</div>
               <div class="selected-org-text">
-                <div class="selected-org-label">Organization</div>
+                <div class="selected-org-label">Organisation</div>
                 <div class="selected-org-value">{{ selectedOrg()?.name }}</div>
               </div>
-              <button type="button" class="change-org-btn" (click)="goBack()">Change</button>
+              <button type="button" class="change-org-btn" (click)="goBack()">Modifier</button>
             </div>
 
             <!-- Display Name -->
             <div class="form-group">
-              <label class="label">Full Name</label>
+              <label class="label">Nom complet</label>
               <div class="input-wrapper">
                 <span class="input-icon">👤</span>
                 <input
                   class="input"
                   type="text"
                   formControlName="displayName"
-                  placeholder="John Doe"
+                  placeholder="Jean Dupont"
                 />
               </div>
               <small class="help error-text" *ngIf="form.get('displayName')?.invalid && form.get('displayName')?.touched">
-                ⚠️ Full name is required (minimum 2 characters)
+                ⚠️ Le nom complet est requis (minimum 2 caractères)
               </small>
             </div>
 
             <!-- Email -->
             <div class="form-group">
-              <label class="label">Email Address</label>
+              <label class="label">Adresse courriel</label>
               <div class="input-wrapper">
                 <span class="input-icon">✉️</span>
                 <input
                   class="input"
                   type="email"
                   formControlName="email"
-                  placeholder="your.email@professional.com"
+                  placeholder="votre.courriel@professionnel.com"
                   autocomplete="email"
                 />
               </div>
               <small class="help error-text" *ngIf="form.get('email')?.invalid && form.get('email')?.touched">
-                ⚠️ Valid email address required
+                ⚠️ Adresse courriel valide requise
               </small>
             </div>
 
             <!-- Password -->
             <div class="form-group">
-              <label class="label">Password</label>
+              <label class="label">Mot de passe</label>
               <div class="input-wrapper">
                 <span class="input-icon">🔒</span>
                 <input
@@ -181,16 +181,16 @@
                 />
               </div>
               <small class="help" *ngIf="!form.get('password')?.value">
-                Minimum 8 characters required
+                8 caractères minimum requis
               </small>
               <small class="help error-text" *ngIf="form.get('password')?.invalid && form.get('password')?.touched">
-                ⚠️ Password must be at least 8 characters
+                ⚠️ Le mot de passe doit contenir au moins 8 caractères
               </small>
             </div>
 
             <!-- Confirm Password -->
             <div class="form-group">
-              <label class="label">Confirm Password</label>
+              <label class="label">Confirmer le mot de passe</label>
               <div class="input-wrapper">
                 <span class="input-icon">🔒</span>
                 <input
@@ -202,7 +202,7 @@
                 />
               </div>
               <small class="help error-text" *ngIf="passwordMismatch">
-                ⚠️ Passwords do not match
+                ⚠️ Les mots de passe ne correspondent pas
               </small>
             </div>
 
@@ -215,13 +215,13 @@
                   class="checkbox-input"
                 />
                 <span class="checkbox-text">
-                  I agree to the
-                  <a href="#" class="link">Terms of Service</a> and
-                  <a href="#" class="link">Privacy Policy</a>
+                  J'accepte les
+                  <a href="#" class="link">conditions d'utilisation</a> et la
+                  <a href="#" class="link">politique de confidentialité</a>
                 </span>
               </label>
               <small class="help error-text" *ngIf="form.get('agreeTerms')?.invalid && form.get('agreeTerms')?.touched">
-                ⚠️ You must accept the terms to continue
+                ⚠️ Vous devez accepter les conditions pour continuer
               </small>
             </div>
 
@@ -236,8 +236,8 @@
               class="btn btn-primary btn-block"
               type="submit"
               [disabled]="loading()">
-              <span *ngIf="!loading()">Create Account & Register</span>
-              <span *ngIf="loading()">Creating account...</span>
+              <span *ngIf="!loading()">Créer le compte et s'inscrire</span>
+              <span *ngIf="loading()">Création du compte...</span>
             </button>
 
             <!-- Back Button -->
@@ -246,14 +246,14 @@
               class="btn btn-secondary btn-block"
               (click)="goBack()"
               [disabled]="loading()">
-              ← Back
+              ← Retour
             </button>
 
             <!-- Footer Links -->
             <div class="footer-links">
               <p class="footer-link-item">
-                Already have an account?
-                <a routerLink="/login-org" class="link">Sign in here</a>
+                Vous avez déjà un compte ?
+                <a routerLink="/login-org" class="link">Connectez-vous ici</a>
               </p>
             </div>
           </div>

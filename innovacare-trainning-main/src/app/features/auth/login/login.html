@@ -1,10 +1,10 @@
-<div class="auth-container">
+<div class="auth-container" appPublicTranslate>
     <div class="auth-wrapper">
       <div class="card auth-card">
         <div class="card-header">
           <div class="logo-section" style="text-align: center;">
-            <h1 class="title">Welcome Back</h1>
-            <p class="subtitle">INNOVACARE TRAINING PLATFORM</p>
+            <h1 class="title">Bon retour</h1>
+            <p class="subtitle">PLATEFORME INNOVACARE TRAINING</p>
           </div>
         </div>
 
@@ -12,37 +12,37 @@
           <form [formGroup]="form" (ngSubmit)="submit()" class="form">
             <!-- Email Field -->
             <div class="form-group">
-              <label class="label">Email Address</label>
+              <label class="label">Adresse courriel</label>
               <div class="input-wrapper">
                 <span class="input-icon">✉️</span>
-                <input 
-                  class="input" 
-                  type="email" 
-                  formControlName="email" 
-                  placeholder="you@clinic.com"
+                <input
+                  class="input"
+                  type="email"
+                  formControlName="email"
+                  placeholder="vous@clinique.com"
                   autocomplete="email"
                 />
               </div>
               <small class="help error-text" *ngIf="form.controls.email.invalid && form.controls.email.touched">
-                ⚠️ Valid email address required
+                ⚠️ Adresse courriel valide requise
               </small>
             </div>
 
             <!-- Password Field -->
             <div class="form-group">
-              <label class="label">Password</label>
+              <label class="label">Mot de passe</label>
               <div class="input-wrapper">
                 <span class="input-icon">🔒</span>
-                <input 
-                  class="input" 
-                  type="password" 
-                  formControlName="password" 
+                <input
+                  class="input"
+                  type="password"
+                  formControlName="password"
                   placeholder="••••••••"
                   autocomplete="current-password"
                 />
               </div>
               <small class="help error-text" *ngIf="form.controls.password.invalid && form.controls.password.touched">
-                ⚠️ Minimum 6 characters required
+                ⚠️ 6 caractères minimum requis
               </small>
             </div>
 
@@ -53,48 +53,48 @@
             </div>
 
             <!-- Sign In Button -->
-            <button 
-              class="btn btn-primary" 
-              type="submit" 
+            <button
+              class="btn btn-primary"
+              type="submit"
               [disabled]="loading()"
               [class.loading]="loading()">
-              <span *ngIf="!loading()">Sign In</span>
-              <span *ngIf="loading()">Signing in...</span>
+              <span *ngIf="!loading()">Se connecter</span>
+              <span *ngIf="loading()">Connexion en cours...</span>
             </button>
 
             <!-- Divider -->
             <div class="divider">
-              <span>or</span>
+              <span>ou</span>
             </div>
 
             <!-- Google Sign In Button -->
-            <button 
-              class="btn btn-google" 
-              type="button" 
-              (click)="google()" 
+            <button
+              class="btn btn-google"
+              type="button"
+              (click)="google()"
               [disabled]="loading()">
               <span class="google-icon">🔐</span>
-              Sign in with Google
+              Se connecter avec Google
             </button>
           </form>
 
           <!-- Forgot Password & Back to Home -->
           <div class="footer-links">
             <p class="forgot-password">
-              Need individual access? <a routerLink="/signup" class="link">Create a learner profile</a>
+              Besoin d'un accès individuel ? <a routerLink="/signup" class="link">Créer un profil apprenant</a>
             </p>
             <p class="forgot-password">
-              Forgot your password? <a routerLink="/reset" class="link">Reset it here</a>
+              Mot de passe oublié ? <a routerLink="/reset" class="link">Réinitialisez-le ici</a>
             </p>
-            <button 
-              routerLink="/" 
-              class="btn btn-link" 
+            <button
+              routerLink="/"
+              class="btn btn-link"
               type="button">
-              ← Back to Home
+              ← Retour à l'accueil
             </button>
           </div>
         </div>
       </div>
     </div>
   </div>
-  
+
