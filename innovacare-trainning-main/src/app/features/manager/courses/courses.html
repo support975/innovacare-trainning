@@ -326,25 +326,25 @@
                   cdkDrag
                 >
                   <div class="block-bar">
-                    <span class="drag-handle" cdkDragHandle title="Drag to reorder">⠿</span>
+                    <span class="drag-handle" cdkDragHandle [title]="lang.t('Drag to reorder')">⠿</span>
                     <span class="block-type-badge">{{ b.value.type }}</span>
                     <select class="block-type-select" formControlName="type" (change)="onBlockTypeChange(b)">
-                      <option value="heading">Heading</option>
-                      <option value="text">Text</option>
-                      <option value="image">Image</option>
-                      <option value="audio">Audio</option>
-                      <option value="video">Video</option>
-                      <option value="hero">Hero</option>
-                      <option value="accordion">Accordion</option>
-                      <option value="tabs">Tabs</option>
-                      <option value="cardStack">Card stack</option>
-                      <option value="quizIntro">Quiz intro</option>
-                      <option value="slideDeck">Slide deck</option>
-                      <option value="carousel">Carousel</option>
-                      <option value="callout">Callout</option>
-                      <option value="quiz">Quiz</option>
+                      <option value="heading">{{ lang.t('Heading') }}</option>
+                      <option value="text">{{ lang.t('Text') }}</option>
+                      <option value="image">{{ lang.t('Image') }}</option>
+                      <option value="audio">{{ lang.t('Audio') }}</option>
+                      <option value="video">{{ lang.t('Video') }}</option>
+                      <option value="hero">{{ lang.t('Hero') }}</option>
+                      <option value="accordion">{{ lang.t('Accordion') }}</option>
+                      <option value="tabs">{{ lang.t('Tabs') }}</option>
+                      <option value="cardStack">{{ lang.t('Card stack') }}</option>
+                      <option value="quizIntro">{{ lang.t('Quiz intro') }}</option>
+                      <option value="slideDeck">{{ lang.t('Slide deck') }}</option>
+                      <option value="carousel">{{ lang.t('Carousel') }}</option>
+                      <option value="callout">{{ lang.t('Callout') }}</option>
+                      <option value="quiz">{{ lang.t('Quiz') }}</option>
                     </select>
-                    <button type="button" class="btn-ghost-sm" (click)="removeBlock(si, li, bi)">Remove</button>
+                    <button type="button" class="btn-ghost-sm" (click)="removeBlock(si, li, bi)">{{ lang.t('Remove') }}</button>
                   </div>
 
                   <!-- Heading -->
@@ -370,7 +370,7 @@
                   <div *ngIf="b.value.type === 'text'" class="block-body">
                     <div class="editor-grid">
                       <div class="editor">
-                        <label class="field-label">HTML</label>
+                        <label class="field-label">{{ lang.t('HTML') }}</label>
                         <textarea class="field-input mono" rows="6" formControlName="html" placeholder="<p>…</p>"></textarea>
                       </div>
                       <div class="preview">
@@ -729,23 +729,23 @@
     <!-- Form Actions -->
     <div class="form-actions">
       <button class="btn-primary" type="submit" [disabled]="savingCourse">
-        {{ savingCourse ? (editId ? 'Updating course...' : 'Creating course...') : (editId ? 'Update course' : 'Create course') }}
+        {{ savingCourse ? (editId ? lang.t('Updating course...') : lang.t('Creating course...')) : (editId ? lang.t('Update course') : lang.t('Create course')) }}
       </button>
       <button type="button" class="btn-outline" [disabled]="savingCourse" (click)="previewCurrentFormJson()">
-        {{ currentJsonPreview ? 'Refresh JSON preview' : 'Preview JSON' }}
+        {{ currentJsonPreview ? lang.t('Refresh JSON preview') : lang.t('Preview JSON') }}
       </button>
-      <button *ngIf="editId" type="button" class="btn-outline" [disabled]="savingCourse" (click)="cancelEdit()">Cancel edit</button>
-      <span *ngIf="loadingEdit" class="loading-text">Loading…</span>
+      <button *ngIf="editId" type="button" class="btn-outline" [disabled]="savingCourse" (click)="cancelEdit()">{{ lang.t('Cancel edit') }}</button>
+      <span *ngIf="loadingEdit" class="loading-text">{{ lang.t('Loading…') }}</span>
       <span *ngIf="saveError" class="msg msg--error">{{ saveError }}</span>
     </div>
 
     <div class="current-json-preview" *ngIf="currentJsonPreview">
       <div class="current-json-preview__head">
         <div>
-          <strong>Course JSON preview</strong>
-          <div class="field-hint">Snapshot of the current form. Refresh after making changes.</div>
+          <strong>{{ lang.t('Course JSON preview') }}</strong>
+          <div class="field-hint">{{ lang.t('Snapshot of the current form. Refresh after making changes.') }}</div>
         </div>
-        <button type="button" class="btn-ghost" (click)="closeCurrentJsonPreview()">Close</button>
+        <button type="button" class="btn-ghost" (click)="closeCurrentJsonPreview()">{{ lang.t('Close') }}</button>
       </div>
       <pre class="json-preview-code">{{ currentJsonPreview }}</pre>
     </div>
@@ -760,8 +760,8 @@
       </svg>
     </div>
     <div>
-      <div class="info-panel__title">Course Library</div>
-      <div class="info-panel__sub">Course creation and JSON import is reserved for super admins. Managers and org admins can browse the existing library here.</div>
+      <div class="info-panel__title">{{ lang.t('Course Library') }}</div>
+      <div class="info-panel__sub">{{ lang.t('Course creation and JSON import is reserved for super admins. Managers and org admins can browse the existing library here.') }}</div>
     </div>
   </div>
 
@@ -769,9 +769,9 @@
   <div class="panel list-panel">
     <div class="panel__head">
       <div>
-        <div class="panel__title">All Courses</div>
+        <div class="panel__title">{{ lang.t('All Courses') }}</div>
         <div class="panel__sub">
-          {{ filteredCourses().length }} of {{ courses().length }} course{{ courses().length === 1 ? '' : 's' }} shown. Sorted by course order, then title.
+          {{ filteredCourses().length }} {{ lang.t('of') }} {{ courses().length }} {{ courses().length === 1 ? lang.t('course') : lang.t('courses') }} {{ lang.t('shown. Sorted by course order, then title.') }}
         </div>
       </div>
     </div>
@@ -782,7 +782,7 @@
         <input
           class="course-search__input"
           type="search"
-          placeholder="Search title, tags, instructor..."
+          [placeholder]="lang.t('Search title, tags, instructor...')"
           [value]="courseSearch()"
           (input)="courseSearch.set($any($event.target).value)"
         />
@@ -799,16 +799,16 @@
         class="course-filter-select"
         [value]="courseStatusFilter()"
         (change)="courseStatusFilter.set($any($event.target).value)">
-        <option value="all">All status</option>
-        <option value="active">Active only</option>
-        <option value="inactive">Inactive only</option>
+        <option value="all">{{ lang.t('All status') }}</option>
+        <option value="active">{{ lang.t('Active only') }}</option>
+        <option value="inactive">{{ lang.t('Inactive only') }}</option>
       </select>
 
       <select
         class="course-filter-select"
         [value]="courseLangFilter()"
         (change)="courseLangFilter.set($any($event.target).value)">
-        <option value="all">All languages</option>
+        <option value="all">{{ lang.t('All languages') }}</option>
         <option value="EN">EN</option>
         <option value="FR">FR</option>
         <option value="ES">ES</option>
@@ -818,11 +818,11 @@
         class="course-filter-select"
         [value]="courseTypeFilter()"
         (change)="courseTypeFilter.set($any($event.target).value)">
-        <option value="all">All types</option>
-        <option value="Health">Health</option>
-        <option value="It">IT</option>
-        <option value="Hr">HR</option>
-        <option value="safety">Safety</option>
+        <option value="all">{{ lang.t('All types') }}</option>
+        <option value="Health">{{ lang.t('Health') }}</option>
+        <option value="It">{{ lang.t('IT') }}</option>
+        <option value="Hr">{{ lang.t('HR') }}</option>
+        <option value="safety">{{ lang.t('Safety') }}</option>
       </select>
 
       <button
@@ -830,7 +830,7 @@
         type="button"
         *ngIf="hasCourseFilters()"
         (click)="clearCourseFilters()">
-        Clear filters
+        {{ lang.t('Clear filters') }}
       </button>
     </div>
 
@@ -839,7 +839,7 @@
 
         <div class="course-card__main">
           <div class="course-sort-box" *ngIf="canManageCourses">
-            <span class="course-sort-box__label">Order</span>
+            <span class="course-sort-box__label">{{ lang.t('Order') }}</span>
             <span class="course-sort-box__value">{{ courseOrderLabel(c, courseIndex) }}</span>
           </div>
 
@@ -857,13 +857,13 @@
             <div class="course-card__meta">
               <span class="meta-item" *ngIf="c.lang">{{ c.lang }}</span>
               <span class="meta-sep" *ngIf="c.durationMin">·</span>
-              <span class="meta-item" *ngIf="c.durationMin">{{ c.durationMin }} min</span>
+              <span class="meta-item" *ngIf="c.durationMin">{{ c.durationMin }} {{ lang.t('min') }}</span>
               <span class="meta-sep" *ngIf="c.lecturer">·</span>
               <span class="meta-item" *ngIf="c.lecturer">{{ c.lecturer }}</span>
               <span class="meta-sep" *ngIf="c.sections && c.sections.length">·</span>
-              <span class="meta-item" *ngIf="c.sections && c.sections.length">{{ c.sections.length }} sections</span>
+              <span class="meta-item" *ngIf="c.sections && c.sections.length">{{ c.sections.length }} {{ lang.t('sections') }}</span>
               <span class="meta-sep" *ngIf="c.passingScore">·</span>
-              <span class="meta-item score-item" *ngIf="c.passingScore">{{ c.passingScore }}% pass</span>
+              <span class="meta-item score-item" *ngIf="c.passingScore">{{ c.passingScore }}% {{ lang.t('pass') }}</span>
             </div>
 
             <div class="course-card__tags" *ngIf="c.tags && c.tags.length">
@@ -872,10 +872,10 @@
           </div>
 
           <div class="course-card__badges">
-            <span [class]="'badge badge--' + (c.active ? 'active' : 'inactive')">{{ c.active ? 'Active' : 'Inactive' }}</span>
+            <span [class]="'badge badge--' + (c.active ? 'active' : 'inactive')">{{ c.active ? lang.t('Active') : lang.t('Inactive') }}</span>
             <span class="badge badge--kind" *ngIf="c.kind">{{ c.kind }}</span>
             <span class="badge badge--type" *ngIf="c.type">{{ c.type }}</span>
-            <span class="badge badge--locked" *ngIf="c.lockedSequence">Locked</span>
+            <span class="badge badge--locked" *ngIf="c.lockedSequence">{{ lang.t('Locked') }}</span>
           </div>
         </div>
 
@@ -884,7 +884,7 @@
             class="btn-action btn-action--icon"
             type="button"
             [disabled]="!canMoveCourse(c, -1)"
-            title="Move course up"
+            [title]="lang.t('Move course up')"
             (click)="moveCourse(c, -1)">
             ↑
           </button>
@@ -893,7 +893,7 @@
             class="btn-action btn-action--icon"
             type="button"
             [disabled]="!canMoveCourse(c, 1)"
-            title="Move course down"
+            [title]="lang.t('Move course down')"
             (click)="moveCourse(c, 1)">
             ↓
           </button>
@@ -903,7 +903,7 @@
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
             </svg>
-            Edit
+            {{ lang.t('Edit') }}
           </button>
 
           <button
@@ -916,7 +916,7 @@
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
             </svg>
-            {{ duplicatingId === c.id ? 'Duplicating…' : 'Duplicate' }}
+            {{ duplicatingId === c.id ? lang.t('Duplicating…') : lang.t('Duplicate') }}
           </button>
 
           <button class="btn-action" type="button" (click)="exportCourseJson(c)">
@@ -925,7 +925,7 @@
               <polyline points="7 10 12 15 17 10"/>
               <line x1="12" y1="15" x2="12" y2="3"/>
             </svg>
-            Export JSON
+            {{ lang.t('Export JSON') }}
           </button>
 
           <button class="btn-action btn-action--teal" type="button" (click)="open(c)">
@@ -934,7 +934,7 @@
               <line x1="12" y1="8" x2="12" y2="16"/>
               <line x1="8" y1="12" x2="16" y2="12"/>
             </svg>
-            Add Extras
+            {{ lang.t('Add Extras') }}
           </button>
 
           <button
@@ -949,20 +949,20 @@
               <line x1="10" y1="11" x2="10" y2="17"/>
               <line x1="14" y1="11" x2="14" y2="17"/>
             </svg>
-            {{ deletingId === c.id ? 'Deleting…' : 'Delete' }}
+            {{ deletingId === c.id ? lang.t('Deleting…') : lang.t('Delete') }}
           </button>
         </div>
       </div>
 
       <div class="empty-state" *ngIf="!courses().length">
         <div class="empty-state__icon">&#128218;</div>
-        <span>No courses yet. Create the first one above.</span>
+        <span>{{ lang.t('No courses yet. Create the first one above.') }}</span>
       </div>
 
       <div class="empty-state" *ngIf="courses().length && !filteredCourses().length">
         <div class="empty-state__icon">&#8981;</div>
-        <span>No courses match the current filters.</span>
-        <button type="button" class="btn-outline" (click)="clearCourseFilters()">Clear filters</button>
+        <span>{{ lang.t('No courses match the current filters.') }}</span>
+        <button type="button" class="btn-outline" (click)="clearCourseFilters()">{{ lang.t('Clear filters') }}</button>
       </div>
     </div>
   </div>

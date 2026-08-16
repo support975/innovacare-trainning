@@ -8,6 +8,7 @@ import { SponsorsService } from '../../../shared/services/sponsors.service';
 import { SuperAdminOrganizationsService } from '../services/super-admin-organizations';
 import type { SuperAdminOrganization } from '../models/super-admin.models';
 import type { Sponsor } from '../../../data/models';
+import { LanguageService } from '../../../shared/services/language';
 
 type SponsorForm = {
   id: string;
@@ -45,6 +46,7 @@ function emptyForm(): SponsorForm {
 export class SponsorsAuthoringComponent {
   private readonly sponsorsSvc = inject(SponsorsService);
   private readonly orgsSvc = inject(SuperAdminOrganizationsService);
+  readonly lang = inject(LanguageService);
 
   readonly organizations = toSignal(this.orgsSvc.list(), { initialValue: [] as SuperAdminOrganization[] });
   readonly selectedOrgId = signal('');
@@ -96,7 +98,7 @@ export class SponsorsAuthoringComponent {
     const name = this.form.name.trim();
     if (!ownerOrgId || !name) {
       this.error.set(true);
-      this.notice.set('Owning organization and sponsor name are required.');
+      this.notice.set(this.lang.t('Owning organization and sponsor name are required.'));
       return;
     }
 
@@ -120,10 +122,10 @@ export class SponsorsAuthoringComponent {
         const id = await this.sponsorsSvc.create(payload as Omit<Sponsor, 'id' | 'createdAt' | 'updatedAt'>);
         this.form.id = id;
       }
-      this.notice.set(wasEditing ? 'Sponsor saved.' : 'Sponsor created.');
+      this.notice.set(wasEditing ? this.lang.t('Sponsor saved.') : this.lang.t('Sponsor created.'));
     } catch (err: any) {
       this.error.set(true);
-      this.notice.set(err?.message || 'Unable to save sponsor.');
+      this.notice.set(err?.message || this.lang.t('Unable to save sponsor.'));
     } finally {
       this.busy.set(false);
     }
@@ -136,11 +138,11 @@ export class SponsorsAuthoringComponent {
     this.error.set(false);
     try {
       await this.sponsorsSvc.delete(record.id);
-      this.notice.set('Sponsor deleted.');
+      this.notice.set(this.lang.t('Sponsor deleted.'));
       if (this.form.id === record.id) this.resetForm();
     } catch (err: any) {
       this.error.set(true);
-      this.notice.set(err?.message || 'Unable to delete sponsor.');
+      this.notice.set(err?.message || this.lang.t('Unable to delete sponsor.'));
     } finally {
       this.busy.set(false);
     }

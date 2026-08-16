@@ -100,7 +100,7 @@ export class CourseAssign {
 
   async syncExistingAssignments() {
     const confirmed = window.confirm(
-      'Sync existing organization-course assignments into course visibility rules?'
+      this.lang.t('Sync existing organization-course assignments into course visibility rules?')
     );
     if (!confirmed) return;
 
@@ -117,7 +117,7 @@ export class CourseAssign {
         `removed ${result.removedEnrollments} stale learner assignment${result.removedEnrollments === 1 ? '' : 's'}.`
       );
     } catch (e: any) {
-      this.notice.set(e?.message || 'Course visibility sync failed.');
+      this.notice.set(e?.message || this.lang.t('Course visibility sync failed.'));
       this.isError.set(true);
     } finally {
       this.syncing.set(false);
@@ -128,7 +128,7 @@ export class CourseAssign {
     if (!assignment.id) return;
     const courseName = this.courseTitle(assignment.courseId);
     const orgName = this.selectedOrgName() || assignment.orgId;
-    const confirmed = window.confirm(`Remove "${courseName}" from "${orgName}"?`);
+    const confirmed = window.confirm(this.lang.t('Remove "{course}" from "{org}"?', { course: courseName, org: orgName }));
     if (!confirmed) return;
 
     this.busy.set(true);
@@ -136,12 +136,12 @@ export class CourseAssign {
     this.isError.set(false);
     try {
       await this.orgSvc.removeCourseAssignment(assignment);
-      this.notice.set(`"${courseName}" removed from "${orgName}".`);
+      this.notice.set(this.lang.t('"{course}" removed from "{org}".', { course: courseName, org: orgName }));
       if (this.selectedCourse() === assignment.courseId) {
         this.selectedCourse.set('');
       }
     } catch (e: any) {
-      this.notice.set(e?.message || 'Course assignment removal failed.');
+      this.notice.set(e?.message || this.lang.t('Course assignment removal failed.'));
       this.isError.set(true);
     } finally {
       this.busy.set(false);
