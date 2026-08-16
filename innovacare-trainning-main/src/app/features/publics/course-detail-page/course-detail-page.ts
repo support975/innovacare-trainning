@@ -12,6 +12,7 @@ import { Course } from '../../../data/models';
 import { AuthService } from '../../../core/auth';
 import { EnrollmentService } from '../../../shared/services/enrollement';
 import { PublicTranslateDirective } from '../../../shared/directives/public-translate.directive';
+import { LanguageService } from '../../../shared/services/language';
 
 
 @Component({
@@ -36,6 +37,7 @@ export class CourseDetailPage {
   private readonly auth = inject(AuthService);
   private readonly enrollment = inject(EnrollmentService);
   private readonly snackBar = inject(MatSnackBar);
+  readonly lang = inject(LanguageService);
 
   readonly loading = signal(true);
   readonly starting = signal(false);
@@ -73,7 +75,7 @@ export class CourseDetailPage {
             console.error('Erreur chargement détail cours', error);
             this.course.set(null);
             this.loading.set(false);
-            this.snackBar.open('Impossible de charger ce cours.', 'Fermer', {
+            this.snackBar.open(this.lang.t('Unable to load this course.'), this.lang.t('Close'), {
               duration: 5000,
             });
           },
@@ -95,16 +97,16 @@ export class CourseDetailPage {
       .subscribe({
         next: () => {
           this.snackBar.open(
-            `"${course.title}" ajouté au parcours.`,
-            'Fermer',
+            this.lang.t('"{title}" added to your pathway.', { title: course.title }),
+            this.lang.t('Close'),
             { duration: 4000 }
           );
         },
         error: (error) => {
           console.error('Erreur addToPathway detail', error);
           this.snackBar.open(
-            'Impossible d’ajouter ce cours au parcours.',
-            'Fermer',
+            this.lang.t('Unable to add this course to your pathway.'),
+            this.lang.t('Close'),
             { duration: 5000 }
           );
         },
@@ -130,8 +132,8 @@ export class CourseDetailPage {
     } catch (error) {
       console.error('Erreur démarrage cours public', error);
       this.snackBar.open(
-        'Ce cours nécessite un accès organisation ou n’est pas disponible en accès public.',
-        'Fermer',
+        this.lang.t('This course requires organization access or isn’t available for public access.'),
+        this.lang.t('Close'),
         { duration: 6000 }
       );
     } finally {
@@ -158,16 +160,16 @@ export class CourseDetailPage {
         source: 'course-detail-page',
       });
       this.snackBar.open(
-        'Access request submitted. Admin approval and payment are required before this course opens.',
-        'Fermer',
+        this.lang.t('Access request submitted. Admin approval and payment are required before this course opens.'),
+        this.lang.t('Close'),
         { duration: 6000 }
       );
       await this.router.navigate(['/learner/assignments']);
     } catch (error) {
       console.error('Erreur demande accès cours organisation', error);
       this.snackBar.open(
-        'Request already exists or this course is not available for individual access.',
-        'Fermer',
+        this.lang.t('Request already exists or this course is not available for individual access.'),
+        this.lang.t('Close'),
         { duration: 6000 }
       );
     } finally {

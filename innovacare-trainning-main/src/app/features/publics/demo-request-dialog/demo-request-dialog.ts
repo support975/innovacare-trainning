@@ -11,6 +11,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DemoRequestService } from '../demo-request';
 import { PublicTranslateDirective } from '../../../shared/directives/public-translate.directive';
+import { LanguageService } from '../../../shared/services/language';
 
 interface DemoDialogData {
   source?: string;
@@ -41,6 +42,7 @@ export class DemoRequestDialog {
   private readonly dialogRef = inject(MatDialogRef<DemoRequestDialog>);
   private readonly demoRequestService = inject(DemoRequestService);
   private readonly snackBar = inject(MatSnackBar);
+  readonly lang = inject(LanguageService);
     readonly data = inject<DemoDialogData>(MAT_DIALOG_DATA, { optional: true }) ?? {};
 
   readonly loading = signal(false);
@@ -52,7 +54,7 @@ export class DemoRequestDialog {
     'Hospice',
     'Hospital',
     'Private Practice',
-    'Autre structure de santé',
+    this.lang.t('Other healthcare organization'),
   ];
 
   readonly form = this.fb.nonNullable.group({
@@ -85,12 +87,12 @@ export class DemoRequestDialog {
     this.demoRequestService.createDemoRequest(this.form.getRawValue()).subscribe({
       next: () => {
         this.loading.set(false);
-        this.snackBar.open('Demande envoyée avec succès.', 'Fermer', { duration: 5000 });
+        this.snackBar.open(this.lang.t('Request sent successfully.'), this.lang.t('Close'), { duration: 5000 });
         this.dialogRef.close(true);
       },
       error: () => {
         this.loading.set(false);
-        this.snackBar.open('Impossible d’envoyer la demande pour le moment.', 'Fermer', { duration: 7000 });
+        this.snackBar.open(this.lang.t('Unable to send the request right now.'), this.lang.t('Close'), { duration: 7000 });
       },
     });
   }
