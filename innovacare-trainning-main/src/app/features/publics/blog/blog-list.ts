@@ -2,27 +2,28 @@ import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { PublicSiteNavComponent } from '../../../shared/components/public-site-nav/public-site-nav';
+import { PublicTranslateDirective } from '../../../shared/directives/public-translate.directive';
 import { PublicBlogService } from './blog.service';
 
 @Component({
   selector: 'app-public-blog-list',
   standalone: true,
-  imports: [CommonModule, PublicSiteNavComponent],
+  imports: [CommonModule, PublicSiteNavComponent, PublicTranslateDirective],
   template: `
     <app-public-site-nav
       page="blog"
-      contextLabel="Marketing resources"
-      contextValue="Articles for training leaders"
-      mobileMetaLabel="Public blog"
-      mobileMetaValue="Training, compliance and operations"
+      contextLabel="Ressources marketing"
+      contextValue="Articles pour les responsables de formation"
+      mobileMetaLabel="Blogue public"
+      mobileMetaValue="Formation, conformité et opérations"
     ></app-public-site-nav>
 
-    <main class="blog-page">
+    <main class="blog-page" appPublicTranslate>
       <section class="blog-hero">
-        <p class="eyebrow">Innovacare insights</p>
-        <h1>Articles for better training, compliance and team readiness</h1>
+        <p class="eyebrow">Perspectives Innovacare</p>
+        <h1>Des articles pour mieux former, se conformer et préparer les équipes</h1>
         <p>
-          Practical resources for healthcare teams, service businesses, HR leaders and organizations building stronger learning operations.
+          Des ressources pratiques pour les équipes de santé, les entreprises de services, les responsables RH et les organisations qui bâtissent des opérations de formation plus solides.
         </p>
       </section>
 
@@ -35,22 +36,22 @@ import { PublicBlogService } from './blog.service';
           <div class="content">
             <div class="meta">
               <span>{{ article.category }}</span>
-              <span>{{ article.readingMinutes || 1 }} min read</span>
+              <span>{{ article.readingMinutes || 1 }} min de lecture</span>
             </div>
             <h2><a [href]="'/blog/' + article.slug">{{ article.title }}</a></h2>
             <p>{{ article.excerpt || article.metaDescription }}</p>
             <div class="tag-row" *ngIf="article.tags?.length">
               <span *ngFor="let tag of article.tags.slice(0, 4)">{{ tag }}</span>
             </div>
-            <a class="read-link" [href]="'/blog/' + article.slug">Read article</a>
+            <a class="read-link" [href]="'/blog/' + article.slug">Lire l'article</a>
           </div>
         </article>
       </section>
 
       <ng-template #emptyState>
         <section class="empty-state">
-          <h2>Articles are coming soon</h2>
-          <p>The content studio is ready. Published marketing articles will appear here automatically.</p>
+          <h2>Les articles arrivent bientôt</h2>
+          <p>Le studio de contenu est prêt. Les articles marketing publiés apparaîtront automatiquement ici.</p>
         </section>
       </ng-template>
     </main>

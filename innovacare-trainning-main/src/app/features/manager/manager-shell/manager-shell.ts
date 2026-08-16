@@ -119,7 +119,7 @@ export class ManagerShell {
       await this.demoSvc.switchTo('learner');
       await this.router.navigate(['/learner']);
     } catch (e: any) {
-      this.demoSwitchError.set(e?.message || 'Could not switch to the learner view. Please try again.');
+      this.demoSwitchError.set(e?.message || this.lang.t('demo.banner.switchErrorLearner'));
     } finally {
       this.switchingDemoView.set(false);
     }

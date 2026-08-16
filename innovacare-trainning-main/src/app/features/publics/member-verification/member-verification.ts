@@ -5,10 +5,11 @@ import { ActivatedRoute } from '@angular/router';
 import { MemberVerificationService, VerifyMembershipResponse } from './member-verification.service';
 
 import { ToDatePipe } from '../../../shared/pipes/to-date.pipe';
+import { PublicTranslateDirective } from '../../../shared/directives/public-translate.directive';
 @Component({
   selector: 'app-member-verification',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToDatePipe],
+  imports: [CommonModule, FormsModule, ToDatePipe, PublicTranslateDirective],
   templateUrl: './member-verification.html',
   styleUrl: './member-verification.css',
 })
@@ -43,7 +44,7 @@ export class MemberVerificationComponent implements OnInit {
       this.result.set(response);
       this.searched.set(true);
     } catch (err: any) {
-      this.error.set(err?.message || 'Unable to verify this membership number right now.');
+      this.error.set(err?.message || "Impossible de vérifier ce numéro de membre pour le moment.");
     } finally {
       this.searching.set(false);
     }

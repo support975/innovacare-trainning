@@ -90,14 +90,14 @@
     <div class="demo-banner" *ngIf="isDemo()">
       <span class="demo-banner__icon">🧪</span>
       <span class="demo-banner__text">
-        You're exploring a free demo workspace with sample data
-        <ng-container *ngIf="demoDaysLeft() as days">— expires in {{ days }} day{{ days === 1 ? '' : 's' }}</ng-container>.
+        {{ lang.t('demo.banner.text') }}
+        <ng-container *ngIf="demoDaysLeft() as days">{{ lang.t('demo.banner.expiresIn', { days, plural: days === 1 ? '' : 's' }) }}</ng-container>.
       </span>
       <span class="demo-banner__error" *ngIf="demoSwitchError()">{{ demoSwitchError() }}</span>
       <button class="demo-banner__secondary" type="button" [disabled]="switchingDemoView()" (click)="viewAsLearner()">
-        {{ switchingDemoView() ? 'Switching…' : 'View as Learner' }}
+        {{ switchingDemoView() ? lang.t('demo.banner.switching') : lang.t('demo.banner.viewAsLearner') }}
       </button>
-      <a class="demo-banner__cta" routerLink="/register-organization">Sign up for real</a>
+      <a class="demo-banner__cta" routerLink="/register-organization">{{ lang.t('demo.banner.signUpForReal') }}</a>
     </div>
     <div class="acting-banner" *ngIf="isActing()">
       <span class="acting-banner__icon">🏛️</span>
