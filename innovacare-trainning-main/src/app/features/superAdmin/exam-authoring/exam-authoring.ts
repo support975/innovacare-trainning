@@ -12,6 +12,7 @@ import {
 } from '@angular/fire/firestore';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map, Observable } from 'rxjs';
+import { LanguageService } from '../../../shared/services/language';
 
 type QuestionMode = 'single' | 'multi';
 
@@ -73,6 +74,7 @@ function sortCourses(courses: CourseOption[]): CourseOption[] {
 })
 export class ExamAuthoringComponent {
   private readonly db = inject(Firestore);
+  readonly lang = inject(LanguageService);
 
   private readonly courses$ = (collectionData(collection(this.db, 'courses'), { idField: 'id' }) as Observable<CourseOption[]>).pipe(
     map(courses => sortCourses(courses || []))
@@ -123,7 +125,7 @@ export class ExamAuthoringComponent {
           .sort((a, b) => (a.title || '').localeCompare(b.title || '', undefined, { sensitivity: 'base' }))
       );
     } catch (error: any) {
-      this.fail(error?.message || 'Unable to load exams for this course.');
+      this.fail(error?.message || this.lang.t('Unable to load exams for this course.'));
     }
   }
 
@@ -191,15 +193,15 @@ export class ExamAuthoringComponent {
 
     try {
       const courseId = this.selectedCourseId.trim();
-      if (!courseId) throw new Error('Select a course first.');
+      if (!courseId) throw new Error(this.lang.t('Select a course first.'));
 
       const payload = this.parsePayload();
       const questions = payload.questions;
       const examTitle = (payload.exam?.title || this.examTitle || 'Final Exam').trim();
       const examId = (this.selectedExamId || payload.examId || slugify(examTitle)).trim();
 
-      if (!examTitle) throw new Error('Exam title is required.');
-      if (!examId) throw new Error('Unable to create an exam id from the exam title.');
+      if (!examTitle) throw new Error(this.lang.t('Exam title is required.'));
+      if (!examId) throw new Error(this.lang.t('Unable to create an exam id from the exam title.'));
 
       await setDoc(
         doc(this.db, `courses/${courseId}/exams/${examId}`),
@@ -255,7 +257,7 @@ export class ExamAuthoringComponent {
     try {
       parsed = JSON.parse(this.jsonText);
     } catch {
-      throw new Error('JSON is not valid.');
+      throw new Error(this.lang.t('JSON is not valid.'));
     }
 
     if (Array.isArray(parsed)) {
@@ -264,7 +266,7 @@ export class ExamAuthoringComponent {
 
     const payload = parsed as ExamJsonPayload;
     if (!payload || !Array.isArray(payload.questions)) {
-      throw new Error('JSON must be a questions array or an object with a questions array.');
+      throw new Error(this.lang.t('JSON must be a questions array or an object with a questions array.'));
     }
 
     return {
@@ -274,7 +276,7 @@ export class ExamAuthoringComponent {
   }
 
   private validateQuestion(question: Question): void {
-    if (!question?.id) throw new Error('Each question needs an id.');
+    if (!question?.id) throw new Error(this.lang.t('Each question needs an id.'));
     if (!question.prompt?.trim()) throw new Error(`Question "${question.id}" needs a prompt.`);
     if (question.mode !== 'single' && question.mode !== 'multi') {
       throw new Error(`Question "${question.id}" mode must be "single" or "multi".`);

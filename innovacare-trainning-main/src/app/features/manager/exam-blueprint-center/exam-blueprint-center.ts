@@ -11,6 +11,7 @@ import { Course } from '../../../data/models';
 import { CoursesRepo } from '../../../data/courses.repo';
 import { QuestionImportDialogComponent } from './question-import-dialog';
 import { ImportedQuestion } from '../../../data/question-importer.service';
+import { LanguageService } from '../../../shared/services/language';
 
 import { ToDatePipe } from '../../../shared/pipes/to-date.pipe';
 @Component({
@@ -25,6 +26,7 @@ export class ExamBlueprintCenterComponent implements OnInit {
   private sessionService = inject(CertificationSessionService);
   private blueprintService = inject(ExamBlueprintService);
   private coursesRepo = inject(CoursesRepo);
+  readonly lang = inject(LanguageService);
 
   allCourses = signal<Course[]>([]);
   showRenewalForm = signal(false);
@@ -104,7 +106,7 @@ export class ExamBlueprintCenterComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(err?.message || 'Failed to load sessions');
+        this.error.set(err?.message || this.lang.t('Failed to load sessions'));
         this.loading.set(false);
       },
     });
@@ -120,7 +122,7 @@ export class ExamBlueprintCenterComponent implements OnInit {
         this.blueprints.set(blueprints);
       },
       error: (err) => {
-        this.error.set('Failed to load blueprints');
+        this.error.set(this.lang.t('Failed to load blueprints'));
       },
     });
   }
@@ -159,10 +161,10 @@ export class ExamBlueprintCenterComponent implements OnInit {
       });
       const updated = await this.blueprintService.getBlueprint(blueprint.id);
       if (updated) this.selectedBlueprint.set(updated);
-      this.success.set('Renewal requirements saved');
+      this.success.set(this.lang.t('Renewal requirements saved'));
       setTimeout(() => this.success.set(null), 3000);
     } catch (err: any) {
-      this.error.set(err?.message || 'Failed to save renewal requirements');
+      this.error.set(err?.message || this.lang.t('Failed to save renewal requirements'));
     } finally {
       this.busy.set(false);
     }
@@ -185,12 +187,12 @@ export class ExamBlueprintCenterComponent implements OnInit {
 
   async saveBlueprintForm() {
     if (!this.blueprintForm.title || !this.selectedSession()) {
-      this.error.set('Title and session are required');
+      this.error.set(this.lang.t('Title and session are required'));
       return;
     }
 
     if (!this.orgId) {
-      this.error.set('Organization not found');
+      this.error.set(this.lang.t('Organization not found'));
       return;
     }
 
@@ -217,12 +219,12 @@ export class ExamBlueprintCenterComponent implements OnInit {
         ...bps,
         { ...blueprint, id },
       ]);
-      this.success.set('Blueprint created successfully');
+      this.success.set(this.lang.t('Blueprint created successfully'));
       this.showBlueprintForm.set(false);
 
       setTimeout(() => this.success.set(null), 3000);
     } catch (err: any) {
-      this.error.set(err?.message || 'Failed to create blueprint');
+      this.error.set(err?.message || this.lang.t('Failed to create blueprint'));
     } finally {
       this.busy.set(false);
     }
@@ -287,12 +289,12 @@ export class ExamBlueprintCenterComponent implements OnInit {
 
   async saveQuestionForm() {
     if (!this.questionForm.prompt || this.questionForm.options.length < 2) {
-      this.error.set('Question and at least 2 options are required');
+      this.error.set(this.lang.t('Question and at least 2 options are required'));
       return;
     }
 
     if (this.questionForm.correctAnswers.length === 0) {
-      this.error.set('Select at least one correct answer');
+      this.error.set(this.lang.t('Select at least one correct answer'));
       return;
     }
 
@@ -330,7 +332,7 @@ export class ExamBlueprintCenterComponent implements OnInit {
         );
       }
 
-      this.success.set('Question saved successfully');
+      this.success.set(this.lang.t('Question saved successfully'));
       this.showQuestionForm.set(false);
       this.editingQuestion.set(null);
 
@@ -344,7 +346,7 @@ export class ExamBlueprintCenterComponent implements OnInit {
 
       setTimeout(() => this.success.set(null), 3000);
     } catch (err: any) {
-      this.error.set(err?.message || 'Failed to save question');
+      this.error.set(err?.message || this.lang.t('Failed to save question'));
     } finally {
       this.busy.set(false);
     }
@@ -367,10 +369,10 @@ export class ExamBlueprintCenterComponent implements OnInit {
       if (blueprint) {
         this.selectedBlueprint.set(blueprint);
       }
-      this.success.set('Question deleted successfully');
+      this.success.set(this.lang.t('Question deleted successfully'));
       setTimeout(() => this.success.set(null), 3000);
     } catch (err: any) {
-      this.error.set(err?.message || 'Failed to delete question');
+      this.error.set(err?.message || this.lang.t('Failed to delete question'));
     } finally {
       this.busy.set(false);
     }
@@ -392,10 +394,10 @@ export class ExamBlueprintCenterComponent implements OnInit {
       if (blueprint) {
         this.selectedBlueprint.set(blueprint);
       }
-      this.success.set('Blueprint published successfully');
+      this.success.set(this.lang.t('Blueprint published successfully'));
       setTimeout(() => this.success.set(null), 3000);
     } catch (err: any) {
-      this.error.set(err?.message || 'Failed to publish blueprint');
+      this.error.set(err?.message || this.lang.t('Failed to publish blueprint'));
     } finally {
       this.busy.set(false);
     }
@@ -410,10 +412,10 @@ export class ExamBlueprintCenterComponent implements OnInit {
       await this.blueprintService.deleteBlueprint(id);
       this.blueprints.update(bps => bps.filter(b => b.id !== id));
       this.selectedBlueprint.set(null);
-      this.success.set('Blueprint deleted successfully');
+      this.success.set(this.lang.t('Blueprint deleted successfully'));
       setTimeout(() => this.success.set(null), 3000);
     } catch (err: any) {
-      this.error.set(err?.message || 'Failed to delete blueprint');
+      this.error.set(err?.message || this.lang.t('Failed to delete blueprint'));
     } finally {
       this.busy.set(false);
     }
@@ -421,7 +423,7 @@ export class ExamBlueprintCenterComponent implements OnInit {
 
   openImportDialog() {
     if (!this.selectedBlueprint()) {
-      this.error.set('Select a blueprint first');
+      this.error.set(this.lang.t('Select a blueprint first'));
       return;
     }
     this.showImportDialog.set(true);

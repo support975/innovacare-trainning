@@ -13,6 +13,7 @@ import {
   estimateReadingMinutes,
   slugify,
 } from '../services/content-studio.service';
+import { LanguageService } from '../../../shared/services/language';
 
 @Component({
   selector: 'app-content-studio',
@@ -25,6 +26,7 @@ export class ContentStudioComponent {
   private readonly studio = inject(ContentStudioService);
   private readonly storage = inject(Storage);
   private readonly sanitizer = inject(DomSanitizer);
+  readonly lang = inject(LanguageService);
 
   private articleQuill: Quill | null = null;
   private newsletterQuill: Quill | null = null;
@@ -158,7 +160,7 @@ export class ContentStudioComponent {
         editor.insertEmbed(range.index, 'image', url, 'user');
         editor.setSelection(range.index + 1, 0, 'user');
       } catch (err: any) {
-        this.setNotice(err?.message || 'Image upload failed.');
+        this.setNotice(err?.message || this.lang.t('Image upload failed.'));
       } finally {
         this.uploadingImage.set(false);
       }
@@ -221,7 +223,7 @@ export class ContentStudioComponent {
         readingMinutes: estimateReadingMinutes(current.bodyHtml),
       });
       this.selectedSlug.set(slug);
-      this.setNotice(status === 'published' ? 'Article published.' : 'Article saved.');
+      this.setNotice(status === 'published' ? this.lang.t('Article published.') : this.lang.t('Article saved.'));
     } finally {
       this.busy.set(false);
     }
@@ -231,7 +233,7 @@ export class ContentStudioComponent {
     this.busy.set(true);
     try {
       await this.studio.saveNewsletter({ ...this.newsletter(), status });
-      this.setNotice(status === 'queued' ? 'Newsletter campaign queued.' : 'Newsletter saved.');
+      this.setNotice(status === 'queued' ? this.lang.t('Newsletter campaign queued.') : this.lang.t('Newsletter saved.'));
     } finally {
       this.busy.set(false);
     }

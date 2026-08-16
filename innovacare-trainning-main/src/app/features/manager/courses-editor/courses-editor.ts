@@ -8,6 +8,7 @@ import {
 } from '@angular/fire/firestore';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Observable } from 'rxjs';
+import { LanguageService } from '../../../shared/services/language';
 
 /** --- Models --- */
 export interface Course {
@@ -48,6 +49,7 @@ export class CoursesEditor {
   private router = inject(Router);
   private afs = inject(Firestore);
   private fb = inject(FormBuilder);
+  readonly lang = inject(LanguageService);
   readonly isSuperAdmin = this.router.url.startsWith('/super-admin');
 
   // Type-safe trackBy for optional ids

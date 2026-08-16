@@ -12,6 +12,7 @@ import {
   ManagedUserRole,
   ManagedUsersService,
 } from '../../../shared/services/managed-users';
+import { LanguageService } from '../../../shared/services/language';
 
 type UserRow = {
   uid: string;
@@ -35,6 +36,7 @@ export class Users {
   private usersSvc = inject(SuperAdminUsersService);
   private orgsSvc = inject(SuperAdminOrganizationsService);
   private managedUsers = inject(ManagedUsersService);
+  readonly lang = inject(LanguageService);
 
   search = signal('');
   roleFilter = signal<UserRole | 'all'>('all');
@@ -76,11 +78,11 @@ export class Users {
   async changeRole(uid: string, role: string) {
     try {
       await this.usersSvc.setRole(uid, role as UserRole);
-      this.notice.set('Role updated.');
+      this.notice.set(this.lang.t('Role updated.'));
       this.noticeError.set(false);
       this.refresh();
     } catch (e: any) {
-      this.notice.set(e?.message || 'Failed to update role.');
+      this.notice.set(e?.message || this.lang.t('Failed to update role.'));
       this.noticeError.set(true);
     }
   }
@@ -89,18 +91,18 @@ export class Users {
     try {
       const org = this.organizations().find(item => item.id === orgId);
       await this.usersSvc.setOrganization(uid, orgId || null, org?.type);
-      this.notice.set(orgId ? 'Organization updated.' : 'User removed from organization.');
+      this.notice.set(orgId ? this.lang.t('Organization updated.') : this.lang.t('User removed from organization.'));
       this.noticeError.set(false);
       this.refresh();
     } catch (e: any) {
-      this.notice.set(e?.message || 'Failed to update organization.');
+      this.notice.set(e?.message || this.lang.t('Failed to update organization.'));
       this.noticeError.set(true);
     }
   }
 
   async createUser() {
     if (!this.createForm.email.trim() || !this.createForm.orgId) {
-      this.notice.set('Email and organization are required.');
+      this.notice.set(this.lang.t('Email and organization are required.'));
       this.noticeError.set(true);
       return;
     }
@@ -115,14 +117,14 @@ export class Users {
         orgId: this.createForm.orgId,
       });
       this.createdUser.set(result);
-      this.notice.set('User created and added to the organization.');
+      this.notice.set(this.lang.t('User created and added to the organization.'));
       this.noticeError.set(false);
       this.createForm.displayName = '';
       this.createForm.email = '';
       this.createForm.role = 'learner';
       this.refresh();
     } catch (e: any) {
-      this.notice.set(e?.message || 'Failed to create user.');
+      this.notice.set(e?.message || this.lang.t('Failed to create user.'));
       this.noticeError.set(true);
     } finally {
       this.creating.set(false);
@@ -132,17 +134,17 @@ export class Users {
   async toggleActive(uid: string, current: boolean) {
     try {
       await this.usersSvc.setActive(uid, !current);
-      this.notice.set('User status updated.');
+      this.notice.set(this.lang.t('User status updated.'));
       this.noticeError.set(false);
       this.refresh();
     } catch (e: any) {
-      this.notice.set(e?.message || 'Failed to update user.');
+      this.notice.set(e?.message || this.lang.t('Failed to update user.'));
       this.noticeError.set(true);
     }
   }
 
   formatLastSeen(value: number | null): string {
-    if (!value) return 'No activity';
+    if (!value) return this.lang.t('No activity');
 
     return new Date(value).toLocaleString(undefined, {
       year: 'numeric',

@@ -22,6 +22,7 @@ import {
   ManagedUserRole,
   ManagedUsersService,
 } from '../../../shared/services/managed-users';
+import { LanguageService } from '../../../shared/services/language';
 
 interface LearnerDoc {
   id: string;
@@ -135,6 +136,7 @@ export class Learners {
   private policySvc = inject(PolicyService);
   private managedUsers = inject(ManagedUsersService);
   private coursesRepo = inject(CoursesRepo);
+  readonly lang = inject(LanguageService);
   searchTerm = signal('');
   statusFilter = signal<'all' | 'active' | 'inactive'>('all');
   sortField = signal<'name' | 'completed' | 'avgScore' | 'risk' | 'progress' | 'studyTime' | 'lastConnection'>('name');
@@ -411,7 +413,7 @@ export class Learners {
     this.createdUser.set(null);
 
     if (!this.createUserForm.email.trim()) {
-      this.createUserNotice.set('Email is required.');
+      this.createUserNotice.set(this.lang.t('Email is required.'));
       this.createUserError.set(true);
       return;
     }
@@ -429,12 +431,12 @@ export class Learners {
       });
 
       this.createdUser.set(result);
-      this.createUserNotice.set('User created in your organization.');
+      this.createUserNotice.set(this.lang.t('User created in your organization.'));
       this.createUserForm.displayName = '';
       this.createUserForm.email = '';
       this.createUserForm.role = 'learner';
     } catch (e: any) {
-      this.createUserNotice.set(e?.message || 'Failed to create user.');
+      this.createUserNotice.set(e?.message || this.lang.t('Failed to create user.'));
       this.createUserError.set(true);
     } finally {
       this.creatingUser.set(false);
@@ -442,7 +444,7 @@ export class Learners {
   }
 
   formatLastSeen(value: number | null): string {
-    if (!value) return 'No activity';
+    if (!value) return this.lang.t('No activity');
 
     return new Date(value).toLocaleString(undefined, {
       year: 'numeric',

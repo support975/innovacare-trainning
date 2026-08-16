@@ -15,6 +15,7 @@ import {
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { catchError, map, of, switchMap } from 'rxjs';
 import { AppProfile, AuthService } from '../../../core/auth';
+import { LanguageService } from '../../../shared/services/language';
 
 type CourseAccessRequestStatus =
   | 'pending_approval'
@@ -55,6 +56,7 @@ export class CourseAccessRequestsComponent {
   private readonly auth = inject(Auth);
   private readonly authService = inject(AuthService);
   private readonly snackBar = inject(MatSnackBar);
+  readonly lang = inject(LanguageService);
 
   private readonly profile = toSignal(this.authService.profile$, {
     initialValue: null as AppProfile | null,
@@ -72,7 +74,7 @@ export class CourseAccessRequestsComponent {
         map((items) => items as CourseAccessRequest[]),
         catchError((error) => {
           console.error('Unable to load course access requests.', error);
-          this.loadError.set('Unable to load course access requests.');
+          this.loadError.set(this.lang.t('Unable to load course access requests.'));
           return of<CourseAccessRequest[]>([]);
         })
       );
@@ -199,16 +201,16 @@ export class CourseAccessRequestsComponent {
   }
 
   statusLabel(req: CourseAccessRequest): string {
-    if (req.status === 'pending_approval') return 'Pending approval';
-    if (req.status === 'approved_pending_payment') return 'Approved, awaiting payment';
-    if (req.status === 'granted') return 'Paid and granted';
-    if (req.status === 'rejected') return 'Rejected';
-    return 'Submitted';
+    if (req.status === 'pending_approval') return this.lang.t('Pending approval');
+    if (req.status === 'approved_pending_payment') return this.lang.t('Approved, awaiting payment');
+    if (req.status === 'granted') return this.lang.t('Paid and granted');
+    if (req.status === 'rejected') return this.lang.t('Rejected');
+    return this.lang.t('Submitted');
   }
 
   formatDate(value: unknown): string {
     const ms = this.epochMs(value);
-    return ms ? new Date(ms).toLocaleString() : 'Not recorded';
+    return ms ? new Date(ms).toLocaleString() : this.lang.t('Not recorded');
   }
 
   private isAdminProfile(profile: AppProfile | null): boolean {

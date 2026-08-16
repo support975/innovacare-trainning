@@ -13,6 +13,7 @@ import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
 import {MatListModule} from "@angular/material/list";
 import { Observable } from "rxjs";
+import { LanguageService } from "../../../shared/services/language";
 
 type Role = "learner" | "nurse" | "staff" | "admin" | "manager";
 type AudienceType = "all" | "role" | "user";
@@ -36,6 +37,7 @@ type Severity = "info" | "warning" | "error" | "success";
 export class AdminNotificationsPage {
  private afs = inject(Firestore);
   private auth = inject(Auth);
+  readonly lang = inject(LanguageService);
 
   // Form state (signals)
   title = signal<string>("");
@@ -64,11 +66,11 @@ export class AdminNotificationsPage {
 
     try {
       const user = this.auth.currentUser;
-      if (!user) throw new Error("Not authenticated.");
+      if (!user) throw new Error(this.lang.t("Not authenticated."));
 
       const t = this.title().trim();
       const b = this.body().trim();
-      if (!t || !b) throw new Error("Title and body are required.");
+      if (!t || !b) throw new Error(this.lang.t("Title and body are required."));
 
       const type = this.audienceType();
       const audience =
@@ -79,7 +81,7 @@ export class AdminNotificationsPage {
             : {type: "user" as const, uid: this.audienceUid().trim()};
 
       if (audience.type === "user" && !audience.uid) {
-        throw new Error("Audience UID is required for type=user.");
+        throw new Error(this.lang.t("Audience UID is required for type=user."));
       }
 
       await addDoc(collection(this.afs, "notifications"), {
@@ -92,7 +94,7 @@ export class AdminNotificationsPage {
         createdBy: {uid: user.uid, name: user.displayName || ""},
       });
 
-      this.notice.set("Notification sent.");
+      this.notice.set(this.lang.t("Notification sent."));
 
       // reset
       this.title.set("");
@@ -104,7 +106,7 @@ export class AdminNotificationsPage {
       this.severity.set("info");
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
-      this.notice.set(msg || "Failed to send notification.");
+      this.notice.set(msg || this.lang.t("Failed to send notification."));
     } finally {
       this.busy.set(false);
     }

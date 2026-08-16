@@ -25,6 +25,7 @@ import {
 } from './tts-generation.service';
 import { buildLessonTranscript } from './tts-transcript';
 import { switchMap } from 'rxjs';
+import { LanguageService } from '../../../shared/services/language';
 
 /* ---------------------------
    Typed form helpers
@@ -160,6 +161,7 @@ export class Courses {
   private sanitizer = inject(DomSanitizer);
   private tts = inject(TtsGenerationService);
   private orgContext = inject(ActingOrgService);
+  readonly lang = inject(LanguageService);
 
   editId: string | null = null;
   loadingEdit = false;
@@ -1387,10 +1389,10 @@ export class Courses {
 
   ttsButtonLabel(si: number, li: number): string {
     const status = this.ttsStatus(si, li);
-    if (status?.loading) return 'Generating audio...';
-    if (status?.error) return 'Retry Audio';
-    if (status?.success) return 'Regenerate Audio';
-    return 'Generate Audio';
+    if (status?.loading) return this.lang.t('Generating audio...');
+    if (status?.error) return this.lang.t('Retry Audio');
+    if (status?.success) return this.lang.t('Regenerate Audio');
+    return this.lang.t('Generate Audio');
   }
 
   setTtsIncludeQuizChoices(checked: boolean): void {

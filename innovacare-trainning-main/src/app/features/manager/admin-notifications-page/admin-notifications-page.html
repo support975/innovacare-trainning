@@ -1,9 +1,9 @@
 <mat-card>
-  <h2 style="margin:0 0 12px 0;">Admin Notifications</h2>
+  <h2 style="margin:0 0 12px 0;">{{ lang.t('Admin Notifications') }}</h2>
 
   <div class="grid">
     <mat-form-field appearance="outline">
-      <mat-label>Title</mat-label>
+      <mat-label>{{ lang.t('Title') }}</mat-label>
       <input
         matInput
         [ngModel]="title()"
@@ -12,19 +12,19 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline">
-      <mat-label>Severity</mat-label>
+      <mat-label>{{ lang.t('Severity') }}</mat-label>
       <mat-select
         [ngModel]="severity()"
         (ngModelChange)="severity.set($event)"
       >
-        <mat-option value="info">info</mat-option>
-        <mat-option value="warning">warning</mat-option>
-        <mat-option value="critical">critical</mat-option>
+        <mat-option value="info">{{ lang.t('info') }}</mat-option>
+        <mat-option value="warning">{{ lang.t('warning') }}</mat-option>
+        <mat-option value="critical">{{ lang.t('critical') }}</mat-option>
       </mat-select>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="full">
-      <mat-label>Body</mat-label>
+      <mat-label>{{ lang.t('Body') }}</mat-label>
       <textarea
         matInput
         rows="4"
@@ -34,7 +34,7 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="full">
-      <mat-label>Link (optional)</mat-label>
+      <mat-label>{{ lang.t('Link (optional)') }}</mat-label>
       <input
         matInput
         placeholder="/learner/courses/xyz"
@@ -44,33 +44,33 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline">
-      <mat-label>Audience Type</mat-label>
+      <mat-label>{{ lang.t('Audience Type') }}</mat-label>
       <mat-select
         [ngModel]="audienceType()"
         (ngModelChange)="audienceType.set($event)"
       >
-        <mat-option value="all">all users</mat-option>
-        <mat-option value="role">by role</mat-option>
-        <mat-option value="user">single user</mat-option>
+        <mat-option value="all">{{ lang.t('all users') }}</mat-option>
+        <mat-option value="role">{{ lang.t('by role') }}</mat-option>
+        <mat-option value="user">{{ lang.t('single user') }}</mat-option>
       </mat-select>
     </mat-form-field>
 
     <mat-form-field appearance="outline" *ngIf="audienceType() === 'role'">
-      <mat-label>Role</mat-label>
+      <mat-label>{{ lang.t('Role') }}</mat-label>
       <mat-select
         [ngModel]="audienceRole()"
         (ngModelChange)="audienceRole.set($event)"
       >
-        <mat-option value="learner">learner</mat-option>
-        <mat-option value="nurse">nurse</mat-option>
-        <mat-option value="staff">staff</mat-option>
-        <mat-option value="admin">admin</mat-option>
-        <mat-option value="manager">manager</mat-option>
+        <mat-option value="learner">{{ lang.t('learner') }}</mat-option>
+        <mat-option value="nurse">{{ lang.t('nurse') }}</mat-option>
+        <mat-option value="staff">{{ lang.t('staff') }}</mat-option>
+        <mat-option value="admin">{{ lang.t('admin') }}</mat-option>
+        <mat-option value="manager">{{ lang.t('manager') }}</mat-option>
       </mat-select>
     </mat-form-field>
 
     <mat-form-field appearance="outline" *ngIf="audienceType() === 'user'">
-      <mat-label>User UID</mat-label>
+      <mat-label>{{ lang.t('User UID') }}</mat-label>
       <input
         matInput
         [ngModel]="audienceUid()"
@@ -80,14 +80,14 @@
   </div>
 
   <button mat-raised-button color="primary" (click)="send()" [disabled]="busy()">
-    Send
+    {{ lang.t('Send') }}
   </button>
 
   <div class="notice" *ngIf="notice()">{{ notice() }}</div>
 </mat-card>
 
 <mat-card style="margin-top:16px;">
-  <h3 style="margin:0 0 8px 0;">Recent notifications</h3>
+  <h3 style="margin:0 0 8px 0;">{{ lang.t('Recent notifications') }}</h3>
   <mat-divider></mat-divider>
 
   <mat-nav-list>

@@ -17,6 +17,7 @@ import { AuthService } from '../../../core/auth';
 
 import { Policy } from '../../learner/policy/model/policy.model';
 import { PolicyService } from '../../../shared/services/policy';
+import { LanguageService } from '../../../shared/services/language';
 
 @Component({
   selector: 'app-policy-admin-editor',
@@ -28,17 +29,17 @@ import { PolicyService } from '../../../shared/services/policy';
   ],
   template: `
   <mat-card>
-    <mat-card-title>Policy Admin Editor</mat-card-title>
-    <mat-card-subtitle *ngIf="policyId">Editing: {{ policyId }}</mat-card-subtitle>
+    <mat-card-title>{{ lang.t('Policy Admin Editor') }}</mat-card-title>
+    <mat-card-subtitle *ngIf="policyId">{{ lang.t('Editing:') }} {{ policyId }}</mat-card-subtitle>
 
     <div class="warn" *ngIf="!isAdmin">
-      Admin access required.
+      {{ lang.t('Admin access required.') }}
     </div>
 
     <form [formGroup]="form" class="form" *ngIf="isAdmin">
       <div class="row">
         <mat-form-field appearance="outline">
-          <mat-label>Status</mat-label>
+          <mat-label>{{ lang.t('Status') }}</mat-label>
           <mat-select formControlName="status">
             <mat-option value="active">active</mat-option>
             <mat-option value="archived">archived</mat-option>
@@ -46,7 +47,7 @@ import { PolicyService } from '../../../shared/services/policy';
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>Language</mat-label>
+          <mat-label>{{ lang.t('Language') }}</mat-label>
           <mat-select formControlName="language">
             <mat-option value="en">en</mat-option>
             <mat-option value="fr">fr</mat-option>
@@ -55,61 +56,61 @@ import { PolicyService } from '../../../shared/services/policy';
       </div>
 
       <mat-form-field appearance="outline">
-        <mat-label>Title</mat-label>
+        <mat-label>{{ lang.t('Title') }}</mat-label>
         <input matInput formControlName="title" />
       </mat-form-field>
 
       <div class="row">
         <mat-form-field appearance="outline">
-          <mat-label>Category</mat-label>
+          <mat-label>{{ lang.t('Category') }}</mat-label>
           <input matInput formControlName="category" />
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>Area</mat-label>
+          <mat-label>{{ lang.t('Area') }}</mat-label>
           <input matInput formControlName="area" />
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>Owner</mat-label>
+          <mat-label>{{ lang.t('Owner') }}</mat-label>
           <input matInput formControlName="owner" />
         </mat-form-field>
       </div>
 
       <div class="row">
         <mat-form-field appearance="outline">
-          <mat-label>Version</mat-label>
+          <mat-label>{{ lang.t('Version') }}</mat-label>
           <input matInput formControlName="version" />
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>Effective Date</mat-label>
+          <mat-label>{{ lang.t('Effective Date') }}</mat-label>
           <input matInput type="date" formControlName="effectiveDate" />
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>Last Revised</mat-label>
+          <mat-label>{{ lang.t('Last Revised') }}</mat-label>
           <input matInput type="date" formControlName="lastRevised" />
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>Next Review</mat-label>
+          <mat-label>{{ lang.t('Next Review') }}</mat-label>
           <input matInput type="date" formControlName="nextReview" />
         </mat-form-field>
       </div>
 
       <div class="row">
-        <mat-slide-toggle formControlName="requiresAcknowledgement">Requires Acknowledgement</mat-slide-toggle>
-        <mat-slide-toggle formControlName="blocking">Blocking</mat-slide-toggle>
+        <mat-slide-toggle formControlName="requiresAcknowledgement">{{ lang.t('Requires Acknowledgement') }}</mat-slide-toggle>
+        <mat-slide-toggle formControlName="blocking">{{ lang.t('Blocking') }}</mat-slide-toggle>
       </div>
 
       <mat-form-field appearance="outline">
-        <mat-label>Content HTML</mat-label>
+        <mat-label>{{ lang.t('Content HTML') }}</mat-label>
         <textarea matInput rows="10" formControlName="contentHtml"></textarea>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
-        <mat-label>References HTML</mat-label>
+        <mat-label>{{ lang.t('References HTML') }}</mat-label>
         <textarea matInput rows="6" formControlName="referencesHtml"></textarea>
       </mat-form-field>
 
@@ -117,13 +118,13 @@ import { PolicyService } from '../../../shared/services/policy';
 
       <div class="actions">
         <button mat-raised-button color="primary" (click)="save()" [disabled]="busy || form.invalid">
-          {{ policyId ? 'Update' : 'Create' }}
+          {{ policyId ? lang.t('Update') : lang.t('Create') }}
         </button>
 
-        <button mat-stroked-button (click)="back()" [disabled]="busy">Back</button>
+        <button mat-stroked-button (click)="back()" [disabled]="busy">{{ lang.t('Back') }}</button>
 
         <button mat-stroked-button color="warn" (click)="remove()" *ngIf="policyId" [disabled]="busy">
-          Delete
+          {{ lang.t('Delete') }}
         </button>
       </div>
     </form>
@@ -142,6 +143,7 @@ export class PolicyAdminEditorPage implements OnInit {
   private router = inject(Router);
   private policySvc = inject(PolicyService);
   private auth = inject(AuthService);
+  readonly lang = inject(LanguageService);
 
   isAdmin = false;
   busy = false;

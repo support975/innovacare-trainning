@@ -11,6 +11,7 @@ import {
   IndustryBundlesService,
   OrganizationIndustryBundleAssignment,
 } from '../../../shared/services/industry-bundles';
+import { LanguageService } from '../../../shared/services/language';
 
 type BundleForm = {
   id: string;
@@ -32,6 +33,7 @@ export class IndustryBundlesComponent {
   private readonly orgsSvc = inject(SuperAdminOrganizationsService);
   private readonly pathsSvc = inject(LearningPathsService);
   private readonly bundlesSvc = inject(IndustryBundlesService);
+  readonly lang = inject(LanguageService);
 
   readonly bundles = toSignal(this.bundlesSvc.listAll(), { initialValue: [] as IndustryBundle[] });
   readonly learningPaths = toSignal(this.pathsSvc.listAll(), { initialValue: [] as LearningPath[] });
@@ -122,7 +124,7 @@ export class IndustryBundlesComponent {
     const learningPathIds = Array.from(this.selectedPathIds());
     if (!name || !sector || !learningPathIds.length) {
       this.error.set(true);
-      this.notice.set('Add a bundle name, a sector, and select at least one learning path.');
+      this.notice.set(this.lang.t('Add a bundle name, a sector, and select at least one learning path.'));
       return;
     }
 
@@ -142,10 +144,10 @@ export class IndustryBundlesComponent {
         this.form.id || undefined
       );
       this.form.id = id;
-      this.notice.set(wasEditing ? 'Industry bundle saved.' : 'Industry bundle created.');
+      this.notice.set(wasEditing ? this.lang.t('Industry bundle saved.') : this.lang.t('Industry bundle created.'));
     } catch (err: any) {
       this.error.set(true);
-      this.notice.set(err?.message || 'Unable to save industry bundle.');
+      this.notice.set(err?.message || this.lang.t('Unable to save industry bundle.'));
     } finally {
       this.busy.set(false);
     }
@@ -176,7 +178,7 @@ export class IndustryBundlesComponent {
     const orgId = this.assignOrgId(bundle.id ?? '');
     if (!bundle.id || !orgId) {
       this.error.set(true);
-      this.notice.set('Select an organization to assign this bundle to.');
+      this.notice.set(this.lang.t('Select an organization to assign this bundle to.'));
       return;
     }
 
@@ -190,10 +192,15 @@ export class IndustryBundlesComponent {
         { uid: user?.uid, email: user?.email ?? undefined }
       );
       this.setAssignOrgId(bundle.id, '');
-      this.notice.set(`"${bundle.name}" assigned to ${this.orgName(orgId)}. All its learning paths and courses are now available to that organization.`);
+      this.notice.set(
+        this.lang.t('"{name}" assigned to {org}. All its learning paths and courses are now available to that organization.', {
+          name: bundle.name,
+          org: this.orgName(orgId),
+        })
+      );
     } catch (err: any) {
       this.error.set(true);
-      this.notice.set(err?.message || 'Unable to assign industry bundle.');
+      this.notice.set(err?.message || this.lang.t('Unable to assign industry bundle.'));
     } finally {
       this.busy.set(false);
     }
@@ -205,10 +212,10 @@ export class IndustryBundlesComponent {
     this.busy.set(true);
     try {
       await this.bundlesSvc.removeOrganizationAssignment(assignment);
-      this.notice.set('Bundle removed from organization.');
+      this.notice.set(this.lang.t('Bundle removed from organization.'));
     } catch (err: any) {
       this.error.set(true);
-      this.notice.set(err?.message || 'Unable to remove assignment.');
+      this.notice.set(err?.message || this.lang.t('Unable to remove assignment.'));
     } finally {
       this.busy.set(false);
     }

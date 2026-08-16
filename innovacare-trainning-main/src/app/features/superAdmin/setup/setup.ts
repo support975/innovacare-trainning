@@ -1,5 +1,6 @@
-import { Component, signal, computed } from '@angular/core';
+import { Component, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { LanguageService } from '../../../shared/services/language';
 
 interface CheckItem { label: string; desc: string; done: boolean; icon: string; }
 
@@ -11,6 +12,8 @@ interface CheckItem { label: string; desc: string; done: boolean; icon: string; 
   styleUrls: ['./setup.css'],
 })
 export class Setup {
+  readonly lang = inject(LanguageService);
+
   steps = signal<CheckItem[]>([
     { label: 'Create first organisation', desc: 'Add a tenant organisation with an owner account.', done: false, icon: '🏢' },
     { label: 'Add courses to the catalogue', desc: 'Upload or import training courses for learners.', done: false, icon: '▣' },

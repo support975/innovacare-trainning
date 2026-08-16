@@ -3,9 +3,9 @@
   <!-- Page Header -->
   <div class="page-header">
     <div>
-      <p class="page-eyebrow">Super Admin · Maintenance</p>
-      <h1 class="page-title">Maintenance Mode</h1>
-      <p class="page-sub">Warn users of upcoming maintenance, or block the whole platform during an actual outage.</p>
+      <p class="page-eyebrow">{{ lang.t('Super Admin · Maintenance') }}</p>
+      <h1 class="page-title">{{ lang.t('Maintenance Mode') }}</h1>
+      <p class="page-sub">{{ lang.t('Warn users of upcoming maintenance, or block the whole platform during an actual outage.') }}</p>
     </div>
   </div>
 
@@ -13,8 +13,8 @@
   <div class="panel">
     <div class="panel__head">
       <div>
-        <div class="panel__title">Scheduled Maintenance Banner</div>
-        <div class="panel__sub">Shows a dismissible notice at the top of every page. The app stays fully usable.</div>
+        <div class="panel__title">{{ lang.t('Scheduled Maintenance Banner') }}</div>
+        <div class="panel__sub">{{ lang.t('Shows a dismissible notice at the top of every page. The app stays fully usable.') }}</div>
       </div>
     </div>
     <div class="settings-form">
@@ -23,8 +23,8 @@
       </div>
       <label class="toggle-field toggle-field--row">
         <div class="toggle-field__info">
-          <span class="toggle-field__label">Show banner</span>
-          <span class="toggle-field__desc">Everyone signed in (and signed-out visitors) will see this message.</span>
+          <span class="toggle-field__label">{{ lang.t('Show banner') }}</span>
+          <span class="toggle-field__desc">{{ lang.t('Everyone signed in (and signed-out visitors) will see this message.') }}</span>
         </div>
         <span class="toggle-wrap">
           <input type="checkbox" class="toggle-input" id="bannerEnabled" [(ngModel)]="banner.enabled" />
@@ -32,18 +32,18 @@
         </span>
       </label>
       <div class="field field--full">
-        <label class="field__label" for="bannerMessage">Banner message</label>
+        <label class="field__label" for="bannerMessage">{{ lang.t('Banner message') }}</label>
         <textarea
           id="bannerMessage"
           class="field__textarea"
           rows="2"
           [(ngModel)]="banner.message"
-          placeholder="e.g. Scheduled maintenance on July 30 at 10pm EST — the platform may be briefly unavailable."
+          [placeholder]="lang.t('e.g. Scheduled maintenance on July 30 at 10pm EST — the platform may be briefly unavailable.')"
         ></textarea>
       </div>
       <div class="settings-form__footer">
         <button class="btn-primary" (click)="saveBanner()" [disabled]="bannerSaving()">
-          {{ bannerSaving() ? 'Saving...' : 'Save Banner Settings' }}
+          {{ bannerSaving() ? lang.t('Saving...') : lang.t('Save Banner Settings') }}
         </button>
       </div>
     </div>
@@ -53,8 +53,8 @@
   <div class="panel">
     <div class="panel__head">
       <div>
-        <div class="panel__title">Full Maintenance Block</div>
-        <div class="panel__sub">Replaces the entire app with a "we'll be back" screen. Only super admins can still use the app.</div>
+        <div class="panel__title">{{ lang.t('Full Maintenance Block') }}</div>
+        <div class="panel__sub">{{ lang.t("Replaces the entire app with a \"we'll be back\" screen. Only super admins can still use the app.") }}</div>
       </div>
     </div>
     <div class="settings-form">
@@ -63,8 +63,8 @@
       </div>
       <label class="toggle-field toggle-field--row">
         <div class="toggle-field__info">
-          <span class="toggle-field__label">Enable full block</span>
-          <span class="toggle-field__desc">Blocks the entire platform for everyone except super admins.</span>
+          <span class="toggle-field__label">{{ lang.t('Enable full block') }}</span>
+          <span class="toggle-field__desc">{{ lang.t('Blocks the entire platform for everyone except super admins.') }}</span>
         </div>
         <span class="toggle-wrap">
           <input type="checkbox" class="toggle-input" id="blockEnabled" [(ngModel)]="block.enabled" />
@@ -73,17 +73,17 @@
       </label>
       <div class="settings-form__grid">
         <div class="field field--full">
-          <label class="field__label" for="blockMessage">Block screen message</label>
+          <label class="field__label" for="blockMessage">{{ lang.t('Block screen message') }}</label>
           <textarea
             id="blockMessage"
             class="field__textarea"
             rows="2"
             [(ngModel)]="block.message"
-            placeholder="We're currently performing scheduled maintenance. Please check back shortly."
+            [placeholder]="lang.t('We\'re currently performing scheduled maintenance. Please check back shortly.')"
           ></textarea>
         </div>
         <div class="field">
-          <label class="field__label" for="estimatedReturnAt">Estimated back online (optional)</label>
+          <label class="field__label" for="estimatedReturnAt">{{ lang.t('Estimated back online (optional)') }}</label>
           <input
             id="estimatedReturnAt"
             class="field__input"
@@ -94,7 +94,7 @@
       </div>
       <div class="settings-form__footer">
         <button class="btn-primary" (click)="saveBlock()" [disabled]="blockSaving()">
-          {{ blockSaving() ? 'Saving...' : 'Save Maintenance Block Settings' }}
+          {{ blockSaving() ? lang.t('Saving...') : lang.t('Save Maintenance Block Settings') }}
         </button>
       </div>
     </div>

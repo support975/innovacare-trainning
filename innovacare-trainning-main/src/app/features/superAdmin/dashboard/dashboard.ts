@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { SuperAdminDashboardStats } from '../models/super-admin.models';
 import { SuperAdminDashboardService } from '../services/super-admin-facade';
+import { LanguageService } from '../../../shared/services/language';
 
 @Component({
   selector: 'app-dashboard',
@@ -13,6 +14,7 @@ import { SuperAdminDashboardService } from '../services/super-admin-facade';
 })
 export class Dashboard implements OnInit {
   private dashboardSvc = inject(SuperAdminDashboardService);
+  readonly lang = inject(LanguageService);
 
   loading = signal(true);
   stats = signal<SuperAdminDashboardStats>({

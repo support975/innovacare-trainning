@@ -1,40 +1,40 @@
 <div class="agent-page">
   <header class="page-header">
     <div>
-      <p class="eyebrow">Super Admin · Agentic Operations</p>
-      <h1>Agent Center</h1>
-      <p>Coordinate intake, marketing follow-up, notifications, email and reminder tasks from one queue.</p>
+      <p class="eyebrow">{{ lang.t('Super Admin · Agentic Operations') }}</p>
+      <h1>{{ lang.t('Agent Center') }}</h1>
+      <p>{{ lang.t('Coordinate intake, marketing follow-up, notifications, email and reminder tasks from one queue.') }}</p>
     </div>
     <div class="header-actions">
-      <button type="button" class="btn-ghost" (click)="backfill()" [disabled]="busy()">Refresh from intake</button>
-      <span class="live-pill">Automation queue</span>
+      <button type="button" class="btn-ghost" (click)="backfill()" [disabled]="busy()">{{ lang.t('Refresh from intake') }}</button>
+      <span class="live-pill">{{ lang.t('Automation queue') }}</span>
     </div>
   </header>
 
   <section class="stat-row">
     <article class="stat-card">
       <strong>{{ stats().total }}</strong>
-      <span>Total tasks</span>
+      <span>{{ lang.t('Total tasks') }}</span>
     </article>
     <article class="stat-card">
       <strong>{{ stats().active }}</strong>
-      <span>Active</span>
+      <span>{{ lang.t('Active') }}</span>
     </article>
     <article class="stat-card stat-card--urgent">
       <strong>{{ stats().urgent }}</strong>
-      <span>Urgent</span>
+      <span>{{ lang.t('Urgent') }}</span>
     </article>
     <article class="stat-card">
       <strong>{{ stats().email }}</strong>
-      <span>Email follow-ups</span>
+      <span>{{ lang.t('Email follow-ups') }}</span>
     </article>
     <article class="stat-card">
       <strong>{{ stats().reminders }}</strong>
-      <span>Reminder work</span>
+      <span>{{ lang.t('Reminder work') }}</span>
     </article>
     <article class="stat-card">
       <strong>{{ stats().agents }}</strong>
-      <span>Available agents</span>
+      <span>{{ lang.t('Available agents') }}</span>
     </article>
   </section>
 
@@ -44,16 +44,16 @@
   <section class="panel agent-roster">
     <div class="roster-head">
       <div>
-        <p class="eyebrow">Agent roster</p>
-        <h2>Six operating agents</h2>
-        <p>Launch a task for the agent you need, then review and execute it from the queue.</p>
+        <p class="eyebrow">{{ lang.t('Agent roster') }}</p>
+        <h2>{{ lang.t('Six operating agents') }}</h2>
+        <p>{{ lang.t('Launch a task for the agent you need, then review and execute it from the queue.') }}</p>
       </div>
       <label class="field roster-topic">
-        <span>Task topic</span>
+        <span>{{ lang.t('Task topic') }}</span>
         <input
           [ngModel]="agentTopic()"
           (ngModelChange)="agentTopic.set($event)"
-          placeholder="What should the agents work on?"
+          [placeholder]="lang.t('What should the agents work on?')"
         />
       </label>
     </div>
@@ -66,11 +66,11 @@
           <p>{{ item.summary }}</p>
         </div>
         <div class="agent-output">
-          <span>Output</span>
+          <span>{{ lang.t('Output') }}</span>
           <strong>{{ item.output }}</strong>
         </div>
         <button type="button" class="btn-primary" (click)="createAgentTask(item)" [disabled]="busy()">
-          Create task
+          {{ lang.t('Create task') }}
         </button>
       </article>
     </div>
@@ -81,7 +81,7 @@
       <div class="filters">
         <input
           type="search"
-          placeholder="Search tasks, leads, organizations..."
+          [placeholder]="lang.t('Search tasks, leads, organizations...')"
           [value]="search()"
           (input)="search.set($any($event.target).value)"
         />
@@ -116,8 +116,8 @@
 
       <ng-template #emptyQueue>
         <div class="empty-state">
-          <strong>No agent tasks found</strong>
-          <span>New website contacts and demo requests will create tasks automatically.</span>
+          <strong>{{ lang.t('No agent tasks found') }}</strong>
+          <span>{{ lang.t('New website contacts and demo requests will create tasks automatically.') }}</span>
         </div>
       </ng-template>
     </aside>
@@ -134,58 +134,58 @@
 
       <div class="info-grid">
         <div>
-          <span>Lead</span>
-          <strong>{{ task.leadName || 'Not captured' }}</strong>
+          <span>{{ lang.t('Lead') }}</span>
+          <strong>{{ task.leadName || lang.t('Not captured') }}</strong>
         </div>
         <div>
-          <span>Email</span>
-          <strong>{{ task.leadEmail || 'Not captured' }}</strong>
+          <span>{{ lang.t('Email') }}</span>
+          <strong>{{ task.leadEmail || lang.t('Not captured') }}</strong>
         </div>
         <div>
-          <span>Organization</span>
-          <strong>{{ task.organizationName || 'Not linked' }}</strong>
+          <span>{{ lang.t('Organization') }}</span>
+          <strong>{{ task.organizationName || lang.t('Not linked') }}</strong>
         </div>
         <div>
-          <span>Source</span>
+          <span>{{ lang.t('Source') }}</span>
           <strong>{{ task.sourceType }} / {{ task.sourceId }}</strong>
         </div>
         <div>
-          <span>Priority</span>
+          <span>{{ lang.t('Priority') }}</span>
           <strong>{{ priorityOf(task) }}</strong>
         </div>
         <div>
-          <span>Created</span>
+          <span>{{ lang.t('Created') }}</span>
           <strong>{{ formatDate(task.createdAt) }}</strong>
         </div>
       </div>
 
       <article class="recommendation">
-        <span>Recommended next step</span>
-        <p>{{ task.recommendedAction || 'Review and choose the next action.' }}</p>
+        <span>{{ lang.t('Recommended next step') }}</span>
+        <p>{{ task.recommendedAction || lang.t('Review and choose the next action.') }}</p>
       </article>
 
       <div class="composer-grid">
         <label class="field">
-          <span>Email subject</span>
+          <span>{{ lang.t('Email subject') }}</span>
           <input [ngModel]="emailSubject()" (ngModelChange)="emailSubject.set($event)" />
         </label>
         <label class="field field--wide">
-          <span>Email HTML</span>
+          <span>{{ lang.t('Email HTML') }}</span>
           <textarea rows="8" [ngModel]="emailHtml()" (ngModelChange)="emailHtml.set($event)"></textarea>
         </label>
       </div>
 
       <div class="action-panel">
         <label class="field">
-          <span>User UID for in-app notification</span>
+          <span>{{ lang.t('User UID for in-app notification') }}</span>
           <input
-            placeholder="Target learner/admin uid"
+            [placeholder]="lang.t('Target learner/admin uid')"
             [ngModel]="notificationUid()"
             (ngModelChange)="notificationUid.set($event)"
           />
         </label>
         <label class="field">
-          <span>Organization ID for reminder scan</span>
+          <span>{{ lang.t('Organization ID for reminder scan') }}</span>
           <input
             placeholder="orgId"
             [ngModel]="orgId()"
@@ -196,32 +196,32 @@
 
       <div class="button-row">
         <button type="button" class="btn-ghost" (click)="markInProgress(task)" [disabled]="busy()">
-          In progress
+          {{ lang.t('In progress') }}
         </button>
         <button type="button" class="btn-primary" (click)="queueEmail(task)" [disabled]="busy() || !canEmail(task)">
-          Queue email
+          {{ lang.t('Queue email') }}
         </button>
         <button type="button" class="btn-ghost" (click)="createNotification(task)" [disabled]="busy()">
-          Create notification
+          {{ lang.t('Create notification') }}
         </button>
         <button type="button" class="btn-ghost" (click)="requestReminderScan(task)" [disabled]="busy()">
-          Reminder scan
+          {{ lang.t('Reminder scan') }}
         </button>
         <button type="button" class="btn-ghost" (click)="complete(task)" [disabled]="busy()">
-          Complete
+          {{ lang.t('Complete') }}
         </button>
         <button type="button" class="btn-danger" (click)="dismiss(task)" [disabled]="busy()">
-          Dismiss
+          {{ lang.t('Dismiss') }}
         </button>
       </div>
 
-      <p class="delivery-note" *ngIf="task.deliveryRef">Last delivery: {{ task.deliveryRef }}</p>
+      <p class="delivery-note" *ngIf="task.deliveryRef">{{ lang.t('Last delivery:') }} {{ task.deliveryRef }}</p>
     </section>
 
     <ng-template #noTask>
       <section class="panel detail-panel empty-state">
-        <strong>Select an agent task</strong>
-        <span>Choose a task from the queue to review the suggested action.</span>
+        <strong>{{ lang.t('Select an agent task') }}</strong>
+        <span>{{ lang.t('Choose a task from the queue to review the suggested action.') }}</span>
       </section>
     </ng-template>
   </section>

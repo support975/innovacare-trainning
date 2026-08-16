@@ -1,11 +1,11 @@
 <main class="paths-page">
   <header class="page-header">
     <div>
-      <p class="eyebrow">Industry Bundles</p>
-      <h1>Assign a full course range in one click</h1>
-      <p class="sub">Group learning paths into a sector bundle (Restaurant, Construction, Healthcare...) and hand the whole range to an organization at once.</p>
+      <p class="eyebrow">{{ lang.t('Industry Bundles') }}</p>
+      <h1>{{ lang.t('Assign a full course range in one click') }}</h1>
+      <p class="sub">{{ lang.t('Group learning paths into a sector bundle (Restaurant, Construction, Healthcare...) and hand the whole range to an organization at once.') }}</p>
     </div>
-    <button class="btn-ghost" type="button" (click)="resetForm()">New bundle</button>
+    <button class="btn-ghost" type="button" (click)="resetForm()">{{ lang.t('New bundle') }}</button>
   </header>
 
   <div class="notice" *ngIf="notice()" [class.notice--error]="error()">
@@ -16,41 +16,41 @@
     <form class="panel form-panel" (ngSubmit)="saveBundle()">
       <div class="panel-head">
         <div>
-          <h2>{{ form.id ? 'Edit bundle' : 'Create bundle' }}</h2>
-          <p>{{ selectedPathIds().size }} learning path{{ selectedPathIds().size !== 1 ? 's' : '' }} selected &middot; {{ selectedCourseCount() }} courses total</p>
+          <h2>{{ form.id ? lang.t('Edit bundle') : lang.t('Create bundle') }}</h2>
+          <p>{{ selectedPathIds().size }} {{ selectedPathIds().size !== 1 ? lang.t('learning paths') : lang.t('learning path') }} {{ lang.t('selected') }} &middot; {{ selectedCourseCount() }} {{ lang.t('courses total') }}</p>
         </div>
       </div>
 
       <label class="field">
-        <span>Bundle name</span>
+        <span>{{ lang.t('Bundle name') }}</span>
         <input name="name" [(ngModel)]="form.name" placeholder="Restaurant Industry Essentials" required />
       </label>
 
       <label class="field">
-        <span>Sector</span>
+        <span>{{ lang.t('Sector') }}</span>
         <input name="sector" [(ngModel)]="form.sector" placeholder="Restauration" required />
       </label>
 
       <label class="field">
-        <span>Description</span>
-        <textarea name="description" [(ngModel)]="form.description" rows="3" placeholder="What this range covers and who it targets."></textarea>
+        <span>{{ lang.t('Description') }}</span>
+        <textarea name="description" [(ngModel)]="form.description" rows="3" [placeholder]="lang.t('What this range covers and who it targets.')"></textarea>
       </label>
 
       <label class="toggle-row">
         <input type="checkbox" name="active" [(ngModel)]="form.active" />
-        <span>Active and available for assignment</span>
+        <span>{{ lang.t('Active and available for assignment') }}</span>
       </label>
 
       <div class="course-picker">
         <div class="picker-head">
           <div>
-            <h3>Learning paths</h3>
-            <p>{{ filteredPaths().length }} shown from {{ learningPaths().length }} paths</p>
+            <h3>{{ lang.t('Learning paths') }}</h3>
+            <p>{{ filteredPaths().length }} {{ lang.t('shown from') }} {{ learningPaths().length }} {{ lang.t('paths') }}</p>
           </div>
           <input
             class="picker-search"
             type="search"
-            placeholder="Search learning paths"
+            [placeholder]="lang.t('Search learning paths')"
             [ngModel]="pathQuery()"
             name="pathQuery"
             (ngModelChange)="pathQuery.set($event)"
@@ -66,26 +66,26 @@
             />
             <span class="course-row__body">
               <strong>{{ path.title }}</strong>
-              <small>{{ path.category || 'General' }} &middot; {{ path.courseIds.length }} course{{ path.courseIds.length !== 1 ? 's' : '' }}</small>
+              <small>{{ path.category || lang.t('General') }} &middot; {{ path.courseIds.length }} {{ path.courseIds.length !== 1 ? lang.t('courses') : lang.t('course') }}</small>
             </span>
           </label>
 
           <p class="empty-hint" *ngIf="!filteredPaths().length">
-            No learning paths yet &mdash; create the role-based paths for this sector first (Learning Paths page), then group them here.
+            {{ lang.t('No learning paths yet — create the role-based paths for this sector first (Learning Paths page), then group them here.') }}
           </p>
         </div>
       </div>
 
       <button class="btn-primary" type="submit" [disabled]="busy()">
-        {{ busy() ? 'Saving...' : (form.id ? 'Save bundle' : 'Create bundle') }}
+        {{ busy() ? lang.t('Saving...') : (form.id ? lang.t('Save bundle') : lang.t('Create bundle')) }}
       </button>
     </form>
 
     <section class="panel assign-panel">
       <div class="panel-head">
         <div>
-          <h2>How assignment works</h2>
-          <p>Pick an organization on any bundle card below and click Assign. Every learning path in the bundle &mdash; and every course inside those paths &mdash; becomes available to that organization immediately.</p>
+          <h2>{{ lang.t('How assignment works') }}</h2>
+          <p>{{ lang.t('Pick an organization on any bundle card below and click Assign. Every learning path in the bundle — and every course inside those paths — becomes available to that organization immediately.') }}</p>
         </div>
       </div>
     </section>
@@ -95,17 +95,17 @@
     <article class="path-card" *ngFor="let bundle of bundles()" [class.path-card--inactive]="bundle.active === false">
       <div class="path-card__top">
         <div>
-          <span class="category">{{ bundle.sector || 'General' }}</span>
+          <span class="category">{{ bundle.sector || lang.t('General') }}</span>
           <h2>{{ bundle.name }}</h2>
-          <p>{{ bundle.description || 'No description yet.' }}</p>
+          <p>{{ bundle.description || lang.t('No description yet.') }}</p>
         </div>
-        <button class="btn-ghost" type="button" (click)="edit(bundle)">Edit</button>
+        <button class="btn-ghost" type="button" (click)="edit(bundle)">{{ lang.t('Edit') }}</button>
       </div>
 
       <div class="path-stats">
-        <span>{{ bundle.learningPathIds.length }} learning paths</span>
-        <span>{{ bundleAssignments(bundle.id).length }} organizations</span>
-        <span>{{ bundle.active === false ? 'Inactive' : 'Active' }}</span>
+        <span>{{ bundle.learningPathIds.length }} {{ lang.t('learning paths') }}</span>
+        <span>{{ bundleAssignments(bundle.id).length }} {{ lang.t('organizations') }}</span>
+        <span>{{ bundle.active === false ? lang.t('Inactive') : lang.t('Active') }}</span>
       </div>
 
       <div class="course-chips">
@@ -124,18 +124,18 @@
           [ngModel]="assignOrgId(bundle.id ?? '')"
           (ngModelChange)="setAssignOrgId(bundle.id ?? '', $event)"
         >
-          <option value="">Select organization...</option>
+          <option value="">{{ lang.t('Select organization...') }}</option>
           <option *ngFor="let org of unassignedOrgsFor(bundle)" [value]="org.id">{{ org.name }}</option>
         </select>
         <button class="btn-primary" type="button" [disabled]="busy() || !assignOrgId(bundle.id ?? '')" (click)="assignBundleToOrg(bundle)">
-          Assign in one click
+          {{ lang.t('Assign in one click') }}
         </button>
       </div>
     </article>
 
     <div class="empty" *ngIf="!bundles().length">
-      <h2>No industry bundles yet</h2>
-      <p>Create one from the form above, e.g. "Restaurant Industry Essentials" grouping the Food Safety, Fire Safety, and Customer Service learning paths.</p>
+      <h2>{{ lang.t('No industry bundles yet') }}</h2>
+      <p>{{ lang.t('Create one from the form above, e.g. "Restaurant Industry Essentials" grouping the Food Safety, Fire Safety, and Customer Service learning paths.') }}</p>
     </div>
   </section>
 </main>

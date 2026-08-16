@@ -3,9 +3,9 @@
   <!-- Page Header -->
   <div class="page-header">
     <div>
-      <p class="page-eyebrow">Super Admin · Users</p>
-      <h1 class="page-title">Users</h1>
-      <p class="page-sub">Manage roles, activation status, and account administration.</p>
+      <p class="page-eyebrow">{{ lang.t('Super Admin · Users') }}</p>
+      <h1 class="page-title">{{ lang.t('Users') }}</h1>
+      <p class="page-sub">{{ lang.t('Manage roles, activation status, and account administration.') }}</p>
     </div>
   </div>
 
@@ -17,30 +17,30 @@
   <div class="panel create-user-panel">
     <div class="create-user-head">
       <div>
-        <div class="create-user-title">Add a user to an organization</div>
-        <div class="create-user-sub">Creates the login account and links it to the selected organization.</div>
+        <div class="create-user-title">{{ lang.t('Add a user to an organization') }}</div>
+        <div class="create-user-sub">{{ lang.t('Creates the login account and links it to the selected organization.') }}</div>
       </div>
     </div>
     <form class="create-user-form" (ngSubmit)="createUser()">
-      <input class="form-input" name="displayName" [(ngModel)]="createForm.displayName" placeholder="Full name" />
-      <input class="form-input" name="email" type="email" [(ngModel)]="createForm.email" placeholder="Email address" required />
+      <input class="form-input" name="displayName" [(ngModel)]="createForm.displayName" [placeholder]="lang.t('Full name')" />
+      <input class="form-input" name="email" type="email" [(ngModel)]="createForm.email" [placeholder]="lang.t('Email address')" required />
       <select class="filter-select" name="role" [(ngModel)]="createForm.role">
-        <option value="learner">Learner</option>
-        <option value="manager">Manager</option>
-        <option value="admin">Organization Admin</option>
+        <option value="learner">{{ lang.t('Learner') }}</option>
+        <option value="manager">{{ lang.t('Manager') }}</option>
+        <option value="admin">{{ lang.t('Organization Admin') }}</option>
       </select>
       <select class="filter-select" name="orgId" [(ngModel)]="createForm.orgId" required>
-        <option value="">Select organization</option>
+        <option value="">{{ lang.t('Select organization') }}</option>
         <option *ngFor="let org of organizations()" [value]="org.id">{{ org.name }}</option>
       </select>
       <button class="btn-primary" type="submit" [disabled]="creating()">
-        {{ creating() ? 'Creating…' : 'Create User' }}
+        {{ creating() ? lang.t('Creating…') : lang.t('Create User') }}
       </button>
     </form>
     <div class="credentials-card" *ngIf="createdUser() as created">
-      <span>Temporary credentials for {{ created.email }}</span>
+      <span>{{ lang.t('Temporary credentials for') }} {{ created.email }}</span>
       <strong>{{ created.temporaryPassword }}</strong>
-      <small>Copy this password now and ask the user to reset it after signing in.</small>
+      <small>{{ lang.t('Copy this password now and ask the user to reset it after signing in.') }}</small>
     </div>
   </div>
 
@@ -57,7 +57,7 @@
         <input
           class="search-input"
           type="text"
-          placeholder="Search by email, name, or UID..."
+          [placeholder]="lang.t('Search by email, name, or UID...')"
           [value]="search()"
           (input)="search.set($any($event.target).value)"
         />
@@ -67,14 +67,14 @@
         [value]="roleFilter()"
         (change)="roleFilter.set($any($event.target).value)"
       >
-        <option value="all">All Roles</option>
-        <option value="super_admin">Super Admin</option>
-        <option value="admin">Admin</option>
-        <option value="manager">Manager</option>
-        <option value="learner">Learner</option>
-        <option value="guest">Guest</option>
+        <option value="all">{{ lang.t('All Roles') }}</option>
+        <option value="super_admin">{{ lang.t('Super Admin') }}</option>
+        <option value="admin">{{ lang.t('Admin') }}</option>
+        <option value="manager">{{ lang.t('Manager') }}</option>
+        <option value="learner">{{ lang.t('Learner') }}</option>
+        <option value="guest">{{ lang.t('Guest') }}</option>
       </select>
-      <button class="btn-primary" (click)="refresh()">Apply</button>
+      <button class="btn-primary" (click)="refresh()">{{ lang.t('Apply') }}</button>
     </div>
 
     <!-- Table -->
@@ -82,12 +82,12 @@
       <table class="table">
         <thead>
           <tr>
-            <th>User</th>
-            <th>Role</th>
-            <th>Organization</th>
-            <th>Analytics</th>
-            <th>Active</th>
-            <th>Actions</th>
+            <th>{{ lang.t('User') }}</th>
+            <th>{{ lang.t('Role') }}</th>
+            <th>{{ lang.t('Organization') }}</th>
+            <th>{{ lang.t('Analytics') }}</th>
+            <th>{{ lang.t('Active') }}</th>
+            <th>{{ lang.t('Actions') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -105,56 +105,56 @@
             </td>
             <td>
               <select #roleSel [ngModel]="u.role" class="role-select">
-                <option value="super_admin">Super Admin</option>
-                <option value="admin">Admin</option>
-                <option value="manager">Manager</option>
-                <option value="learner">Learner</option>
-                <option value="guest">Guest</option>
+                <option value="super_admin">{{ lang.t('Super Admin') }}</option>
+                <option value="admin">{{ lang.t('Admin') }}</option>
+                <option value="manager">{{ lang.t('Manager') }}</option>
+                <option value="learner">{{ lang.t('Learner') }}</option>
+                <option value="guest">{{ lang.t('Guest') }}</option>
               </select>
             </td>
             <td>
               <select #orgSel class="org-select" [ngModel]="u.orgId || ''">
-                <option value="">No organization</option>
+                <option value="">{{ lang.t('No organization') }}</option>
                 <option *ngFor="let org of organizations()" [value]="org.id">{{ org.name }}</option>
               </select>
               <button class="btn-ghost btn-sm org-save" (click)="changeOrganization(u.uid, orgSel.value)">
-                Save Org
+                {{ lang.t('Save Org') }}
               </button>
             </td>
             <td>
               <div class="analytics-cell">
                 <div class="analytics-top">
                   <span class="analytics-pill analytics-pill--navy">
-                    Progress {{ u.analytics.averageProgress !== null ? u.analytics.averageProgress + '%' : '—' }}
+                    {{ lang.t('Progress') }} {{ u.analytics.averageProgress !== null ? u.analytics.averageProgress + '%' : '—' }}
                   </span>
                   <span class="analytics-pill analytics-pill--teal">
-                    Study {{ formatStudyTime(u.analytics.estimatedStudyMinutes) }}
+                    {{ lang.t('Study') }} {{ formatStudyTime(u.analytics.estimatedStudyMinutes) }}
                   </span>
                   <span class="analytics-pill analytics-pill--blue">
-                    App {{ formatStudyTime(u.analytics.totalAppMinutes) }}
+                    {{ lang.t('App') }} {{ formatStudyTime(u.analytics.totalAppMinutes) }}
                   </span>
                 </div>
                 <div class="analytics-meta">
-                  <span>Seen {{ formatLastSeen(u.analytics.lastSeenAt) }}</span>
-                  <span>{{ u.analytics.activeCourses }} active</span>
-                  <span>{{ u.analytics.completedCourses }} completed</span>
-                  <span>Score {{ u.analytics.averageScore !== null ? u.analytics.averageScore + '%' : '—' }}</span>
+                  <span>{{ lang.t('Seen') }} {{ formatLastSeen(u.analytics.lastSeenAt) }}</span>
+                  <span>{{ u.analytics.activeCourses }} {{ lang.t('active') }}</span>
+                  <span>{{ u.analytics.completedCourses }} {{ lang.t('completed') }}</span>
+                  <span>{{ lang.t('Score') }} {{ u.analytics.averageScore !== null ? u.analytics.averageScore + '%' : '—' }}</span>
                 </div>
               </div>
             </td>
             <td>
               <span [class]="'badge badge--' + (u.active ? 'active' : 'inactive')">
-                {{ u.active ? 'Active' : 'Disabled' }}
+                {{ u.active ? lang.t('Active') : lang.t('Disabled') }}
               </span>
             </td>
             <td>
               <div class="user-actions">
-                <button class="btn-ghost btn-sm" (click)="changeRole(u.uid, roleSel.value)">Save Role</button>
+                <button class="btn-ghost btn-sm" (click)="changeRole(u.uid, roleSel.value)">{{ lang.t('Save Role') }}</button>
                 <button
                   [class]="u.active ? 'btn-danger btn-sm' : 'btn-primary btn-sm'"
                   (click)="toggleActive(u.uid, !!u.active)"
                 >
-                  {{ u.active ? 'Disable' : 'Enable' }}
+                  {{ u.active ? lang.t('Disable') : lang.t('Enable') }}
                 </button>
               </div>
             </td>
@@ -166,8 +166,8 @@
     <ng-template #emptyUsers>
       <div class="empty-state">
         <div class="empty-state__icon">&#128100;</div>
-        <strong>No users found</strong>
-        <span>Try adjusting your filters or search query.</span>
+        <strong>{{ lang.t('No users found') }}</strong>
+        <span>{{ lang.t('Try adjusting your filters or search query.') }}</span>
       </div>
     </ng-template>
   </div>

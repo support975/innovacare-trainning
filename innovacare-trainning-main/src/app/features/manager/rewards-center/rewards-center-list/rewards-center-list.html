@@ -1,39 +1,39 @@
 <div class="page">
   <div class="header">
-    <h1>🏆 Rewards Center</h1>
-    <p>Recognize learners, grant appreciation, and track engagement across your organization.</p>
+    <h1>🏆 {{ lang.t('Rewards Center') }}</h1>
+    <p>{{ lang.t('Recognize learners, grant appreciation, and track engagement across your organization.') }}</p>
   </div>
 
   <div class="stats-grid">
     <div class="stat-card">
       <div class="stat-number">{{ stats().totalLearners }}</div>
-      <div class="stat-label">Learners</div>
+      <div class="stat-label">{{ lang.t('Learners') }}</div>
     </div>
     <div class="stat-card">
       <div class="stat-number">{{ stats().totalPoints }}</div>
-      <div class="stat-label">Total Points Awarded</div>
+      <div class="stat-label">{{ lang.t('Total Points Awarded') }}</div>
     </div>
     <div class="stat-card">
       <div class="stat-number">{{ stats().topLearnerName }}</div>
-      <div class="stat-label">Top Learner</div>
+      <div class="stat-label">{{ lang.t('Top Learner') }}</div>
     </div>
   </div>
 
   <div class="tabs">
-    <button type="button" class="tab" [class.active]="view()==='overview'" (click)="setView('overview')">Overview</button>
-    <button type="button" class="tab" [class.active]="view()==='leaderboard'" (click)="setView('leaderboard')">🏁 Leaderboard</button>
+    <button type="button" class="tab" [class.active]="view()==='overview'" (click)="setView('overview')">{{ lang.t('Overview') }}</button>
+    <button type="button" class="tab" [class.active]="view()==='leaderboard'" (click)="setView('leaderboard')">🏁 {{ lang.t('Leaderboard') }}</button>
   </div>
 
   <div class="toolbar">
     <input
       type="search"
-      placeholder="Search learners…"
+      [placeholder]="lang.t('Search learners…')"
       [ngModel]="search()"
       (ngModelChange)="search.set($event)"
     />
     <div class="period-toggle" *ngIf="view()==='leaderboard'">
-      <button type="button" [class.active]="period()==='all'" (click)="setPeriod('all')">All-time</button>
-      <button type="button" [class.active]="period()==='month'" (click)="setPeriod('month')">This month</button>
+      <button type="button" [class.active]="period()==='all'" (click)="setPeriod('all')">{{ lang.t('All-time') }}</button>
+      <button type="button" [class.active]="period()==='month'" (click)="setPeriod('month')">{{ lang.t('This month') }}</button>
     </div>
   </div>
 
@@ -42,8 +42,8 @@
     <table class="table">
       <thead>
         <tr>
-          <th>Learner</th>
-          <th>Points</th>
+          <th>{{ lang.t('Learner') }}</th>
+          <th>{{ lang.t('Points') }}</th>
           <th></th>
         </tr>
       </thead>
@@ -55,12 +55,12 @@
           </td>
           <td>{{ row.totalPoints }}</td>
           <td class="actions-cell">
-            <button type="button" class="btn outline" (click)="viewDetail(row.id)">View</button>
-            <button type="button" class="btn primary" (click)="openGrantDialog(row)">🎉 Grant Reward</button>
+            <button type="button" class="btn outline" (click)="viewDetail(row.id)">{{ lang.t('View') }}</button>
+            <button type="button" class="btn primary" (click)="openGrantDialog(row)">🎉 {{ lang.t('Grant Reward') }}</button>
           </td>
         </tr>
         <tr *ngIf="!displayRows().length">
-          <td colspan="3" class="empty">No learners found.</td>
+          <td colspan="3" class="empty">{{ lang.t('No learners found.') }}</td>
         </tr>
       </tbody>
     </table>
@@ -71,9 +71,9 @@
     <table class="table">
       <thead>
         <tr>
-          <th>Rank</th>
-          <th>Learner</th>
-          <th>Points</th>
+          <th>{{ lang.t('Rank') }}</th>
+          <th>{{ lang.t('Learner') }}</th>
+          <th>{{ lang.t('Points') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -85,7 +85,7 @@
           <td>{{ period()==='month' ? (row.periodPoints ?? 0) : row.totalPoints }}</td>
         </tr>
         <tr *ngIf="!leaderboardRows().length">
-          <td colspan="3" class="empty">No data yet.</td>
+          <td colspan="3" class="empty">{{ lang.t('No data yet.') }}</td>
         </tr>
       </tbody>
     </table>

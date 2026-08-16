@@ -5,7 +5,7 @@
         <img class="brand-mark" src="/logo.png" alt="Innovacare" />
         <span class="brand-copy">
           <strong>Innovacare</strong>
-          <span>Training Admin</span>
+          <span>{{ lang.t('Training Admin') }}</span>
         </span>
       </a>
 
@@ -19,14 +19,14 @@
     <div class="workspace-panel" aria-label="Current workspace">
       <span class="workspace-status"></span>
       <div>
-        <span>Workspace</span>
-        <strong>Super Admin</strong>
+        <span>{{ lang.t('Workspace') }}</span>
+        <strong>{{ lang.t('Super Admin') }}</strong>
       </div>
     </div>
 
     <nav class="side-nav" aria-label="Super admin navigation">
       <section class="nav-section" *ngFor="let section of sections">
-        <div class="nav-section-label">{{ section.label }}</div>
+        <div class="nav-section-label">{{ lang.t(section.label) }}</div>
 
         <a
           class="nav-link"
@@ -38,7 +38,7 @@
           <svg class="nav-link-icon" viewBox="0 0 24 24" aria-hidden="true">
             <path [attr.d]="item.icon" />
           </svg>
-          <span class="nav-link-label">{{ item.label }}</span>
+          <span class="nav-link-label">{{ lang.t(item.label) }}</span>
         </a>
       </section>
     </nav>
@@ -47,7 +47,7 @@
       <img class="footer-mark" src="/logo.png" alt="Innovacare" />
       <div>
         <strong>Innovacare Training</strong>
-        <span>Admin Console</span>
+        <span>{{ lang.t('Admin Console') }}</span>
       </div>
     </div>
   </aside>
@@ -63,26 +63,39 @@
     </button>
 
     <div class="topbar-title">
-      <span>Administration</span>
-      <strong>Super Admin Console</strong>
+      <span>{{ lang.t('Administration') }}</span>
+      <strong>{{ lang.t('Super Admin Console') }}</strong>
     </div>
 
     <div class="topbar-actions">
+      <div class="lang-toggle">
+        <button
+          type="button"
+          [class.active]="lang.language() === 'en'"
+          (click)="lang.setLanguage('en')"
+        >EN</button>
+        <button
+          type="button"
+          [class.active]="lang.language() === 'fr'"
+          (click)="lang.setLanguage('fr')"
+        >FR</button>
+      </div>
+
       <div class="status-pill">
         <span></span>
-        Production
+        {{ lang.t('Production') }}
       </div>
 
       <div class="account-chip" aria-label="Current role">
         <span>SA</span>
-        <strong>Super Admin</strong>
+        <strong>{{ lang.t('Super Admin') }}</strong>
       </div>
 
       <button class="logout-button" type="button" (click)="logout()">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M10 6H6v12h4m3-9 3 3-3 3m-7-3h10" />
         </svg>
-        <span>Sign out</span>
+        <span>{{ lang.t('Sign out') }}</span>
       </button>
     </div>
   </header>

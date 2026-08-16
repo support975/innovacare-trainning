@@ -12,6 +12,7 @@ import {
   OrganizationCouncilRollupService,
 } from '../../../core/organization/services/organization-council-rollup.service';
 import { ManagedUsersService } from '../../../shared/services/managed-users';
+import { LanguageService } from '../../../shared/services/language';
 
 const EMPTY_ROLLUP: CouncilRollup = {
   regions: [],
@@ -35,6 +36,7 @@ export class Council {
   private readonly rollupSvc = inject(OrganizationCouncilRollupService);
   private readonly managedUsers = inject(ManagedUsersService);
   private readonly destroyRef = inject(DestroyRef);
+  readonly lang = inject(LanguageService);
 
   councilOrgId = signal<string | null>(null);
   rollup = signal<CouncilRollup>(EMPTY_ROLLUP);
@@ -80,12 +82,12 @@ export class Council {
     const parentOrgId = this.councilOrgId();
     const name = this.regionForm.name.trim();
     if (!parentOrgId) {
-      this.regionNotice.set('Your admin account is not linked to an organization.');
+      this.regionNotice.set(this.lang.t('Your admin account is not linked to an organization.'));
       this.regionError.set(true);
       return;
     }
     if (!name) {
-      this.regionNotice.set('Facility name is required.');
+      this.regionNotice.set(this.lang.t('Facility name is required.'));
       this.regionError.set(true);
       return;
     }
@@ -98,10 +100,10 @@ export class Council {
         type: this.regionForm.type,
         plan: this.regionForm.plan,
       });
-      this.regionNotice.set(`Facility "${name}" created.`);
+      this.regionNotice.set(this.lang.t('Facility "{name}" created.', { name }));
       this.regionForm.name = '';
     } catch (e: any) {
-      this.regionNotice.set(e?.message || 'Failed to create facility.');
+      this.regionNotice.set(e?.message || this.lang.t('Failed to create facility.'));
       this.regionError.set(true);
     } finally {
       this.creatingRegion.set(false);
@@ -115,12 +117,12 @@ export class Council {
     const orgId = this.inviteForm.orgId;
     const email = this.inviteForm.email.trim();
     if (!orgId) {
-      this.inviteNotice.set('Choose a facility first.');
+      this.inviteNotice.set(this.lang.t('Choose a facility first.'));
       this.inviteError.set(true);
       return;
     }
     if (!email) {
-      this.inviteNotice.set('Email is required.');
+      this.inviteNotice.set(this.lang.t('Email is required.'));
       this.inviteError.set(true);
       return;
     }
@@ -133,11 +135,16 @@ export class Council {
         role: 'admin',
         orgId,
       });
-      this.inviteNotice.set(`Admin ${result.email} created — temporary password: ${result.temporaryPassword}`);
+      this.inviteNotice.set(
+        this.lang.t('Admin {email} created — temporary password: {password}', {
+          email: result.email,
+          password: result.temporaryPassword,
+        })
+      );
       this.inviteForm.email = '';
       this.inviteForm.displayName = '';
     } catch (e: any) {
-      this.inviteNotice.set(e?.message || 'Failed to create facility admin.');
+      this.inviteNotice.set(e?.message || this.lang.t('Failed to create facility admin.'));
       this.inviteError.set(true);
     } finally {
       this.invitingAdmin.set(false);

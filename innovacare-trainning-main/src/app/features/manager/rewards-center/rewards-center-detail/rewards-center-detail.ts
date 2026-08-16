@@ -7,6 +7,7 @@ import { combineLatest, filter, map, of, switchMap } from 'rxjs';
 import { AuthService } from '../../../../core/auth';
 import { UserDirectoryService, LicenseDoc } from '../../../../shared/services/user-directory';
 import { GrantRewardDialog } from '../grant-reward-dialog/grant-reward-dialog';
+import { LanguageService } from '../../../../shared/services/language';
 import {
   RewardRow,
   RewardType,
@@ -30,6 +31,7 @@ export class RewardsCenterDetail {
   private userDir = inject(UserDirectoryService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  readonly lang = inject(LanguageService);
 
   private profile$ = this.authSvc.profile$.pipe(filter(Boolean));
 

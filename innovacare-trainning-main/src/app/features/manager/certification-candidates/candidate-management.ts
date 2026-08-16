@@ -12,6 +12,7 @@ import {
 } from '../../../shared/certification-authority/certification.models';
 import { downloadElementAsPdf } from '../../../shared/utils/credential-pdf';
 import { credentialQrDataUrl } from '../../../shared/utils/credential-qr';
+import { LanguageService } from '../../../shared/services/language';
 
 @Component({
   selector: 'app-candidate-management',
@@ -27,6 +28,7 @@ export class CandidateManagementComponent implements OnInit {
   private documentsSvc = inject(CertificationDocumentService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  readonly lang = inject(LanguageService);
 
   applicationId = '';
   candidate = signal<CandidateApplication | null>(null);

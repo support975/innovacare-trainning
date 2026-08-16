@@ -3,12 +3,12 @@
   <!-- Page Header -->
   <div class="page-header">
     <div>
-      <p class="page-eyebrow">{{ isSuperAdmin ? 'Super Admin' : 'Manager' }} · Courses</p>
-      <h1 class="page-title">{{ isSuperAdmin ? 'Course Library & Editor' : 'Course Library' }}</h1>
-      <p class="page-sub">{{ isSuperAdmin ? 'Create, edit and manage training courses for the platform.' : 'Browse available training courses.' }}</p>
+      <p class="page-eyebrow">{{ isSuperAdmin ? lang.t('Super Admin') : lang.t('Manager') }} · {{ lang.t('Courses') }}</p>
+      <h1 class="page-title">{{ isSuperAdmin ? lang.t('Course Library & Editor') : lang.t('Course Library') }}</h1>
+      <p class="page-sub">{{ isSuperAdmin ? lang.t('Create, edit and manage training courses for the platform.') : lang.t('Browse available training courses.') }}</p>
     </div>
     <div class="header-actions" *ngIf="canManageCourses">
-      <span class="course-count-pill">{{ courses().length }} courses</span>
+      <span class="course-count-pill">{{ courses().length }} {{ lang.t('courses') }}</span>
     </div>
   </div>
 
@@ -17,23 +17,23 @@
 
     <div class="panel__head">
       <div>
-        <div class="panel__title">{{ editId ? 'Edit Course' : 'Create Course' }}</div>
-        <div class="panel__sub">{{ editId ? 'Update course details and content structure.' : 'Fill in the details to add a new course to the platform.' }}</div>
+        <div class="panel__title">{{ editId ? lang.t('Edit Course') : lang.t('Create Course') }}</div>
+        <div class="panel__sub">{{ editId ? lang.t('Update course details and content structure.') : lang.t('Fill in the details to add a new course to the platform.') }}</div>
       </div>
       <div class="panel-form-actions" *ngIf="editId">
-        <button type="button" class="btn-ghost" (click)="cancelEdit()">Cancel edit</button>
+        <button type="button" class="btn-ghost" (click)="cancelEdit()">{{ lang.t('Cancel edit') }}</button>
       </div>
     </div>
 
     <!-- Import JSON -->
     <div class="form-section">
       <div class="form-section__head">
-        <div class="form-section__title">Import JSON</div>
+        <div class="form-section__title">{{ lang.t('Import JSON') }}</div>
       </div>
       <div class="row">
-        <label class="field-label">Course JSON file</label>
+        <label class="field-label">{{ lang.t('Course JSON file') }}</label>
         <input class="file-input" type="file" accept="application/json,.json" (change)="importCourseJson($event)" />
-        <div class="field-hint">Accepts a direct Course object or a file with docData. You can import directly or apply to form for editing before saving.</div>
+        <div class="field-hint">{{ lang.t('Accepts a direct Course object or a file with docData. You can import directly or apply to form for editing before saving.') }}</div>
         <div class="msg msg--error" *ngIf="importError">{{ importError }}</div>
         <div class="msg msg--ok" *ngIf="importSuccess">{{ importSuccess }}</div>
         <div class="msg msg--ok" *ngIf="jsonAppliedNotice">{{ jsonAppliedNotice }}</div>
@@ -42,46 +42,46 @@
       <div class="import-preview" *ngIf="pendingImport as preview">
         <div class="import-preview__head">
           <div>
-            <strong class="import-preview__title">JSON Preview</strong>
-            <div class="field-hint" *ngIf="pendingImportName">File: {{ pendingImportName }}</div>
+            <strong class="import-preview__title">{{ lang.t('JSON Preview') }}</strong>
+            <div class="field-hint" *ngIf="pendingImportName">{{ lang.t('File:') }} {{ pendingImportName }}</div>
           </div>
           <div class="import-preview__actions">
-            <button type="button" class="btn-outline" (click)="cancelImportPreview()">Cancel</button>
-            <button type="button" class="btn-outline" (click)="applyPendingImportToForm()">Apply to form</button>
+            <button type="button" class="btn-outline" (click)="cancelImportPreview()">{{ lang.t('Cancel') }}</button>
+            <button type="button" class="btn-outline" (click)="applyPendingImportToForm()">{{ lang.t('Apply to form') }}</button>
             <button
               type="button"
               class="btn-primary"
               [disabled]="importingCourse"
               (click)="confirmImportCourse()"
             >
-              {{ importingCourse ? 'Importing...' : 'Confirm import' }}
+              {{ importingCourse ? lang.t('Importing...') : lang.t('Confirm import') }}
             </button>
           </div>
         </div>
 
         <div class="row grid import-preview__stats">
           <div>
-            <label class="field-label">Title</label>
+            <label class="field-label">{{ lang.t('Title') }}</label>
             <div class="field-hint">{{ preview.title }}</div>
           </div>
           <div>
-            <label class="field-label">Language</label>
+            <label class="field-label">{{ lang.t('Language') }}</label>
             <div class="field-hint">{{ preview.lang }}</div>
           </div>
           <div>
-            <label class="field-label">Sections</label>
+            <label class="field-label">{{ lang.t('Sections') }}</label>
             <div class="field-hint">{{ preview.sections.length }}</div>
           </div>
           <div>
-            <label class="field-label">Lessons</label>
+            <label class="field-label">{{ lang.t('Lessons') }}</label>
             <div class="field-hint">{{ previewLessonCount(preview) }}</div>
           </div>
           <div>
-            <label class="field-label">Blocks</label>
+            <label class="field-label">{{ lang.t('Blocks') }}</label>
             <div class="field-hint">{{ previewBlockCount(preview) }}</div>
           </div>
           <div>
-            <label class="field-label">Type</label>
+            <label class="field-label">{{ lang.t('Type') }}</label>
             <div class="field-hint">{{ preview.type }}</div>
           </div>
         </div>
@@ -89,12 +89,12 @@
         <div class="import-preview__outline">
           <div class="field-hint" *ngFor="let section of preview.sections; let si = index">
             {{ si + 1 }}. {{ section.title }}
-            <span *ngIf="section.lessons.length"> · {{ section.lessons.length }} lessons</span>
+            <span *ngIf="section.lessons.length"> · {{ section.lessons.length }} {{ lang.t('lessons') }}</span>
           </div>
         </div>
 
         <details class="json-preview-details">
-          <summary>View complete JSON</summary>
+          <summary>{{ lang.t('View complete JSON') }}</summary>
           <pre class="json-preview-code">{{ importedJsonPreview(preview) }}</pre>
         </details>
       </div>

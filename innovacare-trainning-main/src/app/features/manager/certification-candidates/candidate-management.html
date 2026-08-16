@@ -1,14 +1,14 @@
 <div class="candidate-management">
   <!-- Header -->
   <div class="management-header">
-    <h1>Candidate Application Review</h1>
-    <p class="subtitle">Review documents, payment, and approve/reject applications</p>
+    <h1>{{ lang.t('Candidate Application Review') }}</h1>
+    <p class="subtitle">{{ lang.t('Review documents, payment, and approve/reject applications') }}</p>
   </div>
 
   <!-- Loading State -->
   <div class="loading-state" *ngIf="loading()">
     <div class="spinner"></div>
-    <p>Loading application...</p>
+    <p>{{ lang.t('Loading application...') }}</p>
   </div>
 
   <!-- Error State -->
@@ -27,19 +27,19 @@
   <div class="management-content" *ngIf="!loading() && candidate() as app">
     <!-- Candidate Info Card -->
     <section class="section candidate-info-section">
-      <h2 class="section-title">Candidate Information</h2>
+      <h2 class="section-title">{{ lang.t('Candidate Information') }}</h2>
       <div class="candidate-card">
         <div class="candidate-header">
           <div class="candidate-avatar">{{ candidateDisplayName.charAt(0).toUpperCase() }}</div>
           <div class="candidate-details">
             <h3 class="candidate-name">{{ candidateDisplayName }}</h3>
             <p class="candidate-email">{{ candidateEmail }}</p>
-            <p class="candidate-meta">Applied: {{ asDate(app.createdAt) | date: 'short' }}</p>
+            <p class="candidate-meta">{{ lang.t('Applied:') }} {{ asDate(app.createdAt) | date: 'short' }}</p>
           </div>
         </div>
         <div class="status-section">
           <div class="status-item">
-            <span class="status-label">Current Status</span>
+            <span class="status-label">{{ lang.t('Current Status') }}</span>
             <span [class]="'badge ' + getStatusBadgeClass(app.status)">
               {{ app.status | titlecase }}
             </span>
@@ -50,8 +50,8 @@
 
     <!-- Documents Review -->
     <section class="section documents-review-section">
-      <h2 class="section-title">Document Review</h2>
-      <p class="section-subtitle">Review and approve/reject submitted documents</p>
+      <h2 class="section-title">{{ lang.t('Document Review') }}</h2>
+      <p class="section-subtitle">{{ lang.t('Review and approve/reject submitted documents') }}</p>
 
       <div class="documents-grid" *ngIf="reviewDocuments.length > 0">
         <div *ngFor="let doc of reviewDocuments" class="document-card">
@@ -63,72 +63,72 @@
           </div>
 
           <div class="document-body">
-            <p class="document-date">Uploaded: {{ asDate(doc.uploadedAt) | date: 'short' }}</p>
+            <p class="document-date">{{ lang.t('Uploaded:') }} {{ asDate(doc.uploadedAt) | date: 'short' }}</p>
             <a [href]="doc.fileUrl" target="_blank" class="view-document-btn">
-              View Document
+              {{ lang.t('View Document') }}
             </a>
           </div>
 
           <div class="document-actions" *ngIf="doc.status !== 'accepted'">
             <button class="btn btn-approve" (click)="approveDocument(doc.id!)" [disabled]="busy()">
-              ✓ Approve
+              ✓ {{ lang.t('Approve') }}
             </button>
             <button class="btn btn-reject" (click)="rejectDocument(doc.id!)" [disabled]="busy()">
-              ✗ Reject
+              ✗ {{ lang.t('Reject') }}
             </button>
           </div>
 
           <div class="document-approved" *ngIf="doc.status === 'accepted'">
-            <span class="approved-check">✓</span> Approved
+            <span class="approved-check">✓</span> {{ lang.t('Approved') }}
           </div>
         </div>
       </div>
 
       <div class="empty-state" *ngIf="reviewDocuments.length === 0">
-        <p>No documents submitted</p>
+        <p>{{ lang.t('No documents submitted') }}</p>
       </div>
 
       <div class="review-status" [ngClass]="allDocumentsApproved() ? 'complete' : 'incomplete'">
         <span class="status-icon">{{ allDocumentsApproved() ? '✓' : '○' }}</span>
         <span class="status-text">
-          {{ allDocumentsApproved() ? 'All documents approved' : 'Waiting for document approval' }}
+          {{ allDocumentsApproved() ? lang.t('All documents approved') : lang.t('Waiting for document approval') }}
         </span>
       </div>
     </section>
 
     <!-- Payment Review -->
     <section class="section payment-review-section">
-      <h2 class="section-title">Payment Review</h2>
+      <h2 class="section-title">{{ lang.t('Payment Review') }}</h2>
 
       <div class="payment-info">
         <div class="payment-row">
-          <span class="label">Payment Status</span>
+          <span class="label">{{ lang.t('Payment Status') }}</span>
           <span [class]="'badge ' + getStatusBadgeClass(app.paymentStatus || 'not_started')">
             {{ (app.paymentStatus || 'not_started') | titlecase }}
           </span>
         </div>
 
         <div class="payment-row" *ngIf="paymentDocument as receipt">
-          <span class="label">Receipt</span>
+          <span class="label">{{ lang.t('Receipt') }}</span>
           <a [href]="receipt.fileUrl" target="_blank" class="receipt-link">
-            View Receipt
+            {{ lang.t('View Receipt') }}
           </a>
         </div>
 
         <div class="payment-actions" *ngIf="paymentDocument && app.paymentStatus !== 'paid'">
           <button class="btn btn-approve" (click)="approvePaymentDocument()" [disabled]="busy()">
-            ✓ Approve Payment
+            ✓ {{ lang.t('Approve Payment') }}
           </button>
         </div>
 
         <div class="empty-state" *ngIf="!paymentDocument">
-          <p>No payment receipt submitted</p>
+          <p>{{ lang.t('No payment receipt submitted') }}</p>
         </div>
 
         <div class="review-status" [ngClass]="paymentApproved() ? 'complete' : 'incomplete'">
           <span class="status-icon">{{ paymentApproved() ? '✓' : '○' }}</span>
           <span class="status-text">
-            {{ paymentApproved() ? 'Payment verified' : 'Waiting for payment verification' }}
+            {{ paymentApproved() ? lang.t('Payment verified') : lang.t('Waiting for payment verification') }}
           </span>
         </div>
       </div>
@@ -136,18 +136,18 @@
 
     <!-- Exam Result -->
     <section class="section exam-result-section" *ngIf="examResult as result">
-      <h2 class="section-title">Official Exam Result</h2>
+      <h2 class="section-title">{{ lang.t('Official Exam Result') }}</h2>
 
       <div class="exam-result-card" [class.passed]="result.passed" [class.failed]="!result.passed">
         <div class="exam-score">
           <strong>{{ result.percent }}%</strong>
-          <span>{{ result.correct }}/{{ result.total }} correct</span>
+          <span>{{ result.correct }}/{{ result.total }} {{ lang.t('correct') }}</span>
         </div>
         <div class="exam-result-meta">
           <span class="badge" [ngClass]="result.passed ? 'badge-success' : 'badge-danger'">
-            {{ result.passed ? 'Passed' : 'Below passing score' }}
+            {{ result.passed ? lang.t('Passed') : lang.t('Below passing score') }}
           </span>
-          <span class="exam-result-date">Completed: {{ asDate(result.completedAt) | date: 'short' }}</span>
+          <span class="exam-result-date">{{ lang.t('Completed:') }} {{ asDate(result.completedAt) | date: 'short' }}</span>
         </div>
       </div>
     </section>
@@ -156,37 +156,35 @@
     <section
       class="section certification-decision-section"
       *ngIf="app.status === 'exam_completed' || app.status === 'jury_review' || app.status === 'remediation_required'">
-      <h2 class="section-title">Jury Review &amp; Certification Decision</h2>
+      <h2 class="section-title">{{ lang.t('Jury Review & Certification Decision') }}</h2>
       <p class="section-subtitle">
-        Review the exam result above, then approve to issue a digital membership card and
-        certificate of good standing, or reject the application.
+        {{ lang.t('Review the exam result above, then approve to issue a digital membership card and certificate of good standing, or reject the application.') }}
       </p>
 
       <div class="credential-edit-toggle">
         <button class="btn btn-secondary btn-small" (click)="showCredentialForm.set(!showCredentialForm())">
-          {{ showCredentialForm() ? 'Hide credential details' : '✎ Set profession / membership number' }}
+          {{ showCredentialForm() ? lang.t('Hide credential details') : ('✎ ' + lang.t('Set profession / membership number')) }}
         </button>
       </div>
 
       <div class="credential-form" *ngIf="showCredentialForm()">
         <div class="form-group">
-          <label class="label">Profession / Title</label>
+          <label class="label">{{ lang.t('Profession / Title') }}</label>
           <input
             class="textarea"
             type="text"
             [(ngModel)]="credentialForm.profession"
-            placeholder="e.g. Registered Nurse" />
+            [placeholder]="lang.t('e.g. Registered Nurse')" />
         </div>
         <div class="form-group">
-          <label class="label">Membership Number</label>
+          <label class="label">{{ lang.t('Membership Number') }}</label>
           <input
             class="textarea"
             type="text"
             [(ngModel)]="credentialForm.membershipNumber"
-            placeholder="Enter existing member number, or leave blank to auto-generate" />
+            [placeholder]="lang.t('Enter existing member number, or leave blank to auto-generate')" />
           <small class="field-hint">
-            If this candidate already has a member number on the professional roster, enter it here
-            so the digital card matches. Leave blank to auto-generate a new one.
+            {{ lang.t('If this candidate already has a member number on the professional roster, enter it here so the digital card matches. Leave blank to auto-generate a new one.') }}
           </small>
         </div>
       </div>
@@ -196,34 +194,34 @@
           class="btn btn-primary"
           (click)="approveCertification()"
           [disabled]="busy()">
-          ✓ Approve &amp; Issue Certification
+          ✓ {{ lang.t('Approve & Issue Certification') }}
         </button>
 
         <button
           class="btn btn-danger"
           (click)="showRejectForm.set(true)"
           [disabled]="busy()">
-          ✗ Reject Application
+          ✗ {{ lang.t('Reject Application') }}
         </button>
       </div>
 
       <!-- Reuse the reject form below when opened from this section too -->
       <div class="reject-form" *ngIf="showRejectForm()">
         <div class="form-group">
-          <label class="label">Reason for Rejection</label>
+          <label class="label">{{ lang.t('Reason for Rejection') }}</label>
           <textarea
             class="textarea"
             [(ngModel)]="rejectReason"
-            placeholder="Explain why you are rejecting this application..."
+            [placeholder]="lang.t('Explain why you are rejecting this application...')"
             rows="4"></textarea>
         </div>
 
         <div class="form-actions">
           <button class="btn btn-primary" (click)="rejectApplication()" [disabled]="busy()">
-            Confirm Rejection
+            {{ lang.t('Confirm Rejection') }}
           </button>
           <button class="btn btn-secondary" (click)="showRejectForm.set(false)">
-            Cancel
+            {{ lang.t('Cancel') }}
           </button>
         </div>
       </div>
@@ -231,16 +229,16 @@
 
     <!-- Membership Card & Certificate -->
     <section class="section credentials-section" *ngIf="membershipCard as card">
-      <h2 class="section-title">Digital Credentials</h2>
+      <h2 class="section-title">{{ lang.t('Digital Credentials') }}</h2>
 
       <div class="credentials-grid">
         <div class="credential-card" id="admin-membership-card">
           <div class="credential-card__header">
-            <span class="credential-card__label">Membership Card</span>
+            <span class="credential-card__label">{{ lang.t('Membership Card') }}</span>
             <span
               class="badge"
               [ngClass]="isCredentialExpired(card.expiresAt) ? 'badge-danger' : 'badge-success'">
-              {{ isCredentialExpired(card.expiresAt) ? 'Expired' : 'Active' }}
+              {{ isCredentialExpired(card.expiresAt) ? lang.t('Expired') : lang.t('Active') }}
             </span>
           </div>
           <div class="credential-card__body">
@@ -253,21 +251,21 @@
               <div class="credential-card__org" *ngIf="organizationName()">{{ organizationName() }}</div>
               <div class="credential-card__number">{{ card.number }}</div>
               <div class="credential-card__dates">
-                <span>Issued: {{ asDate(card.issuedAt) | date: 'mediumDate' }}</span>
-                <span>Expires: {{ asDate(card.expiresAt) | date: 'mediumDate' }}</span>
+                <span>{{ lang.t('Issued:') }} {{ asDate(card.issuedAt) | date: 'mediumDate' }}</span>
+                <span>{{ lang.t('Expires:') }} {{ asDate(card.expiresAt) | date: 'mediumDate' }}</span>
               </div>
             </div>
           </div>
-          <img *ngIf="cardQrDataUrl()" class="credential-card__qr" [src]="cardQrDataUrl()" alt="Scan to verify this membership" />
+          <img *ngIf="cardQrDataUrl()" class="credential-card__qr" [src]="cardQrDataUrl()" [attr.alt]="lang.t('Scan to verify this membership')" />
         </div>
 
         <div class="credential-card" id="admin-certificate-card" *ngIf="certificate as cert">
           <div class="credential-card__header">
-            <span class="credential-card__label">Certificate of Good Standing</span>
+            <span class="credential-card__label">{{ lang.t('Certificate of Good Standing') }}</span>
             <span
               class="badge"
               [ngClass]="isCredentialExpired(cert.expiresAt) ? 'badge-danger' : 'badge-success'">
-              {{ isCredentialExpired(cert.expiresAt) ? 'Expired' : 'Active' }}
+              {{ isCredentialExpired(cert.expiresAt) ? lang.t('Expired') : lang.t('Active') }}
             </span>
           </div>
           <div class="credential-card__body">
@@ -280,31 +278,31 @@
               <div class="credential-card__org" *ngIf="organizationName()">{{ organizationName() }}</div>
               <div class="credential-card__number">{{ cert.number }}</div>
               <div class="credential-card__dates">
-                <span>Issued: {{ asDate(cert.issuedAt) | date: 'mediumDate' }}</span>
-                <span>Expires: {{ asDate(cert.expiresAt) | date: 'mediumDate' }}</span>
+                <span>{{ lang.t('Issued:') }} {{ asDate(cert.issuedAt) | date: 'mediumDate' }}</span>
+                <span>{{ lang.t('Expires:') }} {{ asDate(cert.expiresAt) | date: 'mediumDate' }}</span>
               </div>
             </div>
           </div>
-          <img *ngIf="certQrDataUrl()" class="credential-card__qr" [src]="certQrDataUrl()" alt="Scan to verify this certificate" />
+          <img *ngIf="certQrDataUrl()" class="credential-card__qr" [src]="certQrDataUrl()" [attr.alt]="lang.t('Scan to verify this certificate')" />
         </div>
       </div>
 
       <div class="credential-download-actions">
         <button class="btn btn-secondary btn-small" (click)="downloadCredential('admin-membership-card', 'membership-card')">
-          ⬇ Download membership card
+          ⬇ {{ lang.t('Download membership card') }}
         </button>
         <button class="btn btn-secondary btn-small" *ngIf="certificate" (click)="downloadCredential('admin-certificate-card', 'certificate')">
-          ⬇ Download certificate
+          ⬇ {{ lang.t('Download certificate') }}
         </button>
       </div>
 
       <div class="renew-actions" *ngIf="isCredentialExpired(card.expiresAt) || renewalStatus !== 'not_required'">
         <div class="renewal-status-row">
           <span class="badge" [ngClass]="getStatusBadgeClass(renewalStatus)">
-            Renewal: {{ renewalStatus | titlecase }}
+            {{ lang.t('Renewal:') }} {{ renewalStatus | titlecase }}
           </span>
           <span class="renewal-progress-text" *ngIf="renewalStatus !== 'not_required'">
-            {{ renewalCoursesCompleted.length }} course(s) completed · {{ renewalPointsEarned }} points earned
+            {{ renewalCoursesCompleted.length }} {{ lang.t('course(s) completed') }} · {{ renewalPointsEarned }} {{ lang.t('points earned') }}
           </span>
         </div>
 
@@ -313,7 +311,7 @@
           *ngIf="renewalStatus === 'ready'"
           (click)="validateRenewal()"
           [disabled]="busy()">
-          ✓ Validate Renewal
+          ✓ {{ lang.t('Validate Renewal') }}
         </button>
 
         <button
@@ -321,19 +319,19 @@
           *ngIf="renewalStatus !== 'ready'"
           (click)="approveCertification()"
           [disabled]="busy()">
-          ↻ Renew now (override requirements)
+          ↻ {{ lang.t('Renew now (override requirements)') }}
         </button>
       </div>
     </section>
 
     <!-- Application Decision -->
     <section class="section decision-section" *ngIf="app.status === 'submitted' || app.status === 'under_review'">
-      <h2 class="section-title">Application Decision</h2>
+      <h2 class="section-title">{{ lang.t('Application Decision') }}</h2>
 
       <div class="decision-info">
         <p class="decision-text">
-          All documents {{ allDocumentsApproved() ? '' : '(pending) ' }}
-          and payment {{ paymentApproved() ? '' : '(pending) ' }}
+          {{ lang.t('All documents') }} {{ allDocumentsApproved() ? '' : ('(' + lang.t('pending') + ') ') }}
+          {{ lang.t('and payment') }} {{ paymentApproved() ? '' : ('(' + lang.t('pending') + ') ') }}
         </p>
       </div>
 
@@ -342,34 +340,34 @@
           class="btn btn-primary"
           (click)="approveApplication()"
           [disabled]="!canApproveApplication() || busy()">
-          ✓ Approve Application
+          ✓ {{ lang.t('Approve Application') }}
         </button>
 
         <button
           class="btn btn-danger"
           (click)="showRejectForm.set(true)"
           [disabled]="busy()">
-          ✗ Reject Application
+          ✗ {{ lang.t('Reject Application') }}
         </button>
       </div>
 
       <!-- Reject Form -->
       <div class="reject-form" *ngIf="showRejectForm()">
         <div class="form-group">
-          <label class="label">Reason for Rejection</label>
+          <label class="label">{{ lang.t('Reason for Rejection') }}</label>
           <textarea
             class="textarea"
             [(ngModel)]="rejectReason"
-            placeholder="Explain why you are rejecting this application..."
+            [placeholder]="lang.t('Explain why you are rejecting this application...')"
             rows="4"></textarea>
         </div>
 
         <div class="form-actions">
           <button class="btn btn-primary" (click)="rejectApplication()" [disabled]="busy()">
-            Confirm Rejection
+            {{ lang.t('Confirm Rejection') }}
           </button>
           <button class="btn btn-secondary" (click)="showRejectForm.set(false)">
-            Cancel
+            {{ lang.t('Cancel') }}
           </button>
         </div>
       </div>
@@ -377,11 +375,11 @@
 
     <!-- Approval Actions -->
     <section class="section approval-section" *ngIf="app.status === 'eligible' || app.status === 'approved_for_exam'">
-      <h2 class="section-title">Exam Access</h2>
+      <h2 class="section-title">{{ lang.t('Exam Access') }}</h2>
 
       <div class="approval-info">
         <p class="approval-text">
-          Application eligible for exam registration
+          {{ lang.t('Application eligible for exam registration') }}
         </p>
 
         <button
@@ -389,21 +387,21 @@
           (click)="approveExam()"
           [disabled]="busy()"
           *ngIf="app.status !== 'approved_for_exam'">
-          Grant Exam Access
+          {{ lang.t('Grant Exam Access') }}
         </button>
 
         <div class="exam-approved" *ngIf="app.status === 'approved_for_exam'">
-          <span class="approved-icon">✓</span> Exam access granted
+          <span class="approved-icon">✓</span> {{ lang.t('Exam access granted') }}
         </div>
       </div>
     </section>
 
     <!-- Rejection Info -->
     <section class="section rejection-section" *ngIf="app.status === 'rejected'">
-      <h2 class="section-title">Application Rejected</h2>
+      <h2 class="section-title">{{ lang.t('Application Rejected') }}</h2>
 
       <div class="rejection-info">
-        <p class="rejection-reason-label">Reason for Rejection:</p>
+        <p class="rejection-reason-label">{{ lang.t('Reason for Rejection:') }}</p>
         <p class="rejection-reason">{{ app.reviewerNotes }}</p>
       </div>
     </section>
@@ -411,7 +409,7 @@
     <!-- Actions -->
     <section class="section actions-section">
       <button class="btn btn-secondary" routerLink="/manager/official-certifications">
-        Back to Applications
+        {{ lang.t('Back to Applications') }}
       </button>
     </section>
   </div>

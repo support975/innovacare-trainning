@@ -1,11 +1,11 @@
 <main class="exam-page">
   <header class="page-header">
     <div>
-      <p class="eyebrow">Super Admin · Exams</p>
-      <h1>Exam JSON Authoring</h1>
-      <p class="sub">Select a course by name, create or update an exam, then import questions from the JSON model.</p>
+      <p class="eyebrow">{{ lang.t('Super Admin · Exams') }}</p>
+      <h1>{{ lang.t('Exam JSON Authoring') }}</h1>
+      <p class="sub">{{ lang.t('Select a course by name, create or update an exam, then import questions from the JSON model.') }}</p>
     </div>
-    <button class="btn-ghost" type="button" (click)="loadExample()">Load JSON model</button>
+    <button class="btn-ghost" type="button" (click)="loadExample()">{{ lang.t('Load JSON model') }}</button>
   </header>
 
   <div class="notice" *ngIf="notice()" [class.notice--error]="noticeKind() === 'error'">
@@ -16,49 +16,49 @@
     <aside class="panel setup-panel">
       <div class="panel-head">
         <div>
-          <h2>Course and exam</h2>
-          <p>Exam content is managed centrally by Super Admin.</p>
+          <h2>{{ lang.t('Course and exam') }}</h2>
+          <p>{{ lang.t('Exam content is managed centrally by Super Admin.') }}</p>
         </div>
       </div>
 
       <label class="field">
-        <span>Search course</span>
+        <span>{{ lang.t('Search course') }}</span>
         <input
           type="search"
-          placeholder="Search by course name"
+          [placeholder]="lang.t('Search by course name')"
           [ngModel]="courseQuery()"
           (ngModelChange)="courseQuery.set($event)"
         />
       </label>
 
       <label class="field">
-        <span>Course</span>
+        <span>{{ lang.t('Course') }}</span>
         <select
           name="courseId"
           [ngModel]="selectedCourseId"
           (ngModelChange)="onCourseChange($event)"
         >
-          <option value="">Select course</option>
+          <option value="">{{ lang.t('Select course') }}</option>
           <option *ngFor="let course of filteredCourses()" [value]="course.id">
-            {{ course.title || course.id }}{{ course.active === false ? ' (inactive)' : '' }}
+            {{ course.title || course.id }}{{ course.active === false ? ' (' + lang.t('inactive') + ')' : '' }}
           </option>
         </select>
       </label>
 
       <div class="selected-course" *ngIf="selectedCourse() as course">
-        <strong>{{ course.title || 'Untitled course' }}</strong>
-        <span>{{ course.subtitle || course.kind || 'Course' }}</span>
+        <strong>{{ course.title || lang.t('Untitled course') }}</strong>
+        <span>{{ course.subtitle || course.kind || lang.t('Course') }}</span>
       </div>
 
       <label class="field">
-        <span>Existing exam</span>
+        <span>{{ lang.t('Existing exam') }}</span>
         <select
           name="examId"
           [ngModel]="selectedExamId"
           (ngModelChange)="onExamChange($event)"
           [disabled]="!selectedCourseId"
         >
-          <option value="">Create new exam from title</option>
+          <option value="">{{ lang.t('Create new exam from title') }}</option>
           <option *ngFor="let exam of exams()" [value]="exam.id">
             {{ exam.title || exam.id }}
           </option>
@@ -66,28 +66,28 @@
       </label>
 
       <label class="field">
-        <span>Exam title</span>
-        <input name="examTitle" [(ngModel)]="examTitle" placeholder="Final Exam" />
+        <span>{{ lang.t('Exam title') }}</span>
+        <input name="examTitle" [(ngModel)]="examTitle" [placeholder]="lang.t('Final Exam')" />
       </label>
 
       <div class="field-grid">
         <label class="field">
-          <span>Pass %</span>
+          <span>{{ lang.t('Pass %') }}</span>
           <input name="passPct" type="number" min="1" max="100" [(ngModel)]="passPct" />
         </label>
         <label class="field">
-          <span>Points</span>
+          <span>{{ lang.t('Points') }}</span>
           <input name="pointsPerQuestion" type="number" min="1" max="100" [(ngModel)]="pointsPerQuestion" />
         </label>
       </div>
 
       <label class="toggle-row">
         <input type="checkbox" name="available" [(ngModel)]="available" />
-        <span>Available to learners</span>
+        <span>{{ lang.t('Available to learners') }}</span>
       </label>
 
       <div class="exam-id-preview">
-        <span>Exam key</span>
+        <span>{{ lang.t('Exam key') }}</span>
         <code>{{ effectiveExamId() }}</code>
       </div>
     </aside>
@@ -95,8 +95,8 @@
     <section class="panel json-panel">
       <div class="panel-head">
         <div>
-          <h2>Question JSON</h2>
-          <p>Paste either a questions array or an object with exam metadata and questions.</p>
+          <h2>{{ lang.t('Question JSON') }}</h2>
+          <p>{{ lang.t('Paste either a questions array or an object with exam metadata and questions.') }}</p>
         </div>
       </div>
 
@@ -109,9 +109,9 @@
 
       <div class="actions">
         <button class="btn-primary" type="button" [disabled]="busy()" (click)="importQuestions()">
-          {{ busy() ? 'Importing...' : 'Import Questions' }}
+          {{ busy() ? lang.t('Importing...') : lang.t('Import Questions') }}
         </button>
-        <button class="btn-ghost" type="button" [disabled]="busy()" (click)="loadExample()">Load example</button>
+        <button class="btn-ghost" type="button" [disabled]="busy()" (click)="loadExample()">{{ lang.t('Load example') }}</button>
       </div>
     </section>
   </section>

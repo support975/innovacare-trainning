@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { SuperAdminOrganizationsService } from '../../services/super-admin-organizations';
 import { entitlementsForPlan } from '../../../../shared/billing/plan-entitlements';
+import { LanguageService } from '../../../../shared/services/language';
 
 @Component({
   selector: 'app-create',
@@ -14,6 +15,7 @@ import { entitlementsForPlan } from '../../../../shared/billing/plan-entitlement
 export class Create {
   private orgSvc  = inject(SuperAdminOrganizationsService);
   private router  = inject(Router);
+  readonly lang   = inject(LanguageService);
 
   busy    = signal(false);
   notice  = signal('');
@@ -37,7 +39,7 @@ export class Create {
 
   async create() {
     if (!this.form.name || !this.form.ownerEmail) {
-      this.notice.set('Name and owner email are required.');
+      this.notice.set(this.lang.t('Name and owner email are required.'));
       this.isError.set(true);
       return;
     }
@@ -58,7 +60,7 @@ export class Create {
         owner: { email: this.form.ownerEmail, displayName: this.form.ownerDisplayName },
       });
       this.created.set(created);
-      this.notice.set('Organization and admin account created successfully. Save the temporary password now.');
+      this.notice.set(this.lang.t('Organization and admin account created successfully. Save the temporary password now.'));
       this.form = {
         name: '', orgId: '',
         type: 'health',
@@ -66,7 +68,7 @@ export class Create {
         ownerEmail: '', ownerDisplayName: '',
       };
     } catch (e: any) {
-      this.notice.set(e?.message || 'Failed to create organization.');
+      this.notice.set(e?.message || this.lang.t('Failed to create organization.'));
       this.isError.set(true);
     } finally {
       this.busy.set(false);

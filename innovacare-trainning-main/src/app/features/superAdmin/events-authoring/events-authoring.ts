@@ -9,6 +9,7 @@ import { EventsService } from '../../../shared/services/events.service';
 import { FacultyService } from '../../../shared/services/faculty.service';
 import { SponsorsService } from '../../../shared/services/sponsors.service';
 import { AccreditationService } from '../../../shared/services/accreditation.service';
+import { LanguageService } from '../../../shared/services/language';
 import { SuperAdminOrganizationsService } from '../services/super-admin-organizations';
 import type { SuperAdminOrganization } from '../models/super-admin.models';
 import type { Faculty, Sponsor, Accreditation, WebinarEvent } from '../../../data/models';
@@ -68,6 +69,7 @@ export class EventsAuthoringComponent {
   private readonly facultySvc = inject(FacultyService);
   private readonly sponsorsSvc = inject(SponsorsService);
   private readonly accreditationSvc = inject(AccreditationService);
+  readonly lang = inject(LanguageService);
 
   readonly events = toSignal(this.eventsSvc.listAllForAdmin(), { initialValue: [] as WebinarEvent[] });
   readonly organizations = toSignal(this.orgsSvc.list(), { initialValue: [] as SuperAdminOrganization[] });
@@ -162,14 +164,14 @@ export class EventsAuthoringComponent {
       parsed = JSON.parse(this.jsonText());
     } catch {
       this.jsonError.set(true);
-      this.jsonNotice.set('Invalid JSON — please check the syntax.');
+      this.jsonNotice.set(this.lang.t('Invalid JSON — please check the syntax.'));
       return;
     }
 
     const entries = Array.isArray(parsed) ? parsed : [parsed];
     if (!entries.length) {
       this.jsonError.set(true);
-      this.jsonNotice.set('No events found in the pasted JSON.');
+      this.jsonNotice.set(this.lang.t('No events found in the pasted JSON.'));
       return;
     }
 
@@ -337,7 +339,7 @@ export class EventsAuthoringComponent {
     const ownerOrgId = this.form.ownerOrgId.trim();
     if (!title || !ownerOrgId || !this.form.dateStr) {
       this.error.set(true);
-      this.notice.set('Title, owning organization, and date are required.');
+      this.notice.set(this.lang.t('Title, owning organization, and date are required.'));
       return;
     }
 
@@ -397,10 +399,10 @@ export class EventsAuthoringComponent {
         });
         this.form.id = id;
       }
-      this.notice.set(wasEditing ? 'Event saved.' : 'Event created.');
+      this.notice.set(wasEditing ? this.lang.t('Event saved.') : this.lang.t('Event created.'));
     } catch (err: any) {
       this.error.set(true);
-      this.notice.set(err?.message || 'Unable to save event.');
+      this.notice.set(err?.message || this.lang.t('Unable to save event.'));
     } finally {
       this.busy.set(false);
     }
@@ -413,11 +415,11 @@ export class EventsAuthoringComponent {
     this.error.set(false);
     try {
       await this.eventsSvc.delete(event.id);
-      this.notice.set('Event deleted.');
+      this.notice.set(this.lang.t('Event deleted.'));
       if (this.form.id === event.id) this.resetForm();
     } catch (err: any) {
       this.error.set(true);
-      this.notice.set(err?.message || 'Unable to delete event.');
+      this.notice.set(err?.message || this.lang.t('Unable to delete event.'));
     } finally {
       this.busy.set(false);
     }
@@ -452,7 +454,7 @@ export class EventsAuthoringComponent {
 
   formatDate(event: WebinarEvent): string {
     const date = event.schedule?.date?.toDate?.() as Date | undefined;
-    if (!date) return 'No date';
+    if (!date) return this.lang.t('No date');
     return `${date.toLocaleDateString()} · ${event.schedule.startTime}–${event.schedule.endTime} ${event.schedule.timezone}`;
   }
 }

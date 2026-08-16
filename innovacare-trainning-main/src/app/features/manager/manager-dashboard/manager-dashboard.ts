@@ -20,6 +20,7 @@ import type { Observable } from 'rxjs';
 import { ActingOrgService } from '../../../core/organization/services/acting-org.service';
 import { CandidateApplicationService } from '../../../shared/certification-authority/candidate-application.service';
 import { CandidateApplication } from '../../../shared/certification-authority/certification.models';
+import { LanguageService } from '../../../shared/services/language';
 
 /* ----------------- Types ----------------- */
 type KPI = { completion30: string; overdue: number; avgScore: string };
@@ -161,6 +162,7 @@ export class ManagerDashboardComponent {
   private router = inject(Router);
   private orgContext = inject(ActingOrgService);
   private certApplicationsSvc = inject(CandidateApplicationService);
+  readonly lang = inject(LanguageService);
 
   notice = '';
 
@@ -170,11 +172,11 @@ export class ManagerDashboardComponent {
   /* ── Manager name ──────────────────────────────────────────────── */
   private managerName$ = authState(this.auth).pipe(
     switchMap(user => {
-      if (!user) return of('Manager');
+      if (!user) return of(this.lang.t('Manager'));
       const fromAuth = user.displayName?.trim();
       if (fromAuth) return of(fromAuth);
       return docData(doc(this.afs, `users/${user.uid}`)).pipe(
-        map((u: any) => safeStr(u?.displayName) || 'Manager')
+        map((u: any) => safeStr(u?.displayName) || this.lang.t('Manager'))
       );
     })
   );
@@ -191,7 +193,7 @@ export class ManagerDashboardComponent {
     })
   );
   orgName = toSignal(
-    this.orgDoc$.pipe(map((org) => safeStr(org?.name).trim() || this.orgId() || 'your organization')),
+    this.orgDoc$.pipe(map((org) => safeStr(org?.name).trim() || this.orgId() || this.lang.t('your organization'))),
     { initialValue: 'your organization' }
   );
 
@@ -490,34 +492,34 @@ export class ManagerDashboardComponent {
   ]).pipe(
     map(([overdue, pendingRequests, inactiveLearners]) => ([
       {
-        label: 'Overdue learning',
+        label: this.lang.t('Overdue learning'),
         value: overdue.length,
         detail: overdue.length
-          ? 'Send reminders or review assignment dates.'
-          : 'No overdue learners right now.',
+          ? this.lang.t('Send reminders or review assignment dates.')
+          : this.lang.t('No overdue learners right now.'),
         tone: 'warn',
         route: '/manager/audit',
-        cta: 'Open audit',
+        cta: this.lang.t('Open audit'),
       },
       {
-        label: 'Access & payment',
+        label: this.lang.t('Access & payment'),
         value: pendingRequests.length,
         detail: pendingRequests.length
-          ? 'Approve access or mark paid to unlock courses.'
-          : 'No pending access requests.',
+          ? this.lang.t('Approve access or mark paid to unlock courses.')
+          : this.lang.t('No pending access requests.'),
         tone: 'teal',
         route: '/manager/access-requests',
-        cta: 'Review requests',
+        cta: this.lang.t('Review requests'),
       },
       {
-        label: 'Learner follow-up',
+        label: this.lang.t('Learner follow-up'),
         value: inactiveLearners.length,
         detail: inactiveLearners.length
-          ? 'Learners have no activity in the last 7 days.'
-          : 'Learners are recently active.',
+          ? this.lang.t('Learners have no activity in the last 7 days.')
+          : this.lang.t('Learners are recently active.'),
         tone: 'navy',
         route: '/manager/learners',
-        cta: 'View learners',
+        cta: this.lang.t('View learners'),
       },
     ] as ManagerActionCard[]))
   );
@@ -557,7 +559,7 @@ export class ManagerDashboardComponent {
     anchor.download = `manager-ops-${new Date().toISOString().slice(0, 10)}.csv`;
     anchor.click();
     URL.revokeObjectURL(url);
-    this.notice = 'Operational CSV exported.';
+    this.notice = this.lang.t('Operational CSV exported.');
   }
   clearNotice()      { this.notice = ''; }
 }

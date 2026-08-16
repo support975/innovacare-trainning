@@ -12,6 +12,7 @@ import {
   LearningPathsService,
   OrganizationLearningPathAssignment,
 } from '../../../shared/services/learning-paths';
+import { LanguageService } from '../../../shared/services/language';
 
 type PathForm = {
   id: string;
@@ -34,6 +35,7 @@ export class LearningPathsComponent {
   private readonly coursesRepo = inject(CoursesRepo);
   private readonly orgsSvc = inject(SuperAdminOrganizationsService);
   private readonly pathsSvc = inject(LearningPathsService);
+  readonly lang = inject(LanguageService);
 
   readonly paths = toSignal(this.pathsSvc.listAll(), { initialValue: [] as LearningPath[] });
   readonly organizations = toSignal(this.orgsSvc.list(), { initialValue: [] as SuperAdminOrganization[] });
@@ -135,7 +137,7 @@ export class LearningPathsComponent {
     const courseIds = Array.from(this.selectedCourseIds());
     if (!title || !courseIds.length) {
       this.error.set(true);
-      this.notice.set('Add a path title and select at least one course.');
+      this.notice.set(this.lang.t('Add a path title and select at least one course.'));
       return;
     }
 
@@ -156,10 +158,10 @@ export class LearningPathsComponent {
         this.form.id || undefined
       );
       this.form.id = id;
-      this.notice.set(wasEditing ? 'Learning path saved.' : 'Learning path created.');
+      this.notice.set(wasEditing ? this.lang.t('Learning path saved.') : this.lang.t('Learning path created.'));
     } catch (err: any) {
       this.error.set(true);
-      this.notice.set(err?.message || 'Unable to save learning path.');
+      this.notice.set(err?.message || this.lang.t('Unable to save learning path.'));
     } finally {
       this.busy.set(false);
     }
@@ -171,7 +173,7 @@ export class LearningPathsComponent {
 
     if (!this.assignmentForm.pathId || !this.assignmentForm.orgId) {
       this.error.set(true);
-      this.notice.set('Select a learning path and an organization.');
+      this.notice.set(this.lang.t('Select a learning path and an organization.'));
       return;
     }
 
@@ -183,10 +185,10 @@ export class LearningPathsComponent {
         this.assignmentForm.orgId,
         { uid: user?.uid, email: user?.email ?? undefined }
       );
-      this.notice.set('Learning path assigned to organization.');
+      this.notice.set(this.lang.t('Learning path assigned to organization.'));
     } catch (err: any) {
       this.error.set(true);
-      this.notice.set(err?.message || 'Unable to assign learning path.');
+      this.notice.set(err?.message || this.lang.t('Unable to assign learning path.'));
     } finally {
       this.busy.set(false);
     }
@@ -198,10 +200,10 @@ export class LearningPathsComponent {
     this.busy.set(true);
     try {
       await this.pathsSvc.removeOrganizationAssignment(assignment);
-      this.notice.set('Learning path removed from organization.');
+      this.notice.set(this.lang.t('Learning path removed from organization.'));
     } catch (err: any) {
       this.error.set(true);
-      this.notice.set(err?.message || 'Unable to remove assignment.');
+      this.notice.set(err?.message || this.lang.t('Unable to remove assignment.'));
     } finally {
       this.busy.set(false);
     }

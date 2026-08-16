@@ -15,6 +15,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { WoundService } from '../services/wound-service';
 import { Dressing, Treatment, WoundType } from '../wound.model';
 import { AuthService } from '../../../core/auth';
+import { LanguageService } from '../../../shared/services/language';
 
 type QuickSheetJson = {
   name: string;
@@ -54,29 +55,29 @@ type QuickSheetJson = {
   <div class="sa-page">
     <div class="page-header">
       <div>
-        <p class="page-eyebrow">Manager · Quick Practice</p>
-        <h1 class="page-title">Internal Quick Practice Zone</h1>
-        <p class="page-sub">Create organization-only quick sheets for recurring tasks, refreshers and on-the-job reference.</p>
+        <p class="page-eyebrow">{{ lang.t('Manager · Quick Practice') }}</p>
+        <h1 class="page-title">{{ lang.t('Internal Quick Practice Zone') }}</h1>
+        <p class="page-sub">{{ lang.t('Create organization-only quick sheets for recurring tasks, refreshers and on-the-job reference.') }}</p>
       </div>
-      <span class="status-pill">Org protected</span>
+      <span class="status-pill">{{ lang.t('Org protected') }}</span>
     </div>
 
     <form class="panel form-panel" [formGroup]="form" (ngSubmit)="submit()">
       <div class="panel__head">
         <div>
-          <div class="panel__title">Create quick practice sheet</div>
-          <div class="panel__sub">Publish a short task sheet that only users in your organization can access.</div>
+          <div class="panel__title">{{ lang.t('Create quick practice sheet') }}</div>
+          <div class="panel__sub">{{ lang.t('Publish a short task sheet that only users in your organization can access.') }}</div>
         </div>
         <label class="check-label">
           <input type="checkbox" formControlName="isActive" />
-          Active
+          {{ lang.t('Active') }}
         </label>
       </div>
 
       <div class="org-warning" *ngIf="orgAccessMessage">
         <mat-icon>lock</mat-icon>
         <div>
-          <strong>Organization required</strong>
+          <strong>{{ lang.t('Organization required') }}</strong>
           <span>{{ orgAccessMessage }}</span>
         </div>
       </div>
@@ -84,18 +85,18 @@ type QuickSheetJson = {
       <section class="form-section json-section">
         <div class="form-section__head">
           <div>
-            <div class="form-section__title">JSON quick sheet</div>
-            <div class="field-hint">Paste or upload a quick sheet JSON, validate it, then apply it to the form before creating.</div>
+            <div class="form-section__title">{{ lang.t('JSON quick sheet') }}</div>
+            <div class="field-hint">{{ lang.t('Paste or upload a quick sheet JSON, validate it, then apply it to the form before creating.') }}</div>
           </div>
           <button class="btn-outline-sm" type="button" (click)="loadSampleJson()">
             <mat-icon>data_object</mat-icon>
-            Use sample
+            {{ lang.t('Use sample') }}
           </button>
         </div>
 
         <div class="json-grid">
           <div class="row">
-            <label class="field-label" for="quick-sheet-json">Quick sheet JSON</label>
+            <label class="field-label" for="quick-sheet-json">{{ lang.t('Quick sheet JSON') }}</label>
             <textarea
               id="quick-sheet-json"
               class="field-input json-input"
@@ -107,18 +108,18 @@ type QuickSheetJson = {
           </div>
 
           <div class="json-side">
-            <label class="field-label" for="quick-sheet-json-file">JSON file</label>
+            <label class="field-label" for="quick-sheet-json-file">{{ lang.t('JSON file') }}</label>
             <input id="quick-sheet-json-file" class="file-input" type="file" accept="application/json,.json" (change)="importQuickSheetJsonFile($event)" />
 
             <div class="json-actions">
               <button class="btn-outline-sm" type="button" (click)="previewQuickSheetJson()">
-                Preview JSON
+                {{ lang.t('Preview JSON') }}
               </button>
               <button class="btn-primary-sm" type="button" [disabled]="!jsonPreview" (click)="applyJsonPreviewToForm()">
-                Apply to form
+                {{ lang.t('Apply to form') }}
               </button>
               <button class="btn-ghost-sm" type="button" (click)="clearJsonImport()">
-                Clear
+                {{ lang.t('Clear') }}
               </button>
             </div>
 
@@ -127,12 +128,12 @@ type QuickSheetJson = {
 
             <div class="json-preview-card" *ngIf="jsonPreview as preview">
               <div class="json-preview-card__title">{{ preview.name }}</div>
-              <div class="field-hint">{{ preview.category || 'No task area' }}</div>
+              <div class="field-hint">{{ preview.category || lang.t('No task area') }}</div>
               <div class="json-preview-card__meta">
-                <span>{{ preview.treatmentOptions?.length || 0 }} steps</span>
-                <span>{{ preview.dressingOptions?.length || 0 }} items</span>
-                <span>{{ preview.images?.length || 0 }} images</span>
-                <span>{{ preview.videos?.length || 0 }} videos</span>
+                <span>{{ preview.treatmentOptions?.length || 0 }} {{ lang.t('steps') }}</span>
+                <span>{{ preview.dressingOptions?.length || 0 }} {{ lang.t('items') }}</span>
+                <span>{{ preview.images?.length || 0 }} {{ lang.t('images') }}</span>
+                <span>{{ preview.videos?.length || 0 }} {{ lang.t('videos') }}</span>
               </div>
             </div>
           </div>
@@ -141,60 +142,60 @@ type QuickSheetJson = {
 
       <section class="form-section">
         <div class="form-section__head">
-          <div class="form-section__title">Basic information</div>
+          <div class="form-section__title">{{ lang.t('Basic information') }}</div>
         </div>
 
         <div class="grid-2">
           <div class="row">
-            <label class="field-label" for="wound-name">Sheet title <span class="required">*</span></label>
-            <input id="wound-name" class="field-input" formControlName="name" placeholder="Opening checklist, incident report steps, customer handoff..." />
+            <label class="field-label" for="wound-name">{{ lang.t('Sheet title') }} <span class="required">*</span></label>
+            <input id="wound-name" class="field-input" formControlName="name" [placeholder]="lang.t('Opening checklist, incident report steps, customer handoff...')" />
             <div class="msg msg--error" *ngIf="form.get('name')?.invalid && form.get('name')?.touched">
-              Name is required.
+              {{ lang.t('Name is required.') }}
             </div>
           </div>
 
           <div class="row">
-            <label class="field-label" for="wound-category">Task area</label>
-            <input id="wound-category" class="field-input" formControlName="category" placeholder="Operations, safety, documentation, customer service..." />
+            <label class="field-label" for="wound-category">{{ lang.t('Task area') }}</label>
+            <input id="wound-category" class="field-input" formControlName="category" [placeholder]="lang.t('Operations, safety, documentation, customer service...')" />
           </div>
         </div>
 
         <div class="row">
-          <label class="field-label" for="wound-short">Quick purpose</label>
-          <input id="wound-short" class="field-input" formControlName="shortDescription" placeholder="What should staff use this sheet for?" />
+          <label class="field-label" for="wound-short">{{ lang.t('Quick purpose') }}</label>
+          <input id="wound-short" class="field-input" formControlName="shortDescription" [placeholder]="lang.t('What should staff use this sheet for?')" />
         </div>
 
         <div class="row">
-          <label class="field-label" for="wound-full">Quick sheet instructions</label>
-          <textarea id="wound-full" class="field-input" rows="5" formControlName="fullDescription" placeholder="Write the short instructions, reminders, safety notes or task flow."></textarea>
+          <label class="field-label" for="wound-full">{{ lang.t('Quick sheet instructions') }}</label>
+          <textarea id="wound-full" class="field-input" rows="5" formControlName="fullDescription" [placeholder]="lang.t('Write the short instructions, reminders, safety notes or task flow.')"></textarea>
         </div>
 
         <div class="grid-2 compact-grid">
           <div class="row">
-            <label class="field-label" for="wound-synonyms">Alternate names</label>
-            <input id="wound-synonyms" class="field-input" formControlName="synonyms" placeholder="Comma separated search terms" />
+            <label class="field-label" for="wound-synonyms">{{ lang.t('Alternate names') }}</label>
+            <input id="wound-synonyms" class="field-input" formControlName="synonyms" [placeholder]="lang.t('Comma separated search terms')" />
           </div>
           <div class="row">
-            <label class="field-label" for="wound-tags">Tags</label>
-            <input id="wound-tags" class="field-input" formControlName="tags" placeholder="onboarding, safety, compliance, daily task" />
+            <label class="field-label" for="wound-tags">{{ lang.t('Tags') }}</label>
+            <input id="wound-tags" class="field-input" formControlName="tags" [placeholder]="lang.t('onboarding, safety, compliance, daily task')" />
           </div>
         </div>
 
         <div class="row">
-          <label class="field-label" for="wound-characteristics">Key reminders</label>
-          <input id="wound-characteristics" class="field-input" formControlName="characteristics" placeholder="Comma separated reminders or checks" />
+          <label class="field-label" for="wound-characteristics">{{ lang.t('Key reminders') }}</label>
+          <input id="wound-characteristics" class="field-input" formControlName="characteristics" [placeholder]="lang.t('Comma separated reminders or checks')" />
         </div>
       </section>
 
       <section class="form-section">
         <div class="form-section__head">
           <div>
-            <div class="form-section__title">Short videos</div>
-            <div class="field-hint">Add secure links to short practice videos. YouTube, Vimeo and direct video file URLs can be watched by learners.</div>
+            <div class="form-section__title">{{ lang.t('Short videos') }}</div>
+            <div class="field-hint">{{ lang.t('Add secure links to short practice videos. YouTube, Vimeo and direct video file URLs can be watched by learners.') }}</div>
           </div>
           <button class="btn-outline-sm" type="button" (click)="addVideoUrl()">
             <mat-icon>add</mat-icon>
-            Add video
+            {{ lang.t('Add video') }}
           </button>
         </div>
 
@@ -204,13 +205,13 @@ type QuickSheetJson = {
               <mat-icon>smart_display</mat-icon>
             </div>
             <div class="image-field">
-              <label class="field-label" [for]="'video-url-' + i">Video URL</label>
-              <input [id]="'video-url-' + i" class="field-input" formControlName="url" placeholder="https://youtu.be/... or https://.../training.mp4" />
+              <label class="field-label" [for]="'video-url-' + i">{{ lang.t('Video URL') }}</label>
+              <input [id]="'video-url-' + i" class="field-input" formControlName="url" [placeholder]="lang.t('https://youtu.be/... or https://.../training.mp4')" />
               <div class="msg msg--error" *ngIf="ctrl.get('url')?.hasError('pattern') && ctrl.get('url')?.touched">
-                Enter a valid http or https URL.
+                {{ lang.t('Enter a valid http or https URL.') }}
               </div>
             </div>
-            <button class="icon-button icon-button--danger" type="button" (click)="removeVideoUrl(i)" aria-label="Remove video URL">
+            <button class="icon-button icon-button--danger" type="button" (click)="removeVideoUrl(i)" [attr.aria-label]="lang.t('Remove video URL')">
               <mat-icon>delete</mat-icon>
             </button>
           </div>
@@ -220,29 +221,29 @@ type QuickSheetJson = {
       <section class="form-section">
         <div class="form-section__head">
           <div>
-            <div class="form-section__title">Images or examples</div>
-            <div class="field-hint">Paste secure public URLs for diagrams, examples or task photos. Content remains visible only to this organization.</div>
+            <div class="form-section__title">{{ lang.t('Images or examples') }}</div>
+            <div class="field-hint">{{ lang.t('Paste secure public URLs for diagrams, examples or task photos. Content remains visible only to this organization.') }}</div>
           </div>
           <button class="btn-outline-sm" type="button" (click)="addImageUrl()">
             <mat-icon>add</mat-icon>
-            Add URL
+            {{ lang.t('Add URL') }}
           </button>
         </div>
 
         <div class="dynamic-list" formArrayName="imageUrls">
           <div class="image-row" *ngFor="let ctrl of imageUrls.controls; let i = index" [formGroupName]="i">
             <div class="image-preview" [class.image-preview--empty]="!isValidUrl(ctrl.get('url')?.value)">
-              <img *ngIf="isValidUrl(ctrl.get('url')?.value)" [src]="ctrl.get('url')?.value" alt="Quick sheet preview" (error)="onImgError($event)" />
+              <img *ngIf="isValidUrl(ctrl.get('url')?.value)" [src]="ctrl.get('url')?.value" [alt]="lang.t('Quick sheet preview')" (error)="onImgError($event)" />
               <mat-icon *ngIf="!isValidUrl(ctrl.get('url')?.value)">image</mat-icon>
             </div>
             <div class="image-field">
-              <label class="field-label" [for]="'image-url-' + i">Image URL</label>
-              <input [id]="'image-url-' + i" class="field-input" formControlName="url" placeholder="https://..." />
+              <label class="field-label" [for]="'image-url-' + i">{{ lang.t('Image URL') }}</label>
+              <input [id]="'image-url-' + i" class="field-input" formControlName="url" [placeholder]="lang.t('https://...')" />
               <div class="msg msg--error" *ngIf="ctrl.get('url')?.hasError('pattern') && ctrl.get('url')?.touched">
-                Enter a valid http or https URL.
+                {{ lang.t('Enter a valid http or https URL.') }}
               </div>
             </div>
-            <button class="icon-button icon-button--danger" type="button" (click)="removeImageUrl(i)" aria-label="Remove image URL">
+            <button class="icon-button icon-button--danger" type="button" (click)="removeImageUrl(i)" [attr.aria-label]="lang.t('Remove image URL')">
               <mat-icon>delete</mat-icon>
             </button>
           </div>
@@ -252,34 +253,34 @@ type QuickSheetJson = {
       <section class="form-section">
         <div class="form-section__head">
           <div>
-            <div class="form-section__title">Practice steps</div>
-            <div class="field-hint">Add short step-by-step actions staff can review quickly.</div>
+            <div class="form-section__title">{{ lang.t('Practice steps') }}</div>
+            <div class="field-hint">{{ lang.t('Add short step-by-step actions staff can review quickly.') }}</div>
           </div>
           <button class="btn-outline-sm" type="button" (click)="addTreatment()">
             <mat-icon>add</mat-icon>
-            Add step
+            {{ lang.t('Add step') }}
           </button>
         </div>
 
         <div class="dynamic-list" formArrayName="treatmentOptions">
           <div class="entry-card" *ngFor="let t of treatmentOptions.controls; let i = index" [formGroupName]="i">
             <div class="entry-card__head">
-              <span>Step {{ i + 1 }}</span>
+              <span>{{ lang.t('Step') }} {{ i + 1 }}</span>
               <button class="btn-ghost-sm" type="button" (click)="removeTreatment(i)">
                 <mat-icon>delete</mat-icon>
-                Remove
+                {{ lang.t('Remove') }}
               </button>
             </div>
             <div class="row">
-              <label class="field-label" [for]="'treatment-title-' + i">Step title <span class="required">*</span></label>
-              <input [id]="'treatment-title-' + i" class="field-input" formControlName="title" placeholder="Confirm identity, sanitize equipment..." />
+              <label class="field-label" [for]="'treatment-title-' + i">{{ lang.t('Step title') }} <span class="required">*</span></label>
+              <input [id]="'treatment-title-' + i" class="field-input" formControlName="title" [placeholder]="lang.t('Confirm identity, sanitize equipment...')" />
               <div class="msg msg--error" *ngIf="t.get('title')?.invalid && t.get('title')?.touched">
-                Step title is required.
+                {{ lang.t('Step title is required.') }}
               </div>
             </div>
             <div class="row">
-              <label class="field-label" [for]="'treatment-description-' + i">Description</label>
-              <textarea [id]="'treatment-description-' + i" class="field-input" rows="3" formControlName="description" placeholder="Add details, cautions, documentation notes or escalation reminders."></textarea>
+              <label class="field-label" [for]="'treatment-description-' + i">{{ lang.t('Description') }}</label>
+              <textarea [id]="'treatment-description-' + i" class="field-input" rows="3" formControlName="description" [placeholder]="lang.t('Add details, cautions, documentation notes or escalation reminders.')"></textarea>
             </div>
           </div>
         </div>
@@ -288,34 +289,34 @@ type QuickSheetJson = {
       <section class="form-section">
         <div class="form-section__head">
           <div>
-            <div class="form-section__title">Tools, materials or notes</div>
-            <div class="field-hint">Capture required tools, materials, documents or quick reference notes.</div>
+            <div class="form-section__title">{{ lang.t('Tools, materials or notes') }}</div>
+            <div class="field-hint">{{ lang.t('Capture required tools, materials, documents or quick reference notes.') }}</div>
           </div>
           <button class="btn-outline-sm" type="button" (click)="addDressing()">
             <mat-icon>add</mat-icon>
-            Add item
+            {{ lang.t('Add item') }}
           </button>
         </div>
 
         <div class="dynamic-list" formArrayName="dressingOptions">
           <div class="entry-card" *ngFor="let d of dressingOptions.controls; let i = index" [formGroupName]="i">
             <div class="entry-card__head">
-              <span>Item {{ i + 1 }}</span>
+              <span>{{ lang.t('Item') }} {{ i + 1 }}</span>
               <button class="btn-ghost-sm" type="button" (click)="removeDressing(i)">
                 <mat-icon>delete</mat-icon>
-                Remove
+                {{ lang.t('Remove') }}
               </button>
             </div>
             <div class="row">
-              <label class="field-label" [for]="'dressing-type-' + i">Item title <span class="required">*</span></label>
-              <input [id]="'dressing-type-' + i" class="field-input" formControlName="type" placeholder="Form, equipment, required document..." />
+              <label class="field-label" [for]="'dressing-type-' + i">{{ lang.t('Item title') }} <span class="required">*</span></label>
+              <input [id]="'dressing-type-' + i" class="field-input" formControlName="type" [placeholder]="lang.t('Form, equipment, required document...')" />
               <div class="msg msg--error" *ngIf="d.get('type')?.invalid && d.get('type')?.touched">
-                Item title is required.
+                {{ lang.t('Item title is required.') }}
               </div>
             </div>
             <div class="row">
-              <label class="field-label" [for]="'dressing-description-' + i">Description</label>
-              <textarea [id]="'dressing-description-' + i" class="field-input" rows="3" formControlName="description" placeholder="Describe when to use it or where staff can find it."></textarea>
+              <label class="field-label" [for]="'dressing-description-' + i">{{ lang.t('Description') }}</label>
+              <textarea [id]="'dressing-description-' + i" class="field-input" rows="3" formControlName="description" [placeholder]="lang.t('Describe when to use it or where staff can find it.')"></textarea>
             </div>
           </div>
         </div>
@@ -323,7 +324,7 @@ type QuickSheetJson = {
 
       <div class="form-actions">
         <button class="btn-primary" type="submit" [disabled]="uploading || !canCreateQuickSheet">
-          {{ uploading ? 'Creating...' : 'Create quick sheet' }}
+          {{ uploading ? lang.t('Creating...') : lang.t('Create quick sheet') }}
         </button>
         <mat-progress-spinner *ngIf="uploading" diameter="28" mode="indeterminate"></mat-progress-spinner>
       </div>
@@ -867,6 +868,7 @@ type QuickSheetJson = {
 })
 export class AddWound implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
+  readonly lang = inject(LanguageService);
 
   form!: FormGroup;
   uploading = false;
@@ -885,7 +887,7 @@ export class AddWound implements OnInit {
       .subscribe(profile => {
         this.currentOrgId = profile?.orgId ?? null;
         this.orgAccessMessage = profile && !this.currentOrgId
-          ? 'This manager account is not linked to an organization, so it cannot publish org-protected quick sheets. Assign this user to an organization first.'
+          ? this.lang.t('This manager account is not linked to an organization, so it cannot publish org-protected quick sheets. Assign this user to an organization first.')
           : '';
       });
 
@@ -978,7 +980,7 @@ export class AddWound implements OnInit {
       this.jsonText = await file.text();
       this.previewQuickSheetJson(file.name);
     } catch {
-      this.jsonImportError = 'Unable to read this JSON file.';
+      this.jsonImportError = this.lang.t('Unable to read this JSON file.');
     } finally {
       input.value = '';
     }
@@ -993,9 +995,9 @@ export class AddWound implements OnInit {
       const parsed = JSON.parse(this.jsonText || '{}');
       const sheet = this.normalizeQuickSheetJson(parsed);
       this.jsonPreview = sheet;
-      this.jsonImportSuccess = `${source} is valid. Review the preview, then apply it to the form.`;
+      this.jsonImportSuccess = `${source} ${this.lang.t('is valid. Review the preview, then apply it to the form.')}`;
     } catch (err) {
-      this.jsonImportError = err instanceof Error ? err.message : 'Invalid quick sheet JSON.';
+      this.jsonImportError = err instanceof Error ? err.message : this.lang.t('Invalid quick sheet JSON.');
     }
   }
 
@@ -1025,7 +1027,7 @@ export class AddWound implements OnInit {
     (sheet.dressingOptions?.length ? sheet.dressingOptions : [{ type: '', description: '' }]).forEach(item => this.addDressing(item));
 
     this.form.markAsDirty();
-    this.jsonImportSuccess = `Applied JSON to form: ${sheet.name}`;
+    this.jsonImportSuccess = `${this.lang.t('Applied JSON to form:')} ${sheet.name}`;
   }
 
   clearJsonImport(): void {
@@ -1078,12 +1080,12 @@ export class AddWound implements OnInit {
   private normalizeQuickSheetJson(input: any): QuickSheetJson {
     const data = input?.docData || input?.quickSheet || input?.sheet || input;
     if (!data || typeof data !== 'object' || Array.isArray(data)) {
-      throw new Error('JSON must contain a quick sheet object.');
+      throw new Error(this.lang.t('JSON must contain a quick sheet object.'));
     }
 
     const name = this.stringValue(data.name ?? data.title ?? data.sheetTitle);
     if (!name) {
-      throw new Error('Quick sheet JSON must include "name" or "title".');
+      throw new Error(this.lang.t('Quick sheet JSON must include "name" or "title".'));
     }
 
     return {

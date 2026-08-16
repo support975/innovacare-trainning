@@ -12,6 +12,7 @@ import {
   RegionRollupStats,
 } from '../../../../core/organization/services/organization-council-rollup.service';
 import { Organization } from '../../../../data/models';
+import { LanguageService } from '../../../../shared/services/language';
 
 @Component({
   selector: 'app-facility-detail',
@@ -28,6 +29,7 @@ export class FacilityDetail {
   private readonly orgContext = inject(ActingOrgService);
   private readonly rollupSvc = inject(OrganizationCouncilRollupService);
   private readonly destroyRef = inject(DestroyRef);
+  readonly lang = inject(LanguageService);
 
   readonly facilityId = this.route.snapshot.paramMap.get('facilityId') ?? '';
 
