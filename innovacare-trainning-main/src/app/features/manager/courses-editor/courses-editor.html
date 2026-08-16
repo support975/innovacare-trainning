@@ -1,10 +1,10 @@
 <div class="page">
   <!-- Breadcrumb -->
   <div class="crumbs">
-    <button class="btn tiny" (click)="backToCourses()">« Courses</button>
+    <button class="btn tiny" (click)="backToCourses()">« {{ lang.t('Courses') }}</button>
     <span class="sep"></span>
-    <span class="title">Extras for</span>
-    <span class="strong">{{ course().title || 'Course' }}</span>
+    <span class="title">{{ lang.t('Extras for') }}</span>
+    <span class="strong">{{ course().title || lang.t('Course') }}</span>
     <span class="muted">({{ courseId }})</span>
   </div>
 
@@ -12,7 +12,7 @@
     <!-- Certifications -->
     <section class="card">
       <div class="head">
-        <h3>Certifications</h3>
+        <h3>{{ lang.t('Certifications') }}</h3>
         <span class="muted">{{ certs().length }}</span>
       </div>
 
@@ -20,25 +20,25 @@
       <form class="form" [formGroup]="certForm" (ngSubmit)="addCert()">
         <div class="grid-3">
           <div>
-            <label>Code</label>
+            <label>{{ lang.t('Code') }}</label>
             <input formControlName="code" placeholder="ANCC" />
           </div>
           <div>
-            <label>Name</label>
-            <input formControlName="name" placeholder="American Nurses Credentialing Center" />
+            <label>{{ lang.t('Name') }}</label>
+            <input formControlName="name" [placeholder]="lang.t('American Nurses Credentialing Center')" />
           </div>
           <div>
-            <label>Credit</label>
+            <label>{{ lang.t('Credit') }}</label>
             <input formControlName="credit" placeholder="1,00" />
           </div>
         </div>
-        <button class="btn primary" type="submit">Add certification</button>
+        <button class="btn primary" type="submit">{{ lang.t('Add certification') }}</button>
       </form>
 
       <!-- List + inline edit -->
       <div class="table" *ngIf="certs().length; else noCerts">
         <div class="thead">
-          <div>Code</div><div>Name</div><div>Credit</div><div></div>
+          <div>{{ lang.t('Code') }}</div><div>{{ lang.t('Name') }}</div><div>{{ lang.t('Credit') }}</div><div></div>
         </div>
         <div class="tbody">
           <div class="tr" *ngFor="let c of certs(); trackBy: trackByCert">
@@ -47,8 +47,8 @@
               <div>{{ c.name }}</div>
               <div>{{ c.credit }}</div>
               <div class="row-actions">
-                <button class="btn outline" (click)="startEditCert(c)">Edit</button>
-                <button class="btn outline danger" (click)="removeCert(c)">Delete</button>
+                <button class="btn outline" (click)="startEditCert(c)">{{ lang.t('Edit') }}</button>
+                <button class="btn outline danger" (click)="removeCert(c)">{{ lang.t('Delete') }}</button>
               </div>
             </ng-container>
 
@@ -63,20 +63,20 @@
                 <input [(ngModel)]="editingCertCopy()!.credit" />
               </div>
               <div class="row-actions">
-                <button class="btn primary" (click)="saveEditCert()">Save</button>
-                <button class="btn outline" (click)="cancelEditCert()">Cancel</button>
+                <button class="btn primary" (click)="saveEditCert()">{{ lang.t('Save') }}</button>
+                <button class="btn outline" (click)="cancelEditCert()">{{ lang.t('Cancel') }}</button>
               </div>
             </ng-template>
           </div>
         </div>
       </div>
-      <ng-template #noCerts><div class="muted">No certifications.</div></ng-template>
+      <ng-template #noCerts><div class="muted">{{ lang.t('No certifications.') }}</div></ng-template>
     </section>
 
     <!-- Exams (URL-based) -->
     <section class="card">
       <div class="head">
-        <h3>Exams</h3>
+        <h3>{{ lang.t('Exams') }}</h3>
         <span class="muted">{{ exams().length }}</span>
       </div>
 
@@ -84,39 +84,39 @@
       <form class="form" [formGroup]="examForm" (ngSubmit)="addExam()">
         <div class="grid-2">
           <div>
-            <label>Title</label>
-            <input formControlName="title" placeholder="Final Exam" />
+            <label>{{ lang.t('Title') }}</label>
+            <input formControlName="title" [placeholder]="lang.t('Final Exam')" />
           </div>
           <div class="check">
             <label>
               <input type="checkbox" formControlName="available" />
-              Available
+              {{ lang.t('Available') }}
             </label>
           </div>
         </div>
 
         <div class="grid-2">
           <div>
-            <label>Number of questions (for reporting)</label>
+            <label>{{ lang.t('Number of questions (for reporting)') }}</label>
             <input type="number" min="1" formControlName="questions" placeholder="10" />
           </div>
           <div>
-            <label>Exam URL (Google Form / external page)</label>
+            <label>{{ lang.t('Exam URL (Google Form / external page)') }}</label>
             <input formControlName="url" placeholder="https://…" />
           </div>
         </div>
 
-        <button class="btn primary" type="submit">Add exam</button>
+        <button class="btn primary" type="submit">{{ lang.t('Add exam') }}</button>
       </form>
 
       <!-- List + inline edit -->
       <ng-container *ngIf="exams().length; else noExams">
         <div class="table">
           <div class="thead">
-            <div>Title</div>
-            <div>Questions</div>
-            <div>Available</div>
-            <div>URL</div>
+            <div>{{ lang.t('Title') }}</div>
+            <div>{{ lang.t('Questions') }}</div>
+            <div>{{ lang.t('Available') }}</div>
+            <div>{{ lang.t('URL') }}</div>
             <div></div>
           </div>
           <div class="tbody">
@@ -126,16 +126,16 @@
                 <div>{{ e.questions }}</div>
                 <div>
                   <span class="badge" [class.badge-off]="!e.available">
-                    {{ e.available ? 'Yes' : 'No' }}
+                    {{ e.available ? lang.t('Yes') : lang.t('No') }}
                   </span>
                 </div>
                 <div class="ellipsis">
-                  <a *ngIf="e.url" [href]="e.url" target="_blank" rel="noopener">Open</a>
+                  <a *ngIf="e.url" [href]="e.url" target="_blank" rel="noopener">{{ lang.t('Open') }}</a>
                   <span *ngIf="!e.url" class="muted">—</span>
                 </div>
                 <div class="row-actions">
-                  <button class="btn outline" (click)="startEditExam(e)">Edit</button>
-                  <button class="btn outline danger" (click)="removeExam(e)">Delete</button>
+                  <button class="btn outline" (click)="startEditExam(e)">{{ lang.t('Edit') }}</button>
+                  <button class="btn outline danger" (click)="removeExam(e)">{{ lang.t('Delete') }}</button>
                 </div>
               </ng-container>
 
@@ -149,15 +149,15 @@
                 <div class="check">
                   <label>
                     <input type="checkbox" [(ngModel)]="editingExamCopy()!.available" />
-                    Available
+                    {{ lang.t('Available') }}
                   </label>
                 </div>
                 <div>
                   <input [(ngModel)]="editingExamCopy()!.url" placeholder="https://…" />
                 </div>
                 <div class="row-actions">
-                  <button class="btn primary" (click)="saveEditExam()">Save</button>
-                  <button class="btn outline" (click)="cancelEditExam()">Cancel</button>
+                  <button class="btn primary" (click)="saveEditExam()">{{ lang.t('Save') }}</button>
+                  <button class="btn outline" (click)="cancelEditExam()">{{ lang.t('Cancel') }}</button>
                 </div>
               </ng-template>
             </div>
@@ -165,7 +165,7 @@
         </div>
       </ng-container>
 
-      <ng-template #noExams><div class="muted">No exams yet.</div></ng-template>
+      <ng-template #noExams><div class="muted">{{ lang.t('No exams yet.') }}</div></ng-template>
     </section>
   </div>
 </div>

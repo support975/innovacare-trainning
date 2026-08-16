@@ -10,6 +10,7 @@ import {
   SuperAdminDemoRequest,
   SuperAdminDemoRequestsService,
 } from '../services/super-admin-demo-requests';
+import { LanguageService } from '../../../shared/services/language';
 
 @Component({
   selector: 'app-super-admin-demo-requests',
@@ -22,6 +23,7 @@ export class DemoRequestsComponent {
   private readonly service = inject(SuperAdminDemoRequestsService);
   private readonly auth = inject(AuthService);
   private readonly logs = inject(SuperAdminLogsService);
+  readonly lang = inject(LanguageService);
 
   readonly requests = toSignal(this.service.list(), { initialValue: [] as SuperAdminDemoRequest[] });
   readonly profile = toSignal(this.auth.profile$, { initialValue: null });

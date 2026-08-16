@@ -3,15 +3,15 @@
   <!-- Page Header -->
   <div class="page-header">
     <div>
-      <p class="page-eyebrow">Super Admin · Organizations</p>
-      <h1 class="page-title">Organizations</h1>
-      <p class="page-sub">Manage tenant organizations, billing plans, and owner accounts.</p>
+      <p class="page-eyebrow">{{ lang.t('Super Admin · Organizations') }}</p>
+      <h1 class="page-title">{{ lang.t('Organizations') }}</h1>
+      <p class="page-sub">{{ lang.t('Manage tenant organizations, billing plans, and owner accounts.') }}</p>
     </div>
     <a class="btn-primary" routerLink="/super-admin/organizations/create">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
         <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
       </svg>
-      New Organization
+      {{ lang.t('New Organization') }}
     </a>
   </div>
 
@@ -33,7 +33,7 @@
         <input
           class="search-input"
           type="text"
-          placeholder="Search name, email, or ID..."
+          [placeholder]="lang.t('Search name, email, or ID...')"
           [value]="search()"
           (input)="search.set($any($event.target).value)"
         />
@@ -43,28 +43,28 @@
         [value]="typeFilter()"
         (change)="typeFilter.set($any($event.target).value)"
       >
-        <option value="all">All Types</option>
-        <option value="health">Health</option>
-        <option value="IT">IT</option>
-        <option value="school">School</option>
+        <option value="all">{{ lang.t('All Types') }}</option>
+        <option value="health">{{ lang.t('Health') }}</option>
+        <option value="IT">{{ lang.t('IT') }}</option>
+        <option value="school">{{ lang.t('School') }}</option>
       </select>
       <select
         class="filter-select"
         [value]="planFilter()"
         (change)="planFilter.set($any($event.target).value)"
       >
-        <option value="all">All Plans</option>
-        <option value="free">Starter</option>
-        <option value="pro">Growth</option>
-        <option value="enterprise">Enterprise</option>
+        <option value="all">{{ lang.t('All Plans') }}</option>
+        <option value="free">{{ lang.t('Starter') }}</option>
+        <option value="pro">{{ lang.t('Growth') }}</option>
+        <option value="enterprise">{{ lang.t('Enterprise') }}</option>
       </select>
-      <button class="btn-primary" (click)="applyFilters()">Apply</button>
+      <button class="btn-primary" (click)="applyFilters()">{{ lang.t('Apply') }}</button>
     </div>
 
     <!-- Loading -->
     <div *ngIf="loading()" class="org-loading">
       <div class="org-spinner"></div>
-      <span>Loading organizations...</span>
+      <span>{{ lang.t('Loading organizations...') }}</span>
     </div>
 
     <!-- Table -->
@@ -73,13 +73,13 @@
         <table class="table">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Type</th>
-              <th>Plan</th>
-              <th>Owner Email</th>
-              <th>Status</th>
-              <th>Certifications</th>
-              <th>Actions</th>
+              <th>{{ lang.t('Name') }}</th>
+              <th>{{ lang.t('Type') }}</th>
+              <th>{{ lang.t('Plan') }}</th>
+              <th>{{ lang.t('Owner Email') }}</th>
+              <th>{{ lang.t('Status') }}</th>
+              <th>{{ lang.t('Certifications') }}</th>
+              <th>{{ lang.t('Actions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -96,17 +96,17 @@
               </td>
               <td class="org-owner">{{ org.ownerEmail || '—' }}</td>
               <td>
-                <span [class]="'badge badge--' + (org.active ? 'active' : 'inactive')">{{ org.active ? 'Active' : 'Inactive' }}</span>
+                <span [class]="'badge badge--' + (org.active ? 'active' : 'inactive')">{{ org.active ? lang.t('Active') : lang.t('Inactive') }}</span>
               </td>
               <td>
-                <span *ngIf="org.certificationAuthorityEnabled" class="badge badge--success">Enabled</span>
-                <span *ngIf="!org.certificationAuthorityEnabled" class="badge badge--inactive">Disabled</span>
+                <span *ngIf="org.certificationAuthorityEnabled" class="badge badge--success">{{ lang.t('Enabled') }}</span>
+                <span *ngIf="!org.certificationAuthorityEnabled" class="badge badge--inactive">{{ lang.t('Disabled') }}</span>
               </td>
               <td>
                 <div class="org-actions">
-                  <a class="action-link action-link--view" [routerLink]="['/super-admin/organizations', org.id]">View</a>
-                  <a class="action-link action-link--edit" [routerLink]="['/super-admin/organizations', org.id, 'edit']">Edit</a>
-                  <a class="action-link action-link--delete" [routerLink]="['/super-admin/organizations', org.id, 'delete']">Delete</a>
+                  <a class="action-link action-link--view" [routerLink]="['/super-admin/organizations', org.id]">{{ lang.t('View') }}</a>
+                  <a class="action-link action-link--edit" [routerLink]="['/super-admin/organizations', org.id, 'edit']">{{ lang.t('Edit') }}</a>
+                  <a class="action-link action-link--delete" [routerLink]="['/super-admin/organizations', org.id, 'delete']">{{ lang.t('Delete') }}</a>
                 </div>
               </td>
             </tr>
@@ -117,8 +117,8 @@
       <ng-template #emptyOrgs>
         <div class="empty-state">
           <div class="empty-state__icon">&#127970;</div>
-          <strong>No organizations found</strong>
-          <span>Try adjusting your filters or create a new organization.</span>
+          <strong>{{ lang.t('No organizations found') }}</strong>
+          <span>{{ lang.t('Try adjusting your filters or create a new organization.') }}</span>
         </div>
       </ng-template>
     </div>
@@ -129,11 +129,11 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polyline points="15 18 9 12 15 6"/>
         </svg>
-        Prev
+        {{ lang.t('Prev') }}
       </button>
-      <span class="pagination__label">Page {{ page() }}</span>
+      <span class="pagination__label">{{ lang.t('Page') }} {{ page() }}</span>
       <button class="btn-ghost btn-sm" (click)="nextPage()" [disabled]="result().items.length < pageSize">
-        Next
+        {{ lang.t('Next') }}
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <polyline points="9 18 15 12 9 6"/>
         </svg>

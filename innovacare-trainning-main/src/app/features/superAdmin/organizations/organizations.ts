@@ -7,6 +7,7 @@ import { SuperAdminOrganizationsService } from '../services/super-admin-organiza
 import { OrgType } from '../../../data/models';
 import { PlanType } from '../models/super-admin.models';
 import { entitlementsForPlan } from '../../../shared/billing/plan-entitlements';
+import { LanguageService } from '../../../shared/services/language';
 
 @Component({
   selector: 'app-organizations',
@@ -18,6 +19,7 @@ import { entitlementsForPlan } from '../../../shared/billing/plan-entitlements';
 export class Organizations {
   private orgSvc = inject(SuperAdminOrganizationsService);
   private injector = inject(Injector);
+  readonly lang = inject(LanguageService);
 
   search = signal('');
   typeFilter = signal<OrgType | 'all'>('all');
@@ -47,9 +49,9 @@ export class Organizations {
   ];
 
   planLabel(plan: PlanType | string | undefined): string {
-    if (plan === 'free') return 'Starter';
-    if (plan === 'pro') return 'Growth';
-    if (plan === 'enterprise') return 'Enterprise';
+    if (plan === 'free') return this.lang.t('Starter');
+    if (plan === 'pro') return this.lang.t('Growth');
+    if (plan === 'enterprise') return this.lang.t('Enterprise');
     return plan || '—';
   }
 
@@ -92,7 +94,7 @@ export class Organizations {
 
   async createWithOwner() {
     if (!this.newOrg.name || !this.newOrg.ownerUid || !this.newOrg.ownerEmail) {
-      this.notice.set('Name, owner UID and owner email are required.');
+      this.notice.set(this.lang.t('Name, owner UID and owner email are required.'));
       return;
     }
 
@@ -115,7 +117,7 @@ export class Organizations {
         },
       });
 
-      this.notice.set('Organization created successfully.');
+      this.notice.set(this.lang.t('Organization created successfully.'));
       this.newOrg = {
         orgId: '',
         name: '',
@@ -127,7 +129,7 @@ export class Organizations {
       };
       this.applyFilters();
     } catch (e: any) {
-      this.notice.set(e?.message || 'Failed to create organization.');
+      this.notice.set(e?.message || this.lang.t('Failed to create organization.'));
     } finally {
       this.loading.set(false);
     }

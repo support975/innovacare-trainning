@@ -3,9 +3,9 @@
   <!-- Page Header -->
   <div class="page-header">
     <div>
-      <p class="page-eyebrow">Super Admin · Audit</p>
-      <h1 class="page-title">Audit Logs</h1>
-      <p class="page-sub">Administrative actions, critical events, and system activity.</p>
+      <p class="page-eyebrow">{{ lang.t('Super Admin · Audit') }}</p>
+      <h1 class="page-title">{{ lang.t('Audit Logs') }}</h1>
+      <p class="page-sub">{{ lang.t('Administrative actions, critical events, and system activity.') }}</p>
     </div>
   </div>
 
@@ -22,7 +22,7 @@
       </div>
       <div>
         <div class="stat-card__value">{{ stats().total }}</div>
-        <div class="stat-card__label">Total Logs</div>
+        <div class="stat-card__label">{{ lang.t('Total Logs') }}</div>
       </div>
     </div>
     <div class="stat-card">
@@ -34,7 +34,7 @@
       </div>
       <div>
         <div class="stat-card__value">{{ stats().critical }}</div>
-        <div class="stat-card__label">Critical</div>
+        <div class="stat-card__label">{{ lang.t('Critical') }}</div>
       </div>
     </div>
     <div class="stat-card">
@@ -46,7 +46,7 @@
       </div>
       <div>
         <div class="stat-card__value">{{ stats().warning }}</div>
-        <div class="stat-card__label">Warning</div>
+        <div class="stat-card__label">{{ lang.t('Warning') }}</div>
       </div>
     </div>
   </div>
@@ -64,7 +64,7 @@
         <input
           class="search-input"
           type="text"
-          placeholder="Search logs..."
+          [placeholder]="lang.t('Search logs...')"
           [value]="search()"
           (input)="search.set($any($event.target).value)"
         />
@@ -74,10 +74,10 @@
         [value]="severityFilter()"
         (change)="severityFilter.set($any($event.target).value)"
       >
-        <option value="all">All Severities</option>
-        <option value="info">Info</option>
-        <option value="warning">Warning</option>
-        <option value="critical">Critical</option>
+        <option value="all">{{ lang.t('All Severities') }}</option>
+        <option value="info">{{ lang.t('Info') }}</option>
+        <option value="warning">{{ lang.t('Warning') }}</option>
+        <option value="critical">{{ lang.t('Critical') }}</option>
       </select>
     </div>
 
@@ -86,12 +86,12 @@
       <table class="table">
         <thead>
           <tr>
-            <th>Severity</th>
-            <th>Action</th>
-            <th>Message</th>
-            <th>Actor Email</th>
-            <th>Target</th>
-            <th>Date</th>
+            <th>{{ lang.t('Severity') }}</th>
+            <th>{{ lang.t('Action') }}</th>
+            <th>{{ lang.t('Message') }}</th>
+            <th>{{ lang.t('Actor Email') }}</th>
+            <th>{{ lang.t('Target') }}</th>
+            <th>{{ lang.t('Date') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -112,8 +112,8 @@
     <ng-template #emptyLogs>
       <div class="empty-state">
         <div class="empty-state__icon">&#128196;</div>
-        <strong>No log entries found</strong>
-        <span>Try adjusting the severity filter or search query.</span>
+        <strong>{{ lang.t('No log entries found') }}</strong>
+        <span>{{ lang.t('Try adjusting the severity filter or search query.') }}</span>
       </div>
     </ng-template>
   </div>

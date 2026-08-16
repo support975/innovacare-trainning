@@ -1,5 +1,5 @@
 <div class="exam-admin">
-  <h1>Exam Centers & Sessions Management</h1>
+  <h1>{{ lang.t('Exam Centers & Sessions Management') }}</h1>
 
   <div class="notice" *ngIf="notice()" [class.success]="notice().includes('✓')">
     {{ notice() }}
@@ -11,56 +11,56 @@
       [class.active]="activeTab() === 'centers'"
       (click)="activeTab.set('centers')"
     >
-      Exam Centers
+      {{ lang.t('Exam Centers') }}
     </button>
     <button
       class="tab-btn"
       [class.active]="activeTab() === 'sessions'"
       (click)="activeTab.set('sessions')"
     >
-      Sessions
+      {{ lang.t('Sessions') }}
     </button>
   </div>
 
   <!-- CENTERS TAB -->
   <section *ngIf="activeTab() === 'centers'" class="tab-content">
-    <h2>Create Exam Center</h2>
+    <h2>{{ lang.t('Create Exam Center') }}</h2>
     <form class="form-grid" (ngSubmit)="addCenter()">
       <div class="form-group">
-        <label>Center Name *</label>
+        <label>{{ lang.t('Center Name *') }}</label>
         <input
           type="text"
           [(ngModel)]="newCenter().name"
           name="centerName"
-          placeholder="e.g., Washington Medical Center"
+          [placeholder]="lang.t('e.g., Washington Medical Center')"
           [disabled]="busy()"
         />
       </div>
 
       <div class="form-group">
-        <label>Address</label>
+        <label>{{ lang.t('Address') }}</label>
         <input
           type="text"
           [(ngModel)]="newCenter().address"
           name="address"
-          placeholder="123 Health Ave"
+          [placeholder]="lang.t('123 Health Ave')"
           [disabled]="busy()"
         />
       </div>
 
       <div class="form-group">
-        <label>City *</label>
+        <label>{{ lang.t('City *') }}</label>
         <input
           type="text"
           [(ngModel)]="newCenter().city"
           name="city"
-          placeholder="Washington"
+          [placeholder]="lang.t('Washington')"
           [disabled]="busy()"
         />
       </div>
 
       <div class="form-group">
-        <label>State/Province</label>
+        <label>{{ lang.t('State/Province') }}</label>
         <input
           type="text"
           [(ngModel)]="newCenter().state"
@@ -71,7 +71,7 @@
       </div>
 
       <div class="form-group">
-        <label>Country</label>
+        <label>{{ lang.t('Country') }}</label>
         <input
           type="text"
           [(ngModel)]="newCenter().country"
@@ -82,42 +82,42 @@
       </div>
 
       <div class="form-group">
-        <label>Timezone</label>
+        <label>{{ lang.t('Timezone') }}</label>
         <select [(ngModel)]="newCenter().timezone" name="timezone" [disabled]="busy()">
-          <option value="America/New_York">Eastern (America/New_York)</option>
-          <option value="America/Chicago">Central (America/Chicago)</option>
-          <option value="America/Denver">Mountain (America/Denver)</option>
-          <option value="America/Los_Angeles">Pacific (America/Los_Angeles)</option>
-          <option value="Europe/London">GMT (Europe/London)</option>
-          <option value="Europe/Paris">CET (Europe/Paris)</option>
+          <option value="America/New_York">{{ lang.t('Eastern (America/New_York)') }}</option>
+          <option value="America/Chicago">{{ lang.t('Central (America/Chicago)') }}</option>
+          <option value="America/Denver">{{ lang.t('Mountain (America/Denver)') }}</option>
+          <option value="America/Los_Angeles">{{ lang.t('Pacific (America/Los_Angeles)') }}</option>
+          <option value="Europe/London">{{ lang.t('GMT (Europe/London)') }}</option>
+          <option value="Europe/Paris">{{ lang.t('CET (Europe/Paris)') }}</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label>Organization</label>
+        <label>{{ lang.t('Organization') }}</label>
         <input
           type="text"
-          [value]="userOrgId() || 'Your Organization'"
+          [value]="userOrgId() || lang.t('Your Organization')"
           [disabled]="true"
           class="input-disabled"
         />
-        <small>Automatically set to your organization</small>
+        <small>{{ lang.t('Automatically set to your organization') }}</small>
       </div>
 
       <button type="submit" class="btn-primary" [disabled]="busy()">
-        {{ busy() ? 'Creating...' : 'Create Center' }}
+        {{ busy() ? lang.t('Creating...') : lang.t('Create Center') }}
       </button>
     </form>
 
     <div class="centers-list" *ngIf="centers().length > 0">
-      <h3>Centers</h3>
+      <h3>{{ lang.t('Centers') }}</h3>
       <table>
         <thead>
           <tr>
-            <th>Name</th>
-            <th>City</th>
-            <th>Timezone</th>
-            <th>Actions</th>
+            <th>{{ lang.t('Name') }}</th>
+            <th>{{ lang.t('City') }}</th>
+            <th>{{ lang.t('Timezone') }}</th>
+            <th>{{ lang.t('Actions') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -126,14 +126,14 @@
             <td>{{ center.city }}, {{ center.state }}</td>
             <td>{{ center.timezone }}</td>
             <td>
-              <button class="btn-small">Edit</button>
+              <button class="btn-small">{{ lang.t('Edit') }}</button>
               <button
                 class="btn-small btn-delete"
                 (click)="deleteCenter(center.id || '')"
                 [disabled]="busy()"
-                title="Delete this center"
+                [title]="lang.t('Delete this center')"
               >
-                🗑 Delete
+                🗑 {{ lang.t('Delete') }}
               </button>
             </td>
           </tr>
@@ -144,17 +144,17 @@
 
   <!-- SESSIONS TAB -->
   <section *ngIf="activeTab() === 'sessions'" class="tab-content">
-    <h2>Create Exam Session</h2>
+    <h2>{{ lang.t('Create Exam Session') }}</h2>
     <form class="form-grid" (ngSubmit)="addSession()">
       <div class="form-group">
-        <label>Exam *</label>
+        <label>{{ lang.t('Exam *') }}</label>
         <select
           [(ngModel)]="newSession().examId"
           name="examId"
           [disabled]="busy() || availableExams().length === 0"
           required
         >
-          <option value="">-- Select an Exam --</option>
+          <option value="">{{ lang.t('-- Select an Exam --') }}</option>
           <option *ngFor="let exam of availableExams()" [value]="exam.id">
             {{ exam.title }}
           </option>
@@ -162,14 +162,14 @@
       </div>
 
       <div class="form-group">
-        <label>Exam Center *</label>
+        <label>{{ lang.t('Exam Center *') }}</label>
         <select
           [(ngModel)]="newSession().centerId"
           name="centerId"
           [disabled]="busy() || availableCenters().length === 0"
           required
         >
-          <option value="">-- Select a Center --</option>
+          <option value="">{{ lang.t('-- Select a Center --') }}</option>
           <option *ngFor="let center of availableCenters()" [value]="center.id">
             {{ center.name }}
           </option>
@@ -177,18 +177,18 @@
       </div>
 
       <div class="form-group">
-        <label>Organization</label>
+        <label>{{ lang.t('Organization') }}</label>
         <input
           type="text"
-          [value]="userOrgId() || 'Your Organization'"
+          [value]="userOrgId() || lang.t('Your Organization')"
           [disabled]="true"
           class="input-disabled"
         />
-        <small>Automatically set to your organization</small>
+        <small>{{ lang.t('Automatically set to your organization') }}</small>
       </div>
 
       <div class="form-group">
-        <label>Session Date *</label>
+        <label>{{ lang.t('Session Date *') }}</label>
         <input
           type="date"
           [(ngModel)]="newSession().sessionDate"
@@ -198,7 +198,7 @@
       </div>
 
       <div class="form-group">
-        <label>Start Time</label>
+        <label>{{ lang.t('Start Time') }}</label>
         <input
           type="time"
           [(ngModel)]="newSession().startTime"
@@ -208,7 +208,7 @@
       </div>
 
       <div class="form-group">
-        <label>End Time</label>
+        <label>{{ lang.t('End Time') }}</label>
         <input
           type="time"
           [(ngModel)]="newSession().endTime"
@@ -218,7 +218,7 @@
       </div>
 
       <div class="form-group">
-        <label>Duration (minutes)</label>
+        <label>{{ lang.t('Duration (minutes)') }}</label>
         <input
           type="number"
           [(ngModel)]="newSession().durationMinutes"
@@ -228,7 +228,7 @@
       </div>
 
       <div class="form-group">
-        <label>Require Identity Verification</label>
+        <label>{{ lang.t('Require Identity Verification') }}</label>
         <input
           type="checkbox"
           [(ngModel)]="newSession().requireIdentityVerification"
@@ -238,21 +238,21 @@
       </div>
 
       <button type="submit" class="btn-primary" [disabled]="busy()">
-        {{ busy() ? 'Creating...' : 'Create Session' }}
+        {{ busy() ? lang.t('Creating...') : lang.t('Create Session') }}
       </button>
     </form>
 
     <div class="sessions-list" *ngIf="sessions().length > 0">
-      <h3>Sessions</h3>
+      <h3>{{ lang.t('Sessions') }}</h3>
       <table>
         <thead>
           <tr>
-            <th>Date</th>
-            <th>Exam</th>
-            <th>Center</th>
-            <th>Status</th>
-            <th>Verification</th>
-            <th>Actions</th>
+            <th>{{ lang.t('Date') }}</th>
+            <th>{{ lang.t('Exam') }}</th>
+            <th>{{ lang.t('Center') }}</th>
+            <th>{{ lang.t('Status') }}</th>
+            <th>{{ lang.t('Verification') }}</th>
+            <th>{{ lang.t('Actions') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -267,28 +267,28 @@
                 class="btn-small"
                 (click)="generateAccessPassword(session.id || '')"
                 [disabled]="busy()"
-                title="Generate onsite access password"
+                [title]="lang.t('Generate onsite access password')"
               >
-                🔑 Password
+                🔑 {{ lang.t('Password') }}
               </button>
               <button class="btn-small" [routerLink]="['/proctor/sessions', session.id]">
-                Manage
+                {{ lang.t('Manage') }}
               </button>
               <button
                 class="btn-small"
                 (click)="openKioskSetup(session.id || '')"
                 [disabled]="busy()"
-                title="Setup kiosk login URLs for 10 stations"
+                [title]="lang.t('Setup kiosk login URLs for 10 stations')"
               >
-                💻 Kiosk
+                💻 {{ lang.t('Kiosk') }}
               </button>
               <button
                 class="btn-small btn-delete"
                 (click)="deleteSession(session.id || '')"
                 [disabled]="busy()"
-                title="Delete this session"
+                [title]="lang.t('Delete this session')"
               >
-                🗑 Delete
+                🗑 {{ lang.t('Delete') }}
               </button>
             </td>
           </tr>
@@ -301,37 +301,37 @@
   <div class="modal" *ngIf="kioskModalOpen()" [class.open]="kioskModalOpen()">
     <div class="modal-content">
       <button class="close-btn" (click)="closeKioskModal()">&times;</button>
-      <h2>Kiosk Login URLs - 10 Stations</h2>
-      <p class="subtitle">Share these URLs with each station computer. Each station shows only login - no admin UI.</p>
+      <h2>{{ lang.t('Kiosk Login URLs - 10 Stations') }}</h2>
+      <p class="subtitle">{{ lang.t('Share these URLs with each station computer. Each station shows only login - no admin UI.') }}</p>
 
       <div class="kiosk-urls-grid">
         <div *ngFor="let url of kioskUrls()" class="kiosk-url-card">
-          <div class="station-number">Station {{ url.stationId }}</div>
+          <div class="station-number">{{ lang.t('Station') }} {{ url.stationId }}</div>
           <div class="url-display">
             <code>{{ url.url }}</code>
-            <button class="btn-copy" (click)="copyToClipboard(url.url)" title="Copy URL">
-              📋 Copy
+            <button class="btn-copy" (click)="copyToClipboard(url.url)" [title]="lang.t('Copy URL')">
+              📋 {{ lang.t('Copy') }}
             </button>
           </div>
           <div class="url-qr" *ngIf="url.qrCode">
-            <img [src]="url.qrCode" alt="QR Code" />
-            <p class="qr-label">Scan to open on station</p>
+            <img [src]="url.qrCode" [alt]="lang.t('QR Code')" />
+            <p class="qr-label">{{ lang.t('Scan to open on station') }}</p>
           </div>
         </div>
       </div>
 
       <div class="kiosk-instructions">
-        <h3>Setup Instructions:</h3>
+        <h3>{{ lang.t('Setup Instructions:') }}</h3>
         <ol>
-          <li>On each station computer, open the URL (bookmark it)</li>
-          <li>The login screen will appear with no admin UI</li>
-          <li>When learner arrives, proctor adds them and verifies identity</li>
-          <li>Learner enters email and password on the station</li>
-          <li>Exam starts immediately on that station</li>
+          <li>{{ lang.t('On each station computer, open the URL (bookmark it)') }}</li>
+          <li>{{ lang.t('The login screen will appear with no admin UI') }}</li>
+          <li>{{ lang.t('When learner arrives, proctor adds them and verifies identity') }}</li>
+          <li>{{ lang.t('Learner enters email and password on the station') }}</li>
+          <li>{{ lang.t('Exam starts immediately on that station') }}</li>
         </ol>
       </div>
 
-      <button class="btn-primary" (click)="closeKioskModal()">Done</button>
+      <button class="btn-primary" (click)="closeKioskModal()">{{ lang.t('Done') }}</button>
     </div>
   </div>
 </div>

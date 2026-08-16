@@ -3,9 +3,9 @@
   <!-- Page Header -->
   <div class="page-header">
     <div>
-      <p class="page-eyebrow">Super Admin · Settings</p>
-      <h1 class="page-title">Platform Settings</h1>
-      <p class="page-sub">Configure global platform defaults, security policies, and notification preferences.</p>
+      <p class="page-eyebrow">{{ lang.t('Super Admin · Settings') }}</p>
+      <h1 class="page-title">{{ lang.t('Platform Settings') }}</h1>
+      <p class="page-sub">{{ lang.t('Configure global platform defaults, security policies, and notification preferences.') }}</p>
     </div>
   </div>
 
@@ -19,25 +19,25 @@
   <div class="panel">
     <div class="panel__head">
       <div>
-        <div class="panel__title">General</div>
-        <div class="panel__sub">Basic platform information and localization.</div>
+        <div class="panel__title">{{ lang.t('General') }}</div>
+        <div class="panel__sub">{{ lang.t('Basic platform information and localization.') }}</div>
       </div>
     </div>
     <div class="settings-form">
       <div class="settings-form__grid">
         <div class="field">
-          <label class="field__label" for="platformName">Platform Name</label>
+          <label class="field__label" for="platformName">{{ lang.t('Platform Name') }}</label>
           <input
             id="platformName"
             class="field__input"
             type="text"
             [(ngModel)]="general.platformName"
-            placeholder="e.g. InnovaCare Training"
+            [placeholder]="lang.t('e.g. InnovaCare Training')"
           />
-          <span class="field__hint">Displayed in emails and the browser title bar.</span>
+          <span class="field__hint">{{ lang.t('Displayed in emails and the browser title bar.') }}</span>
         </div>
         <div class="field">
-          <label class="field__label" for="supportEmail">Support Email</label>
+          <label class="field__label" for="supportEmail">{{ lang.t('Support Email') }}</label>
           <input
             id="supportEmail"
             class="field__input"
@@ -45,22 +45,22 @@
             [(ngModel)]="general.supportEmail"
             placeholder="support@example.com"
           />
-          <span class="field__hint">Used for outbound system notifications.</span>
+          <span class="field__hint">{{ lang.t('Used for outbound system notifications.') }}</span>
         </div>
         <div class="field">
-          <label class="field__label" for="defaultLanguage">Default Language</label>
+          <label class="field__label" for="defaultLanguage">{{ lang.t('Default Language') }}</label>
           <select id="defaultLanguage" class="field__select" [(ngModel)]="general.defaultLanguage">
-            <option value="en">English</option>
-            <option value="fr">French</option>
-            <option value="es">Spanish</option>
+            <option value="en">{{ lang.t('English') }}</option>
+            <option value="fr">{{ lang.t('French') }}</option>
+            <option value="es">{{ lang.t('Spanish') }}</option>
           </select>
-          <span class="field__hint">Default locale for new users.</span>
+          <span class="field__hint">{{ lang.t('Default locale for new users.') }}</span>
         </div>
       </div>
       <div class="settings-form__footer">
         <button class="btn-primary" (click)="save()">
           <span *ngIf="saved()" class="settings-saved-icon">&#10003;</span>
-          Save General Settings
+          {{ lang.t('Save General Settings') }}
         </button>
       </div>
     </div>
@@ -70,14 +70,14 @@
   <div class="panel">
     <div class="panel__head">
       <div>
-        <div class="panel__title">Security</div>
-        <div class="panel__sub">Authentication rules, session management, and password policies.</div>
+        <div class="panel__title">{{ lang.t('Security') }}</div>
+        <div class="panel__sub">{{ lang.t('Authentication rules, session management, and password policies.') }}</div>
       </div>
     </div>
     <div class="settings-form">
       <div class="settings-form__grid">
         <div class="field">
-          <label class="field__label" for="sessionTimeout">Session Timeout (minutes)</label>
+          <label class="field__label" for="sessionTimeout">{{ lang.t('Session Timeout (minutes)') }}</label>
           <input
             id="sessionTimeout"
             class="field__input"
@@ -87,10 +87,10 @@
             [(ngModel)]="security.sessionTimeoutMin"
             placeholder="60"
           />
-          <span class="field__hint">Users will be logged out after this period of inactivity.</span>
+          <span class="field__hint">{{ lang.t('Users will be logged out after this period of inactivity.') }}</span>
         </div>
         <div class="field">
-          <label class="field__label" for="passwordMinLength">Minimum Password Length</label>
+          <label class="field__label" for="passwordMinLength">{{ lang.t('Minimum Password Length') }}</label>
           <input
             id="passwordMinLength"
             class="field__input"
@@ -100,11 +100,11 @@
             [(ngModel)]="security.passwordMinLength"
             placeholder="8"
           />
-          <span class="field__hint">Passwords shorter than this will be rejected.</span>
+          <span class="field__hint">{{ lang.t('Passwords shorter than this will be rejected.') }}</span>
         </div>
         <div class="field field--full">
           <label class="toggle-field">
-            <span class="field__label toggle-field__label">Require Multi-Factor Authentication (MFA)</span>
+            <span class="field__label toggle-field__label">{{ lang.t('Require Multi-Factor Authentication (MFA)') }}</span>
             <span class="toggle-wrap">
               <input
                 type="checkbox"
@@ -115,11 +115,11 @@
               <label class="toggle-slider" for="mfaRequired"></label>
             </span>
           </label>
-          <span class="field__hint">When enabled, all users must complete MFA setup before accessing the platform.</span>
+          <span class="field__hint">{{ lang.t('When enabled, all users must complete MFA setup before accessing the platform.') }}</span>
         </div>
       </div>
       <div class="settings-form__footer">
-        <button class="btn-primary" (click)="save()">Save Security Settings</button>
+        <button class="btn-primary" (click)="save()">{{ lang.t('Save Security Settings') }}</button>
       </div>
     </div>
   </div>
@@ -128,16 +128,16 @@
   <div class="panel">
     <div class="panel__head">
       <div>
-        <div class="panel__title">Notifications</div>
-        <div class="panel__sub">Configure automated email notifications sent to learners and managers.</div>
+        <div class="panel__title">{{ lang.t('Notifications') }}</div>
+        <div class="panel__sub">{{ lang.t('Configure automated email notifications sent to learners and managers.') }}</div>
       </div>
     </div>
     <div class="settings-form">
       <div class="settings-notif-list">
         <label class="toggle-field toggle-field--row">
           <div class="toggle-field__info">
-            <span class="toggle-field__label">Email on Enrollment</span>
-            <span class="toggle-field__desc">Send a welcome email when a learner is enrolled in a course.</span>
+            <span class="toggle-field__label">{{ lang.t('Email on Enrollment') }}</span>
+            <span class="toggle-field__desc">{{ lang.t('Send a welcome email when a learner is enrolled in a course.') }}</span>
           </div>
           <span class="toggle-wrap">
             <input
@@ -151,8 +151,8 @@
         </label>
         <label class="toggle-field toggle-field--row">
           <div class="toggle-field__info">
-            <span class="toggle-field__label">Email on Completion</span>
-            <span class="toggle-field__desc">Notify learners and managers when a course is completed.</span>
+            <span class="toggle-field__label">{{ lang.t('Email on Completion') }}</span>
+            <span class="toggle-field__desc">{{ lang.t('Notify learners and managers when a course is completed.') }}</span>
           </div>
           <span class="toggle-wrap">
             <input
@@ -166,8 +166,8 @@
         </label>
         <label class="toggle-field toggle-field--row">
           <div class="toggle-field__info">
-            <span class="toggle-field__label">Email on Overdue</span>
-            <span class="toggle-field__desc">Alert learners when assigned courses are past their due date.</span>
+            <span class="toggle-field__label">{{ lang.t('Email on Overdue') }}</span>
+            <span class="toggle-field__desc">{{ lang.t('Alert learners when assigned courses are past their due date.') }}</span>
           </div>
           <span class="toggle-wrap">
             <input
@@ -181,7 +181,7 @@
         </label>
       </div>
       <div class="settings-form__footer">
-        <button class="btn-primary" (click)="save()">Save Notification Settings</button>
+        <button class="btn-primary" (click)="save()">{{ lang.t('Save Notification Settings') }}</button>
       </div>
     </div>
   </div>

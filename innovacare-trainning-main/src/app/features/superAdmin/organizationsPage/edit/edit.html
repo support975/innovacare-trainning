@@ -8,15 +8,15 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
-          Organizations
+          {{ lang.t('Organizations') }}
         </a>
       </div>
-      <p class="page-eyebrow">Super Admin · Organizations</p>
-      <h1 class="page-title">Edit Organization</h1>
-      <p class="page-sub">Update organization details, plan, and ownership.</p>
+      <p class="page-eyebrow">{{ lang.t('Super Admin · Organizations') }}</p>
+      <h1 class="page-title">{{ lang.t('Edit Organization') }}</h1>
+      <p class="page-sub">{{ lang.t('Update organization details, plan, and ownership.') }}</p>
     </div>
     <div class="header-id-badge" *ngIf="orgId">
-      <span class="header-id-label">ID</span>
+      <span class="header-id-label">{{ lang.t('ID') }}</span>
       <span class="header-id-value">{{ orgId }}</span>
     </div>
   </div>
@@ -24,7 +24,7 @@
   <!-- Loading State -->
   <div class="loading-state" *ngIf="loading()">
     <div class="loading-spinner"></div>
-    <span>Loading organization...</span>
+    <span>{{ lang.t('Loading organization...') }}</span>
   </div>
 
   <!-- Notice Banner -->

@@ -1,6 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { LanguageService } from '../../../shared/services/language';
 
 @Component({
   selector: 'app-settings',
@@ -9,6 +10,7 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './settings.css',
 })
 export class Settings {
+  readonly lang = inject(LanguageService);
   notice  = signal('');
   isError = signal(false);
   saved   = signal(false);
@@ -19,7 +21,7 @@ export class Settings {
 
   save() {
     this.saved.set(true);
-    this.notice.set('Settings saved successfully.');
+    this.notice.set(this.lang.t('Settings saved successfully.'));
     this.isError.set(false);
     setTimeout(() => this.saved.set(false), 3000);
   }

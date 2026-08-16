@@ -103,35 +103,35 @@
     <!-- Basic Info -->
     <div class="form-section">
       <div class="form-section__head">
-        <div class="form-section__title">Basic Info</div>
+        <div class="form-section__title">{{ lang.t('Basic Info') }}</div>
       </div>
 
       <div class="row">
-        <label class="field-label">Title <span class="required">*</span></label>
-        <input class="field-input" formControlName="title" placeholder="Course title" />
+        <label class="field-label">{{ lang.t('Title') }} <span class="required">*</span></label>
+        <input class="field-input" formControlName="title" [placeholder]="lang.t('Course title')" />
         <div class="msg msg--error" *ngIf="form.get('title')?.invalid && form.get('title')?.touched">
-          Title is required (min 3 characters)
+          {{ lang.t('Title is required (min 3 characters)') }}
         </div>
       </div>
 
       <div class="row">
-        <label class="field-label">Subtitle</label>
-        <input class="field-input" formControlName="subtitle" placeholder="Short subtitle" />
+        <label class="field-label">{{ lang.t('Subtitle') }}</label>
+        <input class="field-input" formControlName="subtitle" [placeholder]="lang.t('Short subtitle')" />
       </div>
 
       <div class="row">
-        <label class="field-label">Description</label>
-        <textarea class="field-input" formControlName="description" rows="3" placeholder="Short description"></textarea>
+        <label class="field-label">{{ lang.t('Description') }}</label>
+        <textarea class="field-input" formControlName="description" rows="3" [placeholder]="lang.t('Short description')"></textarea>
       </div>
 
       <div class="row">
-        <label class="field-label">Image URL</label>
+        <label class="field-label">{{ lang.t('Image URL') }}</label>
         <input class="field-input" formControlName="imageUrl" placeholder="https://…" />
       </div>
 
       <div class="row grid-4">
         <div>
-          <label class="field-label">Language</label>
+          <label class="field-label">{{ lang.t('Language') }}</label>
           <select class="field-input" formControlName="lang">
             <option value="EN">EN</option>
             <option value="FR">FR</option>
@@ -139,27 +139,27 @@
           </select>
         </div>
         <div>
-          <label class="field-label">Duration (min)</label>
+          <label class="field-label">{{ lang.t('Duration (min)') }}</label>
           <input class="field-input" type="number" formControlName="durationMin" />
         </div>
         <div>
-          <label class="field-label">CE Credit</label>
+          <label class="field-label">{{ lang.t('CE Credit') }}</label>
           <input class="field-input" type="number" formControlName="ceCredit" />
         </div>
         <div>
-          <label class="field-label">Sort order</label>
+          <label class="field-label">{{ lang.t('Sort order') }}</label>
           <input class="field-input" type="number" min="1" formControlName="sortOrder" />
         </div>
         <div>
-          <label class="field-label">Kind</label>
+          <label class="field-label">{{ lang.t('Kind') }}</label>
           <select class="field-input" formControlName="kind">
-            <option value="Course">Course</option>
-            <option value="Text">Text</option>
-            <option value="Module">Module</option>
+            <option value="Course">{{ lang.t('Course') }}</option>
+            <option value="Text">{{ lang.t('Text') }}</option>
+            <option value="Module">{{ lang.t('Module') }}</option>
           </select>
         </div>
         <div class="check-field">
-          <label class="check-label"><input type="checkbox" formControlName="active" /> Active</label>
+          <label class="check-label"><input type="checkbox" formControlName="active" /> {{ lang.t('Active') }}</label>
         </div>
       </div>
     </div>
@@ -167,65 +167,65 @@
     <!-- Advanced Settings -->
     <div class="form-section">
       <div class="form-section__head">
-        <div class="form-section__title">Advanced Settings</div>
+        <div class="form-section__title">{{ lang.t('Advanced Settings') }}</div>
       </div>
 
       <div class="row grid-4">
         <div>
-          <label class="field-label">Course Type</label>
+          <label class="field-label">{{ lang.t('Course Type') }}</label>
           <select class="field-input" formControlName="type">
-            <option value="Health">Health</option>
-            <option value="It">IT</option>
-            <option value="Hr">HR</option>
-            <option value="safety">Safety</option>
+            <option value="Health">{{ lang.t('Health') }}</option>
+            <option value="It">{{ lang.t('IT') }}</option>
+            <option value="Hr">{{ lang.t('HR') }}</option>
+            <option value="safety">{{ lang.t('Safety') }}</option>
           </select>
         </div>
         <div>
-          <label class="field-label">Lecturer</label>
-          <input class="field-input" formControlName="lecturer" placeholder="Instructor / lecturer" />
+          <label class="field-label">{{ lang.t('Lecturer') }}</label>
+          <input class="field-input" formControlName="lecturer" [placeholder]="lang.t('Instructor / lecturer')" />
         </div>
         <div>
-          <label class="field-label">Canonical URL</label>
+          <label class="field-label">{{ lang.t('Canonical URL') }}</label>
           <input class="field-input" formControlName="url" placeholder="https://…" />
         </div>
         <div>
-          <label class="field-label">Passing Score (%)</label>
+          <label class="field-label">{{ lang.t('Passing Score (%)') }}</label>
           <input class="field-input" type="number" formControlName="passingScore" />
         </div>
         <div class="check-field">
-          <label class="check-label"><input type="checkbox" formControlName="lockedSequence" /> Locked sequence</label>
+          <label class="check-label"><input type="checkbox" formControlName="lockedSequence" /> {{ lang.t('Locked sequence') }}</label>
         </div>
         <div class="check-field">
-          <label class="check-label"><input type="checkbox" formControlName="isPublic" /> Public course</label>
+          <label class="check-label"><input type="checkbox" formControlName="isPublic" /> {{ lang.t('Public course') }}</label>
         </div>
       </div>
 
       <div class="row grid-2">
         <div>
-          <label class="field-label">Tags (comma separated)</label>
-          <input class="field-input" formControlName="tagsText" placeholder="ethics, nursing, safety" />
+          <label class="field-label">{{ lang.t('Tags (comma separated)') }}</label>
+          <input class="field-input" formControlName="tagsText" [placeholder]="lang.t('ethics, nursing, safety')" />
         </div>
         <div>
-          <label class="field-label">Disclosures (comma separated)</label>
-          <input class="field-input" formControlName="disclosuresText" placeholder="none, conflict of interest" />
+          <label class="field-label">{{ lang.t('Disclosures (comma separated)') }}</label>
+          <input class="field-input" formControlName="disclosuresText" [placeholder]="lang.t('none, conflict of interest')" />
         </div>
         <div>
-          <label class="field-label">Target audience (comma separated)</label>
-          <input class="field-input" formControlName="targetAudienceText" placeholder="RN, LPN, CNA, NP" />
+          <label class="field-label">{{ lang.t('Target audience (comma separated)') }}</label>
+          <input class="field-input" formControlName="targetAudienceText" [placeholder]="lang.t('RN, LPN, CNA, NP')" />
         </div>
         <div>
-          <label class="field-label">Prerequisites (comma separated)</label>
-          <input class="field-input" formControlName="prerequisitesText" placeholder="Safety basics, onboarding, role orientation" />
+          <label class="field-label">{{ lang.t('Prerequisites (comma separated)') }}</label>
+          <input class="field-input" formControlName="prerequisitesText" [placeholder]="lang.t('Safety basics, onboarding, role orientation')" />
         </div>
         <div>
-          <label class="field-label">Requirements (comma separated)</label>
-          <input class="field-input" formControlName="requirementsText" placeholder="Internet, computer, speakers" />
+          <label class="field-label">{{ lang.t('Requirements (comma separated)') }}</label>
+          <input class="field-input" formControlName="requirementsText" [placeholder]="lang.t('Internet, computer, speakers')" />
         </div>
       </div>
 
       <div class="row">
-        <label class="field-label">Accommodations</label>
-        <textarea class="field-input" formControlName="accomodations" rows="3" placeholder="Accessibility / accommodations information"></textarea>
+        <label class="field-label">{{ lang.t('Accommodations') }}</label>
+        <textarea class="field-input" formControlName="accomodations" rows="3" [placeholder]="lang.t('Accessibility / accommodations information')"></textarea>
       </div>
     </div>
 
