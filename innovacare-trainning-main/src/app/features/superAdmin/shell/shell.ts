@@ -5,6 +5,7 @@ import { BreakpointObserver } from '@angular/cdk/layout';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../core/auth';
+import { LanguageService } from '../../../shared/services/language';
 
 type NavItem = {
   label: string;
@@ -29,6 +30,7 @@ export class Shell {
   private readonly destroyRef = inject(DestroyRef);
   private readonly breakpointObserver = inject(BreakpointObserver);
   private readonly authSvc = inject(AuthService);
+  readonly lang = inject(LanguageService);
   private readonly mobileQuery = '(max-width: 920px)';
 
   isMobile = signal(this.breakpointObserver.isMatched(this.mobileQuery));

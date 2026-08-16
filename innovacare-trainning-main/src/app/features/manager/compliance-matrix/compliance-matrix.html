@@ -1,64 +1,64 @@
 <main class="matrix-page">
   <header class="page-header">
     <div>
-      <p class="eyebrow">Manager · Compliance</p>
-      <h1>Training Compliance Matrix</h1>
-      <p class="sub">Track every learner against every organization-required course, including missing assignments.</p>
+      <p class="eyebrow">{{ lang.t('Manager · Compliance') }}</p>
+      <h1>{{ lang.t('Training Compliance Matrix') }}</h1>
+      <p class="sub">{{ lang.t('Track every learner against every organization-required course, including missing assignments.') }}</p>
     </div>
     <div class="page-actions">
-      <a class="btn-ghost" routerLink="/manager/assign">Assign Training</a>
-      <button class="btn-primary" type="button" (click)="exportCsv()">Export CSV</button>
+      <a class="btn-ghost" routerLink="/manager/assign">{{ lang.t('Assign Training') }}</a>
+      <button class="btn-primary" type="button" (click)="exportCsv()">{{ lang.t('Export CSV') }}</button>
     </div>
   </header>
 
   <section class="summary-grid">
     <article class="summary-card">
-      <span class="summary-label">Organization compliance</span>
+      <span class="summary-label">{{ lang.t('Organization compliance') }}</span>
       <strong>{{ summary().compliancePct }}%</strong>
-      <small>{{ summary().completed }} completed requirements</small>
+      <small>{{ summary().completed }} {{ lang.t('completed requirements') }}</small>
     </article>
     <article class="summary-card">
-      <span class="summary-label">Learners</span>
+      <span class="summary-label">{{ lang.t('Learners') }}</span>
       <strong>{{ summary().learners }}</strong>
-      <small>in your organization</small>
+      <small>{{ lang.t('in your organization') }}</small>
     </article>
     <article class="summary-card">
-      <span class="summary-label">Required courses</span>
+      <span class="summary-label">{{ lang.t('Required courses') }}</span>
       <strong>{{ summary().requirements }}</strong>
-      <small>assigned to this organization</small>
+      <small>{{ lang.t('assigned to this organization') }}</small>
     </article>
     <article class="summary-card summary-card--warn">
-      <span class="summary-label">Open gaps</span>
+      <span class="summary-label">{{ lang.t('Open gaps') }}</span>
       <strong>{{ summary().missing + summary().overdue }}</strong>
-      <small>{{ summary().missing }} missing · {{ summary().overdue }} overdue</small>
+      <small>{{ summary().missing }} {{ lang.t('missing') }} · {{ summary().overdue }} {{ lang.t('overdue') }}</small>
     </article>
   </section>
 
   <section class="toolbar">
     <label class="search-field">
-      <span>Search learners</span>
+      <span>{{ lang.t('Search learners') }}</span>
       <input
         type="search"
-        placeholder="Name or email"
+        [placeholder]="lang.t('Name or email')"
         [ngModel]="search()"
         (ngModelChange)="search.set($event)"
       />
     </label>
 
     <label class="filter-field">
-      <span>Status</span>
+      <span>{{ lang.t('Status') }}</span>
       <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
-        <option value="all">All learners</option>
-        <option value="noncompliant">Non-compliant only</option>
-        <option value="missing">Missing requirement</option>
-        <option value="overdue">Overdue</option>
-        <option value="started">Started</option>
-        <option value="assigned">Assigned</option>
-        <option value="completed">Completed</option>
+        <option value="all">{{ lang.t('All learners') }}</option>
+        <option value="noncompliant">{{ lang.t('Non-compliant only') }}</option>
+        <option value="missing">{{ lang.t('Missing requirement') }}</option>
+        <option value="overdue">{{ lang.t('Overdue') }}</option>
+        <option value="started">{{ lang.t('Started') }}</option>
+        <option value="assigned">{{ lang.t('Assigned') }}</option>
+        <option value="completed">{{ lang.t('Completed') }}</option>
       </select>
     </label>
 
-    <button class="btn-ghost" type="button" (click)="clearFilters()">Clear</button>
+    <button class="btn-ghost" type="button" (click)="clearFilters()">{{ lang.t('Clear') }}</button>
   </section>
 
   <section class="matrix-panel">
@@ -66,13 +66,13 @@
       <table class="matrix-table">
         <thead>
           <tr>
-            <th class="sticky-col learner-col">Learner</th>
-            <th class="metric-col">Compliance</th>
-            <th class="metric-col">Gaps</th>
+            <th class="sticky-col learner-col">{{ lang.t('Learner') }}</th>
+            <th class="metric-col">{{ lang.t('Compliance') }}</th>
+            <th class="metric-col">{{ lang.t('Gaps') }}</th>
             <th *ngFor="let requirement of requirements(); trackBy: trackCourse" class="course-col">
               <span>{{ requirement.title }}</span>
               <small>
-                {{ requirement.kind }} · {{ requirement.durationMin }} min
+                {{ requirement.kind }} · {{ requirement.durationMin }} {{ lang.t('min') }}
                 <ng-container *ngIf="requirement.pathTitles.length">
                   · {{ requirement.pathTitles[0] }}
                 </ng-container>
@@ -84,7 +84,7 @@
           <tr *ngFor="let row of filteredRows(); trackBy: trackRow" [class.row-risk]="row.missing || row.overdue">
             <th class="sticky-col learner-col">
               <strong>{{ row.learnerName }}</strong>
-              <small>{{ row.email || 'No email' }}</small>
+              <small>{{ row.email || lang.t('No email') }}</small>
             </th>
             <td class="metric-cell">
               <span class="pct" [class.pct--low]="row.compliancePct < 80">{{ row.compliancePct }}%</span>
@@ -114,10 +114,10 @@
 
     <ng-template #emptyMatrix>
       <div class="empty-state">
-        <h2>No matrix rows yet</h2>
-        <p *ngIf="!requirements().length">Assign courses or learning paths to this organization first.</p>
-        <p *ngIf="requirements().length && !filteredRows().length">No learners match the current filters.</p>
-        <a class="btn-primary" routerLink="/manager/assign">Open Assignment Center</a>
+        <h2>{{ lang.t('No matrix rows yet') }}</h2>
+        <p *ngIf="!requirements().length">{{ lang.t('Assign courses or learning paths to this organization first.') }}</p>
+        <p *ngIf="requirements().length && !filteredRows().length">{{ lang.t('No learners match the current filters.') }}</p>
+        <a class="btn-primary" routerLink="/manager/assign">{{ lang.t('Open Assignment Center') }}</a>
       </div>
     </ng-template>
   </section>

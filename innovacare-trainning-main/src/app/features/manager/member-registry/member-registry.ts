@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CandidateApplicationService } from '../../../shared/certification-authority/candidate-application.service';
 import { CandidateApplication } from '../../../shared/certification-authority/certification.models';
+import { LanguageService } from '../../../shared/services/language';
 
 @Component({
   selector: 'app-member-registry',
@@ -15,6 +16,7 @@ import { CandidateApplication } from '../../../shared/certification-authority/ce
 })
 export class MemberRegistryComponent {
   private applicationsSvc = inject(CandidateApplicationService);
+  readonly lang = inject(LanguageService);
 
   private allApplications = toSignal(this.applicationsSvc.listForCurrentOrganization(), {
     initialValue: [] as CandidateApplication[],

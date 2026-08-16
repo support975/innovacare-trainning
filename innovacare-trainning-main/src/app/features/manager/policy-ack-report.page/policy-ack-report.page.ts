@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Firestore, doc, getDoc } from '@angular/fire/firestore';
 import { Policy, PolicyAcknowledgement } from '../../learner/policy/model/policy.model';
 import { PolicyService } from '../../../shared/services/policy';
+import { LanguageService } from '../../../shared/services/language';
 
 type UserLabel = {
   name: string;
@@ -33,6 +34,7 @@ type ReportRow = {
 export class PolicyAckReportPage implements OnInit {
   private readonly policySvc = inject(PolicyService);
   private readonly afs = inject(Firestore);
+  readonly lang = inject(LanguageService);
 
   readonly policies = signal<Policy[]>([]);
   readonly rows = signal<ReportRow[]>([]);
@@ -93,7 +95,7 @@ export class PolicyAckReportPage implements OnInit {
         await this.run();
       }
     } catch (error: any) {
-      this.notice.set(error?.message || 'Unable to load policies.');
+      this.notice.set(error?.message || this.lang.t('Unable to load policies.'));
       this.isError.set(true);
     } finally {
       this.busy.set(false);
@@ -167,10 +169,10 @@ export class PolicyAckReportPage implements OnInit {
       this.loaded.set(true);
 
       if (!activeAssignments.length && !acknowledgements.length) {
-        this.notice.set('No learner has been assigned to this policy yet.');
+        this.notice.set(this.lang.t('No learner has been assigned to this policy yet.'));
       }
     } catch (error: any) {
-      this.notice.set(error?.message || 'Unable to build acknowledgement report.');
+      this.notice.set(error?.message || this.lang.t('Unable to build acknowledgement report.'));
       this.isError.set(true);
     } finally {
       this.busy.set(false);

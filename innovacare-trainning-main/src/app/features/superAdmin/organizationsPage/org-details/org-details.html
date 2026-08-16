@@ -8,12 +8,12 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="15 18 9 12 15 6"/>
           </svg>
-          Organizations
+          {{ lang.t('Organizations') }}
         </a>
       </div>
-      <p class="page-eyebrow">Super Admin · Organizations</p>
-      <h1 class="page-title">{{ org()?.name || 'Organization' }}</h1>
-      <p class="page-sub">Organization profile, billing details, and member directory.</p>
+      <p class="page-eyebrow">{{ lang.t('Super Admin · Organizations') }}</p>
+      <h1 class="page-title">{{ org()?.name || lang.t('Organization') }}</h1>
+      <p class="page-sub">{{ lang.t('Organization profile, billing details, and member directory.') }}</p>
     </div>
     <div class="header-actions" *ngIf="org()">
       <a class="btn-ghost" [routerLink]="['/super-admin/organizations', orgId, 'edit']">
@@ -21,14 +21,14 @@
           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
           <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
         </svg>
-        Edit
+        {{ lang.t('Edit') }}
       </a>
       <a class="btn-danger-outline" [routerLink]="['/super-admin/organizations', orgId, 'delete']">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
           <path d="M10 11v6"/><path d="M14 11v6"/>
         </svg>
-        Delete
+        {{ lang.t('Delete') }}
       </a>
     </div>
   </div>
@@ -36,7 +36,7 @@
   <!-- Loading State -->
   <div class="loading-state" *ngIf="loading()">
     <div class="loading-spinner"></div>
-    <span>Loading organization details...</span>
+    <span>{{ lang.t('Loading organization details...') }}</span>
   </div>
 
   <!-- Details Layout -->
@@ -46,8 +46,8 @@
     <div class="panel org-info-panel">
       <div class="panel__head">
         <div>
-          <div class="panel__title">Organization Info</div>
-          <div class="panel__sub">Core details and identifiers.</div>
+          <div class="panel__title">{{ lang.t('Organization Info') }}</div>
+          <div class="panel__sub">{{ lang.t('Core details and identifiers.') }}</div>
         </div>
       </div>
       <div class="org-info-body">
@@ -58,49 +58,49 @@
         <div class="org-info-badges">
           <span class="badge badge--info">{{ org()!.type }}</span>
           <span [class]="'badge badge--' + org()!.plan">{{ planLabel(org()!.plan) }}</span>
-          <span [class]="'badge badge--' + (org()!.active ? 'active' : 'inactive')">{{ org()!.active ? 'Active' : 'Inactive' }}</span>
-          <span *ngIf="org()!.certificationAuthorityEnabled" class="badge badge--success">Certifications Enabled</span>
-          <span *ngIf="org()!.canCreateSubOrgs" class="badge badge--facility">Facility Group</span>
+          <span [class]="'badge badge--' + (org()!.active ? 'active' : 'inactive')">{{ org()!.active ? lang.t('Active') : lang.t('Inactive') }}</span>
+          <span *ngIf="org()!.certificationAuthorityEnabled" class="badge badge--success">{{ lang.t('Certifications Enabled') }}</span>
+          <span *ngIf="org()!.canCreateSubOrgs" class="badge badge--facility">{{ lang.t('Facility Group') }}</span>
         </div>
         <div class="org-info-rows">
           <div class="org-info-row">
-            <span class="org-info-row__key">Organization ID</span>
+            <span class="org-info-row__key">{{ lang.t('Organization ID') }}</span>
             <span class="org-info-row__val org-info-row__val--mono">{{ org()!.id }}</span>
           </div>
           <div class="org-info-row">
-            <span class="org-info-row__key">Owner Email</span>
+            <span class="org-info-row__key">{{ lang.t('Owner Email') }}</span>
             <span class="org-info-row__val">{{ org()!.ownerEmail || '—' }}</span>
           </div>
           <div class="org-info-row">
-            <span class="org-info-row__key">Type</span>
+            <span class="org-info-row__key">{{ lang.t('Type') }}</span>
             <span class="org-info-row__val">{{ org()!.type }}</span>
           </div>
           <div class="org-info-row">
-            <span class="org-info-row__key">Plan</span>
+            <span class="org-info-row__key">{{ lang.t('Plan') }}</span>
             <span class="org-info-row__val">{{ planLabel(org()!.plan) }}</span>
           </div>
           <div class="org-info-row">
-            <span class="org-info-row__key">Learners</span>
+            <span class="org-info-row__key">{{ lang.t('Learners') }}</span>
             <span class="org-info-row__val">{{ learnerCount() }} / {{ learnerLimit(org()!) }}</span>
           </div>
           <div class="org-info-row">
-            <span class="org-info-row__key">Official Certifications</span>
+            <span class="org-info-row__key">{{ lang.t('Official Certifications') }}</span>
             <span class="org-info-row__val">
               <span [class]="'badge badge--' + (org()!.certificationAuthorityEnabled ? 'success' : 'inactive')">
-                {{ org()!.certificationAuthorityEnabled ? 'Enabled' : 'Disabled' }}
+                {{ org()!.certificationAuthorityEnabled ? lang.t('Enabled') : lang.t('Disabled') }}
               </span>
             </span>
           </div>
           <div class="org-info-row">
-            <span class="org-info-row__key">Facility Group</span>
+            <span class="org-info-row__key">{{ lang.t('Facility Group') }}</span>
             <span class="org-info-row__val">
               <span [class]="'badge badge--' + (org()!.canCreateSubOrgs ? 'facility' : 'inactive')">
-                {{ org()!.canCreateSubOrgs ? 'Enabled' : 'Disabled' }}
+                {{ org()!.canCreateSubOrgs ? lang.t('Enabled') : lang.t('Disabled') }}
               </span>
             </span>
           </div>
           <div class="org-info-row" *ngIf="org()!.createdAt">
-            <span class="org-info-row__key">Created</span>
+            <span class="org-info-row__key">{{ lang.t('Created') }}</span>
             <span class="org-info-row__val">{{ formatDate(org()!.createdAt) }}</span>
           </div>
         </div>
@@ -111,8 +111,8 @@
     <div class="panel members-panel">
       <div class="panel__head">
         <div>
-          <div class="panel__title">Members</div>
-          <div class="panel__sub">{{ members().length }} member{{ members().length !== 1 ? 's' : '' }} in this organization.</div>
+          <div class="panel__title">{{ lang.t('Members') }}</div>
+          <div class="panel__sub">{{ members().length }} {{ lang.t('member') }}{{ members().length !== 1 ? 's' : '' }} {{ lang.t('in this organization.') }}</div>
         </div>
       </div>
 
@@ -121,8 +121,8 @@
         <table class="table">
           <thead>
             <tr>
-              <th>User</th>
-              <th>Role</th>
+              <th>{{ lang.t('User') }}</th>
+              <th>{{ lang.t('Role') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -147,8 +147,8 @@
       <ng-template #emptyMembers>
         <div class="empty-state">
           <div class="empty-state__icon">&#128100;</div>
-          <strong>No members yet</strong>
-          <span>This organization has no members.</span>
+          <strong>{{ lang.t('No members yet') }}</strong>
+          <span>{{ lang.t('This organization has no members.') }}</span>
         </div>
       </ng-template>
     </div>
@@ -159,14 +159,14 @@
   <div class="panel facility-panel" *ngIf="!loading() && org()?.canCreateSubOrgs">
     <div class="panel__head">
       <div>
-        <div class="panel__title">Facility Group Overview</div>
-        <div class="panel__sub">Roll-up training performance across every facility under this organization.</div>
+        <div class="panel__title">{{ lang.t('Facility Group Overview') }}</div>
+        <div class="panel__sub">{{ lang.t('Roll-up training performance across every facility under this organization.') }}</div>
       </div>
     </div>
 
     <div *ngIf="loadingRollup()" class="loading-state">
       <div class="loading-spinner"></div>
-      <span>Loading facility roll-up...</span>
+      <span>{{ lang.t('Loading facility roll-up...') }}</span>
     </div>
 
     <ng-container *ngIf="!loadingRollup()">
@@ -174,22 +174,22 @@
         <div class="kpi-card">
           <div class="kpi-card__icon kpi-card__icon--facilities">&#127970;</div>
           <div class="kpi-card__value">{{ rollup().regions.length }}</div>
-          <div class="kpi-card__label">Facilities</div>
+          <div class="kpi-card__label">{{ lang.t('Facilities') }}</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-card__icon kpi-card__icon--learners">&#128101;</div>
           <div class="kpi-card__value">{{ rollup().totalLearners }}</div>
-          <div class="kpi-card__label">Total Learners</div>
+          <div class="kpi-card__label">{{ lang.t('Total Learners') }}</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-card__icon kpi-card__icon--completion">&#9989;</div>
           <div class="kpi-card__value">{{ rollup().averageCompletionRate }}%</div>
-          <div class="kpi-card__label">Avg. Completion</div>
+          <div class="kpi-card__label">{{ lang.t('Avg. Completion') }}</div>
         </div>
         <div [class]="'kpi-card' + (rollup().totalOverdue > 0 ? ' kpi-card--alert' : '')">
           <div class="kpi-card__icon kpi-card__icon--overdue">&#9888;</div>
           <div class="kpi-card__value">{{ rollup().totalOverdue }}</div>
-          <div class="kpi-card__label">Overdue</div>
+          <div class="kpi-card__label">{{ lang.t('Overdue') }}</div>
         </div>
       </div>
 
@@ -197,12 +197,12 @@
         <table class="table">
           <thead>
             <tr>
-              <th>Facility</th>
-              <th>Learners</th>
-              <th>Completed</th>
-              <th>In Progress</th>
-              <th>Overdue</th>
-              <th>Completion</th>
+              <th>{{ lang.t('Facility') }}</th>
+              <th>{{ lang.t('Learners') }}</th>
+              <th>{{ lang.t('Completed') }}</th>
+              <th>{{ lang.t('In Progress') }}</th>
+              <th>{{ lang.t('Overdue') }}</th>
+              <th>{{ lang.t('Completion') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -234,8 +234,8 @@
       <ng-template #noFacilities>
         <div class="empty-state">
           <div class="empty-state__icon">&#127970;</div>
-          <strong>No facilities yet</strong>
-          <span>This organization hasn't created any child facilities.</span>
+          <strong>{{ lang.t('No facilities yet') }}</strong>
+          <span>{{ lang.t("This organization hasn't created any child facilities.") }}</span>
         </div>
       </ng-template>
     </ng-container>
@@ -244,8 +244,8 @@
   <!-- Not Found -->
   <div class="empty-state" *ngIf="!loading() && !org()">
     <div class="empty-state__icon">&#10060;</div>
-    <strong>Organization not found</strong>
-    <span>This organization may have been deleted or the ID is invalid.</span>
+    <strong>{{ lang.t('Organization not found') }}</strong>
+    <span>{{ lang.t('This organization may have been deleted or the ID is invalid.') }}</span>
   </div>
 
 </div>

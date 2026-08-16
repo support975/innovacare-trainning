@@ -15,6 +15,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { AdminNotificationService } from '../../../shared/services/admin-notification';
 import { AuthService } from '../../../core/auth';
 import { ActivatedRoute } from '@angular/router';
+import { LanguageService } from '../../../shared/services/language';
 
 type Role = 'learner' | 'nurse' | 'staff' | 'admin' | 'manager';
 type AudienceType = 'all' | 'role' | 'user';
@@ -33,6 +34,7 @@ export class AdminNotify {
   private notif   = inject(AdminNotificationService);
   private authSvc = inject(AuthService);
   private route   = inject(ActivatedRoute);
+  readonly lang   = inject(LanguageService);
 
   // form fields
   title    = signal('');
@@ -147,8 +149,8 @@ export class AdminNotify {
     try {
       const t = this.title().trim();
       const b = this.body().trim();
-      if (!t) throw new Error('Title is required.');
-      if (!b) throw new Error('Message body is required.');
+      if (!t) throw new Error(this.lang.t('Title is required.'));
+      if (!b) throw new Error(this.lang.t('Message body is required.'));
 
       const type = this.audienceType();
       const selectedIds = this.selectedUsers().map(u => u.id);
@@ -160,7 +162,7 @@ export class AdminNotify {
                           { type: 'user' as const, uid: selectedIds[0] || manualUid };
 
       if (audience.type === 'user' && !audience.uid && selectedIds.length === 0) {
-        throw new Error('Please select at least one recipient.');
+        throw new Error(this.lang.t('Please select at least one recipient.'));
       }
 
       if (audience.type === 'user' && selectedIds.length > 1) {
@@ -174,7 +176,7 @@ export class AdminNotify {
             })
           )
         );
-        this.notice.set(`Notification sent to ${selectedIds.length} learners.`);
+        this.notice.set(`${this.lang.t('Notification sent to')} ${selectedIds.length} ${this.lang.t('learners.')}`);
       } else {
         await this.notif.createNotification({
           title: t, body: b,
@@ -182,7 +184,7 @@ export class AdminNotify {
           severity: this.severity(),
           audience,
         });
-        this.notice.set('Notification sent successfully.');
+        this.notice.set(this.lang.t('Notification sent successfully.'));
       }
 
       // reset form

@@ -3,12 +3,13 @@ import { CommonModule } from '@angular/common';                 // ✅ pour *ngI
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms'; // ✅ pour formGroup
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth';
+import { PublicTranslateDirective } from '../../../shared/directives/public-translate.directive';
 
 
 @Component({
   standalone: true,
   selector: 'app-reset',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],     // ✅ AJOUTS ICI
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, PublicTranslateDirective],     // ✅ AJOUTS ICI
   templateUrl: './reset.html',
   styleUrls: ['./reset.css'],
 })
@@ -31,9 +32,9 @@ export class ResetComponent {
     this.success.set(null);
     try {
       await this.auth.resetPassword(this.form.value.email!);
-      this.success.set('Password reset email sent. Check your inbox.');
+      this.success.set('Courriel de réinitialisation envoyé. Vérifiez votre boîte de réception.');
     } catch {
-      this.error.set('Unable to send reset email. Verify the address and try again.');
+      this.error.set('Impossible d\'envoyer le courriel de réinitialisation. Vérifiez l\'adresse et réessayez.');
     } finally {
       this.loading.set(false);
     }

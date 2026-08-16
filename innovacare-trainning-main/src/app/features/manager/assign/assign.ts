@@ -17,6 +17,7 @@ import { AppProfile } from '../../../core/auth';
 import { ActingOrgService } from '../../../core/organization/services/acting-org.service';
 import { CoursesRepo } from '../../../data/courses.repo';
 import { LearningPath, LearningPathsService } from '../../../shared/services/learning-paths';
+import { LanguageService } from '../../../shared/services/language';
 
 type UserItem = { id: string; displayName?: string; email?: string; role?: string; orgId?: string };
 type CourseItem = { id: string; title?: string; kind?: string; active?: boolean; durationMin?: number };
@@ -34,6 +35,7 @@ export class Assign {
   private orgContext = inject(ActingOrgService);
   private coursesRepo = inject(CoursesRepo);
   private learningPaths = inject(LearningPathsService);
+  readonly lang = inject(LanguageService);
 
   busy   = signal(false);
   notice = signal('');
@@ -162,7 +164,7 @@ export class Assign {
         console.warn('Failed assignments:', res.failed);
       }
     } catch (e: any) {
-      this.notice.set(e?.message || 'Assignment failed.');
+      this.notice.set(e?.message || this.lang.t('Assignment failed.'));
       this.error.set(true);
     } finally {
       this.busy.set(false);
@@ -178,13 +180,13 @@ export class Assign {
     const count = userIds.length * courseIds.length;
 
     if (!userIds.length || !courseIds.length) {
-      this.notice.set('Select at least one learner and one course to remove assignments.');
+      this.notice.set(this.lang.t('Select at least one learner and one course to remove assignments.'));
       this.error.set(true);
       return;
     }
 
     if (!this.canRemoveAssignments()) {
-      this.notice.set('Only admins can remove assigned courses.');
+      this.notice.set(this.lang.t('Only admins can remove assigned courses.'));
       this.error.set(true);
       return;
     }
@@ -206,7 +208,7 @@ export class Assign {
         console.warn('Failed assignment removals:', res.failed);
       }
     } catch (e: any) {
-      this.notice.set(e?.message || 'Assignment removal failed.');
+      this.notice.set(e?.message || this.lang.t('Assignment removal failed.'));
       this.error.set(true);
     } finally {
       this.busy.set(false);

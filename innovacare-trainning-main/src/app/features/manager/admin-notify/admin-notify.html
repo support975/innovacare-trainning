@@ -3,9 +3,9 @@
   <!-- PAGE HEADER -->
   <header class="page-header">
     <div class="page-header__left">
-      <div class="page-eyebrow">Manager · Notifications</div>
-      <h1 class="page-title">Send Notification</h1>
-      <p class="page-sub">Push an alert to your learners' notification bell — by role, or pick specific people.</p>
+      <div class="page-eyebrow">{{ lang.t('Manager · Notifications') }}</div>
+      <h1 class="page-title">{{ lang.t('Send Notification') }}</h1>
+      <p class="page-sub">{{ lang.t("Push an alert to your learners' notification bell — by role, or pick specific people.") }}</p>
     </div>
   </header>
 
@@ -22,45 +22,45 @@
     <!-- ── COMPOSE PANEL ─────────────────────────────── -->
     <div class="panel">
       <div class="panel__head">
-        <div class="panel__title">Compose Message</div>
-        <div class="panel__sub">Write the notification your recipients will see.</div>
+        <div class="panel__title">{{ lang.t('Compose Message') }}</div>
+        <div class="panel__sub">{{ lang.t('Write the notification your recipients will see.') }}</div>
       </div>
 
       <div class="panel__body">
 
         <!-- Severity -->
         <div class="field">
-          <div class="field__label">Severity</div>
+          <div class="field__label">{{ lang.t('Severity') }}</div>
           <div class="severity-tabs">
             <button type="button"
               class="severity-tab severity-tab--info"
               [class.active]="severity() === 'info'"
               (click)="severity.set('info')">
-              <span class="severity-tab__dot"></span>Info
+              <span class="severity-tab__dot"></span>{{ lang.t('Info') }}
             </button>
             <button type="button"
               class="severity-tab severity-tab--warning"
               [class.active]="severity() === 'warning'"
               (click)="severity.set('warning')">
-              <span class="severity-tab__dot"></span>Warning
+              <span class="severity-tab__dot"></span>{{ lang.t('Warning') }}
             </button>
             <button type="button"
               class="severity-tab severity-tab--critical"
               [class.active]="severity() === 'critical'"
               (click)="severity.set('critical')">
-              <span class="severity-tab__dot"></span>Critical
+              <span class="severity-tab__dot"></span>{{ lang.t('Critical') }}
             </button>
           </div>
         </div>
 
         <!-- Title -->
         <div class="field">
-          <label class="field__label" for="notif-title">Title <span class="required">*</span></label>
+          <label class="field__label" for="notif-title">{{ lang.t('Title') }} <span class="required">*</span></label>
           <input
             id="notif-title"
             class="field__input"
             type="text"
-            placeholder="e.g. New training assigned"
+            [placeholder]="lang.t('e.g. New training assigned')"
             [ngModel]="title()"
             (ngModelChange)="title.set($event)"
             maxlength="120"
@@ -70,14 +70,14 @@
         <!-- Body -->
         <div class="field">
           <label class="field__label" for="notif-body">
-            Message <span class="required">*</span>
+            {{ lang.t('Message') }} <span class="required">*</span>
             <span class="char-count">{{ charCount() }}/500</span>
           </label>
           <textarea
             id="notif-body"
             class="field__textarea"
             rows="4"
-            placeholder="Write a clear, concise message for your recipients…"
+            [placeholder]="lang.t('Write a clear, concise message for your recipients…')"
             [ngModel]="body()"
             (ngModelChange)="body.set($event)"
             maxlength="500"
@@ -87,7 +87,7 @@
         <!-- Link -->
         <div class="field">
           <label class="field__label" for="notif-link">
-            Link <span class="optional">(optional)</span>
+            {{ lang.t('Link') }} <span class="optional">{{ lang.t('(optional)') }}</span>
           </label>
           <div class="link-wrap">
             <span class="link-prefix">/</span>
@@ -100,14 +100,14 @@
               (ngModelChange)="link.set($event)"
             />
           </div>
-          <div class="field__hint">Absolute paths like /learner/courses/abc or leave blank.</div>
+          <div class="field__hint">{{ lang.t('Absolute paths like /learner/courses/abc or leave blank.') }}</div>
         </div>
 
         <!-- Notification Preview -->
         <div class="preview-card" [class.preview-card--warning]="severity() === 'warning'" [class.preview-card--critical]="severity() === 'critical'">
-          <div class="preview-card__label">Preview</div>
-          <div class="preview-card__title">{{ title() || 'Your notification title…' }}</div>
-          <div class="preview-card__body">{{ body() || 'Your message will appear here…' }}</div>
+          <div class="preview-card__label">{{ lang.t('Preview') }}</div>
+          <div class="preview-card__title">{{ title() || lang.t('Your notification title…') }}</div>
+          <div class="preview-card__body">{{ body() || lang.t('Your message will appear here…') }}</div>
           <div class="preview-card__meta">
             <span class="severity-badge" [class.severity-badge--info]="severity() === 'info'" [class.severity-badge--warning]="severity() === 'warning'" [class.severity-badge--critical]="severity() === 'critical'">
               {{ severity() }}
@@ -122,8 +122,8 @@
     <!-- ── AUDIENCE PANEL ─────────────────────────────── -->
     <div class="panel">
       <div class="panel__head">
-        <div class="panel__title">Audience</div>
-        <div class="panel__sub">Who should receive this notification?</div>
+        <div class="panel__title">{{ lang.t('Audience') }}</div>
+        <div class="panel__sub">{{ lang.t('Who should receive this notification?') }}</div>
       </div>
 
       <div class="panel__body">
@@ -131,33 +131,33 @@
         <!-- Audience type tabs -->
         <div class="audience-tabs">
           <button type="button" class="audience-tab" [class.active]="audienceType() === 'all'"  (click)="audienceType.set('all')">
-            <span class="audience-tab__icon">◉</span>All Users
+            <span class="audience-tab__icon">◉</span>{{ lang.t('All Users') }}
           </button>
           <button type="button" class="audience-tab" [class.active]="audienceType() === 'role'" (click)="audienceType.set('role')">
-            <span class="audience-tab__icon">◎</span>By Role
+            <span class="audience-tab__icon">◎</span>{{ lang.t('By Role') }}
           </button>
           <button type="button" class="audience-tab" [class.active]="audienceType() === 'user'" (click)="audienceType.set('user')">
-            <span class="audience-tab__icon">◈</span>Specific People
+            <span class="audience-tab__icon">◈</span>{{ lang.t('Specific People') }}
           </button>
         </div>
 
         <!-- ALL -->
         <div class="audience-hint" *ngIf="audienceType() === 'all'">
           <span class="audience-hint__icon">◉</span>
-          <span>This notification will be sent to <strong>every user</strong> in your organisation.</span>
+          <span>{{ lang.t('This notification will be sent to') }} <strong>{{ lang.t('every user') }}</strong> {{ lang.t('in your organisation.') }}</span>
         </div>
 
         <!-- BY ROLE -->
         <div *ngIf="audienceType() === 'role'" class="field">
-          <label class="field__label">Target Role</label>
+          <label class="field__label">{{ lang.t('Target Role') }}</label>
           <select class="field__select" [ngModel]="audienceRole()" (ngModelChange)="audienceRole.set($event)">
-            <option value="learner">Learner</option>
-            <option value="nurse">Nurse</option>
-            <option value="staff">Staff</option>
-            <option value="admin">Admin</option>
-            <option value="manager">Manager</option>
+            <option value="learner">{{ lang.t('Learner') }}</option>
+            <option value="nurse">{{ lang.t('Nurse') }}</option>
+            <option value="staff">{{ lang.t('Staff') }}</option>
+            <option value="admin">{{ lang.t('Admin') }}</option>
+            <option value="manager">{{ lang.t('Manager') }}</option>
           </select>
-          <div class="field__hint">All users with role <strong>{{ audienceRole() }}</strong> in your org will receive this.</div>
+          <div class="field__hint">{{ lang.t('All users with role') }} <strong>{{ audienceRole() }}</strong> {{ lang.t('in your org will receive this.') }}</div>
         </div>
 
         <!-- SPECIFIC USERS -->
@@ -166,17 +166,17 @@
           <!-- Selected recipients -->
           <div *ngIf="selectedRecipientCount() > 0" class="picked-section">
             <div class="picked-section__header">
-              <span class="picked-section__title">Selected ({{ selectedRecipientCount() }})</span>
-              <button type="button" class="btn-ghost-sm" (click)="clearUser()">Clear all</button>
+              <span class="picked-section__title">{{ lang.t('Selected') }} ({{ selectedRecipientCount() }})</span>
+              <button type="button" class="btn-ghost-sm" (click)="clearUser()">{{ lang.t('Clear all') }}</button>
             </div>
             <div class="picked-list">
               <div class="picked-row" *ngFor="let u of selectedUsers()">
                 <div class="avatar">{{ getInitials(u.displayName || u.email || u.id) }}</div>
                 <div class="picked-row__body">
-                  <div class="picked-row__name">{{ u.displayName || '(no name)' }}</div>
+                  <div class="picked-row__name">{{ u.displayName || lang.t('(no name)') }}</div>
                   <div class="picked-row__email">{{ u.email || u.id }}</div>
                 </div>
-                <button type="button" class="picked-remove" (click)="removeUser(u.id)" title="Remove">✕</button>
+                <button type="button" class="picked-remove" (click)="removeUser(u.id)" [title]="lang.t('Remove')">✕</button>
               </div>
             </div>
           </div>
@@ -187,7 +187,7 @@
             <input
               class="search-input"
               type="text"
-              placeholder="Search by name or email…"
+              [placeholder]="lang.t('Search by name or email…')"
               [ngModel]="uQuery()"
               (ngModelChange)="uQuery.set($event)"
             />
@@ -198,13 +198,13 @@
             <button type="button" class="picker-row" *ngFor="let u of filteredUsers()" (click)="pickUser(u)">
               <div class="avatar">{{ getInitials(u.displayName || u.email || u.id) }}</div>
               <div class="picker-row__body">
-                <div class="picker-row__name">{{ u.displayName || '(no name)' }}</div>
+                <div class="picker-row__name">{{ u.displayName || lang.t('(no name)') }}</div>
                 <div class="picker-row__email">{{ u.email || u.id }}</div>
               </div>
               <span class="picker-row__add">+</span>
             </button>
             <div class="picker-empty" *ngIf="filteredUsers().length === 0">
-              No users found. Try another search term.
+              {{ lang.t('No users found. Try another search term.') }}
             </div>
           </div>
 
@@ -215,10 +215,10 @@
       <!-- SEND BAR inside the audience panel -->
       <div class="send-bar">
         <div class="send-bar__summary">
-          <span *ngIf="audienceType() === 'all'">Sending to <strong>all users</strong></span>
-          <span *ngIf="audienceType() === 'role'">Sending to all <strong>{{ audienceRole() }}s</strong></span>
-          <span *ngIf="audienceType() === 'user' && selectedRecipientCount() === 0" class="send-bar__warn">Select at least one recipient</span>
-          <span *ngIf="audienceType() === 'user' && selectedRecipientCount() > 0">Sending to <strong>{{ selectedRecipientCount() }} recipient{{ selectedRecipientCount() !== 1 ? 's' : '' }}</strong></span>
+          <span *ngIf="audienceType() === 'all'">{{ lang.t('Sending to') }} <strong>{{ lang.t('all users') }}</strong></span>
+          <span *ngIf="audienceType() === 'role'">{{ lang.t('Sending to all') }} <strong>{{ audienceRole() }}s</strong></span>
+          <span *ngIf="audienceType() === 'user' && selectedRecipientCount() === 0" class="send-bar__warn">{{ lang.t('Select at least one recipient') }}</span>
+          <span *ngIf="audienceType() === 'user' && selectedRecipientCount() > 0">{{ lang.t('Sending to') }} <strong>{{ selectedRecipientCount() }} recipient{{ selectedRecipientCount() !== 1 ? 's' : '' }}</strong></span>
         </div>
         <button
           type="button"
@@ -226,7 +226,7 @@
           (click)="send()"
           [disabled]="busy() || !title().trim() || !body().trim() || (audienceType() === 'user' && selectedRecipientCount() === 0)">
           <span *ngIf="busy()" class="spinner"></span>
-          <span>{{ busy() ? 'Sending…' : 'Send Notification' }}</span>
+          <span>{{ busy() ? lang.t('Sending…') : lang.t('Send Notification') }}</span>
         </button>
       </div>
 

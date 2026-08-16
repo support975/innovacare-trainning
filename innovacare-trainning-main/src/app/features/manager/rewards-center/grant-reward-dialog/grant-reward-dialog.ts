@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RewardsAdminService, ManualRewardType } from '../../../../shared/services/rewards-admin.service';
 import { UserDirectoryService, LicenseDoc } from '../../../../shared/services/user-directory';
 import { BADGE_CATALOG } from '../../../../shared/rewards/reward-catalog';
+import { LanguageService } from '../../../../shared/services/language';
 
 @Component({
   selector: 'app-grant-reward-dialog',
@@ -15,6 +16,7 @@ import { BADGE_CATALOG } from '../../../../shared/rewards/reward-catalog';
 export class GrantRewardDialog implements OnChanges {
   private rewardsAdmin = inject(RewardsAdminService);
   private userDir = inject(UserDirectoryService);
+  readonly lang = inject(LanguageService);
 
   @Input() open = false;
   @Input() learnerUid = '';
@@ -83,7 +85,7 @@ export class GrantRewardDialog implements OnChanges {
     const title = this.title().trim();
 
     if (!title) {
-      this.error.set('Title is required.');
+      this.error.set(this.lang.t('Title is required.'));
       return;
     }
 
@@ -93,14 +95,14 @@ export class GrantRewardDialog implements OnChanges {
     if (type === 'points') {
       const pts = Number(this.points());
       if (!(pts > 0)) {
-        this.error.set('Enter a positive number of points.');
+        this.error.set(this.lang.t('Enter a positive number of points.'));
         return;
       }
       payload.points = pts;
     } else if (type === 'badge') {
       const badge = this.badgeKey().trim();
       if (!badge) {
-        this.error.set('Choose or enter a badge.');
+        this.error.set(this.lang.t('Choose or enter a badge.'));
         return;
       }
       payload.badge = badge;
@@ -110,7 +112,7 @@ export class GrantRewardDialog implements OnChanges {
     } else {
       const hrs = Number(this.hours());
       if (!(hrs > 0)) {
-        this.error.set('Enter a positive number of hours.');
+        this.error.set(this.lang.t('Enter a positive number of hours.'));
         return;
       }
       payload.hours = hrs;
@@ -124,7 +126,7 @@ export class GrantRewardDialog implements OnChanges {
       this.granted.emit();
       this.close();
     } catch (e: any) {
-      this.error.set(e?.message || 'Failed to grant reward.');
+      this.error.set(e?.message || this.lang.t('Failed to grant reward.'));
     } finally {
       this.busy.set(false);
     }

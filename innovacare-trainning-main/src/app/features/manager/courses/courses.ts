@@ -25,6 +25,7 @@ import {
 } from './tts-generation.service';
 import { buildLessonTranscript } from './tts-transcript';
 import { switchMap } from 'rxjs';
+import { LanguageService } from '../../../shared/services/language';
 
 /* ---------------------------
    Typed form helpers
@@ -160,6 +161,7 @@ export class Courses {
   private sanitizer = inject(DomSanitizer);
   private tts = inject(TtsGenerationService);
   private orgContext = inject(ActingOrgService);
+  readonly lang = inject(LanguageService);
 
   editId: string | null = null;
   loadingEdit = false;
@@ -623,16 +625,16 @@ export class Courses {
         : raw;
 
     if (!source || typeof source !== 'object') {
-      throw new Error('Le fichier JSON doit contenir un objet cours valide.');
+      throw new Error(this.lang.t('The JSON file must contain a valid course object.'));
     }
 
     const course = source as Partial<Course>;
     if (!course.title?.trim()) {
-      throw new Error('Le champ title est obligatoire.');
+      throw new Error(this.lang.t('The title field is required.'));
     }
 
     if (!Array.isArray(course.sections)) {
-      throw new Error('Le champ sections est obligatoire et doit etre un tableau.');
+      throw new Error(this.lang.t('The sections field is required and must be an array.'));
     }
 
     const normalized: Omit<Course, 'id' | 'createdAt' | 'updatedAt'> = {
@@ -673,7 +675,7 @@ export class Courses {
 
     const quizErrors = this.quizValidationErrors(normalized.sections);
     if (quizErrors.length) {
-      throw new Error(`Invalid quiz: ${quizErrors[0]}`);
+      throw new Error(`${this.lang.t('Invalid quiz:')} ${quizErrors[0]}`);
     }
 
     return normalized;
@@ -687,7 +689,7 @@ export class Courses {
     this.pendingImportName = '';
 
     if (!this.canManageCourses) {
-      this.importError = 'Seul le super admin peut importer des cours.';
+      this.importError = this.lang.t('Only the super admin can import courses.');
       return;
     }
 
@@ -701,10 +703,10 @@ export class Courses {
       const course = this.normalizeImportedCourse(parsed);
       this.pendingImport = course;
       this.pendingImportName = file.name;
-      this.importSuccess = `JSON valide: ${course.title}`;
+      this.importSuccess = `${this.lang.t('Valid JSON:')} ${course.title}`;
       input.value = '';
     } catch (error) {
-      this.importError = error instanceof Error ? error.message : 'Import JSON impossible.';
+      this.importError = error instanceof Error ? error.message : this.lang.t('Unable to import JSON.');
       if (input) input.value = '';
     }
   }
@@ -721,9 +723,9 @@ export class Courses {
 
     this.applyCourseToForm(this.pendingImport);
     this.jsonAppliedNotice = this.editId
-      ? `JSON applique au formulaire du cours en edition: ${this.pendingImport.title}`
-      : `JSON applique au formulaire: ${this.pendingImport.title}`;
-    this.importSuccess = 'JSON charge dans le formulaire. Verifiez puis enregistrez.';
+      ? `${this.lang.t('JSON applied to the form for the course being edited:')} ${this.pendingImport.title}`
+      : `${this.lang.t('JSON applied to the form:')} ${this.pendingImport.title}`;
+    this.importSuccess = this.lang.t('JSON loaded into the form. Review it, then save.');
 
     try {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -736,7 +738,7 @@ export class Courses {
     this.importingCourse = true;
     try {
       await this.repo.add(this.pendingImport);
-      this.importSuccess = `Cours importe: ${this.pendingImport.title}`;
+      this.importSuccess = `${this.lang.t('Course imported:')} ${this.pendingImport.title}`;
       this.pendingImport = null;
       this.pendingImportName = '';
     } finally {
@@ -1387,10 +1389,10 @@ export class Courses {
 
   ttsButtonLabel(si: number, li: number): string {
     const status = this.ttsStatus(si, li);
-    if (status?.loading) return 'Generating audio...';
-    if (status?.error) return 'Retry Audio';
-    if (status?.success) return 'Regenerate Audio';
-    return 'Generate Audio';
+    if (status?.loading) return this.lang.t('Generating audio...');
+    if (status?.error) return this.lang.t('Retry Audio');
+    if (status?.success) return this.lang.t('Regenerate Audio');
+    return this.lang.t('Generate Audio');
   }
 
   setTtsIncludeQuizChoices(checked: boolean): void {
@@ -1406,7 +1408,7 @@ export class Courses {
     if (!courseId) {
       this.setTtsStatus(key, {
         loading: false,
-        error: 'Save the course before generating lesson audio.',
+        error: this.lang.t('Save the course before generating lesson audio.'),
       });
       return;
     }
@@ -1418,7 +1420,7 @@ export class Courses {
     if (!transcript) {
       this.setTtsStatus(key, {
         loading: false,
-        error: 'No transcript text found for this lesson.',
+        error: this.lang.t('No transcript text found for this lesson.'),
       });
       return;
     }
@@ -1447,13 +1449,13 @@ export class Courses {
 
       this.setTtsStatus(key, {
         loading: false,
-        success: 'Audio generated and attached to the lesson.',
+        success: this.lang.t('Audio generated and attached to the lesson.'),
         url: result.url,
       });
     } catch (error: any) {
       this.setTtsStatus(key, {
         loading: false,
-        error: error?.message || 'Audio generation failed.',
+        error: error?.message || this.lang.t('Audio generation failed.'),
       });
     }
   }
@@ -2111,7 +2113,7 @@ export class Courses {
     if (!id) return;
 
     const confirmed = window.confirm(
-      `Delete "${c.title}"? This permanently removes the course and its content. This cannot be undone.`
+      `${this.lang.t('Delete')} "${c.title}"? ${this.lang.t('This permanently removes the course and its content. This cannot be undone.')}`
     );
     if (!confirmed) return;
 
@@ -2330,20 +2332,20 @@ export class Courses {
           const choices = (block.choices ?? []).filter(choice => !!choice.text?.trim());
           const correctCount = choices.filter(choice => choice.correct).length;
           const location =
-            `${section.title || `Section ${sectionIndex + 1}`} / `
-            + `${lesson.title || `Lesson ${lessonIndex + 1}`} / block ${blockIndex + 1}`;
+            `${section.title || `${this.lang.t('Section')} ${sectionIndex + 1}`} / `
+            + `${lesson.title || `${this.lang.t('Lesson')} ${lessonIndex + 1}`} / ${this.lang.t('block')} ${blockIndex + 1}`;
 
           if (!block.question?.trim()) {
-            errors.push(`${location}: question is required.`);
+            errors.push(`${location}: ${this.lang.t('question is required.')}`);
           }
           if (choices.length < 2) {
-            errors.push(`${location}: at least two labeled choices are required.`);
+            errors.push(`${location}: ${this.lang.t('at least two labeled choices are required.')}`);
           }
           if (correctCount < 1) {
-            errors.push(`${location}: select at least one correct answer.`);
+            errors.push(`${location}: ${this.lang.t('select at least one correct answer.')}`);
           }
           if ((block.mode ?? 'single') === 'single' && correctCount > 1) {
-            errors.push(`${location}: a single-choice quiz must have exactly one correct answer.`);
+            errors.push(`${location}: ${this.lang.t('a single-choice quiz must have exactly one correct answer.')}`);
           }
         });
       });
@@ -2362,14 +2364,14 @@ export class Courses {
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.saveError = 'Complete all required course fields before saving.';
+      this.saveError = this.lang.t('Complete all required course fields before saving.');
       return;
     }
 
     const sections = this.buildSectionsPayload();
     const quizErrors = this.quizValidationErrors(sections);
     if (quizErrors.length) {
-      this.saveError = `Course not saved. ${quizErrors[0]}`;
+      this.saveError = `${this.lang.t('Course not saved.')} ${quizErrors[0]}`;
       return;
     }
 

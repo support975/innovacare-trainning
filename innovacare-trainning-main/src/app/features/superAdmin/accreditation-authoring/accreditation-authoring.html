@@ -1,11 +1,11 @@
 <main class="accreditation-page">
   <header class="page-header">
     <div>
-      <p class="eyebrow">Accreditation</p>
-      <h1>CE / accreditation records</h1>
-      <p class="sub">Create once, then reference from any Course or Event's Accreditation tab — no retyping disclosures per webinar.</p>
+      <p class="eyebrow">{{ lang.t('Accreditation') }}</p>
+      <h1>{{ lang.t('CE / accreditation records') }}</h1>
+      <p class="sub">{{ lang.t("Create once, then reference from any Course or Event's Accreditation tab — no retyping disclosures per webinar.") }}</p>
     </div>
-    <button class="btn-ghost" type="button" (click)="resetForm()">New record</button>
+    <button class="btn-ghost" type="button" (click)="resetForm()">{{ lang.t('New record') }}</button>
   </header>
 
   <div class="notice" *ngIf="notice()" [class.notice--error]="error()">
@@ -13,9 +13,9 @@
   </div>
 
   <label class="field filter-field">
-    <span>Filter by organization</span>
+    <span>{{ lang.t('Filter by organization') }}</span>
     <select [ngModel]="selectedOrgId()" (ngModelChange)="onOrgFilterChange($event)">
-      <option value="">Select organization</option>
+      <option value="">{{ lang.t('Select organization') }}</option>
       <option *ngFor="let org of organizations()" [value]="org.id">{{ org.name }}</option>
     </select>
   </label>
@@ -23,132 +23,132 @@
   <section class="workspace">
     <form class="panel form-panel" (ngSubmit)="save()">
       <div class="panel-head">
-        <h2>{{ form.id ? 'Edit record' : 'Create record' }}</h2>
+        <h2>{{ form.id ? lang.t('Edit record') : lang.t('Create record') }}</h2>
       </div>
 
       <label class="field">
-        <span>Owning organization</span>
+        <span>{{ lang.t('Owning organization') }}</span>
         <select name="ownerOrgId" [(ngModel)]="form.ownerOrgId" required>
-          <option value="">Select organization</option>
+          <option value="">{{ lang.t('Select organization') }}</option>
           <option *ngFor="let org of organizations()" [value]="org.id">{{ org.name }}</option>
         </select>
       </label>
 
       <label class="field">
-        <span>Accrediting organization</span>
-        <input name="accreditingOrganization" [(ngModel)]="form.accreditingOrganization" placeholder="e.g. WOCN Continuing Education Center" required />
+        <span>{{ lang.t('Accrediting organization') }}</span>
+        <input name="accreditingOrganization" [(ngModel)]="form.accreditingOrganization" [placeholder]="lang.t('e.g. WOCN Continuing Education Center')" required />
       </label>
 
       <div class="field-grid">
         <label class="field">
-          <span>Provider number</span>
+          <span>{{ lang.t('Provider number') }}</span>
           <input name="providerNumber" [(ngModel)]="form.providerNumber" />
         </label>
         <label class="field">
-          <span>Approval number</span>
+          <span>{{ lang.t('Approval number') }}</span>
           <input name="approvalNumber" [(ngModel)]="form.approvalNumber" />
         </label>
       </div>
 
       <div class="field-grid field-grid--3">
         <label class="field">
-          <span>Contact hours</span>
+          <span>{{ lang.t('Contact hours') }}</span>
           <input type="number" min="0" step="0.25" name="contactHours" [(ngModel)]="form.contactHours" />
         </label>
         <label class="field">
-          <span>CE credits</span>
+          <span>{{ lang.t('CE credits') }}</span>
           <input type="number" min="0" step="0.25" name="ceCredits" [(ngModel)]="form.ceCredits" />
         </label>
         <label class="field">
-          <span>Expiration date</span>
+          <span>{{ lang.t('Expiration date') }}</span>
           <input type="date" name="expirationDateStr" [(ngModel)]="form.expirationDateStr" />
         </label>
       </div>
 
       <label class="field">
-        <span>Target audience (comma-separated)</span>
-        <input name="targetAudience" [(ngModel)]="form.targetAudience" placeholder="Wound care nurses, home health clinicians" />
+        <span>{{ lang.t('Target audience (comma-separated)') }}</span>
+        <input name="targetAudience" [(ngModel)]="form.targetAudience" [placeholder]="lang.t('Wound care nurses, home health clinicians')" />
       </label>
 
       <label class="field">
-        <span>Learning objectives (one per line)</span>
+        <span>{{ lang.t('Learning objectives (one per line)') }}</span>
         <textarea name="learningObjectives" [(ngModel)]="form.learningObjectives" rows="3"></textarea>
       </label>
 
       <label class="field">
-        <span>Award criteria</span>
+        <span>{{ lang.t('Award criteria') }}</span>
         <textarea name="awardCriteria" [(ngModel)]="form.awardCriteria" rows="2"></textarea>
       </label>
 
       <label class="field">
-        <span>Conflict of interest statement</span>
+        <span>{{ lang.t('Conflict of interest statement') }}</span>
         <textarea name="conflictOfInterestStatement" [(ngModel)]="form.conflictOfInterestStatement" rows="2"></textarea>
       </label>
 
       <label class="toggle-row">
         <input type="checkbox" name="facultyDisclosureRequired" [(ngModel)]="form.facultyDisclosureRequired" />
-        <span>Faculty disclosure required</span>
+        <span>{{ lang.t('Faculty disclosure required') }}</span>
       </label>
 
       <label class="field">
-        <span>Commercial support statement</span>
+        <span>{{ lang.t('Commercial support statement') }}</span>
         <textarea name="commercialSupportStatement" [(ngModel)]="form.commercialSupportStatement" rows="2"></textarea>
       </label>
 
       <label class="field">
-        <span>Disclaimer</span>
+        <span>{{ lang.t('Disclaimer') }}</span>
         <textarea name="disclaimer" [(ngModel)]="form.disclaimer" rows="2"></textarea>
       </label>
 
       <label class="field">
-        <span>Evaluation requirements</span>
+        <span>{{ lang.t('Evaluation requirements') }}</span>
         <textarea name="evaluationRequirements" [(ngModel)]="form.evaluationRequirements" rows="2"></textarea>
       </label>
 
       <label class="field">
-        <span>Certificate requirements</span>
+        <span>{{ lang.t('Certificate requirements') }}</span>
         <textarea name="certificateRequirements" [(ngModel)]="form.certificateRequirements" rows="2"></textarea>
       </label>
 
       <div class="field-grid">
         <label class="field">
-          <span>Applicable boards (comma-separated)</span>
+          <span>{{ lang.t('Applicable boards (comma-separated)') }}</span>
           <input name="applicableBoards" [(ngModel)]="form.applicableBoards" />
         </label>
         <label class="field">
-          <span>Applicable certifications (comma-separated)</span>
+          <span>{{ lang.t('Applicable certifications (comma-separated)') }}</span>
           <input name="applicableCertifications" [(ngModel)]="form.applicableCertifications" />
         </label>
       </div>
 
       <button class="btn-primary" type="submit" [disabled]="busy()">
-        {{ busy() ? 'Saving...' : (form.id ? 'Save record' : 'Create record') }}
+        {{ busy() ? lang.t('Saving...') : (form.id ? lang.t('Save record') : lang.t('Create record')) }}
       </button>
     </form>
 
     <section class="panel records-list">
       <div class="panel-head">
-        <h2>Records for this organization</h2>
+        <h2>{{ lang.t('Records for this organization') }}</h2>
       </div>
 
       <article class="record-row" *ngFor="let record of displayedRecords()">
         <div class="record-row__body">
           <strong>{{ record.accreditingOrganization }}</strong>
-          <small>{{ record.contactHours }} contact hours · {{ record.ceCredits }} CE credits</small>
+          <small>{{ record.contactHours }} {{ lang.t('contact hours') }} · {{ record.ceCredits }} {{ lang.t('CE credits') }}</small>
         </div>
         <div class="record-row__actions">
-          <button class="btn-ghost" type="button" (click)="edit(record)">Edit</button>
-          <button class="btn-ghost btn-ghost--danger" type="button" [disabled]="busy()" (click)="remove(record)">Delete</button>
+          <button class="btn-ghost" type="button" (click)="edit(record)">{{ lang.t('Edit') }}</button>
+          <button class="btn-ghost btn-ghost--danger" type="button" [disabled]="busy()" (click)="remove(record)">{{ lang.t('Delete') }}</button>
         </div>
       </article>
 
       <div class="empty" *ngIf="!selectedOrgId()">
-        <h2>Select an organization</h2>
-        <p>Choose an organization above to see its accreditation records.</p>
+        <h2>{{ lang.t('Select an organization') }}</h2>
+        <p>{{ lang.t('Choose an organization above to see its accreditation records.') }}</p>
       </div>
       <div class="empty" *ngIf="selectedOrgId() && !displayedRecords().length">
-        <h2>No records yet</h2>
-        <p>Create the first accreditation record for this organization.</p>
+        <h2>{{ lang.t('No records yet') }}</h2>
+        <p>{{ lang.t('Create the first accreditation record for this organization.') }}</p>
       </div>
     </section>
   </section>

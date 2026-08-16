@@ -9,6 +9,7 @@ import { AccreditationService } from '../../../shared/services/accreditation.ser
 import { SuperAdminOrganizationsService } from '../services/super-admin-organizations';
 import type { SuperAdminOrganization } from '../models/super-admin.models';
 import type { Accreditation } from '../../../data/models';
+import { LanguageService } from '../../../shared/services/language';
 
 type AccreditationForm = {
   id: string;
@@ -71,6 +72,7 @@ const fromCsv = (value: string) => value.split(',').map((v) => v.trim()).filter(
 export class AccreditationAuthoringComponent {
   private readonly accreditationSvc = inject(AccreditationService);
   private readonly orgsSvc = inject(SuperAdminOrganizationsService);
+  readonly lang = inject(LanguageService);
 
   readonly organizations = toSignal(this.orgsSvc.list(), { initialValue: [] as SuperAdminOrganization[] });
 
@@ -147,7 +149,7 @@ export class AccreditationAuthoringComponent {
     const accreditingOrganization = this.form.accreditingOrganization.trim();
     if (!ownerOrgId || !accreditingOrganization) {
       this.error.set(true);
-      this.notice.set('Owning organization and accrediting organization are required.');
+      this.notice.set(this.lang.t('Owning organization and accrediting organization are required.'));
       return;
     }
 
@@ -193,10 +195,10 @@ export class AccreditationAuthoringComponent {
         });
         this.form.id = id;
       }
-      this.notice.set(wasEditing ? 'Accreditation saved.' : 'Accreditation created.');
+      this.notice.set(wasEditing ? this.lang.t('Accreditation saved.') : this.lang.t('Accreditation created.'));
     } catch (err: any) {
       this.error.set(true);
-      this.notice.set(err?.message || 'Unable to save accreditation.');
+      this.notice.set(err?.message || this.lang.t('Unable to save accreditation.'));
     } finally {
       this.busy.set(false);
     }
@@ -209,11 +211,11 @@ export class AccreditationAuthoringComponent {
     this.error.set(false);
     try {
       await this.accreditationSvc.delete(record.id);
-      this.notice.set('Accreditation deleted.');
+      this.notice.set(this.lang.t('Accreditation deleted.'));
       if (this.form.id === record.id) this.resetForm();
     } catch (err: any) {
       this.error.set(true);
-      this.notice.set(err?.message || 'Unable to delete accreditation.');
+      this.notice.set(err?.message || this.lang.t('Unable to delete accreditation.'));
     } finally {
       this.busy.set(false);
     }

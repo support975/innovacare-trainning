@@ -1,13 +1,13 @@
 <section class="access-admin">
   <header class="access-admin__header">
     <div>
-      <p class="eyebrow">Individual learners</p>
-      <h1>Organization course access requests</h1>
+      <p class="eyebrow">{{ lang.t('Individual learners') }}</p>
+      <h1>{{ lang.t('Organization course access requests') }}</h1>
     </div>
   </header>
 
   <div class="notice notice--locked" *ngIf="!canManage()">
-    Admin access is required to approve course requests and grant paid access.
+    {{ lang.t('Admin access is required to approve course requests and grant paid access.') }}
   </div>
 
   <div class="notice notice--error" *ngIf="loadError()">
@@ -16,7 +16,7 @@
 
   <ng-container *ngIf="canManage()">
     <div class="empty" *ngIf="!requests().length">
-      No course access requests yet.
+      {{ lang.t('No course access requests yet.') }}
     </div>
 
     <article class="request-card" *ngFor="let req of requests()">
@@ -31,26 +31,26 @@
           >
             {{ statusLabel(req) }}
           </span>
-          <span class="date">Updated {{ formatDate(req.updatedAt || req.createdAt) }}</span>
+          <span class="date">{{ lang.t('Updated') }} {{ formatDate(req.updatedAt || req.createdAt) }}</span>
         </div>
 
-        <h2>{{ req.courseTitle || ('Course ' + req.courseId) }}</h2>
+        <h2>{{ req.courseTitle || (lang.t('Course') + ' ' + req.courseId) }}</h2>
 
         <dl class="meta-grid">
           <div>
-            <dt>Learner</dt>
+            <dt>{{ lang.t('Learner') }}</dt>
             <dd>{{ req.userName || req.userEmail || req.uid }}</dd>
           </div>
           <div>
-            <dt>Email</dt>
-            <dd>{{ req.userEmail || 'Not provided' }}</dd>
+            <dt>{{ lang.t('Email') }}</dt>
+            <dd>{{ req.userEmail || lang.t('Not provided') }}</dd>
           </div>
           <div>
-            <dt>Course ID</dt>
+            <dt>{{ lang.t('Course ID') }}</dt>
             <dd>{{ req.courseId }}</dd>
           </div>
           <div>
-            <dt>Payment</dt>
+            <dt>{{ lang.t('Payment') }}</dt>
             <dd>{{ req.paymentStatus || 'not_started' }}</dd>
           </div>
         </dl>
@@ -63,7 +63,7 @@
           (click)="approve(req)"
           [disabled]="busyId() === req.id || req.status !== 'pending_approval'"
         >
-          Approve
+          {{ lang.t('Approve') }}
         </button>
         <button
           type="button"
@@ -71,7 +71,7 @@
           (click)="markPaidAndGrant(req)"
           [disabled]="busyId() === req.id || req.status !== 'approved_pending_payment'"
         >
-          Mark paid & grant
+          {{ lang.t('Mark paid & grant') }}
         </button>
         <button
           type="button"
@@ -79,7 +79,7 @@
           (click)="reject(req)"
           [disabled]="busyId() === req.id || req.status === 'granted' || req.status === 'rejected'"
         >
-          Reject
+          {{ lang.t('Reject') }}
         </button>
       </div>
     </article>

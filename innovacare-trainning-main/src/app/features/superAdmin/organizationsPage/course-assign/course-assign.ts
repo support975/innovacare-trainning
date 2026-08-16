@@ -6,6 +6,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { Observable } from 'rxjs';
 import { SuperAdminOrganizationsService } from '../../services/super-admin-organizations';
 import { OrganizationCourseAssignment, SuperAdminOrganization } from '../../models/super-admin.models';
+import { LanguageService } from '../../../../shared/services/language';
 
 type CourseItem = { id: string; title?: string; kind?: string; active?: boolean };
 
@@ -18,6 +19,7 @@ type CourseItem = { id: string; title?: string; kind?: string; active?: boolean 
 export class CourseAssign {
   private afs    = inject(Firestore);
   private orgSvc = inject(SuperAdminOrganizationsService);
+  readonly lang  = inject(LanguageService);
 
   busy    = signal(false);
   syncing = signal(false);
@@ -68,12 +70,12 @@ export class CourseAssign {
 
   async assign() {
     if (!this.selectedOrg() || !this.selectedCourse()) {
-      this.notice.set('Select both an organisation and a course.');
+      this.notice.set(this.lang.t('Select both an organisation and a course.'));
       this.isError.set(true);
       return;
     }
     if (this.selectedCourseAlreadyAssigned()) {
-      this.notice.set('This course is already assigned to the selected organization.');
+      this.notice.set(this.lang.t('This course is already assigned to the selected organization.'));
       this.isError.set(true);
       return;
     }
@@ -82,11 +84,14 @@ export class CourseAssign {
     this.isError.set(false);
     try {
       await this.orgSvc.assignCourseToOrganization({ orgId: this.selectedOrg(), courseId: this.selectedCourse() });
-      this.notice.set(`"${this.selectedCourseName()}" assigned to "${this.selectedOrgName()}" successfully.`);
+      this.notice.set(this.lang.t('"{course}" assigned to "{org}" successfully.', {
+        course: this.selectedCourseName(),
+        org: this.selectedOrgName(),
+      }));
       this.selectedOrg.set('');
       this.selectedCourse.set('');
     } catch (e: any) {
-      this.notice.set(e?.message || 'Assignment failed.');
+      this.notice.set(e?.message || this.lang.t('Assignment failed.'));
       this.isError.set(true);
     } finally {
       this.busy.set(false);
@@ -95,7 +100,7 @@ export class CourseAssign {
 
   async syncExistingAssignments() {
     const confirmed = window.confirm(
-      'Sync existing organization-course assignments into course visibility rules?'
+      this.lang.t('Sync existing organization-course assignments into course visibility rules?')
     );
     if (!confirmed) return;
 
@@ -112,7 +117,7 @@ export class CourseAssign {
         `removed ${result.removedEnrollments} stale learner assignment${result.removedEnrollments === 1 ? '' : 's'}.`
       );
     } catch (e: any) {
-      this.notice.set(e?.message || 'Course visibility sync failed.');
+      this.notice.set(e?.message || this.lang.t('Course visibility sync failed.'));
       this.isError.set(true);
     } finally {
       this.syncing.set(false);
@@ -123,7 +128,7 @@ export class CourseAssign {
     if (!assignment.id) return;
     const courseName = this.courseTitle(assignment.courseId);
     const orgName = this.selectedOrgName() || assignment.orgId;
-    const confirmed = window.confirm(`Remove "${courseName}" from "${orgName}"?`);
+    const confirmed = window.confirm(this.lang.t('Remove "{course}" from "{org}"?', { course: courseName, org: orgName }));
     if (!confirmed) return;
 
     this.busy.set(true);
@@ -131,12 +136,12 @@ export class CourseAssign {
     this.isError.set(false);
     try {
       await this.orgSvc.removeCourseAssignment(assignment);
-      this.notice.set(`"${courseName}" removed from "${orgName}".`);
+      this.notice.set(this.lang.t('"{course}" removed from "{org}".', { course: courseName, org: orgName }));
       if (this.selectedCourse() === assignment.courseId) {
         this.selectedCourse.set('');
       }
     } catch (e: any) {
-      this.notice.set(e?.message || 'Course assignment removal failed.');
+      this.notice.set(e?.message || this.lang.t('Course assignment removal failed.'));
       this.isError.set(true);
     } finally {
       this.busy.set(false);

@@ -1,24 +1,23 @@
 <div class="registry-page">
   <header class="registry-header">
-    <h1>Member Registry</h1>
+    <h1>{{ lang.t('Member Registry') }}</h1>
     <p class="subtitle">
-      Verify whether a professional is registered on the official roster ("le tableau") —
-      search by member number, name, email, or profession.
+      {{ lang.t('Verify whether a professional is registered on the official roster ("le tableau") — search by member number, name, email, or profession.') }}
     </p>
   </header>
 
   <section class="stat-row">
     <article class="stat-card">
       <div class="stat-value">{{ members().length }}</div>
-      <div class="stat-label">Total Members</div>
+      <div class="stat-label">{{ lang.t('Total Members') }}</div>
     </article>
     <article class="stat-card stat-card--ok">
       <div class="stat-value">{{ activeCount() }}</div>
-      <div class="stat-label">Active</div>
+      <div class="stat-label">{{ lang.t('Active') }}</div>
     </article>
     <article class="stat-card stat-card--warn">
       <div class="stat-value">{{ expiredCount() }}</div>
-      <div class="stat-label">Expired</div>
+      <div class="stat-label">{{ lang.t('Expired') }}</div>
     </article>
   </section>
 
@@ -26,7 +25,7 @@
     <input
       type="text"
       class="search-input"
-      placeholder="Search by member number, name, email or profession..."
+      [placeholder]="lang.t('Search by member number, name, email or profession...')"
       [ngModel]="searchTerm()"
       (ngModelChange)="searchTerm.set($event)"
     />
@@ -36,12 +35,12 @@
     <table class="table">
       <thead>
         <tr>
-          <th>Member Number</th>
-          <th>Name</th>
-          <th>Profession</th>
-          <th>Status</th>
-          <th>Issued</th>
-          <th>Expires</th>
+          <th>{{ lang.t('Member Number') }}</th>
+          <th>{{ lang.t('Name') }}</th>
+          <th>{{ lang.t('Profession') }}</th>
+          <th>{{ lang.t('Status') }}</th>
+          <th>{{ lang.t('Issued') }}</th>
+          <th>{{ lang.t('Expires') }}</th>
           <th></th>
         </tr>
       </thead>
@@ -52,13 +51,13 @@
           <td>{{ m.profileSnapshot?.['profession'] || '—' }}</td>
           <td>
             <span class="pill" [class.pill--ok]="!isExpired(m.membershipCard?.expiresAt)" [class.pill--danger]="isExpired(m.membershipCard?.expiresAt)">
-              {{ isExpired(m.membershipCard?.expiresAt) ? 'Expired' : 'Active' }}
+              {{ isExpired(m.membershipCard?.expiresAt) ? lang.t('Expired') : lang.t('Active') }}
             </span>
           </td>
           <td>{{ asDate(m.membershipCard?.issuedAt) | date: 'mediumDate' }}</td>
           <td>{{ asDate(m.membershipCard?.expiresAt) | date: 'mediumDate' }}</td>
           <td>
-            <a class="btn-ghost" [routerLink]="['/manager/certification-candidate', m.id]">View</a>
+            <a class="btn-ghost" [routerLink]="['/manager/certification-candidate', m.id]">{{ lang.t('View') }}</a>
           </td>
         </tr>
       </tbody>
@@ -68,8 +67,8 @@
   <ng-template #emptyState>
     <div class="empty-state">
       <div class="empty-icon">◇</div>
-      <h2>No members found</h2>
-      <p>Approved candidates with an issued membership card will appear here.</p>
+      <h2>{{ lang.t('No members found') }}</h2>
+      <p>{{ lang.t('Approved candidates with an issued membership card will appear here.') }}</p>
     </div>
   </ng-template>
 </div>

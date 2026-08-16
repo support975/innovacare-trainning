@@ -2,21 +2,21 @@
 
   <div class="page-header">
     <div>
-      <button class="back-link" (click)="backToFacilities()">&larr; Facilities</button>
-      <p class="page-eyebrow">Manager · Facilities</p>
-      <h1 class="page-title">{{ org()?.name || 'Facility' }}</h1>
-      <p class="page-sub">Facility details, training performance, and admin access.</p>
+      <button class="back-link" (click)="backToFacilities()">&larr; {{ lang.t('Facilities') }}</button>
+      <p class="page-eyebrow">{{ lang.t('Manager · Facilities') }}</p>
+      <h1 class="page-title">{{ org()?.name || lang.t('Facility') }}</h1>
+      <p class="page-sub">{{ lang.t('Facility details, training performance, and admin access.') }}</p>
     </div>
     <button
       class="btn-primary"
       [disabled]="!stats()"
       (click)="manageAsAdmin()"
     >
-      Manage as Admin
+      {{ lang.t('Manage as Admin') }}
     </button>
   </div>
 
-  <div *ngIf="loading()" class="loading-hint">Loading facility...</div>
+  <div *ngIf="loading()" class="loading-hint">{{ lang.t('Loading facility...') }}</div>
 
   <ng-container *ngIf="!loading()">
 
@@ -24,19 +24,19 @@
     <div class="summary-grid" *ngIf="stats() as s; else noStats">
       <div class="summary-card">
         <div class="summary-value">{{ s.learnerCount }}</div>
-        <div class="summary-label">Learners</div>
+        <div class="summary-label">{{ lang.t('Learners') }}</div>
       </div>
       <div class="summary-card">
         <div class="summary-value">{{ s.completed }}</div>
-        <div class="summary-label">Completed</div>
+        <div class="summary-label">{{ lang.t('Completed') }}</div>
       </div>
       <div class="summary-card">
         <div class="summary-value">{{ s.inProgress }}</div>
-        <div class="summary-label">In progress</div>
+        <div class="summary-label">{{ lang.t('In progress') }}</div>
       </div>
       <div [class]="'summary-card' + (s.overdue > 0 ? ' summary-card--alert' : '')">
         <div class="summary-value">{{ s.overdue }}</div>
-        <div class="summary-label">Overdue</div>
+        <div class="summary-label">{{ lang.t('Overdue') }}</div>
       </div>
       <div class="summary-card">
         <div class="completion-bar">
@@ -46,27 +46,27 @@
           ></div>
         </div>
         <div class="summary-value">{{ s.completionRate }}%</div>
-        <div class="summary-label">Completion</div>
+        <div class="summary-label">{{ lang.t('Completion') }}</div>
       </div>
     </div>
     <ng-template #noStats>
-      <p class="empty-hint">This facility isn't in your roll-up yet.</p>
+      <p class="empty-hint">{{ lang.t("This facility isn't in your roll-up yet.") }}</p>
     </ng-template>
 
     <!-- Metadata -->
     <div class="panel" *ngIf="org() as o">
-      <div class="panel-title">Facility details</div>
+      <div class="panel-title">{{ lang.t('Facility details') }}</div>
       <div class="info-rows">
         <div class="info-row">
-          <span class="info-row__key">Type</span>
+          <span class="info-row__key">{{ lang.t('Type') }}</span>
           <span class="info-row__val">{{ o.type }}</span>
         </div>
         <div class="info-row">
-          <span class="info-row__key">Plan</span>
+          <span class="info-row__key">{{ lang.t('Plan') }}</span>
           <span class="info-row__val">{{ o.plan }}</span>
         </div>
         <div class="info-row">
-          <span class="info-row__key">Facility ID</span>
+          <span class="info-row__key">{{ lang.t('Facility ID') }}</span>
           <span class="info-row__val info-row__val--mono">{{ facilityId }}</span>
         </div>
       </div>

@@ -15,6 +15,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { combineLatest, filter, map, of, switchMap } from 'rxjs';
 import { AuthService } from '../../../../core/auth';
 import { GrantRewardDialog } from '../grant-reward-dialog/grant-reward-dialog';
+import { LanguageService } from '../../../../shared/services/language';
 
 interface LearnerRow {
   id: string;
@@ -35,6 +36,7 @@ export class RewardsCenterList {
   private afs = inject(Firestore);
   private authSvc = inject(AuthService);
   private router = inject(Router);
+  readonly lang = inject(LanguageService);
 
   private profile$ = this.authSvc.profile$.pipe(filter(Boolean));
 

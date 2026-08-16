@@ -1,15 +1,15 @@
 <main class="events-page">
   <header class="page-header">
     <div>
-      <p class="eyebrow">Events</p>
-      <h1>Webinars &amp; seminars</h1>
-      <p class="sub">Create a webinar, assign it to organizations, and optionally make it public for B2C registration.</p>
+      <p class="eyebrow">{{ lang.t('Events') }}</p>
+      <h1>{{ lang.t('Webinars & seminars') }}</h1>
+      <p class="sub">{{ lang.t('Create a webinar, assign it to organizations, and optionally make it public for B2C registration.') }}</p>
     </div>
     <div class="header-actions">
       <button class="btn-ghost" type="button" (click)="toggleJsonPanel()">
-        {{ jsonPanelOpen() ? 'Hide JSON import' : 'Import from JSON' }}
+        {{ jsonPanelOpen() ? lang.t('Hide JSON import') : lang.t('Import from JSON') }}
       </button>
-      <button class="btn-ghost" type="button" (click)="resetForm()">New event</button>
+      <button class="btn-ghost" type="button" (click)="resetForm()">{{ lang.t('New event') }}</button>
     </div>
   </header>
 
@@ -19,10 +19,10 @@
 
   <section class="panel json-panel" *ngIf="jsonPanelOpen()">
     <div class="panel-head">
-      <h2>Import event(s) from JSON</h2>
+      <h2>{{ lang.t('Import event(s) from JSON') }}</h2>
       <p>
-        Paste a single event object or an array of events. Dates use <code>YYYY-MM-DD</code>;
-        <code>ownerOrgId</code> must match an existing organization's ID.
+        {{ lang.t('Paste a single event object or an array of events. Dates use') }} <code>YYYY-MM-DD</code>;
+        <code>ownerOrgId</code> {{ lang.t("must match an existing organization's ID.") }}
       </p>
     </div>
 
@@ -41,122 +41,122 @@
 
     <div class="json-panel__actions">
       <button class="btn-primary" type="button" [disabled]="jsonBusy()" (click)="importFromJson()">
-        {{ jsonBusy() ? 'Importing...' : 'Create from JSON' }}
+        {{ jsonBusy() ? lang.t('Importing...') : lang.t('Create from JSON') }}
       </button>
-      <button class="btn-ghost" type="button" [disabled]="jsonBusy()" (click)="toggleJsonPanel()">Cancel</button>
+      <button class="btn-ghost" type="button" [disabled]="jsonBusy()" (click)="toggleJsonPanel()">{{ lang.t('Cancel') }}</button>
     </div>
   </section>
 
   <section class="workspace">
     <form class="panel form-panel" (ngSubmit)="save()">
       <div class="panel-head">
-        <h2>{{ form.id ? 'Edit event' : 'Create event' }}</h2>
+        <h2>{{ form.id ? lang.t('Edit event') : lang.t('Create event') }}</h2>
       </div>
 
       <label class="field">
-        <span>Title</span>
-        <input name="title" [(ngModel)]="form.title" placeholder="Understanding Microclimate" required />
+        <span>{{ lang.t('Title') }}</span>
+        <input name="title" [(ngModel)]="form.title" [placeholder]="lang.t('Understanding Microclimate')" required />
       </label>
 
       <label class="field">
-        <span>Description</span>
-        <textarea name="description" [(ngModel)]="form.description" rows="3" placeholder="What attendees will learn."></textarea>
+        <span>{{ lang.t('Description') }}</span>
+        <textarea name="description" [(ngModel)]="form.description" rows="3" [placeholder]="lang.t('What attendees will learn.')"></textarea>
       </label>
 
       <label class="field">
-        <span>Cover image URL</span>
+        <span>{{ lang.t('Cover image URL') }}</span>
         <input name="imageUrl" [(ngModel)]="form.imageUrl" placeholder="https://..." />
-        <small>Shown as the banner on the public webinar page and catalog cards.</small>
+        <small>{{ lang.t('Shown as the banner on the public webinar page and catalog cards.') }}</small>
       </label>
       <div class="cover-preview" *ngIf="form.imageUrl">
-        <img [src]="form.imageUrl" alt="Event cover preview" />
+        <img [src]="form.imageUrl" [alt]="lang.t('Event cover preview')" />
       </div>
 
       <label class="field">
-        <span>Owning organization</span>
+        <span>{{ lang.t('Owning organization') }}</span>
         <select name="ownerOrgId" [ngModel]="form.ownerOrgId" (ngModelChange)="onOwnerOrgChange($event)" required>
-          <option value="">Select organization</option>
+          <option value="">{{ lang.t('Select organization') }}</option>
           <option *ngFor="let org of organizations()" [value]="org.id">{{ org.name }}</option>
         </select>
       </label>
 
       <div class="field-grid field-grid--3">
         <label class="field">
-          <span>Date</span>
+          <span>{{ lang.t('Date') }}</span>
           <input type="date" name="dateStr" [(ngModel)]="form.dateStr" required />
         </label>
         <label class="field">
-          <span>Start time</span>
+          <span>{{ lang.t('Start time') }}</span>
           <input type="time" name="startTime" [(ngModel)]="form.startTime" />
         </label>
         <label class="field">
-          <span>End time</span>
+          <span>{{ lang.t('End time') }}</span>
           <input type="time" name="endTime" [(ngModel)]="form.endTime" />
         </label>
       </div>
 
       <label class="field">
-        <span>Timezone (IANA, e.g. America/New_York)</span>
+        <span>{{ lang.t('Timezone (IANA, e.g. America/New_York)') }}</span>
         <input name="timezone" [(ngModel)]="form.timezone" />
       </label>
 
       <div class="field-grid">
         <label class="field">
-          <span>Member price (USD, 0 = free)</span>
+          <span>{{ lang.t('Member price (USD, 0 = free)') }}</span>
           <input type="number" min="0" step="0.01" name="memberPrice" [(ngModel)]="form.memberPrice" />
         </label>
         <label class="field">
-          <span>Guest / non-member price (USD, 0 = free)</span>
+          <span>{{ lang.t('Guest / non-member price (USD, 0 = free)') }}</span>
           <input type="number" min="0" step="0.01" name="guestPrice" [(ngModel)]="form.guestPrice" />
         </label>
       </div>
 
       <label class="field">
-        <span>Capacity (optional — leave blank for unlimited)</span>
-        <input type="number" min="1" step="1" name="capacity" [ngModel]="form.capacity" (ngModelChange)="form.capacity = $event === '' ? null : $event" placeholder="e.g. 500" />
-        <small>Shown to visitors as "Spots Remaining" once registrations start coming in.</small>
+        <span>{{ lang.t('Capacity (optional — leave blank for unlimited)') }}</span>
+        <input type="number" min="1" step="1" name="capacity" [ngModel]="form.capacity" (ngModelChange)="form.capacity = $event === '' ? null : $event" [placeholder]="lang.t('e.g. 500')" />
+        <small>{{ lang.t('Shown to visitors as "Spots Remaining" once registrations start coming in.') }}</small>
       </label>
 
       <label class="field">
-        <span>Zoom join link (static, phase 1)</span>
+        <span>{{ lang.t('Zoom join link (static, phase 1)') }}</span>
         <input name="zoomJoinUrl" [(ngModel)]="form.zoomJoinUrl" placeholder="https://zoom.us/j/..." />
       </label>
 
       <label class="toggle-row">
         <input type="checkbox" name="isPublic" [(ngModel)]="form.isPublic" />
-        <span>Public — visible to B2C/individual visitors, not just assigned organizations</span>
+        <span>{{ lang.t('Public — visible to B2C/individual visitors, not just assigned organizations') }}</span>
       </label>
 
       <label class="field">
-        <span>Status</span>
+        <span>{{ lang.t('Status') }}</span>
         <select name="status" [(ngModel)]="form.status">
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-          <option value="live">Live</option>
-          <option value="completed">Completed</option>
-          <option value="cancelled">Cancelled</option>
+          <option value="draft">{{ lang.t('Draft') }}</option>
+          <option value="published">{{ lang.t('Published') }}</option>
+          <option value="live">{{ lang.t('Live') }}</option>
+          <option value="completed">{{ lang.t('Completed') }}</option>
+          <option value="cancelled">{{ lang.t('Cancelled') }}</option>
         </select>
       </label>
 
       <label class="toggle-row">
         <input type="checkbox" name="active" [(ngModel)]="form.active" />
-        <span>Active and visible in catalogs</span>
+        <span>{{ lang.t('Active and visible in catalogs') }}</span>
       </label>
 
       <label class="field">
-        <span>Accreditation</span>
+        <span>{{ lang.t('Accreditation') }}</span>
         <select name="accreditationId" [(ngModel)]="form.accreditationId" [disabled]="!form.ownerOrgId">
-          <option value="">None</option>
+          <option value="">{{ lang.t('None') }}</option>
           <option *ngFor="let accreditation of availableAccreditations()" [value]="accreditation.id">
             {{ accreditationLabel(accreditation) }}
           </option>
         </select>
-        <small *ngIf="!form.ownerOrgId">Select an owning organization first.</small>
+        <small *ngIf="!form.ownerOrgId">{{ lang.t('Select an owning organization first.') }}</small>
       </label>
 
       <div class="org-picker">
-        <h3>Assign to organizations</h3>
-        <p>Members of these organizations see the member price; everyone else sees the guest price.</p>
+        <h3>{{ lang.t('Assign to organizations') }}</h3>
+        <p>{{ lang.t('Members of these organizations see the member price; everyone else sees the guest price.') }}</p>
         <div class="org-list">
           <label class="org-row" *ngFor="let org of organizations()" [class.org-row--checked]="selectedOrgIds().has(org.id || '')">
             <input
@@ -170,8 +170,8 @@
       </div>
 
       <div class="org-picker">
-        <h3>Faculty / speakers</h3>
-        <p>Attach speaker profiles for bio, credentials, and disclosure display.</p>
+        <h3>{{ lang.t('Faculty / speakers') }}</h3>
+        <p>{{ lang.t('Attach speaker profiles for bio, credentials, and disclosure display.') }}</p>
         <div class="org-list" *ngIf="availableFaculty().length; else noFaculty">
           <label class="org-row org-row--people" *ngFor="let faculty of availableFaculty()" [class.org-row--checked]="selectedFacultyIds().has(faculty.id || '')">
             <input
@@ -188,13 +188,13 @@
           </label>
         </div>
         <ng-template #noFaculty>
-          <p class="empty-hint">{{ form.ownerOrgId ? 'No faculty profiles for this organization yet.' : 'Select an owning organization first.' }}</p>
+          <p class="empty-hint">{{ form.ownerOrgId ? lang.t('No faculty profiles for this organization yet.') : lang.t('Select an owning organization first.') }}</p>
         </ng-template>
       </div>
 
       <div class="org-picker">
-        <h3>Sponsors</h3>
-        <p>Attach commercial-support sponsors for disclosure display.</p>
+        <h3>{{ lang.t('Sponsors') }}</h3>
+        <p>{{ lang.t('Attach commercial-support sponsors for disclosure display.') }}</p>
         <div class="org-list" *ngIf="availableSponsors().length; else noSponsors">
           <label class="org-row org-row--people" *ngFor="let sponsor of availableSponsors()" [class.org-row--checked]="selectedSponsorIds().has(sponsor.id || '')">
             <input
@@ -211,18 +211,18 @@
           </label>
         </div>
         <ng-template #noSponsors>
-          <p class="empty-hint">{{ form.ownerOrgId ? 'No sponsors for this organization yet.' : 'Select an owning organization first.' }}</p>
+          <p class="empty-hint">{{ form.ownerOrgId ? lang.t('No sponsors for this organization yet.') : lang.t('Select an owning organization first.') }}</p>
         </ng-template>
       </div>
 
       <button class="btn-primary" type="submit" [disabled]="busy()">
-        {{ busy() ? 'Saving...' : (form.id ? 'Save event' : 'Create event') }}
+        {{ busy() ? lang.t('Saving...') : (form.id ? lang.t('Save event') : lang.t('Create event')) }}
       </button>
     </form>
 
     <section class="panel events-list">
       <div class="panel-head">
-        <h2>Existing events</h2>
+        <h2>{{ lang.t('Existing events') }}</h2>
       </div>
 
       <article class="event-row" *ngFor="let event of events()" [class.event-row--inactive]="event.active === false">
@@ -235,18 +235,18 @@
             <span class="org-chip" *ngFor="let orgId of event.assignedOrgIds">{{ orgName(orgId) }}</span>
           </div>
           <div class="org-chips" *ngIf="event.accreditationId">
-            <span class="org-chip org-chip--accent">Accredited</span>
+            <span class="org-chip org-chip--accent">{{ lang.t('Accredited') }}</span>
           </div>
         </div>
         <div class="event-row__actions">
-          <button class="btn-ghost" type="button" (click)="edit(event)">Edit</button>
-          <button class="btn-ghost btn-ghost--danger" type="button" [disabled]="busy()" (click)="remove(event)">Delete</button>
+          <button class="btn-ghost" type="button" (click)="edit(event)">{{ lang.t('Edit') }}</button>
+          <button class="btn-ghost btn-ghost--danger" type="button" [disabled]="busy()" (click)="remove(event)">{{ lang.t('Delete') }}</button>
         </div>
       </article>
 
       <div class="empty" *ngIf="!events().length">
-        <h2>No events yet</h2>
-        <p>Create the first webinar using the form.</p>
+        <h2>{{ lang.t('No events yet') }}</h2>
+        <p>{{ lang.t('Create the first webinar using the form.') }}</p>
       </div>
     </section>
   </section>

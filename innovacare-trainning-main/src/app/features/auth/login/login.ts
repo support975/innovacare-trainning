@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { combineLatest, firstValueFrom } from 'rxjs';
 import { filter, map, take } from 'rxjs/operators';
 import { AuthService, AppProfile } from '../../../core/auth';
+import { PublicTranslateDirective } from '../../../shared/directives/public-translate.directive';
 
 function defaultRouteForRole(role: AppProfile['role']): string {
   switch (role) {
@@ -25,7 +26,7 @@ function defaultRouteForRole(role: AppProfile['role']): string {
 @Component({
   standalone: true,
   selector: 'app-login',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, PublicTranslateDirective],
   templateUrl: './login.html',
   styleUrls: ['./login.css'],
 })
@@ -70,7 +71,7 @@ export class LoginComponent {
       const profile = await this.waitForFreshProfile();
       await this.router.navigateByUrl(defaultRouteForRole(profile.role), { replaceUrl: true });
     } catch (e: any) {
-      this.error.set(e?.message ?? 'Login failed');
+      this.error.set(e?.message ?? 'Échec de la connexion');
     } finally {
       this.loading.set(false);
     }
@@ -86,7 +87,7 @@ export class LoginComponent {
       const profile = await this.waitForFreshProfile();
       await this.router.navigateByUrl(defaultRouteForRole(profile.role), { replaceUrl: true });
     } catch (e: any) {
-      this.error.set(e?.message ?? 'Google sign-in failed');
+      this.error.set(e?.message ?? 'Échec de la connexion avec Google');
     } finally {
       this.loading.set(false);
     }

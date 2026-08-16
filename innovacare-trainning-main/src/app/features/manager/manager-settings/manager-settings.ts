@@ -8,6 +8,7 @@ import {
   SmartReminderSettings,
   SmartRemindersService,
 } from '../../../shared/services/smart-reminders';
+import { LanguageService } from '../../../shared/services/language';
 
 @Component({
   selector: 'app-manager-settings',
@@ -20,6 +21,7 @@ export class ManagerSettings {
   private readonly orgContext = inject(ActingOrgService);
   private readonly remindersSvc = inject(SmartRemindersService);
   private readonly destroyRef = inject(DestroyRef);
+  readonly lang = inject(LanguageService);
 
   activeTab = signal<'program' | 'compliance' | 'notifications'>('program');
 
@@ -87,7 +89,7 @@ export class ManagerSettings {
   async save() {
     const orgId = this.currentOrgId();
     if (!orgId) {
-      this.notice.set('Your account is not linked to an organization.');
+      this.notice.set(this.lang.t('Your account is not linked to an organization.'));
       this.isError.set(true);
       return;
     }
@@ -103,11 +105,11 @@ export class ManagerSettings {
         digestMode: this.notifications.digestMode,
       };
       await this.remindersSvc.saveSettings(orgId, this.smartReminders, this.currentUid());
-      this.notice.set('Smart reminder rules saved.');
+      this.notice.set(this.lang.t('Smart reminder rules saved.'));
       this.isError.set(false);
       setTimeout(() => this.notice.set(''), 3500);
     } catch (error: any) {
-      this.notice.set(error?.message || 'Unable to save reminder rules.');
+      this.notice.set(error?.message || this.lang.t('Unable to save reminder rules.'));
       this.isError.set(true);
     }
   }
@@ -115,7 +117,7 @@ export class ManagerSettings {
   async runSmartScanNow() {
     const orgId = this.currentOrgId();
     if (!orgId) {
-      this.notice.set('Your account is not linked to an organization.');
+      this.notice.set(this.lang.t('Your account is not linked to an organization.'));
       this.isError.set(true);
       return;
     }
@@ -125,11 +127,14 @@ export class ManagerSettings {
       await this.save();
       const result = await this.remindersSvc.runScanNow(orgId);
       this.notice.set(
-        `Scan complete: ${result.remindersCreated} reminders created, ${result.skippedExisting} already existed.`
+        this.lang.t('Scan complete: {created} reminders created, {skipped} already existed.', {
+          created: result.remindersCreated,
+          skipped: result.skippedExisting,
+        })
       );
       this.isError.set(false);
     } catch (error: any) {
-      this.notice.set(error?.message || 'Unable to run smart reminder scan.');
+      this.notice.set(error?.message || this.lang.t('Unable to run smart reminder scan.'));
       this.isError.set(true);
     } finally {
       this.scanBusy.set(false);

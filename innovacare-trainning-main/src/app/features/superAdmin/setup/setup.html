@@ -3,13 +3,13 @@
   <!-- Page Header -->
   <div class="page-header">
     <div>
-      <p class="page-eyebrow">Super Admin · Setup</p>
-      <h1 class="page-title">Platform Setup</h1>
-      <p class="page-sub">Complete these steps to get your platform production-ready.</p>
+      <p class="page-eyebrow">{{ lang.t('Super Admin · Setup') }}</p>
+      <h1 class="page-title">{{ lang.t('Platform Setup') }}</h1>
+      <p class="page-sub">{{ lang.t('Complete these steps to get your platform production-ready.') }}</p>
     </div>
     <div class="setup-progress-label">
       <span class="setup-progress-pct">{{ progress() }}%</span>
-      <span class="setup-progress-text">Complete</span>
+      <span class="setup-progress-text">{{ lang.t('Complete') }}</span>
     </div>
   </div>
 
@@ -22,7 +22,7 @@
       ></div>
     </div>
     <div class="setup-progress-meta">
-      <span class="setup-progress-meta__done">{{ doneCount() }} of {{ steps().length }} steps completed</span>
+      <span class="setup-progress-meta__done">{{ doneCount() }} {{ lang.t('of') }} {{ steps().length }} {{ lang.t('steps completed') }}</span>
     </div>
   </div>
 
@@ -41,8 +41,8 @@
           </svg>
         </div>
         <div class="setup-card__body">
-          <div class="setup-card__label">{{ step.label }}</div>
-          <div class="setup-card__desc">{{ step.desc }}</div>
+          <div class="setup-card__label">{{ lang.t(step.label) }}</div>
+          <div class="setup-card__desc">{{ lang.t(step.desc) }}</div>
         </div>
       </div>
       <div class="setup-card__right">
@@ -52,7 +52,7 @@
           </svg>
         </div>
         <span [class]="'setup-card__status' + (step.done ? ' setup-card__status--done' : '')">
-          {{ step.done ? 'Done' : 'Pending' }}
+          {{ step.done ? lang.t('Done') : lang.t('Pending') }}
         </span>
       </div>
     </div>
@@ -63,7 +63,7 @@
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="20 6 9 17 4 12"/>
     </svg>
-    <span class="notice-banner__text">All setup steps are complete! Your platform is production-ready.</span>
+    <span class="notice-banner__text">{{ lang.t('All setup steps are complete! Your platform is production-ready.') }}</span>
   </div>
 
 </div>

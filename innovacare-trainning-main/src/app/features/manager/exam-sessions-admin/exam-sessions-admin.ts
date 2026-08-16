@@ -10,6 +10,7 @@ import { ExamCenter, ExamSession } from '../../../data/models';
 import { Firestore, doc, updateDoc, deleteDoc } from '@angular/fire/firestore';
 
 import { ToDatePipe } from '../../../shared/pipes/to-date.pipe';
+import { LanguageService } from '../../../shared/services/language';
 @Component({
   selector: 'app-exam-sessions-admin',
   standalone: true,
@@ -22,6 +23,7 @@ export class ExamSessionsAdminComponent implements OnInit {
   private examSessionAuthService = inject(ExamSessionAuthService);
   private blueprintService = inject(ExamBlueprintService);
   private afs = inject(Firestore);
+  readonly lang = inject(LanguageService);
 
   // Tab state
   activeTab = signal<'centers' | 'sessions'>('centers');
@@ -124,7 +126,7 @@ export class ExamSessionsAdminComponent implements OnInit {
   async addCenter(): Promise<void> {
     const center = this.newCenter();
     if (!center.name || !center.city || !center.orgId) {
-      this.notice.set('Please fill in all required fields.');
+      this.notice.set(this.lang.t('Please fill in all required fields.'));
       return;
     }
 
@@ -140,7 +142,7 @@ export class ExamSessionsAdminComponent implements OnInit {
         orgId: center.orgId,
       });
 
-      this.notice.set(`✓ Center created: ${centerId}`);
+      this.notice.set(`✓ ${this.lang.t('Center created:')} ${centerId}`);
       this.resetCenterForm();
 
       // Reload centers
@@ -148,7 +150,7 @@ export class ExamSessionsAdminComponent implements OnInit {
         next: (centers) => this.centers.set(centers),
       });
     } catch (e: any) {
-      this.notice.set(e?.message || 'Failed to create center.');
+      this.notice.set(e?.message || this.lang.t('Failed to create center.'));
     } finally {
       this.busy.set(false);
     }
@@ -162,7 +164,7 @@ export class ExamSessionsAdminComponent implements OnInit {
       !session.orgId ||
       !session.sessionDate
     ) {
-      this.notice.set('Please fill in all required fields.');
+      this.notice.set(this.lang.t('Please fill in all required fields.'));
       return;
     }
 
@@ -182,7 +184,7 @@ export class ExamSessionsAdminComponent implements OnInit {
         status: session.status,
       });
 
-      this.notice.set(`✓ Session created: ${sessionId}`);
+      this.notice.set(`✓ ${this.lang.t('Session created:')} ${sessionId}`);
       this.resetSessionForm();
 
       // Reload sessions
@@ -190,7 +192,7 @@ export class ExamSessionsAdminComponent implements OnInit {
         next: (sessions) => this.sessions.set(sessions),
       });
     } catch (e: any) {
-      this.notice.set(e?.message || 'Failed to create session.');
+      this.notice.set(e?.message || this.lang.t('Failed to create session.'));
     } finally {
       this.busy.set(false);
     }
@@ -240,9 +242,9 @@ export class ExamSessionsAdminComponent implements OnInit {
       passwords[sessionId] = password;
       this.sessionPasswords.set(passwords);
 
-      this.notice.set(`✓ Password generated: ${password} (Share with proctors only!)`);
+      this.notice.set(`✓ ${this.lang.t('Password generated:')} ${password} ${this.lang.t('(Share with proctors only!)')}`);
     } catch (e: any) {
-      this.notice.set(e?.message || 'Failed to generate password.');
+      this.notice.set(e?.message || this.lang.t('Failed to generate password.'));
     } finally {
       this.busy.set(false);
     }
@@ -260,7 +262,7 @@ export class ExamSessionsAdminComponent implements OnInit {
   }
 
   async deleteSession(sessionId: string): Promise<void> {
-    if (!confirm('Are you sure you want to delete this session? This action cannot be undone.')) {
+    if (!confirm(this.lang.t('Are you sure you want to delete this session? This action cannot be undone.'))) {
       return;
     }
 
@@ -268,7 +270,7 @@ export class ExamSessionsAdminComponent implements OnInit {
     try {
       const sessionRef = doc(this.afs, `examSessions/${sessionId}`);
       await deleteDoc(sessionRef);
-      this.notice.set('✓ Session deleted successfully.');
+      this.notice.set(`✓ ${this.lang.t('Session deleted successfully.')}`);
 
       // Reload sessions
       const orgId = this.userOrgId();
@@ -276,14 +278,14 @@ export class ExamSessionsAdminComponent implements OnInit {
         this.loadSessionsByOrg(orgId);
       }
     } catch (e: any) {
-      this.notice.set(e?.message || 'Failed to delete session.');
+      this.notice.set(e?.message || this.lang.t('Failed to delete session.'));
     } finally {
       this.busy.set(false);
     }
   }
 
   async deleteCenter(centerId: string): Promise<void> {
-    if (!confirm('Are you sure you want to delete this center? This action cannot be undone.')) {
+    if (!confirm(this.lang.t('Are you sure you want to delete this center? This action cannot be undone.'))) {
       return;
     }
 
@@ -291,7 +293,7 @@ export class ExamSessionsAdminComponent implements OnInit {
     try {
       const centerRef = doc(this.afs, `examCenters/${centerId}`);
       await deleteDoc(centerRef);
-      this.notice.set('✓ Center deleted successfully.');
+      this.notice.set(`✓ ${this.lang.t('Center deleted successfully.')}`);
 
       // Reload centers
       const orgId = this.userOrgId();
@@ -301,7 +303,7 @@ export class ExamSessionsAdminComponent implements OnInit {
         });
       }
     } catch (e: any) {
-      this.notice.set(e?.message || 'Failed to delete center.');
+      this.notice.set(e?.message || this.lang.t('Failed to delete center.'));
     } finally {
       this.busy.set(false);
     }
@@ -340,9 +342,9 @@ export class ExamSessionsAdminComponent implements OnInit {
   copyToClipboard(text: string): void {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text).then(() => {
-        this.notice.set('✓ URL copied to clipboard');
+        this.notice.set(`✓ ${this.lang.t('URL copied to clipboard')}`);
       }).catch(() => {
-        this.notice.set('Failed to copy URL');
+        this.notice.set(this.lang.t('Failed to copy URL'));
       });
     } else {
       // Fallback for older browsers
@@ -352,9 +354,9 @@ export class ExamSessionsAdminComponent implements OnInit {
       textArea.select();
       try {
         document.execCommand('copy');
-        this.notice.set('✓ URL copied to clipboard');
+        this.notice.set(`✓ ${this.lang.t('URL copied to clipboard')}`);
       } catch {
-        this.notice.set('Failed to copy URL');
+        this.notice.set(this.lang.t('Failed to copy URL'));
       }
       document.body.removeChild(textArea);
     }

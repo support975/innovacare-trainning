@@ -10,6 +10,7 @@ import {
   SuperAdminDemoRequest,
   SuperAdminDemoRequestsService,
 } from '../services/super-admin-demo-requests';
+import { LanguageService } from '../../../shared/services/language';
 
 @Component({
   selector: 'app-super-admin-demo-requests',
@@ -22,6 +23,7 @@ export class DemoRequestsComponent {
   private readonly service = inject(SuperAdminDemoRequestsService);
   private readonly auth = inject(AuthService);
   private readonly logs = inject(SuperAdminLogsService);
+  readonly lang = inject(LanguageService);
 
   readonly requests = toSignal(this.service.list(), { initialValue: [] as SuperAdminDemoRequest[] });
   readonly profile = toSignal(this.auth.profile$, { initialValue: null });
@@ -120,7 +122,7 @@ export class DemoRequestsComponent {
     try {
       await this.service.updateStatus(request.id, status, this.profile()?.email ?? null);
       await this.audit('demo_request_status', request, `Demo request marked ${status}.`);
-      this.setNotice('Request status updated.');
+      this.setNotice(this.lang.t('Request status updated.'));
     } finally {
       this.saving.set(false);
     }
@@ -132,7 +134,7 @@ export class DemoRequestsComponent {
     try {
       await this.service.updatePriority(request.id, priority, this.profile()?.email ?? null);
       await this.audit('demo_request_priority', request, `Demo request priority set to ${priority}.`);
-      this.setNotice('Priority updated.');
+      this.setNotice(this.lang.t('Priority updated.'));
     } finally {
       this.saving.set(false);
     }
@@ -148,7 +150,7 @@ export class DemoRequestsComponent {
         actorEmail: this.profile()?.email ?? null,
       });
       await this.audit('demo_request_treatment_saved', request, 'Demo request treatment saved.');
-      this.setNotice('Treatment notes saved.');
+      this.setNotice(this.lang.t('Treatment notes saved.'));
     } finally {
       this.saving.set(false);
     }
@@ -163,7 +165,7 @@ export class DemoRequestsComponent {
     try {
       await this.service.markResponded(request.id, draft, this.profile()?.email ?? null);
       await this.audit('demo_request_response_started', request, 'Response opened and request marked contacted.');
-      this.setNotice('Email opened and request marked contacted.');
+      this.setNotice(this.lang.t('Email opened and request marked contacted.'));
     } finally {
       this.saving.set(false);
     }
@@ -188,22 +190,23 @@ export class DemoRequestsComponent {
   private defaultResponse(request: SuperAdminDemoRequest | null): string {
     if (!request) return '';
 
-    const planLine = request.selectedPlan ? ` for the ${request.selectedPlan} plan` : '';
     return [
-      `Hello ${request.fullName},`,
+      `${this.lang.t('Hello')} ${request.fullName},`,
       '',
-      `Thank you for requesting a demo of Innovacare Training${planLine}.`,
-      `I reviewed your request for ${request.organizationName} and would be glad to schedule a short walkthrough.`,
+      request.selectedPlan
+        ? `${this.lang.t('Thank you for requesting a demo of Innovacare Training for the')} ${request.selectedPlan} ${this.lang.t('plan.')}`
+        : this.lang.t('Thank you for requesting a demo of Innovacare Training.'),
+      `${this.lang.t('I reviewed your request for')} ${request.organizationName} ${this.lang.t('and would be glad to schedule a short walkthrough.')}`,
       '',
-      'Please send me two times that work for you this week, or reply with your preferred contact window.',
+      this.lang.t('Please send me two times that work for you this week, or reply with your preferred contact window.'),
       '',
-      'Best regards,',
-      'Innovacare Training Team',
+      this.lang.t('Best regards,'),
+      this.lang.t('Innovacare Training Team'),
     ].join('\n');
   }
 
   private openMailClient(request: SuperAdminDemoRequest, draft: string): void {
-    const subject = `Innovacare Training demo for ${request.organizationName}`;
+    const subject = `${this.lang.t('Innovacare Training demo for')} ${request.organizationName}`;
     const href = `mailto:${encodeURIComponent(request.workEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(draft)}`;
     window.location.href = href;
   }

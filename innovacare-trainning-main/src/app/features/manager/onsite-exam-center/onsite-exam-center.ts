@@ -9,6 +9,7 @@ import { OnsiteExamService, OnsiteCandidate } from '../../../data/onsite-exam.se
 import { ExamBlueprintService } from '../../../data/exam-blueprint.service';
 import { ExamSession } from '../../../data/models';
 import { ToDatePipe } from '../../../shared/pipes/to-date.pipe';
+import { LanguageService } from '../../../shared/services/language';
 
 @Component({
   selector: 'app-onsite-exam-center',
@@ -22,6 +23,7 @@ export class OnsiteExamCenterComponent implements OnInit {
   private proctorSvc = inject(ProctorService);
   private onsiteSvc = inject(OnsiteExamService);
   private blueprintSvc = inject(ExamBlueprintService);
+  readonly lang = inject(LanguageService);
 
   sessions = signal<ExamSession[]>([]);
   selectedSession = signal<ExamSession | null>(null);
@@ -54,7 +56,7 @@ export class OnsiteExamCenterComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     const profile = await firstValueFrom(this.auth.profile$.pipe(take(1)));
     if (!profile?.orgId) {
-      this.error.set('Organization missing from your profile.');
+      this.error.set(this.lang.t('Organization missing from your profile.'));
       return;
     }
     this.proctorSvc.listSessionsByOrg$(profile.orgId).subscribe({
@@ -62,7 +64,7 @@ export class OnsiteExamCenterComponent implements OnInit {
         this.sessions.set(sessions);
         for (const s of sessions) void this.resolveExamTitle(s.examId);
       },
-      error: (e) => this.error.set(e?.message || 'Failed to load sessions.'),
+      error: (e) => this.error.set(e?.message || this.lang.t('Failed to load sessions.')),
     });
   }
 
@@ -95,7 +97,7 @@ export class OnsiteExamCenterComponent implements OnInit {
     try {
       this.candidates.set(await this.onsiteSvc.loadCandidates(session.id));
     } catch (e: any) {
-      this.error.set(e?.message || 'Failed to load candidates.');
+      this.error.set(e?.message || this.lang.t('Failed to load candidates.'));
     } finally {
       this.loading.set(false);
     }
@@ -120,15 +122,15 @@ export class OnsiteExamCenterComponent implements OnInit {
   }
 
   candidateStatus(c: OnsiteCandidate): string {
-    if (c.attempt?.cardIssuedAt) return 'Card issued';
-    if (c.attempt?.resultPublishedAt) return 'Result published';
-    if (c.attempt) return c.attempt.passed ? 'Passed — pending review' : 'Failed — pending review';
-    if (c.examCompleted) return 'Exam completed';
-    if (c.verified) return 'Verified — awaiting exam';
-    if (c.candidacyApproved === true) return 'Approved — awaiting verification';
-    if (c.candidacyApproved === false) return 'Candidacy rejected';
-    if (c.documents.length) return 'Documents to review';
-    return 'Awaiting documents';
+    if (c.attempt?.cardIssuedAt) return this.lang.t('Card issued');
+    if (c.attempt?.resultPublishedAt) return this.lang.t('Result published');
+    if (c.attempt) return c.attempt.passed ? this.lang.t('Passed — pending review') : this.lang.t('Failed — pending review');
+    if (c.examCompleted) return this.lang.t('Exam completed');
+    if (c.verified) return this.lang.t('Verified — awaiting exam');
+    if (c.candidacyApproved === true) return this.lang.t('Approved — awaiting verification');
+    if (c.candidacyApproved === false) return this.lang.t('Candidacy rejected');
+    if (c.documents.length) return this.lang.t('Documents to review');
+    return this.lang.t('Awaiting documents');
   }
 
   async reviewDocument(c: OnsiteCandidate, docId: string, status: 'approved' | 'rejected'): Promise<void> {
@@ -140,7 +142,7 @@ export class OnsiteExamCenterComponent implements OnInit {
       await this.refreshCandidates();
       this.syncSelected(c.uid);
     } catch (e: any) {
-      this.error.set(e?.message || 'Failed to review the document.');
+      this.error.set(e?.message || this.lang.t('Failed to review the document.'));
     } finally {
       this.busy.set(false);
     }
@@ -161,11 +163,13 @@ export class OnsiteExamCenterComponent implements OnInit {
     this.error.set('');
     try {
       await this.onsiteSvc.setCandidacy(session.id, c, approved);
-      this.success.set(approved ? `✓ ${c.name}'s candidacy approved.` : `${c.name}'s candidacy rejected.`);
+      this.success.set(approved
+        ? `✓ ${this.lang.t("{name}'s candidacy approved.", { name: c.name })}`
+        : this.lang.t("{name}'s candidacy rejected.", { name: c.name }));
       await this.refreshCandidates();
       this.syncSelected(c.uid);
     } catch (e: any) {
-      this.error.set(e?.message || 'Failed to update candidacy.');
+      this.error.set(e?.message || this.lang.t('Failed to update candidacy.'));
     } finally {
       this.busy.set(false);
     }
@@ -178,9 +182,9 @@ export class OnsiteExamCenterComponent implements OnInit {
     this.error.set('');
     try {
       await this.onsiteSvc.emailCredentials(c.applicationId);
-      this.success.set(`✓ Card & certificate PDFs are being emailed to ${c.email}.`);
+      this.success.set(`✓ ${this.lang.t('Card & certificate PDFs are being emailed to {email}.', { email: c.email })}`);
     } catch (e: any) {
-      this.error.set(e?.message || 'Failed to queue the credentials email.');
+      this.error.set(e?.message || this.lang.t('Failed to queue the credentials email.'));
     } finally {
       this.busy.set(false);
     }
@@ -188,10 +192,10 @@ export class OnsiteExamCenterComponent implements OnInit {
 
   docTypeLabel(type: string): string {
     switch (type) {
-      case 'identity': return 'Identity';
-      case 'diploma': return 'Diploma';
-      case 'payment_proof': return 'Payment proof';
-      default: return 'Other';
+      case 'identity': return this.lang.t('Identity');
+      case 'diploma': return this.lang.t('Diploma');
+      case 'payment_proof': return this.lang.t('Payment proof');
+      default: return this.lang.t('Other');
     }
   }
 
@@ -212,11 +216,11 @@ export class OnsiteExamCenterComponent implements OnInit {
     this.error.set('');
     try {
       await this.onsiteSvc.publishResult(session.id, c, this.examTitle(session.examId));
-      this.success.set(`✓ Result published and sent to ${c.name}.`);
+      this.success.set(`✓ ${this.lang.t('Result published and sent to {name}.', { name: c.name })}`);
       await this.refreshCandidates();
       this.syncSelected(c.uid);
     } catch (e: any) {
-      this.error.set(e?.message || 'Failed to publish result.');
+      this.error.set(e?.message || this.lang.t('Failed to publish result.'));
     } finally {
       this.busy.set(false);
     }
@@ -238,12 +242,12 @@ export class OnsiteExamCenterComponent implements OnInit {
         profession: this.cardForm.profession,
         membershipNumber: this.cardForm.membershipNumber,
       });
-      this.success.set(`✓ Card ${membershipNumber} and certificate ${certificateNumber} issued and delivered to ${c.name}.`);
+      this.success.set(`✓ ${this.lang.t('Card {membershipNumber} and certificate {certificateNumber} issued and delivered to {name}.', { membershipNumber, certificateNumber, name: c.name })}`);
       this.cardFormOpen.set(false);
       await this.refreshCandidates();
       this.syncSelected(c.uid);
     } catch (e: any) {
-      this.error.set(e?.message || 'Failed to issue the card.');
+      this.error.set(e?.message || this.lang.t('Failed to issue the card.'));
     } finally {
       this.busy.set(false);
     }

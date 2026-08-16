@@ -1,12 +1,12 @@
 <div class="report-page">
   <header class="page-header">
     <div>
-      <p class="page-eyebrow">Compliance · Acknowledgements</p>
-      <h1>Policy Acknowledgements Report</h1>
-      <p>Track assigned learners, missing acknowledgements, evidence dates, and policy versions.</p>
+      <p class="page-eyebrow">{{ lang.t('Compliance · Acknowledgements') }}</p>
+      <h1>{{ lang.t('Policy Acknowledgements Report') }}</h1>
+      <p>{{ lang.t('Track assigned learners, missing acknowledgements, evidence dates, and policy versions.') }}</p>
     </div>
     <button class="btn-ghost" type="button" (click)="exportCsv()" [disabled]="!filteredRows().length">
-      Export CSV
+      {{ lang.t('Export CSV') }}
     </button>
   </header>
 
@@ -16,12 +16,12 @@
 
   <section class="controls-panel">
     <label class="field">
-      <span>Policy</span>
+      <span>{{ lang.t('Policy') }}</span>
       <select
         [ngModel]="selectedPolicyId()"
         (ngModelChange)="selectedPolicyId.set($event); run()"
       >
-        <option value="">Select policy...</option>
+        <option value="">{{ lang.t('Select policy...') }}</option>
         <option *ngFor="let policy of policies()" [value]="policy.id">
           {{ policy.title }} · v{{ policy.version || '-' }}
         </option>
@@ -29,26 +29,26 @@
     </label>
 
     <label class="field">
-      <span>Status</span>
+      <span>{{ lang.t('Status') }}</span>
       <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
-        <option value="all">All statuses</option>
-        <option value="missing">Missing</option>
-        <option value="acknowledged">Acknowledged</option>
+        <option value="all">{{ lang.t('All statuses') }}</option>
+        <option value="missing">{{ lang.t('Missing') }}</option>
+        <option value="acknowledged">{{ lang.t('Acknowledged') }}</option>
       </select>
     </label>
 
     <label class="field field--search">
-      <span>Search</span>
+      <span>{{ lang.t('Search') }}</span>
       <input
         type="text"
-        placeholder="Search name, email, role..."
+        [placeholder]="lang.t('Search name, email, role...')"
         [ngModel]="search()"
         (ngModelChange)="search.set($event)"
       />
     </label>
 
     <button class="btn-primary" type="button" (click)="run()" [disabled]="busy() || !selectedPolicyId()">
-      {{ busy() ? 'Loading...' : 'Refresh report' }}
+      {{ busy() ? lang.t('Loading...') : lang.t('Refresh report') }}
     </button>
   </section>
 
@@ -59,43 +59,43 @@
   <section class="stats-grid">
     <article>
       <strong>{{ summary().assigned }}</strong>
-      <span>Assigned learners</span>
+      <span>{{ lang.t('Assigned learners') }}</span>
     </article>
     <article>
       <strong>{{ summary().acknowledged }}</strong>
-      <span>Acknowledged</span>
+      <span>{{ lang.t('Acknowledged') }}</span>
     </article>
     <article>
       <strong>{{ summary().missing }}</strong>
-      <span>Missing</span>
+      <span>{{ lang.t('Missing') }}</span>
     </article>
     <article>
       <strong>{{ summary().completionPct }}%</strong>
-      <span>Completion</span>
+      <span>{{ lang.t('Completion') }}</span>
     </article>
   </section>
 
   <section class="report-panel">
     <div class="report-head">
       <div>
-        <h2>{{ selectedPolicy()?.title || 'Select a policy' }}</h2>
+        <h2>{{ selectedPolicy()?.title || lang.t('Select a policy') }}</h2>
         <p *ngIf="selectedPolicy() as policy">
-          Version {{ policy.version || '-' }} · {{ policy.category || 'Uncategorized' }}
+          {{ lang.t('Version') }} {{ policy.version || '-' }} · {{ policy.category || lang.t('Uncategorized') }}
         </p>
       </div>
-      <span class="result-count">{{ filteredRows().length }} row{{ filteredRows().length === 1 ? '' : 's' }}</span>
+      <span class="result-count">{{ filteredRows().length }} {{ filteredRows().length === 1 ? lang.t('row') : lang.t('rows') }}</span>
     </div>
 
     <div class="table-wrap" *ngIf="filteredRows().length; else emptyReport">
       <table>
         <thead>
           <tr>
-            <th>Learner</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Status</th>
-            <th>Version</th>
-            <th>Acknowledged at</th>
+            <th>{{ lang.t('Learner') }}</th>
+            <th>{{ lang.t('Email') }}</th>
+            <th>{{ lang.t('Role') }}</th>
+            <th>{{ lang.t('Status') }}</th>
+            <th>{{ lang.t('Version') }}</th>
+            <th>{{ lang.t('Acknowledged at') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -103,14 +103,14 @@
             <td>
               <strong>{{ row.userName }}</strong>
               <small *ngIf="row.assignmentState === 'acknowledged_without_assignment'">
-                acknowledged without active assignment
+                {{ lang.t('acknowledged without active assignment') }}
               </small>
             </td>
             <td>{{ row.userEmail || '-' }}</td>
             <td>{{ row.userRole || '-' }}</td>
             <td>
               <span [class]="'status status--' + row.status">
-                {{ row.status === 'acknowledged' ? 'Acknowledged' : 'Missing' }}
+                {{ row.status === 'acknowledged' ? lang.t('Acknowledged') : lang.t('Missing') }}
               </span>
             </td>
             <td>{{ row.policyVersion || '-' }}</td>
@@ -123,9 +123,9 @@
     <ng-template #emptyReport>
       <div class="empty-state">
         <div class="empty-state__icon">□</div>
-        <strong>{{ loaded() ? 'No matching rows' : 'No report loaded yet' }}</strong>
+        <strong>{{ loaded() ? lang.t('No matching rows') : lang.t('No report loaded yet') }}</strong>
         <span>
-          {{ loaded() ? 'Adjust filters or assign the policy to learners.' : 'Select a policy to build the acknowledgement report.' }}
+          {{ loaded() ? lang.t('Adjust filters or assign the policy to learners.') : lang.t('Select a policy to build the acknowledgement report.') }}
         </span>
       </div>
     </ng-template>

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { SuperAdminOrganizationsService } from '../../services/super-admin-organizations';
 import { entitlementsForPlan } from '../../../../shared/billing/plan-entitlements';
+import { LanguageService } from '../../../../shared/services/language';
 
 @Component({
   selector: 'app-edit',
@@ -15,6 +16,7 @@ export class Edit implements OnInit {
   private orgSvc = inject(SuperAdminOrganizationsService);
   private route  = inject(ActivatedRoute);
   private router = inject(Router);
+  readonly lang  = inject(LanguageService);
 
   orgId   = '';
   loading = signal(true);
@@ -65,7 +67,7 @@ export class Edit implements OnInit {
   }
 
   async save() {
-    if (!this.form.name) { this.notice.set('Name is required.'); this.isError.set(true); return; }
+    if (!this.form.name) { this.notice.set(this.lang.t('Name is required.')); this.isError.set(true); return; }
     this.busy.set(true); this.notice.set(''); this.isError.set(false);
     try {
       await this.orgSvc.update(this.orgId, {
@@ -77,9 +79,9 @@ export class Edit implements OnInit {
         certificationAuthorityEnabled: this.form.certificationAuthorityEnabled,
         canCreateSubOrgs: this.form.canCreateSubOrgs,
       });
-      this.notice.set('Organization updated successfully.');
+      this.notice.set(this.lang.t('Organization updated successfully.'));
     } catch (e: any) {
-      this.notice.set(e?.message || 'Failed to update.'); this.isError.set(true);
+      this.notice.set(e?.message || this.lang.t('Failed to update.')); this.isError.set(true);
     } finally { this.busy.set(false); }
   }
 }

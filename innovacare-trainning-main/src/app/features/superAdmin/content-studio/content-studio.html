@@ -1,14 +1,14 @@
 <section class="studio-shell">
   <header class="studio-hero">
     <div>
-      <p class="eyebrow">Marketing operations</p>
-      <h1>Content Studio</h1>
-      <p>Create SEO articles, newsletters, and share-ready posts for Facebook, LinkedIn and WhatsApp.</p>
+      <p class="eyebrow">{{ lang.t('Marketing operations') }}</p>
+      <h1>{{ lang.t('Content Studio') }}</h1>
+      <p>{{ lang.t('Create SEO articles, newsletters, and share-ready posts for Facebook, LinkedIn and WhatsApp.') }}</p>
     </div>
     <div class="hero-card">
-      <span>Published articles</span>
+      <span>{{ lang.t('Published articles') }}</span>
       <strong>{{ publishedArticles().length }}</strong>
-      <small>Public blog and social share inventory</small>
+      <small>{{ lang.t('Public blog and social share inventory') }}</small>
     </div>
   </header>
 
@@ -17,46 +17,46 @@
   <div class="studio-grid">
     <aside class="panel agent-panel">
       <div class="panel-heading">
-        <p class="eyebrow">Content agent</p>
-        <h2>Generate draft pack</h2>
+        <p class="eyebrow">{{ lang.t('Content agent') }}</p>
+        <h2>{{ lang.t('Generate draft pack') }}</h2>
       </div>
 
       <label>
-        Topic
+        {{ lang.t('Topic') }}
         <input
           [ngModel]="draftTopic()"
           (ngModelChange)="draftTopic.set($event)"
-          placeholder="Training compliance for small businesses"
+          [placeholder]="lang.t('Training compliance for small businesses')"
         />
       </label>
       <label>
-        Audience
+        {{ lang.t('Audience') }}
         <input
           [ngModel]="draftAudience()"
           (ngModelChange)="draftAudience.set($event)"
-          placeholder="business owners, HR managers"
+          [placeholder]="lang.t('business owners, HR managers')"
         />
       </label>
       <label>
-        Tone
+        {{ lang.t('Tone') }}
         <input
           [ngModel]="draftTone()"
           (ngModelChange)="draftTone.set($event)"
-          placeholder="clear, practical, premium"
+          [placeholder]="lang.t('clear, practical, premium')"
         />
       </label>
 
-      <button class="primary full" type="button" (click)="generateDraftPack()">Generate draft pack</button>
+      <button class="primary full" type="button" (click)="generateDraftPack()">{{ lang.t('Generate draft pack') }}</button>
 
       <div class="mode-tabs" role="tablist" aria-label="Studio mode">
-        <button type="button" [class.active]="mode() === 'article'" (click)="mode.set('article')">Article</button>
-        <button type="button" [class.active]="mode() === 'newsletter'" (click)="mode.set('newsletter')">Newsletter</button>
+        <button type="button" [class.active]="mode() === 'article'" (click)="mode.set('article')">{{ lang.t('Article') }}</button>
+        <button type="button" [class.active]="mode() === 'newsletter'" (click)="mode.set('newsletter')">{{ lang.t('Newsletter') }}</button>
       </div>
 
       <section class="inventory">
         <div class="inventory-title">
-          <h3>Content inventory</h3>
-          <button type="button" class="ghost" (click)="newArticle()">New article</button>
+          <h3>{{ lang.t('Content inventory') }}</h3>
+          <button type="button" class="ghost" (click)="newArticle()">{{ lang.t('New article') }}</button>
         </div>
         <button
           *ngFor="let item of articles()"
@@ -66,10 +66,10 @@
           (click)="selectArticle(item)"
         >
           <span>{{ item.status }}</span>
-          <strong>{{ item.title || 'Untitled article' }}</strong>
+          <strong>{{ item.title || lang.t('Untitled article') }}</strong>
           <small>/blog/{{ item.slug }}</small>
         </button>
-        <p class="empty" *ngIf="!articles().length">No articles yet.</p>
+        <p class="empty" *ngIf="!articles().length">{{ lang.t('No articles yet.') }}</p>
       </section>
     </aside>
 
@@ -77,25 +77,25 @@
       <form class="panel editor" *ngIf="mode() === 'article'" (ngSubmit)="saveArticle('draft')">
         <div class="panel-heading split">
           <div>
-            <p class="eyebrow">Blog</p>
-            <h2>Article editor</h2>
+            <p class="eyebrow">{{ lang.t('Blog') }}</p>
+            <h2>{{ lang.t('Article editor') }}</h2>
           </div>
-          <button type="button" class="ghost" (click)="newArticle()">New article</button>
+          <button type="button" class="ghost" (click)="newArticle()">{{ lang.t('New article') }}</button>
         </div>
 
         <div class="field-grid two">
           <label>
-            Title
+            {{ lang.t('Title') }}
             <input
               [ngModel]="article().title"
               name="title"
               (ngModelChange)="setArticleField('title', $event)"
-              placeholder="Your article headline"
+              [placeholder]="lang.t('Your article headline')"
               required
             />
           </label>
           <label>
-            Slug
+            {{ lang.t('Slug') }}
             <input
               [ngModel]="article().slug"
               name="slug"
@@ -104,45 +104,45 @@
             />
           </label>
           <label>
-            Author
+            {{ lang.t('Author') }}
             <input [ngModel]="article().author" name="author" (ngModelChange)="setArticleField('author', $event)" />
           </label>
           <label>
-            Locale
+            {{ lang.t('Locale') }}
             <select [ngModel]="article().locale" name="locale" (ngModelChange)="setArticleField('locale', $event)">
-              <option value="en">English</option>
-              <option value="fr">French</option>
+              <option value="en">{{ lang.t('English') }}</option>
+              <option value="fr">{{ lang.t('French') }}</option>
             </select>
           </label>
           <label>
-            Category
+            {{ lang.t('Category') }}
             <input [ngModel]="article().category" name="category" (ngModelChange)="setArticleField('category', $event)" />
           </label>
           <label>
-            Tags
+            {{ lang.t('Tags') }}
             <input
               [ngModel]="article().tags.join(', ')"
               name="tags"
               (ngModelChange)="setTags($event)"
-              placeholder="training, compliance, onboarding"
+              [placeholder]="lang.t('training, compliance, onboarding')"
             />
           </label>
         </div>
 
         <label>
-          Excerpt / summary
+          {{ lang.t('Excerpt / summary') }}
           <textarea
             class="short"
             [ngModel]="article().excerpt"
             name="excerpt"
             (ngModelChange)="setArticleField('excerpt', $event)"
-            placeholder="One or two sentences shown on the blog card."
+            [placeholder]="lang.t('One or two sentences shown on the blog card.')"
           ></textarea>
         </label>
 
         <label>
-          Article body
-          <span class="uploading-hint" *ngIf="uploadingImage()">Uploading image…</span>
+          {{ lang.t('Article body') }}
+          <span class="uploading-hint" *ngIf="uploadingImage()">{{ lang.t('Uploading image…') }}</span>
           <quill-editor
             class="body-editor"
             [ngModel]="article().bodyHtml"
@@ -150,16 +150,16 @@
             (ngModelChange)="setArticleField('bodyHtml', $event)"
             [modules]="quillModules"
             format="html"
-            placeholder="Write your article. Use the toolbar to add headings, lists, links, images and video."
+            [placeholder]="lang.t('Write your article. Use the toolbar to add headings, lists, links, images and video.')"
             (onEditorCreated)="onArticleEditorCreated($event)"
           ></quill-editor>
         </label>
 
         <section class="sub-panel">
-          <h3>Featured media</h3>
+          <h3>{{ lang.t('Featured media') }}</h3>
           <div class="field-grid two">
             <label>
-              Hero image URL
+              {{ lang.t('Hero image URL') }}
               <input
                 [ngModel]="article().heroImageUrl"
                 name="heroImageUrl"
@@ -168,7 +168,7 @@
               />
             </label>
             <label>
-              Video URL
+              {{ lang.t('Video URL') }}
               <input
                 [ngModel]="article().videoUrl"
                 name="videoUrl"
@@ -178,50 +178,50 @@
             </label>
           </div>
           <label>
-            Featured image alt text
+            {{ lang.t('Featured image alt text') }}
             <input
               [ngModel]="article().heroImageAlt"
               name="heroImageAlt"
               (ngModelChange)="setArticleField('heroImageAlt', $event)"
-              placeholder="Describe the image for accessibility and Google image search."
+              [placeholder]="lang.t('Describe the image for accessibility and Google image search.')"
             />
           </label>
           <div class="media-preview" [class.has-image]="article().heroImageUrl">
             <img *ngIf="article().heroImageUrl" [src]="article().heroImageUrl" [alt]="article().heroImageAlt || article().title" />
             <div *ngIf="!article().heroImageUrl">
-              <strong>{{ article().category || 'Innovacare Training' }}</strong>
-              <span>No image yet. Add a public image URL for stronger social sharing.</span>
+              <strong>{{ article().category || lang.t('Innovacare Training') }}</strong>
+              <span>{{ lang.t('No image yet. Add a public image URL for stronger social sharing.') }}</span>
             </div>
           </div>
         </section>
 
         <section class="sub-panel">
           <div class="seo-heading">
-            <h3>Google SEO and Open Graph</h3>
+            <h3>{{ lang.t('Google SEO and Open Graph') }}</h3>
             <strong [class.good]="seoScore() >= 80">{{ seoScore() }}/100</strong>
           </div>
           <div class="seo-checks">
-            <span [class.good]="article().title.length >= 20">Title</span>
-            <span [class.good]="article().seoTitle.length >= 45 && article().seoTitle.length <= 65">SEO title</span>
-            <span [class.good]="article().metaDescription.length >= 120 && article().metaDescription.length <= 160">Meta description</span>
-            <span [class.good]="!!article().heroImageUrl">Featured image</span>
-            <span [class.good]="(article().heroImageAlt || '').length >= 20">Alt text</span>
-            <span [class.good]="article().tags.length >= 3">Tags</span>
+            <span [class.good]="article().title.length >= 20">{{ lang.t('Title') }}</span>
+            <span [class.good]="article().seoTitle.length >= 45 && article().seoTitle.length <= 65">{{ lang.t('SEO title') }}</span>
+            <span [class.good]="article().metaDescription.length >= 120 && article().metaDescription.length <= 160">{{ lang.t('Meta description') }}</span>
+            <span [class.good]="!!article().heroImageUrl">{{ lang.t('Featured image') }}</span>
+            <span [class.good]="(article().heroImageAlt || '').length >= 20">{{ lang.t('Alt text') }}</span>
+            <span [class.good]="article().tags.length >= 3">{{ lang.t('Tags') }}</span>
           </div>
 
           <div class="field-grid two">
             <label>
-              SEO title
+              {{ lang.t('SEO title') }}
               <input
                 [ngModel]="article().seoTitle"
                 name="seoTitle"
                 (ngModelChange)="setArticleField('seoTitle', $event)"
-                placeholder="Article title for search engines"
+                [placeholder]="lang.t('Article title for search engines')"
               />
-              <small>{{ article().seoTitle.length }}/65 chars</small>
+              <small>{{ article().seoTitle.length }}/65 {{ lang.t('chars') }}</small>
             </label>
             <label>
-              Canonical path
+              {{ lang.t('Canonical path') }}
               <input
                 [ngModel]="article().canonicalPath"
                 name="canonicalPath"
@@ -231,117 +231,117 @@
             </label>
           </div>
           <label>
-            Meta description
+            {{ lang.t('Meta description') }}
             <textarea
               class="short"
               [ngModel]="article().metaDescription"
               name="metaDescription"
               (ngModelChange)="setArticleField('metaDescription', $event)"
             ></textarea>
-            <small>{{ article().metaDescription.length }}/160 chars</small>
+            <small>{{ article().metaDescription.length }}/160 {{ lang.t('chars') }}</small>
           </label>
           <div class="field-grid two">
             <label>
-              Open Graph title
+              {{ lang.t('Open Graph title') }}
               <input [ngModel]="article().ogTitle" name="ogTitle" (ngModelChange)="setArticleField('ogTitle', $event)" />
             </label>
             <label>
-              Reading minutes
+              {{ lang.t('Reading minutes') }}
               <input type="number" min="1" [ngModel]="article().readingMinutes" name="readingMinutes" (ngModelChange)="setArticleField('readingMinutes', +$event)" />
             </label>
           </div>
           <label>
-            Open Graph description
+            {{ lang.t('Open Graph description') }}
             <textarea class="short" [ngModel]="article().ogDescription" name="ogDescription" (ngModelChange)="setArticleField('ogDescription', $event)"></textarea>
           </label>
 
           <label class="check-row">
             <input type="checkbox" [ngModel]="article().featured" name="featured" (ngModelChange)="setArticleField('featured', $event)" />
-            Featured article
+            {{ lang.t('Featured article') }}
           </label>
 
           <div class="social-card">
             <div class="social-image">
               <img *ngIf="article().heroImageUrl" [src]="article().heroImageUrl" [alt]="article().heroImageAlt || article().title" />
-              <span *ngIf="!article().heroImageUrl">Innovacare Training</span>
+              <span *ngIf="!article().heroImageUrl">{{ lang.t('Innovacare Training') }}</span>
             </div>
             <div>
               <small>innovacare-training.web.app</small>
-              <strong>{{ article().ogTitle || article().title || 'Open Graph Title' }}</strong>
-              <p>{{ article().ogDescription || article().metaDescription || 'Open Graph description for social sharing.' }}</p>
+              <strong>{{ article().ogTitle || article().title || lang.t('Open Graph Title') }}</strong>
+              <p>{{ article().ogDescription || article().metaDescription || lang.t('Open Graph description for social sharing.') }}</p>
             </div>
           </div>
 
           <div class="share-row">
-            <a [href]="shareLinks().facebook" target="_blank" rel="noopener">Facebook</a>
-            <a [href]="shareLinks().linkedin" target="_blank" rel="noopener">LinkedIn</a>
-            <a [href]="shareLinks().whatsapp" target="_blank" rel="noopener">WhatsApp</a>
+            <a [href]="shareLinks().facebook" target="_blank" rel="noopener">{{ lang.t('Facebook') }}</a>
+            <a [href]="shareLinks().linkedin" target="_blank" rel="noopener">{{ lang.t('LinkedIn') }}</a>
+            <a [href]="shareLinks().whatsapp" target="_blank" rel="noopener">{{ lang.t('WhatsApp') }}</a>
             <a [href]="shareLinks().x" target="_blank" rel="noopener">X</a>
           </div>
         </section>
 
         <section class="sub-panel preview">
-          <h3>Article preview</h3>
+          <h3>{{ lang.t('Article preview') }}</h3>
           <article [innerHTML]="sanitizedPreview(article().bodyHtml)"></article>
         </section>
 
         <div class="actions">
-          <a class="ghost link-button" [href]="publicUrl()" target="_blank" rel="noopener">Open public URL</a>
-          <button class="ghost" type="submit" [disabled]="busy()">Save draft</button>
-          <button class="primary" type="button" [disabled]="busy()" (click)="saveArticle('published')">Publish article</button>
+          <a class="ghost link-button" [href]="publicUrl()" target="_blank" rel="noopener">{{ lang.t('Open public URL') }}</a>
+          <button class="ghost" type="submit" [disabled]="busy()">{{ lang.t('Save draft') }}</button>
+          <button class="primary" type="button" [disabled]="busy()" (click)="saveArticle('published')">{{ lang.t('Publish article') }}</button>
         </div>
       </form>
 
       <form class="panel editor" *ngIf="mode() === 'newsletter'" (ngSubmit)="saveNewsletter('draft')">
         <div class="panel-heading split">
           <div>
-            <p class="eyebrow">Newsletter</p>
-            <h2>Campaign editor</h2>
+            <p class="eyebrow">{{ lang.t('Newsletter') }}</p>
+            <h2>{{ lang.t('Campaign editor') }}</h2>
           </div>
-          <button type="button" class="ghost" (click)="newNewsletter()">New campaign</button>
+          <button type="button" class="ghost" (click)="newNewsletter()">{{ lang.t('New campaign') }}</button>
         </div>
 
         <div class="field-grid two">
           <label>
-            Subject line
+            {{ lang.t('Subject line') }}
             <input [ngModel]="newsletter().subject" name="subject" (ngModelChange)="setNewsletterField('subject', $event)" />
           </label>
           <label>
-            Preview text
+            {{ lang.t('Preview text') }}
             <input [ngModel]="newsletter().previewText" name="previewText" (ngModelChange)="setNewsletterField('previewText', $event)" />
           </label>
           <label>
-            Locale
+            {{ lang.t('Locale') }}
             <select [ngModel]="newsletter().locale" name="newsletterLocale" (ngModelChange)="setNewsletterField('locale', $event)">
-              <option value="en">English</option>
-              <option value="fr">French</option>
+              <option value="en">{{ lang.t('English') }}</option>
+              <option value="fr">{{ lang.t('French') }}</option>
             </select>
           </label>
           <label>
-            Audience segment
+            {{ lang.t('Audience segment') }}
             <input [ngModel]="newsletter().audienceSegment" name="audienceSegment" (ngModelChange)="setNewsletterField('audienceSegment', $event)" />
           </label>
           <label>
-            Tags
+            {{ lang.t('Tags') }}
             <input [ngModel]="newsletter().tags.join(', ')" name="newsletterTags" (ngModelChange)="setNewsletterTags($event)" />
           </label>
           <label>
-            Linked article
+            {{ lang.t('Linked article') }}
             <select [ngModel]="newsletter().linkedArticleSlug" name="linkedArticleSlug" (ngModelChange)="setNewsletterField('linkedArticleSlug', $event)">
-              <option value="">No linked article</option>
+              <option value="">{{ lang.t('No linked article') }}</option>
               <option *ngFor="let item of publishedArticles()" [value]="item.slug">{{ item.title }}</option>
             </select>
           </label>
         </div>
 
         <label>
-          Hero image URL
+          {{ lang.t('Hero image URL') }}
           <input [ngModel]="newsletter().heroImageUrl" name="newsletterHero" (ngModelChange)="setNewsletterField('heroImageUrl', $event)" />
         </label>
 
         <label>
-          Newsletter body
-          <span class="uploading-hint" *ngIf="uploadingImage()">Uploading image…</span>
+          {{ lang.t('Newsletter body') }}
+          <span class="uploading-hint" *ngIf="uploadingImage()">{{ lang.t('Uploading image…') }}</span>
           <quill-editor
             class="body-editor"
             [ngModel]="newsletter().bodyHtml"
@@ -349,19 +349,19 @@
             (ngModelChange)="setNewsletterField('bodyHtml', $event)"
             [modules]="newsletterQuillModules"
             format="html"
-            placeholder="Write your newsletter. Use the toolbar to add headings, lists, links and images."
+            [placeholder]="lang.t('Write your newsletter. Use the toolbar to add headings, lists, links and images.')"
             (onEditorCreated)="onNewsletterEditorCreated($event)"
           ></quill-editor>
         </label>
 
         <section class="sub-panel preview">
-          <h3>Email preview</h3>
+          <h3>{{ lang.t('Email preview') }}</h3>
           <article [innerHTML]="sanitizedPreview(newsletter().bodyHtml)"></article>
         </section>
 
         <div class="actions">
-          <button class="ghost" type="submit" [disabled]="busy()">Save draft</button>
-          <button class="primary" type="button" [disabled]="busy()" (click)="saveNewsletter('queued')">Queue campaign</button>
+          <button class="ghost" type="submit" [disabled]="busy()">{{ lang.t('Save draft') }}</button>
+          <button class="primary" type="button" [disabled]="busy()" (click)="saveNewsletter('queued')">{{ lang.t('Queue campaign') }}</button>
         </div>
       </form>
     </main>

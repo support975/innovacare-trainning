@@ -12,6 +12,7 @@ import {
   CouncilRollup,
   OrganizationCouncilRollupService,
 } from '../../../../core/organization/services/organization-council-rollup.service';
+import { LanguageService } from '../../../../shared/services/language';
 
 const EMPTY_ROLLUP: CouncilRollup = {
   regions: [],
@@ -33,6 +34,7 @@ export class OrgDetails implements OnInit {
   private usersSvc = inject(SuperAdminUsersService);
   private rollupSvc = inject(OrganizationCouncilRollupService);
   private route    = inject(ActivatedRoute);
+  readonly lang    = inject(LanguageService);
 
   orgId   = '';
   org     = signal<SuperAdminOrganization | null>(null);
@@ -87,15 +89,15 @@ export class OrgDetails implements OnInit {
   }
 
   planLabel(plan: string | undefined): string {
-    if (plan === 'free') return 'Starter';
-    if (plan === 'pro') return 'Growth';
-    if (plan === 'enterprise') return 'Enterprise';
+    if (plan === 'free') return this.lang.t('Starter');
+    if (plan === 'pro') return this.lang.t('Growth');
+    if (plan === 'enterprise') return this.lang.t('Enterprise');
     return plan || '-';
   }
 
   learnerLimit(org: SuperAdminOrganization): string {
     const limit = org.learnerLimit ?? entitlementsForPlan(org.plan).learnerLimit;
-    return limit ? String(limit) : 'Custom';
+    return limit ? String(limit) : this.lang.t('Custom');
   }
 
   learnerCount(): number {

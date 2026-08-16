@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { SuperAdminLogsService } from '../services/super-admin-logs';
 import { SuperAdminLog } from '../models/super-admin.models';
+import { LanguageService } from '../../../shared/services/language';
 
 @Component({
   selector: 'app-log',
@@ -13,6 +14,7 @@ import { SuperAdminLog } from '../models/super-admin.models';
 })
 export class Log {
   private svc = inject(SuperAdminLogsService);
+  readonly lang = inject(LanguageService);
 
   severityFilter = signal<'all' | 'info' | 'warning' | 'critical'>('all');
   search = signal('');

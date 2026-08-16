@@ -6,11 +6,12 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { AuthService } from '../../../core/auth';
 import { OrganizationsService, PublicOrganization } from '../../../shared/services/organizations.service';
 import { Firestore, doc, setDoc, serverTimestamp } from '@angular/fire/firestore';
+import { PublicTranslateDirective } from '../../../shared/directives/public-translate.directive';
 
 @Component({
   selector: 'app-org-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, PublicTranslateDirective],
   templateUrl: './org-register.html',
   styleUrl: './org-register.css'
 })
@@ -80,9 +81,9 @@ export class OrgRegisterComponent {
 
     if (this.form.invalid || this.passwordMismatch || !this.selectedOrg()) {
       if (this.passwordMismatch) {
-        this.error.set('Passwords do not match');
+        this.error.set('Les mots de passe ne correspondent pas');
       } else {
-        this.error.set('Please fill in all required fields correctly');
+        this.error.set('Veuillez remplir correctement tous les champs requis');
       }
       return;
     }
@@ -122,7 +123,7 @@ export class OrgRegisterComponent {
       }, 2000);
 
     } catch (e: any) {
-      this.error.set(e?.message ?? 'Registration failed');
+      this.error.set(e?.message ?? 'Échec de l\'inscription');
     } finally {
       this.loading.set(false);
     }

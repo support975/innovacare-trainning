@@ -1,30 +1,30 @@
-<div class="auth-container">
+<div class="auth-container" appPublicTranslate>
   <div class="auth-wrapper">
     <div class="card auth-card">
       <div class="card-header">
         <div class="logo-section">
-          <h1 class="title">Create Learner Profile</h1>
-          <p class="subtitle">INDIVIDUAL PUBLIC COURSE ACCESS</p>
+          <h1 class="title">Créer un profil apprenant</h1>
+          <p class="subtitle">ACCÈS INDIVIDUEL AUX COURS PUBLICS</p>
         </div>
       </div>
 
       <div class="card-body">
         <div class="course-note" *ngIf="selectedCourseId()">
           <ng-container *ngIf="requestAccess(); else publicCourseNote">
-            Organization-only courses require admin approval and payment before access.
+            Les cours réservés aux organisations nécessitent l'approbation d'un administrateur et un paiement avant l'accès.
           </ng-container>
           <ng-template #publicCourseNote>
-            This profile is for public courses. If the course is organization-only, we will submit an access request for admin approval.
+            Ce profil est destiné aux cours publics. Si le cours est réservé à une organisation, nous soumettrons une demande d'accès pour approbation par un administrateur.
           </ng-template>
         </div>
 
         <div class="course-note" *ngIf="selectedEventId()">
-          Create your profile to register for this webinar. Free sessions confirm instantly; paid sessions continue to secure checkout.
+          Créez votre profil pour vous inscrire à ce webinaire. Les séances gratuites sont confirmées instantanément ; les séances payantes se poursuivent vers un paiement sécurisé.
         </div>
 
         <form [formGroup]="form" (ngSubmit)="submit()" class="form">
           <div class="form-group">
-            <label class="label" for="displayName">Full name</label>
+            <label class="label" for="displayName">Nom complet</label>
             <div class="input-wrapper">
               <span class="input-icon">ID</span>
               <input
@@ -33,16 +33,16 @@
                 type="text"
                 formControlName="displayName"
                 autocomplete="name"
-                placeholder="Your full name"
+                placeholder="Votre nom complet"
               />
             </div>
             <small class="help error-text" *ngIf="form.controls.displayName.invalid && form.controls.displayName.touched">
-              Full name is required.
+              Le nom complet est requis.
             </small>
           </div>
 
           <div class="form-group">
-            <label class="label" for="email">Email address</label>
+            <label class="label" for="email">Adresse courriel</label>
             <div class="input-wrapper">
               <span class="input-icon">@</span>
               <input
@@ -51,17 +51,17 @@
                 type="email"
                 formControlName="email"
                 autocomplete="email"
-                placeholder="you@example.com"
+                placeholder="vous@exemple.com"
               />
             </div>
             <small class="help error-text" *ngIf="form.controls.email.invalid && form.controls.email.touched">
-              Valid email address required.
+              Adresse courriel valide requise.
             </small>
           </div>
 
           <div class="form-grid">
             <div class="form-group">
-              <label class="label" for="password">Password</label>
+              <label class="label" for="password">Mot de passe</label>
               <div class="input-wrapper">
                 <span class="input-icon">PW</span>
                 <input
@@ -70,16 +70,16 @@
                   type="password"
                   formControlName="password"
                   autocomplete="new-password"
-                  placeholder="At least 8 characters"
+                  placeholder="Au moins 8 caractères"
                 />
               </div>
               <small class="help error-text" *ngIf="form.controls.password.invalid && form.controls.password.touched">
-                Minimum 8 characters required.
+                8 caractères minimum requis.
               </small>
             </div>
 
             <div class="form-group">
-              <label class="label" for="confirmPassword">Confirm password</label>
+              <label class="label" for="confirmPassword">Confirmer le mot de passe</label>
               <div class="input-wrapper">
                 <span class="input-icon">OK</span>
                 <input
@@ -88,11 +88,11 @@
                   type="password"
                   formControlName="confirmPassword"
                   autocomplete="new-password"
-                  placeholder="Repeat password"
+                  placeholder="Répétez le mot de passe"
                 />
               </div>
               <small class="help error-text" *ngIf="passwordMismatch && form.controls.confirmPassword.touched">
-                Passwords must match.
+                Les mots de passe doivent correspondre.
               </small>
             </div>
           </div>
@@ -103,17 +103,17 @@
           </div>
 
           <button class="btn btn-primary" type="submit" [disabled]="loading()" [class.loading]="loading()">
-            <span *ngIf="!loading()">Create profile</span>
-            <span *ngIf="loading()">Creating profile...</span>
+            <span *ngIf="!loading()">Créer le profil</span>
+            <span *ngIf="loading()">Création du profil...</span>
           </button>
         </form>
 
         <div class="footer-links">
           <p class="forgot-password">
-            Already have an account? <a routerLink="/login" class="link">Sign in</a>
+            Vous avez déjà un compte ? <a routerLink="/login" class="link">Se connecter</a>
           </p>
           <button routerLink="/catalogue" class="btn btn-link" type="button">
-            Back to catalogue
+            Retour au catalogue
           </button>
         </div>
       </div>

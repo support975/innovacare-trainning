@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/auth';
 import { MaintenanceService } from '../../../core/maintenance.service';
+import { LanguageService } from '../../../shared/services/language';
 
 function toDatetimeLocal(value: any): string {
   if (!value) return '';
@@ -26,6 +27,7 @@ function toDatetimeLocal(value: any): string {
 export class MaintenanceSettingsPage {
   private readonly authSvc = inject(AuthService);
   private readonly maintenanceSvc = inject(MaintenanceService);
+  readonly lang = inject(LanguageService);
 
   bannerNotice = signal('');
   bannerError = signal(false);
@@ -58,10 +60,10 @@ export class MaintenanceSettingsPage {
         { bannerEnabled: this.banner.enabled, bannerMessage: this.banner.message },
         this.currentUid()
       );
-      this.bannerNotice.set('Banner settings saved.');
+      this.bannerNotice.set(this.lang.t('Banner settings saved.'));
       this.bannerError.set(false);
     } catch (e: any) {
-      this.bannerNotice.set(e?.message || 'Failed to save banner settings.');
+      this.bannerNotice.set(e?.message || this.lang.t('Failed to save banner settings.'));
       this.bannerError.set(true);
     } finally {
       this.bannerSaving.set(false);
@@ -79,10 +81,10 @@ export class MaintenanceSettingsPage {
         { blockEnabled: this.block.enabled, blockMessage: this.block.message, estimatedReturnAt },
         this.currentUid()
       );
-      this.blockNotice.set('Maintenance block settings saved.');
+      this.blockNotice.set(this.lang.t('Maintenance block settings saved.'));
       this.blockError.set(false);
     } catch (e: any) {
-      this.blockNotice.set(e?.message || 'Failed to save maintenance block settings.');
+      this.blockNotice.set(e?.message || this.lang.t('Failed to save maintenance block settings.'));
       this.blockError.set(true);
     } finally {
       this.blockSaving.set(false);

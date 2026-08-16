@@ -10,6 +10,7 @@ import { AppProfile, AuthService } from '../../../core/auth';
 import { CoursesRepo } from '../../../data/courses.repo';
 import type { Course } from '../../../data/models';
 import { LearningPath, LearningPathsService } from '../../../shared/services/learning-paths';
+import { LanguageService } from '../../../shared/services/language';
 
 type MatrixStatus = 'completed' | 'started' | 'assigned' | 'overdue' | 'missing';
 type MatrixFilter = 'all' | MatrixStatus | 'noncompliant';
@@ -92,13 +93,13 @@ function firstDefined<T>(...values: (T | undefined | null)[]): T | undefined {
   return undefined;
 }
 
-function dueLabel(dueTs?: number): string {
-  if (!dueTs) return 'No due date';
+function dueLabel(dueTs: number | undefined, t: (key: string, params?: Record<string, string | number>) => string): string {
+  if (!dueTs) return t('No due date');
   const days = Math.ceil((dueTs - Date.now()) / DAY);
-  if (days < 0) return 'Overdue';
-  if (days === 0) return 'Due today';
-  if (days === 1) return 'Due tomorrow';
-  return `Due in ${days} days`;
+  if (days < 0) return t('Overdue');
+  if (days === 0) return t('Due today');
+  if (days === 1) return t('Due tomorrow');
+  return t('Due in {days} days', { days });
 }
 
 @Component({
@@ -113,6 +114,7 @@ export class ComplianceMatrixComponent {
   private readonly authSvc = inject(AuthService);
   private readonly coursesRepo = inject(CoursesRepo);
   private readonly learningPaths = inject(LearningPathsService);
+  readonly lang = inject(LanguageService);
 
   readonly search = signal('');
   readonly statusFilter = signal<MatrixFilter>('all');
@@ -318,8 +320,8 @@ export class ComplianceMatrixComponent {
         learnerId,
         courseId: requirement.courseId,
         status: 'missing',
-        label: 'Missing',
-        dueLabel: 'Not assigned',
+        label: this.lang.t('Missing'),
+        dueLabel: this.lang.t('Not assigned'),
         scoreLabel: '',
       };
     }
@@ -344,8 +346,8 @@ export class ComplianceMatrixComponent {
       learnerId,
       courseId: requirement.courseId,
       status,
-      label: status === 'overdue' ? 'Overdue' : status[0].toUpperCase() + status.slice(1),
-      dueLabel: dueLabel(dueTs),
+      label: status === 'overdue' ? this.lang.t('Overdue') : this.lang.t(status[0].toUpperCase() + status.slice(1)),
+      dueLabel: dueLabel(dueTs, (key, params) => this.lang.t(key, params)),
       scoreLabel: typeof enrollment.score === 'number' ? `${Math.round(enrollment.score)}%` : '',
       dueTs,
     };

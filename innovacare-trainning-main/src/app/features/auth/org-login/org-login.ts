@@ -5,11 +5,12 @@ import { Router, RouterLink } from '@angular/router';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { AuthService } from '../../../core/auth';
 import { OrganizationsService, PublicOrganization } from '../../../shared/services/organizations.service';
+import { PublicTranslateDirective } from '../../../shared/directives/public-translate.directive';
 
 @Component({
   selector: 'app-org-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, PublicTranslateDirective],
   templateUrl: './org-login.html',
   styleUrl: './org-login.css'
 })
@@ -64,7 +65,7 @@ export class OrgLoginComponent {
 
   async submit() {
     if (this.form.invalid || !this.selectedOrg()) {
-      this.error.set('Please select an organization and enter your credentials.');
+      this.error.set('Veuillez sélectionner une organisation et saisir vos identifiants.');
       return;
     }
 
@@ -79,7 +80,7 @@ export class OrgLoginComponent {
 
       await this.router.navigateByUrl(`/org/${org.id}/dashboard`, { replaceUrl: true });
     } catch (e: any) {
-      this.error.set(e?.message ?? 'Login failed');
+      this.error.set(e?.message ?? 'Échec de la connexion');
     } finally {
       this.loading.set(false);
     }

@@ -3,12 +3,12 @@
   <!-- Page Header -->
   <div class="page-header">
     <div>
-      <p class="page-eyebrow">{{ isSuperAdmin ? 'Super Admin' : 'Manager' }} · Courses</p>
-      <h1 class="page-title">{{ isSuperAdmin ? 'Course Library & Editor' : 'Course Library' }}</h1>
-      <p class="page-sub">{{ isSuperAdmin ? 'Create, edit and manage training courses for the platform.' : 'Browse available training courses.' }}</p>
+      <p class="page-eyebrow">{{ isSuperAdmin ? lang.t('Super Admin') : lang.t('Manager') }} · {{ lang.t('Courses') }}</p>
+      <h1 class="page-title">{{ isSuperAdmin ? lang.t('Course Library & Editor') : lang.t('Course Library') }}</h1>
+      <p class="page-sub">{{ isSuperAdmin ? lang.t('Create, edit and manage training courses for the platform.') : lang.t('Browse available training courses.') }}</p>
     </div>
     <div class="header-actions" *ngIf="canManageCourses">
-      <span class="course-count-pill">{{ courses().length }} courses</span>
+      <span class="course-count-pill">{{ courses().length }} {{ lang.t('courses') }}</span>
     </div>
   </div>
 
@@ -17,23 +17,23 @@
 
     <div class="panel__head">
       <div>
-        <div class="panel__title">{{ editId ? 'Edit Course' : 'Create Course' }}</div>
-        <div class="panel__sub">{{ editId ? 'Update course details and content structure.' : 'Fill in the details to add a new course to the platform.' }}</div>
+        <div class="panel__title">{{ editId ? lang.t('Edit Course') : lang.t('Create Course') }}</div>
+        <div class="panel__sub">{{ editId ? lang.t('Update course details and content structure.') : lang.t('Fill in the details to add a new course to the platform.') }}</div>
       </div>
       <div class="panel-form-actions" *ngIf="editId">
-        <button type="button" class="btn-ghost" (click)="cancelEdit()">Cancel edit</button>
+        <button type="button" class="btn-ghost" (click)="cancelEdit()">{{ lang.t('Cancel edit') }}</button>
       </div>
     </div>
 
     <!-- Import JSON -->
     <div class="form-section">
       <div class="form-section__head">
-        <div class="form-section__title">Import JSON</div>
+        <div class="form-section__title">{{ lang.t('Import JSON') }}</div>
       </div>
       <div class="row">
-        <label class="field-label">Course JSON file</label>
+        <label class="field-label">{{ lang.t('Course JSON file') }}</label>
         <input class="file-input" type="file" accept="application/json,.json" (change)="importCourseJson($event)" />
-        <div class="field-hint">Accepts a direct Course object or a file with docData. You can import directly or apply to form for editing before saving.</div>
+        <div class="field-hint">{{ lang.t('Accepts a direct Course object or a file with docData. You can import directly or apply to form for editing before saving.') }}</div>
         <div class="msg msg--error" *ngIf="importError">{{ importError }}</div>
         <div class="msg msg--ok" *ngIf="importSuccess">{{ importSuccess }}</div>
         <div class="msg msg--ok" *ngIf="jsonAppliedNotice">{{ jsonAppliedNotice }}</div>
@@ -42,46 +42,46 @@
       <div class="import-preview" *ngIf="pendingImport as preview">
         <div class="import-preview__head">
           <div>
-            <strong class="import-preview__title">JSON Preview</strong>
-            <div class="field-hint" *ngIf="pendingImportName">File: {{ pendingImportName }}</div>
+            <strong class="import-preview__title">{{ lang.t('JSON Preview') }}</strong>
+            <div class="field-hint" *ngIf="pendingImportName">{{ lang.t('File:') }} {{ pendingImportName }}</div>
           </div>
           <div class="import-preview__actions">
-            <button type="button" class="btn-outline" (click)="cancelImportPreview()">Cancel</button>
-            <button type="button" class="btn-outline" (click)="applyPendingImportToForm()">Apply to form</button>
+            <button type="button" class="btn-outline" (click)="cancelImportPreview()">{{ lang.t('Cancel') }}</button>
+            <button type="button" class="btn-outline" (click)="applyPendingImportToForm()">{{ lang.t('Apply to form') }}</button>
             <button
               type="button"
               class="btn-primary"
               [disabled]="importingCourse"
               (click)="confirmImportCourse()"
             >
-              {{ importingCourse ? 'Importing...' : 'Confirm import' }}
+              {{ importingCourse ? lang.t('Importing...') : lang.t('Confirm import') }}
             </button>
           </div>
         </div>
 
         <div class="row grid import-preview__stats">
           <div>
-            <label class="field-label">Title</label>
+            <label class="field-label">{{ lang.t('Title') }}</label>
             <div class="field-hint">{{ preview.title }}</div>
           </div>
           <div>
-            <label class="field-label">Language</label>
+            <label class="field-label">{{ lang.t('Language') }}</label>
             <div class="field-hint">{{ preview.lang }}</div>
           </div>
           <div>
-            <label class="field-label">Sections</label>
+            <label class="field-label">{{ lang.t('Sections') }}</label>
             <div class="field-hint">{{ preview.sections.length }}</div>
           </div>
           <div>
-            <label class="field-label">Lessons</label>
+            <label class="field-label">{{ lang.t('Lessons') }}</label>
             <div class="field-hint">{{ previewLessonCount(preview) }}</div>
           </div>
           <div>
-            <label class="field-label">Blocks</label>
+            <label class="field-label">{{ lang.t('Blocks') }}</label>
             <div class="field-hint">{{ previewBlockCount(preview) }}</div>
           </div>
           <div>
-            <label class="field-label">Type</label>
+            <label class="field-label">{{ lang.t('Type') }}</label>
             <div class="field-hint">{{ preview.type }}</div>
           </div>
         </div>
@@ -89,12 +89,12 @@
         <div class="import-preview__outline">
           <div class="field-hint" *ngFor="let section of preview.sections; let si = index">
             {{ si + 1 }}. {{ section.title }}
-            <span *ngIf="section.lessons.length"> · {{ section.lessons.length }} lessons</span>
+            <span *ngIf="section.lessons.length"> · {{ section.lessons.length }} {{ lang.t('lessons') }}</span>
           </div>
         </div>
 
         <details class="json-preview-details">
-          <summary>View complete JSON</summary>
+          <summary>{{ lang.t('View complete JSON') }}</summary>
           <pre class="json-preview-code">{{ importedJsonPreview(preview) }}</pre>
         </details>
       </div>
@@ -103,35 +103,35 @@
     <!-- Basic Info -->
     <div class="form-section">
       <div class="form-section__head">
-        <div class="form-section__title">Basic Info</div>
+        <div class="form-section__title">{{ lang.t('Basic Info') }}</div>
       </div>
 
       <div class="row">
-        <label class="field-label">Title <span class="required">*</span></label>
-        <input class="field-input" formControlName="title" placeholder="Course title" />
+        <label class="field-label">{{ lang.t('Title') }} <span class="required">*</span></label>
+        <input class="field-input" formControlName="title" [placeholder]="lang.t('Course title')" />
         <div class="msg msg--error" *ngIf="form.get('title')?.invalid && form.get('title')?.touched">
-          Title is required (min 3 characters)
+          {{ lang.t('Title is required (min 3 characters)') }}
         </div>
       </div>
 
       <div class="row">
-        <label class="field-label">Subtitle</label>
-        <input class="field-input" formControlName="subtitle" placeholder="Short subtitle" />
+        <label class="field-label">{{ lang.t('Subtitle') }}</label>
+        <input class="field-input" formControlName="subtitle" [placeholder]="lang.t('Short subtitle')" />
       </div>
 
       <div class="row">
-        <label class="field-label">Description</label>
-        <textarea class="field-input" formControlName="description" rows="3" placeholder="Short description"></textarea>
+        <label class="field-label">{{ lang.t('Description') }}</label>
+        <textarea class="field-input" formControlName="description" rows="3" [placeholder]="lang.t('Short description')"></textarea>
       </div>
 
       <div class="row">
-        <label class="field-label">Image URL</label>
+        <label class="field-label">{{ lang.t('Image URL') }}</label>
         <input class="field-input" formControlName="imageUrl" placeholder="https://…" />
       </div>
 
       <div class="row grid-4">
         <div>
-          <label class="field-label">Language</label>
+          <label class="field-label">{{ lang.t('Language') }}</label>
           <select class="field-input" formControlName="lang">
             <option value="EN">EN</option>
             <option value="FR">FR</option>
@@ -139,27 +139,27 @@
           </select>
         </div>
         <div>
-          <label class="field-label">Duration (min)</label>
+          <label class="field-label">{{ lang.t('Duration (min)') }}</label>
           <input class="field-input" type="number" formControlName="durationMin" />
         </div>
         <div>
-          <label class="field-label">CE Credit</label>
+          <label class="field-label">{{ lang.t('CE Credit') }}</label>
           <input class="field-input" type="number" formControlName="ceCredit" />
         </div>
         <div>
-          <label class="field-label">Sort order</label>
+          <label class="field-label">{{ lang.t('Sort order') }}</label>
           <input class="field-input" type="number" min="1" formControlName="sortOrder" />
         </div>
         <div>
-          <label class="field-label">Kind</label>
+          <label class="field-label">{{ lang.t('Kind') }}</label>
           <select class="field-input" formControlName="kind">
-            <option value="Course">Course</option>
-            <option value="Text">Text</option>
-            <option value="Module">Module</option>
+            <option value="Course">{{ lang.t('Course') }}</option>
+            <option value="Text">{{ lang.t('Text') }}</option>
+            <option value="Module">{{ lang.t('Module') }}</option>
           </select>
         </div>
         <div class="check-field">
-          <label class="check-label"><input type="checkbox" formControlName="active" /> Active</label>
+          <label class="check-label"><input type="checkbox" formControlName="active" /> {{ lang.t('Active') }}</label>
         </div>
       </div>
     </div>
@@ -167,72 +167,72 @@
     <!-- Advanced Settings -->
     <div class="form-section">
       <div class="form-section__head">
-        <div class="form-section__title">Advanced Settings</div>
+        <div class="form-section__title">{{ lang.t('Advanced Settings') }}</div>
       </div>
 
       <div class="row grid-4">
         <div>
-          <label class="field-label">Course Type</label>
+          <label class="field-label">{{ lang.t('Course Type') }}</label>
           <select class="field-input" formControlName="type">
-            <option value="Health">Health</option>
-            <option value="It">IT</option>
-            <option value="Hr">HR</option>
-            <option value="safety">Safety</option>
+            <option value="Health">{{ lang.t('Health') }}</option>
+            <option value="It">{{ lang.t('IT') }}</option>
+            <option value="Hr">{{ lang.t('HR') }}</option>
+            <option value="safety">{{ lang.t('Safety') }}</option>
           </select>
         </div>
         <div>
-          <label class="field-label">Lecturer</label>
-          <input class="field-input" formControlName="lecturer" placeholder="Instructor / lecturer" />
+          <label class="field-label">{{ lang.t('Lecturer') }}</label>
+          <input class="field-input" formControlName="lecturer" [placeholder]="lang.t('Instructor / lecturer')" />
         </div>
         <div>
-          <label class="field-label">Canonical URL</label>
+          <label class="field-label">{{ lang.t('Canonical URL') }}</label>
           <input class="field-input" formControlName="url" placeholder="https://…" />
         </div>
         <div>
-          <label class="field-label">Passing Score (%)</label>
+          <label class="field-label">{{ lang.t('Passing Score (%)') }}</label>
           <input class="field-input" type="number" formControlName="passingScore" />
         </div>
         <div class="check-field">
-          <label class="check-label"><input type="checkbox" formControlName="lockedSequence" /> Locked sequence</label>
+          <label class="check-label"><input type="checkbox" formControlName="lockedSequence" /> {{ lang.t('Locked sequence') }}</label>
         </div>
         <div class="check-field">
-          <label class="check-label"><input type="checkbox" formControlName="isPublic" /> Public course</label>
+          <label class="check-label"><input type="checkbox" formControlName="isPublic" /> {{ lang.t('Public course') }}</label>
         </div>
       </div>
 
       <div class="row grid-2">
         <div>
-          <label class="field-label">Tags (comma separated)</label>
-          <input class="field-input" formControlName="tagsText" placeholder="ethics, nursing, safety" />
+          <label class="field-label">{{ lang.t('Tags (comma separated)') }}</label>
+          <input class="field-input" formControlName="tagsText" [placeholder]="lang.t('ethics, nursing, safety')" />
         </div>
         <div>
-          <label class="field-label">Disclosures (comma separated)</label>
-          <input class="field-input" formControlName="disclosuresText" placeholder="none, conflict of interest" />
+          <label class="field-label">{{ lang.t('Disclosures (comma separated)') }}</label>
+          <input class="field-input" formControlName="disclosuresText" [placeholder]="lang.t('none, conflict of interest')" />
         </div>
         <div>
-          <label class="field-label">Target audience (comma separated)</label>
-          <input class="field-input" formControlName="targetAudienceText" placeholder="RN, LPN, CNA, NP" />
+          <label class="field-label">{{ lang.t('Target audience (comma separated)') }}</label>
+          <input class="field-input" formControlName="targetAudienceText" [placeholder]="lang.t('RN, LPN, CNA, NP')" />
         </div>
         <div>
-          <label class="field-label">Prerequisites (comma separated)</label>
-          <input class="field-input" formControlName="prerequisitesText" placeholder="Safety basics, onboarding, role orientation" />
+          <label class="field-label">{{ lang.t('Prerequisites (comma separated)') }}</label>
+          <input class="field-input" formControlName="prerequisitesText" [placeholder]="lang.t('Safety basics, onboarding, role orientation')" />
         </div>
         <div>
-          <label class="field-label">Requirements (comma separated)</label>
-          <input class="field-input" formControlName="requirementsText" placeholder="Internet, computer, speakers" />
+          <label class="field-label">{{ lang.t('Requirements (comma separated)') }}</label>
+          <input class="field-input" formControlName="requirementsText" [placeholder]="lang.t('Internet, computer, speakers')" />
         </div>
       </div>
 
       <div class="row">
-        <label class="field-label">Accommodations</label>
-        <textarea class="field-input" formControlName="accomodations" rows="3" placeholder="Accessibility / accommodations information"></textarea>
+        <label class="field-label">{{ lang.t('Accommodations') }}</label>
+        <textarea class="field-input" formControlName="accomodations" rows="3" [placeholder]="lang.t('Accessibility / accommodations information')"></textarea>
       </div>
     </div>
 
     <!-- Sections (Drag & Drop) -->
     <div class="form-section">
       <div class="form-section__head">
-        <div class="form-section__title">Content Structure</div>
+        <div class="form-section__title">{{ lang.t('Content Structure') }}</div>
         <div class="content-actions">
           <label class="check-label">
             <input
@@ -240,9 +240,9 @@
               [checked]="ttsIncludeQuizChoices"
               (change)="setTtsIncludeQuizChoices($any($event.target).checked)"
             />
-            Include quiz choices in audio
+            {{ lang.t('Include quiz choices in audio') }}
           </label>
-          <button type="button" class="btn-outline" (click)="addSection()">+ Add section</button>
+          <button type="button" class="btn-outline" (click)="addSection()">{{ lang.t('+ Add section') }}</button>
         </div>
       </div>
 
@@ -254,19 +254,19 @@
           cdkDrag
         >
           <div class="section-bar">
-            <span class="drag-handle" cdkDragHandle title="Drag to reorder">⠿</span>
-            <input class="section-title-input" formControlName="title" placeholder="Section title" />
-            <button type="button" class="btn-ghost-sm" (click)="removeSection(si)">Remove</button>
+            <span class="drag-handle" cdkDragHandle [title]="lang.t('Drag to reorder')">⠿</span>
+            <input class="section-title-input" formControlName="title" [placeholder]="lang.t('Section title')" />
+            <button type="button" class="btn-ghost-sm" (click)="removeSection(si)">{{ lang.t('Remove') }}</button>
           </div>
 
           <!-- Lessons (Drag & Drop) -->
           <div class="lessons-wrap" cdkDropList (cdkDropListDropped)="dropLessons(si, $event)">
             <div class="lesson-head">
-              <strong class="lessons-label">Lessons</strong>
+              <strong class="lessons-label">{{ lang.t('Lessons') }}</strong>
               <div class="lesson-template-actions">
-                <button type="button" class="btn-outline-sm" (click)="addLesson(si)">+ Add lesson</button>
-                <button type="button" class="btn-outline-sm" (click)="addLessonTemplate(si, 'hotspot-diagram')">+ Hotspot diagram</button>
-                <button type="button" class="btn-outline-sm" (click)="addLessonTemplate(si, 'tabbed-compare')">+ Tabbed compare</button>
+                <button type="button" class="btn-outline-sm" (click)="addLesson(si)">{{ lang.t('+ Add lesson') }}</button>
+                <button type="button" class="btn-outline-sm" (click)="addLessonTemplate(si, 'hotspot-diagram')">{{ lang.t('+ Hotspot diagram') }}</button>
+                <button type="button" class="btn-outline-sm" (click)="addLessonTemplate(si, 'tabbed-compare')">{{ lang.t('+ Tabbed compare') }}</button>
               </div>
             </div>
 
@@ -277,9 +277,9 @@
               cdkDrag
             >
               <div class="lesson-bar">
-                <span class="drag-handle" cdkDragHandle title="Drag to reorder">⠿</span>
-                <input class="w-2/3" formControlName="title" placeholder="Lesson title" />
-                <input class="w-1/6" type="number" formControlName="estMin" placeholder="Est. min" />
+                <span class="drag-handle" cdkDragHandle [title]="lang.t('Drag to reorder')">⠿</span>
+                <input class="w-2/3" formControlName="title" [placeholder]="lang.t('Lesson title')" />
+                <input class="w-1/6" type="number" formControlName="estMin" [placeholder]="lang.t('Est. min')" />
                 <button
                   type="button"
                   class="btn-outline-sm btn-tts"
@@ -288,34 +288,34 @@
                 >
                   {{ ttsButtonLabel(si, li) }}
                 </button>
-                <button type="button" class="btn-ghost-sm" (click)="removeLesson(si, li)">Remove</button>
+                <button type="button" class="btn-ghost-sm" (click)="removeLesson(si, li)">{{ lang.t('Remove') }}</button>
               </div>
               <div class="lesson-tts-status" *ngIf="ttsStatus(si, li) as status">
-                <span class="lesson-tts-status__loading" *ngIf="status.loading">Generating narration...</span>
+                <span class="lesson-tts-status__loading" *ngIf="status.loading">{{ lang.t('Generating narration...') }}</span>
                 <span class="lesson-tts-status__success" *ngIf="status.success">{{ status.success }}</span>
                 <span class="lesson-tts-status__error" *ngIf="status.error">{{ status.error }}</span>
-                <a class="lesson-tts-status__link" *ngIf="status.url" [href]="status.url" target="_blank" rel="noopener">Open MP3</a>
+                <a class="lesson-tts-status__link" *ngIf="status.url" [href]="status.url" target="_blank" rel="noopener">{{ lang.t('Open MP3') }}</a>
               </div>
 
               <!-- Blocks (Drag & Drop) -->
               <div class="blocks-wrap" cdkDropList (cdkDropListDropped)="dropBlocks(si, li, $event)">
                 <div class="block-head">
-                  <span class="blocks-label">Blocks</span>
+                  <span class="blocks-label">{{ lang.t('Blocks') }}</span>
                   <div class="add-row">
-                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'heading')">+ Heading</button>
-                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'text')">+ Text</button>
-                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'image')">+ Image</button>
-                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'audio')">+ Audio</button>
-                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'video')">+ Video</button>
-                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'hero')">+ Hero</button>
-                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'accordion')">+ Accordion</button>
-                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'tabs')">+ Tabs</button>
-                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'cardStack')">+ Card stack</button>
-                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'quizIntro')">+ Quiz intro</button>
-                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'slideDeck')">+ Slide deck</button>
-                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'carousel')">+ Carousel</button>
-                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'callout')">+ Callout</button>
-                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'quiz')">+ Quiz</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'heading')">{{ lang.t('+ Heading') }}</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'text')">{{ lang.t('+ Text') }}</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'image')">{{ lang.t('+ Image') }}</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'audio')">{{ lang.t('+ Audio') }}</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'video')">{{ lang.t('+ Video') }}</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'hero')">{{ lang.t('+ Hero') }}</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'accordion')">{{ lang.t('+ Accordion') }}</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'tabs')">{{ lang.t('+ Tabs') }}</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'cardStack')">{{ lang.t('+ Card stack') }}</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'quizIntro')">{{ lang.t('+ Quiz intro') }}</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'slideDeck')">{{ lang.t('+ Slide deck') }}</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'carousel')">{{ lang.t('+ Carousel') }}</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'callout')">{{ lang.t('+ Callout') }}</button>
+                    <button type="button" class="btn-outline-sm" (click)="addBlock(si, li, 'quiz')">{{ lang.t('+ Quiz') }}</button>
                   </div>
                 </div>
 
@@ -326,41 +326,41 @@
                   cdkDrag
                 >
                   <div class="block-bar">
-                    <span class="drag-handle" cdkDragHandle title="Drag to reorder">⠿</span>
+                    <span class="drag-handle" cdkDragHandle [title]="lang.t('Drag to reorder')">⠿</span>
                     <span class="block-type-badge">{{ b.value.type }}</span>
                     <select class="block-type-select" formControlName="type" (change)="onBlockTypeChange(b)">
-                      <option value="heading">Heading</option>
-                      <option value="text">Text</option>
-                      <option value="image">Image</option>
-                      <option value="audio">Audio</option>
-                      <option value="video">Video</option>
-                      <option value="hero">Hero</option>
-                      <option value="accordion">Accordion</option>
-                      <option value="tabs">Tabs</option>
-                      <option value="cardStack">Card stack</option>
-                      <option value="quizIntro">Quiz intro</option>
-                      <option value="slideDeck">Slide deck</option>
-                      <option value="carousel">Carousel</option>
-                      <option value="callout">Callout</option>
-                      <option value="quiz">Quiz</option>
+                      <option value="heading">{{ lang.t('Heading') }}</option>
+                      <option value="text">{{ lang.t('Text') }}</option>
+                      <option value="image">{{ lang.t('Image') }}</option>
+                      <option value="audio">{{ lang.t('Audio') }}</option>
+                      <option value="video">{{ lang.t('Video') }}</option>
+                      <option value="hero">{{ lang.t('Hero') }}</option>
+                      <option value="accordion">{{ lang.t('Accordion') }}</option>
+                      <option value="tabs">{{ lang.t('Tabs') }}</option>
+                      <option value="cardStack">{{ lang.t('Card stack') }}</option>
+                      <option value="quizIntro">{{ lang.t('Quiz intro') }}</option>
+                      <option value="slideDeck">{{ lang.t('Slide deck') }}</option>
+                      <option value="carousel">{{ lang.t('Carousel') }}</option>
+                      <option value="callout">{{ lang.t('Callout') }}</option>
+                      <option value="quiz">{{ lang.t('Quiz') }}</option>
                     </select>
-                    <button type="button" class="btn-ghost-sm" (click)="removeBlock(si, li, bi)">Remove</button>
+                    <button type="button" class="btn-ghost-sm" (click)="removeBlock(si, li, bi)">{{ lang.t('Remove') }}</button>
                   </div>
 
                   <!-- Heading -->
                   <div *ngIf="b.value.type === 'heading'" class="block-body">
                     <div class="editor-grid">
                       <div class="editor">
-                        <label class="field-label">Level</label>
+                        <label class="field-label">{{ lang.t('Level') }}</label>
                         <select class="field-input" formControlName="level">
                           <option [value]="1">H1</option>
                           <option [value]="2">H2</option>
                           <option [value]="3">H3</option>
                         </select>
-                        <input class="field-input" formControlName="text" placeholder="Heading text" />
+                        <input class="field-input" formControlName="text" [placeholder]="lang.t('Heading text')" />
                       </div>
                       <div class="preview">
-                        <div class="preview-title">Preview</div>
+                        <div class="preview-title">{{ lang.t('Preview') }}</div>
                         <div class="preview-box" [innerHTML]="previewFor(b)"></div>
                       </div>
                     </div>
@@ -370,11 +370,11 @@
                   <div *ngIf="b.value.type === 'text'" class="block-body">
                     <div class="editor-grid">
                       <div class="editor">
-                        <label class="field-label">HTML</label>
+                        <label class="field-label">{{ lang.t('HTML') }}</label>
                         <textarea class="field-input mono" rows="6" formControlName="html" placeholder="<p>…</p>"></textarea>
                       </div>
                       <div class="preview">
-                        <div class="preview-title">Live Preview</div>
+                        <div class="preview-title">{{ lang.t('Live Preview') }}</div>
                         <div class="preview-box" [innerHTML]="previewFor(b)"></div>
                       </div>
                     </div>
@@ -384,12 +384,12 @@
                   <div *ngIf="b.value.type === 'image'" class="block-body">
                     <div class="editor-grid">
                       <div class="editor">
-                        <input class="field-input" formControlName="url" placeholder="Image URL" />
-                        <input class="field-input" formControlName="alt" placeholder="Alt text" />
-                        <input class="field-input" formControlName="caption" placeholder="Caption" />
+                        <input class="field-input" formControlName="url" [placeholder]="lang.t('Image URL')" />
+                        <input class="field-input" formControlName="alt" [placeholder]="lang.t('Alt text')" />
+                        <input class="field-input" formControlName="caption" [placeholder]="lang.t('Caption')" />
                       </div>
                       <div class="preview">
-                        <div class="preview-title">Preview</div>
+                        <div class="preview-title">{{ lang.t('Preview') }}</div>
                         <div class="preview-box" [innerHTML]="previewFor(b)"></div>
                       </div>
                     </div>
@@ -399,12 +399,12 @@
                   <div *ngIf="b.value.type === 'audio'" class="block-body">
                     <div class="editor-grid">
                       <div class="editor">
-                        <input class="field-input" formControlName="title" placeholder="Audio title" />
-                        <input class="field-input" formControlName="url" placeholder="Audio URL" />
-                        <textarea class="field-input mono" rows="3" formControlName="transcript" placeholder="Transcript"></textarea>
+                        <input class="field-input" formControlName="title" [placeholder]="lang.t('Audio title')" />
+                        <input class="field-input" formControlName="url" [placeholder]="lang.t('Audio URL')" />
+                        <textarea class="field-input mono" rows="3" formControlName="transcript" [placeholder]="lang.t('Transcript')"></textarea>
                       </div>
                       <div class="preview">
-                        <div class="preview-title">Preview</div>
+                        <div class="preview-title">{{ lang.t('Preview') }}</div>
                         <div class="preview-box" [innerHTML]="previewFor(b)"></div>
                       </div>
                     </div>
@@ -414,11 +414,11 @@
                   <div *ngIf="b.value.type === 'video'" class="block-body">
                     <div class="editor-grid">
                       <div class="editor">
-                        <input class="field-input" formControlName="url" placeholder="Video URL (YouTube, Vimeo, MP4…)" />
-                        <textarea class="field-input mono" rows="3" formControlName="transcript" placeholder="Transcript / notes"></textarea>
+                        <input class="field-input" formControlName="url" [placeholder]="lang.t('Video URL (YouTube, Vimeo, MP4…)')" />
+                        <textarea class="field-input mono" rows="3" formControlName="transcript" [placeholder]="lang.t('Transcript / notes')"></textarea>
                       </div>
                       <div class="preview">
-                        <div class="preview-title">Preview</div>
+                        <div class="preview-title">{{ lang.t('Preview') }}</div>
                         <div class="preview-box" [innerHTML]="previewFor(b)"></div>
                       </div>
                     </div>
@@ -428,13 +428,13 @@
                   <div *ngIf="b.value.type === 'hero'" class="block-body">
                     <div class="editor-grid">
                       <div class="editor">
-                        <input class="field-input" formControlName="title" placeholder="Hero title" />
-                        <input class="field-input" formControlName="imageUrl" placeholder="Hero image URL" />
-                        <input class="field-input" formControlName="buttonLabel" placeholder="Button label" />
+                        <input class="field-input" formControlName="title" [placeholder]="lang.t('Hero title')" />
+                        <input class="field-input" formControlName="imageUrl" [placeholder]="lang.t('Hero image URL')" />
+                        <input class="field-input" formControlName="buttonLabel" [placeholder]="lang.t('Button label')" />
                         <textarea class="field-input mono" rows="6" formControlName="bodyHtml" placeholder="<p>Intro copy...</p>"></textarea>
                       </div>
                       <div class="preview">
-                        <div class="preview-title">Preview</div>
+                        <div class="preview-title">{{ lang.t('Preview') }}</div>
                         <div class="preview-box" [innerHTML]="previewFor(b)"></div>
                       </div>
                     </div>
@@ -444,7 +444,7 @@
                   <div *ngIf="b.value.type === 'accordion'" class="block-body">
                     <div class="editor-grid">
                       <div class="editor">
-                        <input class="field-input" formControlName="title" placeholder="Accordion section title" />
+                        <input class="field-input" formControlName="title" [placeholder]="lang.t('Accordion section title')" />
                         <textarea class="field-input mono" rows="4" formControlName="introHtml" placeholder="<p>Section intro...</p>"></textarea>
 
                         <div class="choices" formArrayName="items">
@@ -453,18 +453,18 @@
                             *ngFor="let item of b.controls.items.controls; let itemIndex = index"
                             [formGroup]="item"
                           >
-                            <input class="field-input w-full" formControlName="title" placeholder="Accordion item title" />
+                            <input class="field-input w-full" formControlName="title" [placeholder]="lang.t('Accordion item title')" />
                             <label class="check-label">
-                              <input type="checkbox" formControlName="required" /> Required for continue
+                              <input type="checkbox" formControlName="required" /> {{ lang.t('Required for continue') }}
                             </label>
-                            <textarea class="field-input mono" rows="4" formControlName="bodyHtml" placeholder="Item body HTML"></textarea>
-                            <button type="button" class="btn-ghost-sm" (click)="removeAccordionItem(si, li, bi, itemIndex)">Remove item</button>
+                            <textarea class="field-input mono" rows="4" formControlName="bodyHtml" [placeholder]="lang.t('Item body HTML')"></textarea>
+                            <button type="button" class="btn-ghost-sm" (click)="removeAccordionItem(si, li, bi, itemIndex)">{{ lang.t('Remove item') }}</button>
                           </div>
-                          <button type="button" class="btn-outline-sm" (click)="addAccordionItem(si, li, bi)">+ Add accordion item</button>
+                          <button type="button" class="btn-outline-sm" (click)="addAccordionItem(si, li, bi)">{{ lang.t('+ Add accordion item') }}</button>
                         </div>
                       </div>
                       <div class="preview">
-                        <div class="preview-title">Preview</div>
+                        <div class="preview-title">{{ lang.t('Preview') }}</div>
                         <div class="preview-box" [innerHTML]="previewFor(b)"></div>
                       </div>
                     </div>
@@ -474,7 +474,7 @@
                   <div *ngIf="b.value.type === 'tabs'" class="block-body">
                     <div class="editor-grid">
                       <div class="editor">
-                        <input class="field-input" formControlName="title" placeholder="Tabs section title" />
+                        <input class="field-input" formControlName="title" [placeholder]="lang.t('Tabs section title')" />
                         <textarea class="field-input mono" rows="4" formControlName="introHtml" placeholder="<p>Instructions...</p>"></textarea>
 
                         <div class="choices" formArrayName="tabs">
@@ -484,22 +484,22 @@
                             [formGroup]="tab"
                           >
                             <div class="grid two">
-                              <input class="field-input w-full" formControlName="label" placeholder="Tab label" />
-                              <input class="field-input w-full" formControlName="title" placeholder="Panel title" />
+                              <input class="field-input w-full" formControlName="label" [placeholder]="lang.t('Tab label')" />
+                              <input class="field-input w-full" formControlName="title" [placeholder]="lang.t('Panel title')" />
                             </div>
-                            <input class="field-input w-full" formControlName="imageUrl" placeholder="Panel image URL (optional)" />
-                            <input class="field-input w-full" formControlName="imageAlt" placeholder="Panel image alt text" />
+                            <input class="field-input w-full" formControlName="imageUrl" [placeholder]="lang.t('Panel image URL (optional)')" />
+                            <input class="field-input w-full" formControlName="imageAlt" [placeholder]="lang.t('Panel image alt text')" />
                             <label class="check-label">
-                              <input type="checkbox" formControlName="required" /> Required for continue
+                              <input type="checkbox" formControlName="required" /> {{ lang.t('Required for continue') }}
                             </label>
-                            <textarea class="field-input mono" rows="5" formControlName="bodyHtml" placeholder="Panel body HTML"></textarea>
-                            <button type="button" class="btn-ghost-sm" (click)="removeTabItem(si, li, bi, tabIndex)">Remove tab</button>
+                            <textarea class="field-input mono" rows="5" formControlName="bodyHtml" [placeholder]="lang.t('Panel body HTML')"></textarea>
+                            <button type="button" class="btn-ghost-sm" (click)="removeTabItem(si, li, bi, tabIndex)">{{ lang.t('Remove tab') }}</button>
                           </div>
-                          <button type="button" class="btn-outline-sm" (click)="addTabItem(si, li, bi)">+ Add tab</button>
+                          <button type="button" class="btn-outline-sm" (click)="addTabItem(si, li, bi)">{{ lang.t('+ Add tab') }}</button>
                         </div>
                       </div>
                       <div class="preview">
-                        <div class="preview-title">Preview</div>
+                        <div class="preview-title">{{ lang.t('Preview') }}</div>
                         <div class="preview-box" [innerHTML]="previewFor(b)"></div>
                       </div>
                     </div>
@@ -509,10 +509,10 @@
                   <div *ngIf="b.value.type === 'cardStack'" class="block-body">
                     <div class="editor-grid">
                       <div class="editor">
-                        <input class="field-input" formControlName="title" placeholder="Card stack title" />
+                        <input class="field-input" formControlName="title" [placeholder]="lang.t('Card stack title')" />
                         <select class="field-input" formControlName="variant">
-                          <option value="flip">Flip cards</option>
-                          <option value="gated">Gated sequence</option>
+                          <option value="flip">{{ lang.t('Flip cards') }}</option>
+                          <option value="gated">{{ lang.t('Gated sequence') }}</option>
                         </select>
                         <textarea class="field-input mono" rows="4" formControlName="introHtml" placeholder="<p>Instructions...</p>"></textarea>
 
@@ -522,17 +522,17 @@
                             *ngFor="let card of b.controls.cards.controls; let cardIndex = index"
                             [formGroup]="card"
                           >
-                            <input class="field-input w-full" formControlName="title" placeholder="Card title" />
-                            <input class="field-input w-full" formControlName="teaser" placeholder="Short teaser" />
-                            <input class="field-input w-full" formControlName="imageUrl" placeholder="Card image URL (optional)" />
-                            <textarea class="field-input mono" rows="4" formControlName="bodyHtml" placeholder="Card body HTML"></textarea>
-                            <button type="button" class="btn-ghost-sm" (click)="removeBlockCard(si, li, bi, cardIndex)">Remove card</button>
+                            <input class="field-input w-full" formControlName="title" [placeholder]="lang.t('Card title')" />
+                            <input class="field-input w-full" formControlName="teaser" [placeholder]="lang.t('Short teaser')" />
+                            <input class="field-input w-full" formControlName="imageUrl" [placeholder]="lang.t('Card image URL (optional)')" />
+                            <textarea class="field-input mono" rows="4" formControlName="bodyHtml" [placeholder]="lang.t('Card body HTML')"></textarea>
+                            <button type="button" class="btn-ghost-sm" (click)="removeBlockCard(si, li, bi, cardIndex)">{{ lang.t('Remove card') }}</button>
                           </div>
-                          <button type="button" class="btn-outline-sm" (click)="addBlockCard(si, li, bi)">+ Add card</button>
+                          <button type="button" class="btn-outline-sm" (click)="addBlockCard(si, li, bi)">{{ lang.t('+ Add card') }}</button>
                         </div>
                       </div>
                       <div class="preview">
-                        <div class="preview-title">Preview</div>
+                        <div class="preview-title">{{ lang.t('Preview') }}</div>
                         <div class="preview-box" [innerHTML]="previewFor(b)"></div>
                       </div>
                     </div>
@@ -542,13 +542,13 @@
                   <div *ngIf="b.value.type === 'quizIntro'" class="block-body">
                     <div class="editor-grid">
                       <div class="editor">
-                        <input class="field-input" formControlName="title" placeholder="Quiz intro title" />
-                        <input class="field-input" formControlName="buttonLabel" placeholder="Button label" />
-                        <input class="field-input" type="number" min="0" max="100" formControlName="passPct" placeholder="Passing score %" />
+                        <input class="field-input" formControlName="title" [placeholder]="lang.t('Quiz intro title')" />
+                        <input class="field-input" formControlName="buttonLabel" [placeholder]="lang.t('Button label')" />
+                        <input class="field-input" type="number" min="0" max="100" formControlName="passPct" [placeholder]="lang.t('Passing score %')" />
                         <textarea class="field-input mono" rows="6" formControlName="bodyHtml" placeholder="<p>Explain the quiz...</p>"></textarea>
                       </div>
                       <div class="preview">
-                        <div class="preview-title">Preview</div>
+                        <div class="preview-title">{{ lang.t('Preview') }}</div>
                         <div class="preview-box" [innerHTML]="previewFor(b)"></div>
                       </div>
                     </div>
@@ -558,10 +558,10 @@
                   <div *ngIf="b.value.type === 'slideDeck'" class="block-body">
                     <div class="editor-grid">
                       <div class="editor">
-                        <label class="field-label">Theme</label>
+                        <label class="field-label">{{ lang.t('Theme') }}</label>
                         <select class="field-input" formControlName="theme">
-                          <option value="default">Default</option>
-                          <option value="focus">Focus</option>
+                          <option value="default">{{ lang.t('Default') }}</option>
+                          <option value="focus">{{ lang.t('Focus') }}</option>
                         </select>
 
                         <div class="choices">
@@ -570,11 +570,11 @@
                             *ngFor="let slide of b.controls.slides.controls; let slideIndex = index"
                             [formGroup]="slide"
                           >
-                            <input class="field-input w-full" formControlName="title" placeholder="Slide title" />
-                            <input class="field-input w-full" formControlName="imageUrl" placeholder="Slide image URL" />
-                            <input class="field-input w-full" formControlName="audioUrl" placeholder="Slide audio URL" />
-                            <textarea class="field-input mono" rows="3" formControlName="transcript" placeholder="Transcript"></textarea>
-                            <textarea class="field-input mono" rows="4" formControlName="notesHtml" placeholder="Notes HTML"></textarea>
+                            <input class="field-input w-full" formControlName="title" [placeholder]="lang.t('Slide title')" />
+                            <input class="field-input w-full" formControlName="imageUrl" [placeholder]="lang.t('Slide image URL')" />
+                            <input class="field-input w-full" formControlName="audioUrl" [placeholder]="lang.t('Slide audio URL')" />
+                            <textarea class="field-input mono" rows="3" formControlName="transcript" [placeholder]="lang.t('Transcript')"></textarea>
+                            <textarea class="field-input mono" rows="4" formControlName="notesHtml" [placeholder]="lang.t('Notes HTML')"></textarea>
 
                             <div class="choices nested" formArrayName="interactiveCards">
                               <div
@@ -582,37 +582,37 @@
                                 *ngFor="let card of slide.controls.interactiveCards.controls; let cardIndex = index"
                                 [formGroup]="card"
                               >
-                                <input class="field-input w-full" formControlName="title" placeholder="Card title" />
+                                <input class="field-input w-full" formControlName="title" [placeholder]="lang.t('Card title')" />
                                 <select class="field-input w-full" formControlName="variant">
-                                  <option value="default">Default card</option>
-                                  <option value="flip">Flip card</option>
-                                  <option value="hotspot">Hotspot</option>
-                                  <option value="sequence">Sequential reveal</option>
+                                  <option value="default">{{ lang.t('Default card') }}</option>
+                                  <option value="flip">{{ lang.t('Flip card') }}</option>
+                                  <option value="hotspot">{{ lang.t('Hotspot') }}</option>
+                                  <option value="sequence">{{ lang.t('Sequential reveal') }}</option>
                                 </select>
-                                <input class="field-input w-full" formControlName="teaser" placeholder="Short teaser" />
-                                <input class="field-input w-full" formControlName="imageUrl" placeholder="Card image URL (optional)" />
+                                <input class="field-input w-full" formControlName="teaser" [placeholder]="lang.t('Short teaser')" />
+                                <input class="field-input w-full" formControlName="imageUrl" [placeholder]="lang.t('Card image URL (optional)')" />
                                 <div class="grid two" *ngIf="card.value.variant === 'hotspot'">
-                                  <input class="field-input w-full" type="number" min="0" max="100" formControlName="hotspotX" placeholder="Hotspot X %" />
-                                  <input class="field-input w-full" type="number" min="0" max="100" formControlName="hotspotY" placeholder="Hotspot Y %" />
+                                  <input class="field-input w-full" type="number" min="0" max="100" formControlName="hotspotX" [placeholder]="lang.t('Hotspot X %')" />
+                                  <input class="field-input w-full" type="number" min="0" max="100" formControlName="hotspotY" [placeholder]="lang.t('Hotspot Y %')" />
                                 </div>
-                                <textarea class="field-input mono" rows="4" formControlName="bodyHtml" placeholder="Card body HTML"></textarea>
-                                <button type="button" class="btn-ghost-sm" (click)="removeInteractiveCard(si, li, bi, slideIndex, cardIndex)">Remove card</button>
+                                <textarea class="field-input mono" rows="4" formControlName="bodyHtml" [placeholder]="lang.t('Card body HTML')"></textarea>
+                                <button type="button" class="btn-ghost-sm" (click)="removeInteractiveCard(si, li, bi, slideIndex, cardIndex)">{{ lang.t('Remove card') }}</button>
                               </div>
 
                               <button type="button" class="btn-outline-sm" (click)="addInteractiveCard(si, li, bi, slideIndex)">
-                                + Add interactive card
+                                {{ lang.t('+ Add interactive card') }}
                               </button>
                             </div>
 
-                            <button type="button" class="btn-ghost-sm" (click)="removeSlide(si, li, bi, slideIndex)">Remove slide</button>
+                            <button type="button" class="btn-ghost-sm" (click)="removeSlide(si, li, bi, slideIndex)">{{ lang.t('Remove slide') }}</button>
                           </div>
 
-                          <button type="button" class="btn-outline-sm" (click)="addSlide(si, li, bi)">+ Add slide</button>
+                          <button type="button" class="btn-outline-sm" (click)="addSlide(si, li, bi)">{{ lang.t('+ Add slide') }}</button>
                         </div>
                       </div>
 
                       <div class="preview">
-                        <div class="preview-title">Preview</div>
+                        <div class="preview-title">{{ lang.t('Preview') }}</div>
                         <div class="preview-box" [innerHTML]="previewFor(b)"></div>
                       </div>
                     </div>
@@ -622,7 +622,7 @@
                   <div *ngIf="b.value.type === 'carousel'" class="block-body">
                     <div class="editor-grid">
                       <div class="editor">
-                        <input class="field-input" formControlName="title" placeholder="Carousel title (optional)" />
+                        <input class="field-input" formControlName="title" [placeholder]="lang.t('Carousel title (optional)')" />
 
                         <div class="choices" formArrayName="carouselSlides">
                           <div
@@ -630,34 +630,34 @@
                             *ngFor="let slide of b.controls.carouselSlides.controls; let slideIndex = index"
                             [formGroup]="slide"
                           >
-                            <input class="field-input w-full" formControlName="imageUrl" placeholder="Slide image URL" />
-                            <input class="field-input w-full" formControlName="heading" placeholder="Slide heading" />
+                            <input class="field-input w-full" formControlName="imageUrl" [placeholder]="lang.t('Slide image URL')" />
+                            <input class="field-input w-full" formControlName="heading" [placeholder]="lang.t('Slide heading')" />
                             <textarea class="field-input mono" rows="3" formControlName="bodyHtml" placeholder="<p>Slide body HTML</p>"></textarea>
 
                             <div class="grid two">
-                              <input class="field-input w-full" formControlName="buttonLabel" placeholder="Button label (optional)" />
+                              <input class="field-input w-full" formControlName="buttonLabel" [placeholder]="lang.t('Button label (optional)')" />
                               <select class="field-input w-full" formControlName="buttonAction">
-                                <option value="url">Open link</option>
-                                <option value="nextLesson">Go to next lesson</option>
-                                <option value="markComplete">Mark lesson complete</option>
+                                <option value="url">{{ lang.t('Open link') }}</option>
+                                <option value="nextLesson">{{ lang.t('Go to next lesson') }}</option>
+                                <option value="markComplete">{{ lang.t('Mark lesson complete') }}</option>
                               </select>
                             </div>
                             <input
                               class="field-input w-full"
                               formControlName="buttonUrl"
-                              placeholder="https://... (only used for 'Open link')"
+                              [placeholder]="lang.t('https://... (only used for \'Open link\')')"
                               *ngIf="slide.value.buttonAction === 'url'"
                             />
 
-                            <button type="button" class="btn-ghost-sm" (click)="removeCarouselSlide(si, li, bi, slideIndex)">Remove slide</button>
+                            <button type="button" class="btn-ghost-sm" (click)="removeCarouselSlide(si, li, bi, slideIndex)">{{ lang.t('Remove slide') }}</button>
                           </div>
 
-                          <button type="button" class="btn-outline-sm" (click)="addCarouselSlide(si, li, bi)">+ Add slide</button>
+                          <button type="button" class="btn-outline-sm" (click)="addCarouselSlide(si, li, bi)">{{ lang.t('+ Add slide') }}</button>
                         </div>
                       </div>
 
                       <div class="preview">
-                        <div class="preview-title">Preview</div>
+                        <div class="preview-title">{{ lang.t('Preview') }}</div>
                         <div class="preview-box" [innerHTML]="previewFor(b)"></div>
                       </div>
                     </div>
@@ -667,16 +667,16 @@
                   <div *ngIf="b.value.type === 'callout'" class="block-body">
                     <div class="editor-grid">
                       <div class="editor">
-                        <label class="field-label">Style</label>
+                        <label class="field-label">{{ lang.t('Style') }}</label>
                         <select class="field-input" formControlName="style">
-                          <option value="info">Info</option>
-                          <option value="warn">Warn</option>
-                          <option value="success">Success</option>
+                          <option value="info">{{ lang.t('Info') }}</option>
+                          <option value="warn">{{ lang.t('Warn') }}</option>
+                          <option value="success">{{ lang.t('Success') }}</option>
                         </select>
                         <textarea class="field-input mono" rows="6" formControlName="html" placeholder="<p>Important note…</p>"></textarea>
                       </div>
                       <div class="preview">
-                        <div class="preview-title">Live Preview</div>
+                        <div class="preview-title">{{ lang.t('Live Preview') }}</div>
                         <div class="preview-box" [innerHTML]="previewFor(b)"></div>
                       </div>
                     </div>
@@ -686,14 +686,14 @@
                   <div *ngIf="b.value.type === 'quiz'" class="block-body">
                     <div class="editor-grid">
                       <div class="editor">
-                        <label class="field-label">Mode</label>
+                        <label class="field-label">{{ lang.t('Mode') }}</label>
                         <select class="field-input" formControlName="mode">
-                          <option value="single">Single</option>
-                          <option value="multi">Multi</option>
-                          <option value="caseStudy">Case Study</option>
+                          <option value="single">{{ lang.t('Single') }}</option>
+                          <option value="multi">{{ lang.t('Multi') }}</option>
+                          <option value="caseStudy">{{ lang.t('Case Study') }}</option>
                         </select>
 
-                        <input class="field-input" formControlName="question" placeholder="Question" />
+                        <input class="field-input" formControlName="question" [placeholder]="lang.t('Question')" />
 
                         <div class="choices">
                           <div
@@ -701,17 +701,17 @@
                             *ngFor="let c of b.controls.choices.controls; let ci = index"
                             [formGroup]="c"
                           >
-                            <input class="field-input w-full" formControlName="text" placeholder="Choice text" />
+                            <input class="field-input w-full" formControlName="text" [placeholder]="lang.t('Choice text')" />
                             <label class="check-label">
-                              <input type="checkbox" formControlName="correct" /> Correct
+                              <input type="checkbox" formControlName="correct" /> {{ lang.t('Correct') }}
                             </label>
-                            <button type="button" class="btn-ghost-sm" (click)="removeChoice(si, li, bi, ci)">Remove</button>
+                            <button type="button" class="btn-ghost-sm" (click)="removeChoice(si, li, bi, ci)">{{ lang.t('Remove') }}</button>
                           </div>
-                          <button type="button" class="btn-outline-sm" (click)="addChoice(si, li, bi)">+ Add choice</button>
+                          <button type="button" class="btn-outline-sm" (click)="addChoice(si, li, bi)">{{ lang.t('+ Add choice') }}</button>
                         </div>
                       </div>
                       <div class="preview">
-                        <div class="preview-title">Preview</div>
+                        <div class="preview-title">{{ lang.t('Preview') }}</div>
                         <div class="preview-box" [innerHTML]="previewFor(b)"></div>
                       </div>
                     </div>
@@ -729,23 +729,23 @@
     <!-- Form Actions -->
     <div class="form-actions">
       <button class="btn-primary" type="submit" [disabled]="savingCourse">
-        {{ savingCourse ? (editId ? 'Updating course...' : 'Creating course...') : (editId ? 'Update course' : 'Create course') }}
+        {{ savingCourse ? (editId ? lang.t('Updating course...') : lang.t('Creating course...')) : (editId ? lang.t('Update course') : lang.t('Create course')) }}
       </button>
       <button type="button" class="btn-outline" [disabled]="savingCourse" (click)="previewCurrentFormJson()">
-        {{ currentJsonPreview ? 'Refresh JSON preview' : 'Preview JSON' }}
+        {{ currentJsonPreview ? lang.t('Refresh JSON preview') : lang.t('Preview JSON') }}
       </button>
-      <button *ngIf="editId" type="button" class="btn-outline" [disabled]="savingCourse" (click)="cancelEdit()">Cancel edit</button>
-      <span *ngIf="loadingEdit" class="loading-text">Loading…</span>
+      <button *ngIf="editId" type="button" class="btn-outline" [disabled]="savingCourse" (click)="cancelEdit()">{{ lang.t('Cancel edit') }}</button>
+      <span *ngIf="loadingEdit" class="loading-text">{{ lang.t('Loading…') }}</span>
       <span *ngIf="saveError" class="msg msg--error">{{ saveError }}</span>
     </div>
 
     <div class="current-json-preview" *ngIf="currentJsonPreview">
       <div class="current-json-preview__head">
         <div>
-          <strong>Course JSON preview</strong>
-          <div class="field-hint">Snapshot of the current form. Refresh after making changes.</div>
+          <strong>{{ lang.t('Course JSON preview') }}</strong>
+          <div class="field-hint">{{ lang.t('Snapshot of the current form. Refresh after making changes.') }}</div>
         </div>
-        <button type="button" class="btn-ghost" (click)="closeCurrentJsonPreview()">Close</button>
+        <button type="button" class="btn-ghost" (click)="closeCurrentJsonPreview()">{{ lang.t('Close') }}</button>
       </div>
       <pre class="json-preview-code">{{ currentJsonPreview }}</pre>
     </div>
@@ -760,8 +760,8 @@
       </svg>
     </div>
     <div>
-      <div class="info-panel__title">Course Library</div>
-      <div class="info-panel__sub">Course creation and JSON import is reserved for super admins. Managers and org admins can browse the existing library here.</div>
+      <div class="info-panel__title">{{ lang.t('Course Library') }}</div>
+      <div class="info-panel__sub">{{ lang.t('Course creation and JSON import is reserved for super admins. Managers and org admins can browse the existing library here.') }}</div>
     </div>
   </div>
 
@@ -769,9 +769,9 @@
   <div class="panel list-panel">
     <div class="panel__head">
       <div>
-        <div class="panel__title">All Courses</div>
+        <div class="panel__title">{{ lang.t('All Courses') }}</div>
         <div class="panel__sub">
-          {{ filteredCourses().length }} of {{ courses().length }} course{{ courses().length === 1 ? '' : 's' }} shown. Sorted by course order, then title.
+          {{ filteredCourses().length }} {{ lang.t('of') }} {{ courses().length }} {{ courses().length === 1 ? lang.t('course') : lang.t('courses') }} {{ lang.t('shown. Sorted by course order, then title.') }}
         </div>
       </div>
     </div>
@@ -782,7 +782,7 @@
         <input
           class="course-search__input"
           type="search"
-          placeholder="Search title, tags, instructor..."
+          [placeholder]="lang.t('Search title, tags, instructor...')"
           [value]="courseSearch()"
           (input)="courseSearch.set($any($event.target).value)"
         />
@@ -799,16 +799,16 @@
         class="course-filter-select"
         [value]="courseStatusFilter()"
         (change)="courseStatusFilter.set($any($event.target).value)">
-        <option value="all">All status</option>
-        <option value="active">Active only</option>
-        <option value="inactive">Inactive only</option>
+        <option value="all">{{ lang.t('All status') }}</option>
+        <option value="active">{{ lang.t('Active only') }}</option>
+        <option value="inactive">{{ lang.t('Inactive only') }}</option>
       </select>
 
       <select
         class="course-filter-select"
         [value]="courseLangFilter()"
         (change)="courseLangFilter.set($any($event.target).value)">
-        <option value="all">All languages</option>
+        <option value="all">{{ lang.t('All languages') }}</option>
         <option value="EN">EN</option>
         <option value="FR">FR</option>
         <option value="ES">ES</option>
@@ -818,11 +818,11 @@
         class="course-filter-select"
         [value]="courseTypeFilter()"
         (change)="courseTypeFilter.set($any($event.target).value)">
-        <option value="all">All types</option>
-        <option value="Health">Health</option>
-        <option value="It">IT</option>
-        <option value="Hr">HR</option>
-        <option value="safety">Safety</option>
+        <option value="all">{{ lang.t('All types') }}</option>
+        <option value="Health">{{ lang.t('Health') }}</option>
+        <option value="It">{{ lang.t('IT') }}</option>
+        <option value="Hr">{{ lang.t('HR') }}</option>
+        <option value="safety">{{ lang.t('Safety') }}</option>
       </select>
 
       <button
@@ -830,7 +830,7 @@
         type="button"
         *ngIf="hasCourseFilters()"
         (click)="clearCourseFilters()">
-        Clear filters
+        {{ lang.t('Clear filters') }}
       </button>
     </div>
 
@@ -839,7 +839,7 @@
 
         <div class="course-card__main">
           <div class="course-sort-box" *ngIf="canManageCourses">
-            <span class="course-sort-box__label">Order</span>
+            <span class="course-sort-box__label">{{ lang.t('Order') }}</span>
             <span class="course-sort-box__value">{{ courseOrderLabel(c, courseIndex) }}</span>
           </div>
 
@@ -857,13 +857,13 @@
             <div class="course-card__meta">
               <span class="meta-item" *ngIf="c.lang">{{ c.lang }}</span>
               <span class="meta-sep" *ngIf="c.durationMin">·</span>
-              <span class="meta-item" *ngIf="c.durationMin">{{ c.durationMin }} min</span>
+              <span class="meta-item" *ngIf="c.durationMin">{{ c.durationMin }} {{ lang.t('min') }}</span>
               <span class="meta-sep" *ngIf="c.lecturer">·</span>
               <span class="meta-item" *ngIf="c.lecturer">{{ c.lecturer }}</span>
               <span class="meta-sep" *ngIf="c.sections && c.sections.length">·</span>
-              <span class="meta-item" *ngIf="c.sections && c.sections.length">{{ c.sections.length }} sections</span>
+              <span class="meta-item" *ngIf="c.sections && c.sections.length">{{ c.sections.length }} {{ lang.t('sections') }}</span>
               <span class="meta-sep" *ngIf="c.passingScore">·</span>
-              <span class="meta-item score-item" *ngIf="c.passingScore">{{ c.passingScore }}% pass</span>
+              <span class="meta-item score-item" *ngIf="c.passingScore">{{ c.passingScore }}% {{ lang.t('pass') }}</span>
             </div>
 
             <div class="course-card__tags" *ngIf="c.tags && c.tags.length">
@@ -872,10 +872,10 @@
           </div>
 
           <div class="course-card__badges">
-            <span [class]="'badge badge--' + (c.active ? 'active' : 'inactive')">{{ c.active ? 'Active' : 'Inactive' }}</span>
+            <span [class]="'badge badge--' + (c.active ? 'active' : 'inactive')">{{ c.active ? lang.t('Active') : lang.t('Inactive') }}</span>
             <span class="badge badge--kind" *ngIf="c.kind">{{ c.kind }}</span>
             <span class="badge badge--type" *ngIf="c.type">{{ c.type }}</span>
-            <span class="badge badge--locked" *ngIf="c.lockedSequence">Locked</span>
+            <span class="badge badge--locked" *ngIf="c.lockedSequence">{{ lang.t('Locked') }}</span>
           </div>
         </div>
 
@@ -884,7 +884,7 @@
             class="btn-action btn-action--icon"
             type="button"
             [disabled]="!canMoveCourse(c, -1)"
-            title="Move course up"
+            [title]="lang.t('Move course up')"
             (click)="moveCourse(c, -1)">
             ↑
           </button>
@@ -893,7 +893,7 @@
             class="btn-action btn-action--icon"
             type="button"
             [disabled]="!canMoveCourse(c, 1)"
-            title="Move course down"
+            [title]="lang.t('Move course down')"
             (click)="moveCourse(c, 1)">
             ↓
           </button>
@@ -903,7 +903,7 @@
               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
               <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
             </svg>
-            Edit
+            {{ lang.t('Edit') }}
           </button>
 
           <button
@@ -916,7 +916,7 @@
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
             </svg>
-            {{ duplicatingId === c.id ? 'Duplicating…' : 'Duplicate' }}
+            {{ duplicatingId === c.id ? lang.t('Duplicating…') : lang.t('Duplicate') }}
           </button>
 
           <button class="btn-action" type="button" (click)="exportCourseJson(c)">
@@ -925,7 +925,7 @@
               <polyline points="7 10 12 15 17 10"/>
               <line x1="12" y1="15" x2="12" y2="3"/>
             </svg>
-            Export JSON
+            {{ lang.t('Export JSON') }}
           </button>
 
           <button class="btn-action btn-action--teal" type="button" (click)="open(c)">
@@ -934,7 +934,7 @@
               <line x1="12" y1="8" x2="12" y2="16"/>
               <line x1="8" y1="12" x2="16" y2="12"/>
             </svg>
-            Add Extras
+            {{ lang.t('Add Extras') }}
           </button>
 
           <button
@@ -949,20 +949,20 @@
               <line x1="10" y1="11" x2="10" y2="17"/>
               <line x1="14" y1="11" x2="14" y2="17"/>
             </svg>
-            {{ deletingId === c.id ? 'Deleting…' : 'Delete' }}
+            {{ deletingId === c.id ? lang.t('Deleting…') : lang.t('Delete') }}
           </button>
         </div>
       </div>
 
       <div class="empty-state" *ngIf="!courses().length">
         <div class="empty-state__icon">&#128218;</div>
-        <span>No courses yet. Create the first one above.</span>
+        <span>{{ lang.t('No courses yet. Create the first one above.') }}</span>
       </div>
 
       <div class="empty-state" *ngIf="courses().length && !filteredCourses().length">
         <div class="empty-state__icon">&#8981;</div>
-        <span>No courses match the current filters.</span>
-        <button type="button" class="btn-outline" (click)="clearCourseFilters()">Clear filters</button>
+        <span>{{ lang.t('No courses match the current filters.') }}</span>
+        <button type="button" class="btn-outline" (click)="clearCourseFilters()">{{ lang.t('Clear filters') }}</button>
       </div>
     </div>
   </div>

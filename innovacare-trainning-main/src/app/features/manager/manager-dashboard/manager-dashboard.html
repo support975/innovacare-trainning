@@ -3,17 +3,17 @@
   <!-- PAGE HEADER -->
   <header class="dash-header">
     <div class="dash-header__left">
-      <div class="dash-header__eyebrow">Enterprise Manager Hub</div>
-      <h1 class="dash-header__title">Welcome back, {{ managerName() }}</h1>
+      <div class="dash-header__eyebrow">{{ lang.t('Enterprise Manager Hub') }}</div>
+      <h1 class="dash-header__title">{{ lang.t('Welcome back,') }} {{ managerName() }}</h1>
       <p class="dash-header__sub">
-        Pilot assignments, audit readiness, policies and learner risk for {{ orgName() }}.
+        {{ lang.t('Pilot assignments, audit readiness, policies and learner risk for') }} {{ orgName() }}.
       </p>
     </div>
     <div class="dash-header__actions">
       <button class="btn-primary" (click)="onAssignTraining()">
-        <span class="btn-icon">+</span> Assign Training
+        <span class="btn-icon">+</span> {{ lang.t('Assign Training') }}
       </button>
-      <button class="btn-ghost" (click)="onOpenAudit()">Open Audit Center</button>
+      <button class="btn-ghost" (click)="onOpenAudit()">{{ lang.t('Open Audit Center') }}</button>
     </div>
   </header>
 
@@ -27,37 +27,37 @@
     <div class="kpi-card">
       <div class="kpi-card__icon kpi-card__icon--teal">◎</div>
       <div class="kpi-card__body">
-        <div class="kpi-card__label">Completion Rate (30d)</div>
+        <div class="kpi-card__label">{{ lang.t('Completion Rate (30d)') }}</div>
         <div class="kpi-card__value">{{ kpi().completion30 }}</div>
-        <div class="kpi-card__sub">of assigned & started</div>
+        <div class="kpi-card__sub">{{ lang.t('of assigned & started') }}</div>
       </div>
     </div>
     <div class="kpi-card">
       <div class="kpi-card__icon kpi-card__icon--orange">⚠</div>
       <div class="kpi-card__body">
-        <div class="kpi-card__label">Overdue</div>
+        <div class="kpi-card__label">{{ lang.t('Overdue') }}</div>
         <div class="kpi-card__value kpi-card__value--warn">{{ kpi().overdue }}</div>
-        <div class="kpi-card__sub">learners past due date</div>
+        <div class="kpi-card__sub">{{ lang.t('learners past due date') }}</div>
       </div>
     </div>
     <div class="kpi-card">
       <div class="kpi-card__icon kpi-card__icon--navy">✦</div>
       <div class="kpi-card__body">
-        <div class="kpi-card__label">Average Score</div>
+        <div class="kpi-card__label">{{ lang.t('Average Score') }}</div>
         <div class="kpi-card__value">{{ kpi().avgScore }}%</div>
-        <div class="kpi-card__sub">across all completions</div>
+        <div class="kpi-card__sub">{{ lang.t('across all completions') }}</div>
       </div>
     </div>
     <div class="kpi-card kpi-card--action">
-      <div class="kpi-card__label">Manager Actions</div>
+      <div class="kpi-card__label">{{ lang.t('Manager Actions') }}</div>
       <div class="quick-actions">
-        <button class="qa-btn" (click)="onCreateNotification()">Notify</button>
-        <button class="qa-btn" (click)="onOpenPolicyLibrary()">Policies</button>
-        <button class="qa-btn" (click)="onOpenAudit()">Audit</button>
-        <button class="qa-btn" [routerLink]="['/manager/exam-sessions']">🖥️ Kiosk</button>
-        <button class="qa-btn" (click)="onOpenLibrary()">Library</button>
-        <button class="qa-btn" (click)="onViewLearners()">Learners</button>
-        <button class="qa-btn" (click)="onExportCSV()">Export</button>
+        <button class="qa-btn" (click)="onCreateNotification()">{{ lang.t('Notify') }}</button>
+        <button class="qa-btn" (click)="onOpenPolicyLibrary()">{{ lang.t('Policies') }}</button>
+        <button class="qa-btn" (click)="onOpenAudit()">{{ lang.t('Audit') }}</button>
+        <button class="qa-btn" [routerLink]="['/manager/exam-sessions']">🖥️ {{ lang.t('Kiosk') }}</button>
+        <button class="qa-btn" (click)="onOpenLibrary()">{{ lang.t('Library') }}</button>
+        <button class="qa-btn" (click)="onViewLearners()">{{ lang.t('Learners') }}</button>
+        <button class="qa-btn" (click)="onExportCSV()">{{ lang.t('Export') }}</button>
       </div>
     </div>
   </section>
@@ -67,72 +67,72 @@
     <div class="kpi-card">
       <div class="kpi-card__icon kpi-card__icon--navy">◆</div>
       <div class="kpi-card__body">
-        <div class="kpi-card__label">Total Candidates</div>
+        <div class="kpi-card__label">{{ lang.t('Total Candidates') }}</div>
         <div class="kpi-card__value">{{ certKpis().totalCandidates }}</div>
-        <div class="kpi-card__sub">official certification applications</div>
+        <div class="kpi-card__sub">{{ lang.t('official certification applications') }}</div>
       </div>
     </div>
     <div class="kpi-card">
       <div class="kpi-card__icon kpi-card__icon--orange">◷</div>
       <div class="kpi-card__body">
-        <div class="kpi-card__label">Pending Review</div>
+        <div class="kpi-card__label">{{ lang.t('Pending Review') }}</div>
         <div class="kpi-card__value kpi-card__value--warn">{{ certKpis().pendingReview }}</div>
-        <div class="kpi-card__sub">documents/eligibility awaiting decision</div>
+        <div class="kpi-card__sub">{{ lang.t('documents/eligibility awaiting decision') }}</div>
       </div>
     </div>
     <div class="kpi-card">
       <div class="kpi-card__icon kpi-card__icon--teal">✎</div>
       <div class="kpi-card__body">
-        <div class="kpi-card__label">Exam Completed</div>
+        <div class="kpi-card__label">{{ lang.t('Exam Completed') }}</div>
         <div class="kpi-card__value">{{ certKpis().examCompleted }}</div>
-        <div class="kpi-card__sub">awaiting jury/certification decision</div>
+        <div class="kpi-card__sub">{{ lang.t('awaiting jury/certification decision') }}</div>
       </div>
     </div>
     <div class="kpi-card">
       <div class="kpi-card__icon kpi-card__icon--teal">✓</div>
       <div class="kpi-card__body">
-        <div class="kpi-card__label">Certified</div>
+        <div class="kpi-card__label">{{ lang.t('Certified') }}</div>
         <div class="kpi-card__value">{{ certKpis().passed }}</div>
-        <div class="kpi-card__sub">membership card &amp; certificate issued</div>
+        <div class="kpi-card__sub">{{ lang.t('membership card & certificate issued') }}</div>
       </div>
     </div>
     <div class="kpi-card">
       <div class="kpi-card__icon kpi-card__icon--navy">◎</div>
       <div class="kpi-card__body">
-        <div class="kpi-card__label">Active Memberships</div>
+        <div class="kpi-card__label">{{ lang.t('Active Memberships') }}</div>
         <div class="kpi-card__value">{{ certKpis().activeMemberships }}</div>
-        <div class="kpi-card__sub">valid, more than 30 days remaining</div>
+        <div class="kpi-card__sub">{{ lang.t('valid, more than 30 days remaining') }}</div>
       </div>
     </div>
     <div class="kpi-card">
       <div class="kpi-card__icon kpi-card__icon--orange">⚠</div>
       <div class="kpi-card__body">
-        <div class="kpi-card__label">Expiring Soon</div>
+        <div class="kpi-card__label">{{ lang.t('Expiring Soon') }}</div>
         <div class="kpi-card__value kpi-card__value--warn">{{ certKpis().expiringSoon }}</div>
-        <div class="kpi-card__sub">membership expires within 30 days</div>
+        <div class="kpi-card__sub">{{ lang.t('membership expires within 30 days') }}</div>
       </div>
     </div>
     <div class="kpi-card">
       <div class="kpi-card__icon kpi-card__icon--orange">✕</div>
       <div class="kpi-card__body">
-        <div class="kpi-card__label">Expired</div>
+        <div class="kpi-card__label">{{ lang.t('Expired') }}</div>
         <div class="kpi-card__value kpi-card__value--warn">{{ certKpis().expired }}</div>
-        <div class="kpi-card__sub">renewal required</div>
+        <div class="kpi-card__sub">{{ lang.t('renewal required') }}</div>
       </div>
     </div>
     <div class="kpi-card">
       <div class="kpi-card__icon kpi-card__icon--navy">✗</div>
       <div class="kpi-card__body">
-        <div class="kpi-card__label">Rejected</div>
+        <div class="kpi-card__label">{{ lang.t('Rejected') }}</div>
         <div class="kpi-card__value">{{ certKpis().rejected }}</div>
-        <div class="kpi-card__sub">applications not approved</div>
+        <div class="kpi-card__sub">{{ lang.t('applications not approved') }}</div>
       </div>
     </div>
     <div class="kpi-card kpi-card--action">
-      <div class="kpi-card__label">Certification Authority</div>
+      <div class="kpi-card__label">{{ lang.t('Certification Authority') }}</div>
       <div class="quick-actions">
-        <button class="qa-btn" [routerLink]="['/manager/official-certifications']">Applications</button>
-        <button class="qa-btn" [routerLink]="['/manager/exam-blueprint-center']">Blueprints</button>
+        <button class="qa-btn" [routerLink]="['/manager/official-certifications']">{{ lang.t('Applications') }}</button>
+        <button class="qa-btn" [routerLink]="['/manager/exam-blueprint-center']">{{ lang.t('Blueprints') }}</button>
       </div>
     </div>
   </section>
@@ -140,10 +140,10 @@
   <section class="action-center">
     <div class="action-center__head">
       <div>
-        <div class="dash-header__eyebrow">Action Center</div>
-        <h2>What needs attention now</h2>
+        <div class="dash-header__eyebrow">{{ lang.t('Action Center') }}</div>
+        <h2>{{ lang.t('What needs attention now') }}</h2>
       </div>
-      <button class="btn-ghost" (click)="onExportCSV()">Export snapshot</button>
+      <button class="btn-ghost" (click)="onExportCSV()">{{ lang.t('Export snapshot') }}</button>
     </div>
 
     <div class="action-grid">
@@ -160,58 +160,58 @@
 
   <section class="readiness-row">
     <article class="readiness-card">
-      <div class="readiness-card__label">Learners in scope</div>
+      <div class="readiness-card__label">{{ lang.t('Learners in scope') }}</div>
       <div class="readiness-card__value">{{ readiness().learnerCount }}</div>
-      <div class="readiness-card__sub">people managed in your organization</div>
+      <div class="readiness-card__sub">{{ lang.t('people managed in your organization') }}</div>
     </article>
     <article class="readiness-card">
-      <div class="readiness-card__label">Active assignments</div>
+      <div class="readiness-card__label">{{ lang.t('Active assignments') }}</div>
       <div class="readiness-card__value">{{ readiness().activeAssignments }}</div>
-      <div class="readiness-card__sub">assigned or started training items</div>
+      <div class="readiness-card__sub">{{ lang.t('assigned or started training items') }}</div>
     </article>
     <article class="readiness-card">
-      <div class="readiness-card__label">In progress</div>
+      <div class="readiness-card__label">{{ lang.t('In progress') }}</div>
       <div class="readiness-card__value">{{ readiness().inProgress }}</div>
-      <div class="readiness-card__sub">learners currently advancing in content</div>
+      <div class="readiness-card__sub">{{ lang.t('learners currently advancing in content') }}</div>
     </article>
     <article class="readiness-card">
-      <div class="readiness-card__label">Approved courses used</div>
+      <div class="readiness-card__label">{{ lang.t('Approved courses used') }}</div>
       <div class="readiness-card__value">{{ readiness().uniqueCourses }}</div>
-      <div class="readiness-card__sub">programs currently assigned to your org</div>
+      <div class="readiness-card__sub">{{ lang.t('programs currently assigned to your org') }}</div>
     </article>
   </section>
 
   <section class="ops-grid">
     <article class="ops-card ops-card--teal">
-      <div class="ops-card__eyebrow">Assignment Operations</div>
-      <h2 class="ops-card__title">Run organization-wide training campaigns</h2>
-      <p class="ops-card__copy">Launch bulk assignments, monitor due dates and follow completion risk from one place.</p>
-      <div class="ops-card__meta">{{ readiness().activeAssignments }} active items across {{ readiness().learnerCount }} learners</div>
+      <div class="ops-card__eyebrow">{{ lang.t('Assignment Operations') }}</div>
+      <h2 class="ops-card__title">{{ lang.t('Run organization-wide training campaigns') }}</h2>
+      <p class="ops-card__copy">{{ lang.t('Launch bulk assignments, monitor due dates and follow completion risk from one place.') }}</p>
+      <div class="ops-card__meta">{{ readiness().activeAssignments }} {{ lang.t('active items across') }} {{ readiness().learnerCount }} {{ lang.t('learners') }}</div>
       <div class="ops-card__actions">
-        <button class="btn-primary" (click)="onAssignTraining()">Open Assignment Center</button>
-        <button class="btn-ghost" (click)="onViewLearners()">View Learners</button>
+        <button class="btn-primary" (click)="onAssignTraining()">{{ lang.t('Open Assignment Center') }}</button>
+        <button class="btn-ghost" (click)="onViewLearners()">{{ lang.t('View Learners') }}</button>
       </div>
     </article>
 
     <article class="ops-card ops-card--navy">
-      <div class="ops-card__eyebrow">Audit & Compliance</div>
-      <h2 class="ops-card__title">Keep evidence ready for review</h2>
-      <p class="ops-card__copy">Track acknowledgements, overdue learning and export operational evidence for audits or leadership reviews.</p>
-      <div class="ops-card__meta">{{ overdueAlerts().length }} overdue learner{{ overdueAlerts().length !== 1 ? 's' : '' }} currently flagged</div>
+      <div class="ops-card__eyebrow">{{ lang.t('Audit & Compliance') }}</div>
+      <h2 class="ops-card__title">{{ lang.t('Keep evidence ready for review') }}</h2>
+      <p class="ops-card__copy">{{ lang.t('Track acknowledgements, overdue learning and export operational evidence for audits or leadership reviews.') }}</p>
+      <div class="ops-card__meta">{{ overdueAlerts().length }} {{ lang.t('overdue learner') }}{{ overdueAlerts().length !== 1 ? 's' : '' }} {{ lang.t('currently flagged') }}</div>
       <div class="ops-card__actions">
-        <button class="btn-primary" (click)="onOpenAudit()">Open Audit Center</button>
-        <button class="btn-ghost" (click)="onExportCSV()">Export Evidence</button>
+        <button class="btn-primary" (click)="onOpenAudit()">{{ lang.t('Open Audit Center') }}</button>
+        <button class="btn-ghost" (click)="onExportCSV()">{{ lang.t('Export Evidence') }}</button>
       </div>
     </article>
 
     <article class="ops-card ops-card--orange">
-      <div class="ops-card__eyebrow">Policy Governance</div>
-      <h2 class="ops-card__title">Create and govern required policy workflows</h2>
-      <p class="ops-card__copy">Publish policy acknowledgements, route learners to the right requirements and verify completions.</p>
-      <div class="ops-card__meta">Use policy workflows with notifications to close compliance gaps faster</div>
+      <div class="ops-card__eyebrow">{{ lang.t('Policy Governance') }}</div>
+      <h2 class="ops-card__title">{{ lang.t('Create and govern required policy workflows') }}</h2>
+      <p class="ops-card__copy">{{ lang.t('Publish policy acknowledgements, route learners to the right requirements and verify completions.') }}</p>
+      <div class="ops-card__meta">{{ lang.t('Use policy workflows with notifications to close compliance gaps faster') }}</div>
       <div class="ops-card__actions">
-        <button class="btn-primary" (click)="onOpenPolicyLibrary()">Open Policy Library</button>
-        <button class="btn-ghost" (click)="onPolicyReport()">View Policy Report</button>
+        <button class="btn-primary" (click)="onOpenPolicyLibrary()">{{ lang.t('Open Policy Library') }}</button>
+        <button class="btn-ghost" (click)="onPolicyReport()">{{ lang.t('View Policy Report') }}</button>
       </div>
     </article>
   </section>
@@ -219,38 +219,38 @@
   <section class="service-grid">
     <article class="service-card">
       <div class="service-card__head">
-        <span class="panel-badge panel-badge--teal">Communications</span>
-        <h2 class="panel-title">Manager service lanes</h2>
+        <span class="panel-badge panel-badge--teal">{{ lang.t('Communications') }}</span>
+        <h2 class="panel-title">{{ lang.t('Manager service lanes') }}</h2>
       </div>
       <div class="service-list">
         <button class="service-link" (click)="onCreateNotification()">
-          <span class="service-link__title">Notifications</span>
-          <span class="service-link__copy">Push reminders, updates and urgent manager broadcasts.</span>
+          <span class="service-link__title">{{ lang.t('Notifications') }}</span>
+          <span class="service-link__copy">{{ lang.t('Push reminders, updates and urgent manager broadcasts.') }}</span>
         </button>
         <button class="service-link" (click)="onOpenSettings()">
-          <span class="service-link__title">Governance Settings</span>
-          <span class="service-link__copy">Review portal defaults, workflow rules and manager controls.</span>
+          <span class="service-link__title">{{ lang.t('Governance Settings') }}</span>
+          <span class="service-link__copy">{{ lang.t('Review portal defaults, workflow rules and manager controls.') }}</span>
         </button>
         <button class="service-link" (click)="onOpenLibrary()">
-          <span class="service-link__title">Approved Course Library</span>
-          <span class="service-link__copy">Browse the super-admin validated catalogue before assigning.</span>
+          <span class="service-link__title">{{ lang.t('Approved Course Library') }}</span>
+          <span class="service-link__copy">{{ lang.t('Browse the super-admin validated catalogue before assigning.') }}</span>
         </button>
       </div>
     </article>
 
     <article class="service-card">
       <div class="service-card__head">
-        <span class="panel-badge">Practice & Reference</span>
-        <h2 class="panel-title">Specialized tools</h2>
+        <span class="panel-badge">{{ lang.t('Practice & Reference') }}</span>
+        <h2 class="panel-title">{{ lang.t('Specialized tools') }}</h2>
       </div>
       <div class="service-list">
         <button class="service-link" (click)="onCreateWounds()">
-          <span class="service-link__title">Quick Practice Zone</span>
-          <span class="service-link__copy">Maintain internal quick sheets, task refreshers and job aids.</span>
+          <span class="service-link__title">{{ lang.t('Quick Practice Zone') }}</span>
+          <span class="service-link__copy">{{ lang.t('Maintain internal quick sheets, task refreshers and job aids.') }}</span>
         </button>
         <button class="service-link" (click)="onPolicyReport()">
-          <span class="service-link__title">Acknowledgement Reporting</span>
-          <span class="service-link__copy">Review completion evidence for policy-driven compliance work.</span>
+          <span class="service-link__title">{{ lang.t('Acknowledgement Reporting') }}</span>
+          <span class="service-link__copy">{{ lang.t('Review completion evidence for policy-driven compliance work.') }}</span>
         </button>
       </div>
     </article>
@@ -260,19 +260,19 @@
   <section class="panel" *ngIf="overdueAlerts().length">
     <div class="panel-head">
       <div class="panel-head__left">
-        <span class="panel-badge panel-badge--warn">⚠ Overdue</span>
-        <h2 class="panel-title">Overdue Alerts</h2>
+        <span class="panel-badge panel-badge--warn">⚠ {{ lang.t('Overdue') }}</span>
+        <h2 class="panel-title">{{ lang.t('Overdue Alerts') }}</h2>
       </div>
-      <span class="panel-meta">{{ overdueAlerts().length }} learner{{ overdueAlerts().length !== 1 ? 's' : '' }} past due</span>
+      <span class="panel-meta">{{ overdueAlerts().length }} {{ lang.t('learner') }}{{ overdueAlerts().length !== 1 ? 's' : '' }} {{ lang.t('past due') }}</span>
     </div>
     <div class="table-wrap">
       <table class="table">
         <thead>
           <tr>
-            <th>Learner</th>
-            <th>Email</th>
-            <th>Course</th>
-            <th>Due Date</th>
+            <th>{{ lang.t('Learner') }}</th>
+            <th>{{ lang.t('Email') }}</th>
+            <th>{{ lang.t('Course') }}</th>
+            <th>{{ lang.t('Due Date') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -291,19 +291,19 @@
   <section class="panel">
     <div class="panel-head">
       <div class="panel-head__left">
-        <span class="panel-badge">◷ Active</span>
-        <h2 class="panel-title">Open Assignments</h2>
+        <span class="panel-badge">◷ {{ lang.t('Active') }}</span>
+        <h2 class="panel-title">{{ lang.t('Open Assignments') }}</h2>
       </div>
-      <a routerLink="/manager/assign" class="panel-link">View all →</a>
+      <a routerLink="/manager/assign" class="panel-link">{{ lang.t('View all →') }}</a>
     </div>
     <div class="table-wrap">
       <table class="table">
         <thead>
           <tr>
-            <th>Course</th>
-            <th>Audience</th>
-            <th>Due Date</th>
-            <th>Status</th>
+            <th>{{ lang.t('Course') }}</th>
+            <th>{{ lang.t('Audience') }}</th>
+            <th>{{ lang.t('Due Date') }}</th>
+            <th>{{ lang.t('Status') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -315,12 +315,12 @@
             <td [class.text-warn]="a.isOverdue">{{ a.due }}</td>
             <td>
               <span class="badge" [class.badge-warn]="a.isOverdue">
-                {{ a.isOverdue ? 'Overdue' : 'Active' }}
+                {{ a.isOverdue ? lang.t('Overdue') : lang.t('Active') }}
               </span>
             </td>
           </tr>
           <tr *ngIf="!openAssignments().length">
-            <td colspan="4" class="empty-row">No open assignments — all caught up!</td>
+            <td colspan="4" class="empty-row">{{ lang.t('No open assignments — all caught up!') }}</td>
           </tr>
         </tbody>
       </table>
@@ -331,19 +331,19 @@
   <section class="panel">
     <div class="panel-head">
       <div class="panel-head__left">
-        <span class="panel-badge panel-badge--teal">✓ Results</span>
-        <h2 class="panel-title">Recent Completions</h2>
+        <span class="panel-badge panel-badge--teal">✓ {{ lang.t('Results') }}</span>
+        <h2 class="panel-title">{{ lang.t('Recent Completions') }}</h2>
       </div>
-      <a routerLink="/manager/learners" class="panel-link">Open learners -></a>
+      <a routerLink="/manager/learners" class="panel-link">{{ lang.t('Open learners ->') }}</a>
     </div>
     <div class="table-wrap">
       <table class="table">
         <thead>
           <tr>
-            <th>Learner</th>
-            <th>Course</th>
-            <th>Score</th>
-            <th>Date</th>
+            <th>{{ lang.t('Learner') }}</th>
+            <th>{{ lang.t('Course') }}</th>
+            <th>{{ lang.t('Score') }}</th>
+            <th>{{ lang.t('Date') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -361,7 +361,7 @@
             <td class="muted">{{ r.date }}</td>
           </tr>
           <tr *ngIf="!recentResults().length">
-            <td colspan="4" class="empty-row">No completions recorded yet.</td>
+            <td colspan="4" class="empty-row">{{ lang.t('No completions recorded yet.') }}</td>
           </tr>
         </tbody>
       </table>

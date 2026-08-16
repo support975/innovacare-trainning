@@ -3,13 +3,13 @@
   <!-- PAGE HEADER -->
   <header class="dash-header">
     <div>
-      <div class="dash-eyebrow">Super Admin</div>
-      <h1 class="dash-title">Platform Overview</h1>
-      <p class="dash-sub">Monitor organizations, users, billing, and audit activity across the platform.</p>
+      <div class="dash-eyebrow">{{ lang.t('Super Admin') }}</div>
+      <h1 class="dash-title">{{ lang.t('Platform Overview') }}</h1>
+      <p class="dash-sub">{{ lang.t('Monitor organizations, users, billing, and audit activity across the platform.') }}</p>
     </div>
     <div class="dash-header-actions">
-      <a routerLink="/super-admin/organizations/create" class="btn-primary">+ New Organization</a>
-      <a routerLink="/super-admin/logs" class="btn-ghost">Audit Logs</a>
+      <a routerLink="/super-admin/organizations/create" class="btn-primary">+ {{ lang.t('New Organization') }}</a>
+      <a routerLink="/super-admin/logs" class="btn-ghost">{{ lang.t('Audit Logs') }}</a>
     </div>
   </header>
 
@@ -25,8 +25,8 @@
       <div class="stat-card__icon">🏢</div>
       <div class="stat-card__body">
         <div class="stat-card__value">{{ stats().organizations }}</div>
-        <div class="stat-card__label">Organizations</div>
-        <div class="stat-card__sub">{{ stats().activeOrganizations }} active</div>
+        <div class="stat-card__label">{{ lang.t('Organizations') }}</div>
+        <div class="stat-card__sub">{{ stats().activeOrganizations }} {{ lang.t('active') }}</div>
       </div>
     </div>
 
@@ -34,8 +34,8 @@
       <div class="stat-card__icon">👥</div>
       <div class="stat-card__body">
         <div class="stat-card__value">{{ stats().users }}</div>
-        <div class="stat-card__label">Total Users</div>
-        <div class="stat-card__sub">{{ stats().activeUsers }} active</div>
+        <div class="stat-card__label">{{ lang.t('Total Users') }}</div>
+        <div class="stat-card__sub">{{ stats().activeUsers }} {{ lang.t('active') }}</div>
       </div>
     </div>
 
@@ -43,8 +43,8 @@
       <div class="stat-card__icon">✓</div>
       <div class="stat-card__body">
         <div class="stat-card__value">{{ stats().activeOrganizations }}</div>
-        <div class="stat-card__label">Active Orgs</div>
-        <div class="stat-card__sub">of {{ stats().organizations }} total</div>
+        <div class="stat-card__label">{{ lang.t('Active Orgs') }}</div>
+        <div class="stat-card__sub">{{ lang.t('of') }} {{ stats().organizations }} {{ lang.t('total') }}</div>
       </div>
     </div>
 
@@ -52,8 +52,8 @@
       <div class="stat-card__icon">◎</div>
       <div class="stat-card__body">
         <div class="stat-card__value">{{ stats().activeUsers }}</div>
-        <div class="stat-card__label">Active Users</div>
-        <div class="stat-card__sub">of {{ stats().users }} total</div>
+        <div class="stat-card__label">{{ lang.t('Active Users') }}</div>
+        <div class="stat-card__sub">{{ lang.t('of') }} {{ stats().users }} {{ lang.t('total') }}</div>
       </div>
     </div>
 
@@ -61,8 +61,8 @@
       <div class="stat-card__icon">💳</div>
       <div class="stat-card__body">
         <div class="stat-card__value">{{ stats().billingActive }}</div>
-        <div class="stat-card__label">Active Plans</div>
-        <div class="stat-card__sub">paid subscriptions</div>
+        <div class="stat-card__label">{{ lang.t('Active Plans') }}</div>
+        <div class="stat-card__sub">{{ lang.t('paid subscriptions') }}</div>
       </div>
     </div>
 
@@ -70,8 +70,8 @@
       <div class="stat-card__icon">⚠</div>
       <div class="stat-card__body">
         <div class="stat-card__value">{{ stats().criticalLogs }}</div>
-        <div class="stat-card__label">Critical Logs</div>
-        <div class="stat-card__sub">{{ stats().criticalLogs > 0 ? 'requires attention' : 'all clear' }}</div>
+        <div class="stat-card__label">{{ lang.t('Critical Logs') }}</div>
+        <div class="stat-card__sub">{{ stats().criticalLogs > 0 ? lang.t('requires attention') : lang.t('all clear') }}</div>
       </div>
     </div>
 
@@ -82,94 +82,94 @@
 
     <section class="panel">
       <div class="panel-head">
-        <h2 class="panel-title">Quick Actions</h2>
+        <h2 class="panel-title">{{ lang.t('Quick Actions') }}</h2>
       </div>
       <div class="actions-grid">
         <a routerLink="/super-admin/organizations/create" class="action-card">
           <div class="action-card__icon action-card__icon--navy">🏢</div>
-          <div class="action-card__label">Create Organization</div>
-          <div class="action-card__desc">Add a new tenant to the platform</div>
+          <div class="action-card__label">{{ lang.t('Create Organization') }}</div>
+          <div class="action-card__desc">{{ lang.t('Add a new tenant to the platform') }}</div>
         </a>
         <a routerLink="/super-admin/course-assignments" class="action-card">
           <div class="action-card__icon action-card__icon--teal">▤</div>
-          <div class="action-card__label">Assign Courses</div>
-          <div class="action-card__desc">Assign courses to organizations</div>
+          <div class="action-card__label">{{ lang.t('Assign Courses') }}</div>
+          <div class="action-card__desc">{{ lang.t('Assign courses to organizations') }}</div>
         </a>
         <a routerLink="/super-admin/billing" class="action-card">
           <div class="action-card__icon action-card__icon--purple">💳</div>
-          <div class="action-card__label">Review Billing</div>
-          <div class="action-card__desc">Check subscription statuses</div>
+          <div class="action-card__label">{{ lang.t('Review Billing') }}</div>
+          <div class="action-card__desc">{{ lang.t('Check subscription statuses') }}</div>
         </a>
         <a routerLink="/super-admin/demo-requests" class="action-card">
           <div class="action-card__icon action-card__icon--navy">✉</div>
-          <div class="action-card__label">Demo Requests</div>
-          <div class="action-card__desc">Qualify leads and respond</div>
+          <div class="action-card__label">{{ lang.t('Demo Requests') }}</div>
+          <div class="action-card__desc">{{ lang.t('Qualify leads and respond') }}</div>
         </a>
         <a routerLink="/super-admin/logs" class="action-card">
           <div class="action-card__icon action-card__icon--orange">≣</div>
-          <div class="action-card__label">Audit Logs</div>
-          <div class="action-card__desc">Review platform-wide activity</div>
+          <div class="action-card__label">{{ lang.t('Audit Logs') }}</div>
+          <div class="action-card__desc">{{ lang.t('Review platform-wide activity') }}</div>
         </a>
         <a routerLink="/super-admin/users" class="action-card">
           <div class="action-card__icon action-card__icon--green">👥</div>
-          <div class="action-card__label">Manage Users</div>
-          <div class="action-card__desc">Roles, access, and onboarding</div>
+          <div class="action-card__label">{{ lang.t('Manage Users') }}</div>
+          <div class="action-card__desc">{{ lang.t('Roles, access, and onboarding') }}</div>
         </a>
         <a routerLink="/super-admin/settings" class="action-card">
           <div class="action-card__icon action-card__icon--muted">⚙</div>
-          <div class="action-card__label">Platform Settings</div>
-          <div class="action-card__desc">Global configuration</div>
+          <div class="action-card__label">{{ lang.t('Platform Settings') }}</div>
+          <div class="action-card__desc">{{ lang.t('Global configuration') }}</div>
         </a>
       </div>
     </section>
 
     <section class="panel">
       <div class="panel-head">
-        <h2 class="panel-title">Platform Health</h2>
-        <span class="panel-badge panel-badge--green">● Operational</span>
+        <h2 class="panel-title">{{ lang.t('Platform Health') }}</h2>
+        <span class="panel-badge panel-badge--green">● {{ lang.t('Operational') }}</span>
       </div>
       <div class="health-list">
         <div class="health-row">
           <span class="health-dot health-dot--green"></span>
           <div class="health-info">
-            <div class="health-name">Authentication</div>
-            <div class="health-desc">Firebase Auth — active</div>
+            <div class="health-name">{{ lang.t('Authentication') }}</div>
+            <div class="health-desc">{{ lang.t('Firebase Auth — active') }}</div>
           </div>
-          <span class="health-status">OK</span>
+          <span class="health-status">{{ lang.t('OK') }}</span>
         </div>
         <div class="health-row">
           <span class="health-dot health-dot--green"></span>
           <div class="health-info">
-            <div class="health-name">Database</div>
-            <div class="health-desc">Firestore — connected</div>
+            <div class="health-name">{{ lang.t('Database') }}</div>
+            <div class="health-desc">{{ lang.t('Firestore — connected') }}</div>
           </div>
-          <span class="health-status">OK</span>
+          <span class="health-status">{{ lang.t('OK') }}</span>
         </div>
         <div class="health-row">
           <span class="health-dot health-dot--green"></span>
           <div class="health-info">
-            <div class="health-name">Hosting</div>
-            <div class="health-desc">Firebase Hosting — live</div>
+            <div class="health-name">{{ lang.t('Hosting') }}</div>
+            <div class="health-desc">{{ lang.t('Firebase Hosting — live') }}</div>
           </div>
-          <span class="health-status">OK</span>
+          <span class="health-status">{{ lang.t('OK') }}</span>
         </div>
         <div class="health-row">
           <span class="health-dot" [class.health-dot--red]="stats().criticalLogs > 0" [class.health-dot--green]="stats().criticalLogs === 0"></span>
           <div class="health-info">
-            <div class="health-name">Audit Logs</div>
-            <div class="health-desc">{{ stats().criticalLogs }} critical event(s)</div>
+            <div class="health-name">{{ lang.t('Audit Logs') }}</div>
+            <div class="health-desc">{{ stats().criticalLogs }} {{ lang.t('critical event(s)') }}</div>
           </div>
           <span class="health-status" [class.text-red]="stats().criticalLogs > 0">
-            {{ stats().criticalLogs > 0 ? 'Alert' : 'OK' }}
+            {{ stats().criticalLogs > 0 ? lang.t('Alert') : lang.t('OK') }}
           </span>
         </div>
         <div class="health-row">
           <span class="health-dot health-dot--green"></span>
           <div class="health-info">
-            <div class="health-name">Org Isolation</div>
-            <div class="health-desc">Data scoped by orgId — enforced</div>
+            <div class="health-name">{{ lang.t('Org Isolation') }}</div>
+            <div class="health-desc">{{ lang.t('Data scoped by orgId — enforced') }}</div>
           </div>
-          <span class="health-status">Active</span>
+          <span class="health-status">{{ lang.t('Active') }}</span>
         </div>
       </div>
     </section>

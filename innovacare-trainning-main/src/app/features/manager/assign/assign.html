@@ -3,9 +3,9 @@
   <!-- PAGE HEADER -->
   <header class="page-header">
     <div class="page-header__left">
-      <div class="page-eyebrow">Manager · Assign</div>
-      <h1 class="page-title">Assign Training</h1>
-      <p class="page-sub">Select learners and courses, then click Assign to enroll them.</p>
+      <div class="page-eyebrow">{{ lang.t('Manager · Assign') }}</div>
+      <h1 class="page-title">{{ lang.t('Assign Training') }}</h1>
+      <p class="page-sub">{{ lang.t('Select learners and courses, then click Assign to enroll them.') }}</p>
     </div>
   </header>
 
@@ -19,9 +19,9 @@
   <!-- LEARNING PATH SELECTOR -->
   <section class="path-panel" *ngIf="paths().length">
     <div class="path-panel__copy">
-      <div class="path-panel__eyebrow">Learning Paths</div>
-      <h2>Assign a complete program</h2>
-      <p>Select a path to automatically choose all courses included in that organization-approved program.</p>
+      <div class="path-panel__eyebrow">{{ lang.t('Learning Paths') }}</div>
+      <h2>{{ lang.t('Assign a complete program') }}</h2>
+      <p>{{ lang.t('Select a path to automatically choose all courses included in that organization-approved program.') }}</p>
     </div>
 
     <div class="path-panel__controls">
@@ -29,20 +29,20 @@
         class="path-select"
         [ngModel]="selectedPathId()"
         (ngModelChange)="selectedPathId.set($event)">
-        <option value="">Select learning path</option>
+        <option value="">{{ lang.t('Select learning path') }}</option>
         <option *ngFor="let path of paths()" [value]="path.id">
-          {{ path.title }} ({{ path.courseIds.length }} courses)
+          {{ path.title }} ({{ path.courseIds.length }} {{ lang.t('courses') }})
         </option>
       </select>
       <button class="btn-path" type="button" [disabled]="!selectedPath()" (click)="applySelectedPath()">
-        Select path courses
+        {{ lang.t('Select path courses') }}
       </button>
     </div>
 
     <div class="path-panel__meta" *ngIf="selectedPath() as path">
-      <span>{{ path.category || 'General' }}</span>
-      <span>{{ selectedPathCourseCount() }} course{{ selectedPathCourseCount() !== 1 ? 's' : '' }}</span>
-      <span>{{ path.durationDays || 0 }} target days</span>
+      <span>{{ path.category || lang.t('General') }}</span>
+      <span>{{ selectedPathCourseCount() }} {{ lang.t('course') }}{{ selectedPathCourseCount() !== 1 ? 's' : '' }}</span>
+      <span>{{ path.durationDays || 0 }} {{ lang.t('target days') }}</span>
     </div>
   </section>
 
@@ -52,16 +52,16 @@
       <div class="summary-chip" [class.summary-chip--active]="selectedUsers().size > 0">
         <span class="summary-chip__icon">◎</span>
         <span class="summary-chip__val">{{ selectedUsers().size }}</span>
-        <span class="summary-chip__label">learner{{ selectedUsers().size !== 1 ? 's' : '' }} selected</span>
+        <span class="summary-chip__label">{{ lang.t('learner') }}{{ selectedUsers().size !== 1 ? 's' : '' }} {{ lang.t('selected') }}</span>
       </div>
       <div class="summary-bar__arrow">→</div>
       <div class="summary-chip" [class.summary-chip--active]="selectedCourses().size > 0">
         <span class="summary-chip__icon">▣</span>
         <span class="summary-chip__val">{{ selectedCourses().size }}</span>
-        <span class="summary-chip__label">course{{ selectedCourses().size !== 1 ? 's' : '' }} selected</span>
+        <span class="summary-chip__label">{{ lang.t('course') }}{{ selectedCourses().size !== 1 ? 's' : '' }} {{ lang.t('selected') }}</span>
       </div>
       <div class="summary-bar__equals" *ngIf="selectedUsers().size > 0 && selectedCourses().size > 0">
-        = {{ selectedUsers().size * selectedCourses().size }} enrollment{{ selectedUsers().size * selectedCourses().size !== 1 ? 's' : '' }}
+        = {{ selectedUsers().size * selectedCourses().size }} {{ lang.t('enrollment') }}{{ selectedUsers().size * selectedCourses().size !== 1 ? 's' : '' }}
       </div>
     </div>
 
@@ -71,7 +71,7 @@
         *ngIf="canRemoveAssignments()"
         [disabled]="busy() || selectedUsers().size === 0 || selectedCourses().size === 0"
         (click)="removeSelectedAssignments()">
-        Remove Selected
+        {{ lang.t('Remove Selected') }}
       </button>
 
       <button
@@ -79,7 +79,7 @@
         [disabled]="busy() || selectedUsers().size === 0 || selectedCourses().size === 0"
         (click)="assign()">
         <span *ngIf="busy()" class="spinner"></span>
-        <span>{{ busy() ? 'Working…' : 'Assign Now' }}</span>
+        <span>{{ busy() ? lang.t('Working…') : lang.t('Assign Now') }}</span>
       </button>
     </div>
   </div>
@@ -91,12 +91,12 @@
     <div class="panel">
       <div class="panel__head">
         <div>
-          <div class="panel__title">Learners</div>
-          <div class="panel__sub">{{ filteredUsers().length }} of {{ users().length }} shown</div>
+          <div class="panel__title">{{ lang.t('Learners') }}</div>
+          <div class="panel__sub">{{ filteredUsers().length }} {{ lang.t('of') }} {{ users().length }} {{ lang.t('shown') }}</div>
         </div>
         <div class="panel__head-right">
-          <span class="sel-badge" *ngIf="selectedUsers().size > 0">{{ selectedUsers().size }} selected</span>
-          <button class="btn-ghost-sm" *ngIf="selectedUsers().size > 0" (click)="clearSelectedUsers()">Clear</button>
+          <span class="sel-badge" *ngIf="selectedUsers().size > 0">{{ selectedUsers().size }} {{ lang.t('selected') }}</span>
+          <button class="btn-ghost-sm" *ngIf="selectedUsers().size > 0" (click)="clearSelectedUsers()">{{ lang.t('Clear') }}</button>
         </div>
       </div>
 
@@ -105,7 +105,7 @@
         <input
           class="search-input"
           type="text"
-          placeholder="Search by name or email…"
+          [placeholder]="lang.t('Search by name or email…')"
           [ngModel]="uQuery()"
           (ngModelChange)="uQuery.set($event)"
         />
@@ -122,7 +122,7 @@
           />
           <div class="avatar">{{ getInitials(u.displayName || u.email || u.id) }}</div>
           <div class="row__body">
-            <div class="row__name">{{ u.displayName || '(no name)' }}</div>
+            <div class="row__name">{{ u.displayName || lang.t('(no name)') }}</div>
             <div class="row__meta">{{ u.email || u.id }}</div>
           </div>
           <span class="row__check-mark" *ngIf="selectedUsers().has(u.id)">✓</span>
@@ -130,13 +130,13 @@
 
         <div class="panel__empty" *ngIf="filteredUsers().length === 0 && users().length > 0">
           <div class="panel__empty-icon">◎</div>
-          <div>No learners match your search</div>
-          <button class="link-btn" (click)="uQuery.set('')">Clear filter</button>
+          <div>{{ lang.t('No learners match your search') }}</div>
+          <button class="link-btn" (click)="uQuery.set('')">{{ lang.t('Clear filter') }}</button>
         </div>
 
         <div class="panel__empty" *ngIf="users().length === 0">
           <div class="panel__empty-icon">◎</div>
-          <div>No learners in your organisation yet</div>
+          <div>{{ lang.t('No learners in your organisation yet') }}</div>
         </div>
       </div>
     </div>
@@ -145,12 +145,12 @@
     <div class="panel">
       <div class="panel__head">
         <div>
-          <div class="panel__title">Courses</div>
-          <div class="panel__sub">{{ filteredCourses().length }} of {{ courses().length }} shown</div>
+          <div class="panel__title">{{ lang.t('Courses') }}</div>
+          <div class="panel__sub">{{ filteredCourses().length }} {{ lang.t('of') }} {{ courses().length }} {{ lang.t('shown') }}</div>
         </div>
         <div class="panel__head-right">
-          <span class="sel-badge" *ngIf="selectedCourses().size > 0">{{ selectedCourses().size }} selected</span>
-          <button class="btn-ghost-sm" *ngIf="selectedCourses().size > 0" (click)="clearSelectedCourses()">Clear</button>
+          <span class="sel-badge" *ngIf="selectedCourses().size > 0">{{ selectedCourses().size }} {{ lang.t('selected') }}</span>
+          <button class="btn-ghost-sm" *ngIf="selectedCourses().size > 0" (click)="clearSelectedCourses()">{{ lang.t('Clear') }}</button>
         </div>
       </div>
 
@@ -159,7 +159,7 @@
         <input
           class="search-input"
           type="text"
-          placeholder="Search by title…"
+          [placeholder]="lang.t('Search by title…')"
           [ngModel]="cQuery()"
           (ngModelChange)="cQuery.set($event)"
         />
@@ -178,9 +178,9 @@
           <div class="row__body">
             <div class="row__name">{{ c.title || c.id }}</div>
             <div class="row__meta">
-              <span class="kind-badge">{{ c.kind || 'Course' }}</span>
+              <span class="kind-badge">{{ c.kind || lang.t('Course') }}</span>
               <span *ngIf="c.durationMin" class="row__dur">{{ c.durationMin }} min</span>
-              <span *ngIf="c.active === false" class="inactive-pill">Inactive</span>
+              <span *ngIf="c.active === false" class="inactive-pill">{{ lang.t('Inactive') }}</span>
             </div>
           </div>
           <span class="row__check-mark" *ngIf="selectedCourses().has(c.id)">✓</span>
@@ -188,13 +188,13 @@
 
         <div class="panel__empty" *ngIf="filteredCourses().length === 0 && courses().length > 0">
           <div class="panel__empty-icon">▣</div>
-          <div>No courses match your search</div>
-          <button class="link-btn" (click)="cQuery.set('')">Clear filter</button>
+          <div>{{ lang.t('No courses match your search') }}</div>
+          <button class="link-btn" (click)="cQuery.set('')">{{ lang.t('Clear filter') }}</button>
         </div>
 
         <div class="panel__empty" *ngIf="courses().length === 0">
           <div class="panel__empty-icon">▣</div>
-          <div>No courses available yet</div>
+          <div>{{ lang.t('No courses available yet') }}</div>
         </div>
       </div>
     </div>

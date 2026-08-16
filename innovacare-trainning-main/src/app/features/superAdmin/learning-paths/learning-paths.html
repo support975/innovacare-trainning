@@ -1,11 +1,11 @@
 <main class="paths-page">
   <header class="page-header">
     <div>
-      <p class="eyebrow">Learning Paths</p>
-      <h1>Build role-based programs</h1>
-      <p class="sub">Bundle courses into onboarding, annual compliance, clinical, or department-specific tracks.</p>
+      <p class="eyebrow">{{ lang.t('Learning Paths') }}</p>
+      <h1>{{ lang.t('Build role-based programs') }}</h1>
+      <p class="sub">{{ lang.t('Bundle courses into onboarding, annual compliance, clinical, or department-specific tracks.') }}</p>
     </div>
-    <button class="btn-ghost" type="button" (click)="resetForm()">New path</button>
+    <button class="btn-ghost" type="button" (click)="resetForm()">{{ lang.t('New path') }}</button>
   </header>
 
   <div class="notice" *ngIf="notice()" [class.notice--error]="error()">
@@ -16,48 +16,48 @@
     <form class="panel form-panel" (ngSubmit)="savePath()">
       <div class="panel-head">
         <div>
-          <h2>{{ form.id ? 'Edit learning path' : 'Create learning path' }}</h2>
-          <p>{{ selectedCourseIds().size }} course{{ selectedCourseIds().size !== 1 ? 's' : '' }} selected</p>
+          <h2>{{ form.id ? lang.t('Edit learning path') : lang.t('Create learning path') }}</h2>
+          <p>{{ selectedCourseIds().size }} {{ selectedCourseIds().size !== 1 ? lang.t('courses') : lang.t('course') }} {{ lang.t('selected') }}</p>
         </div>
         <span class="duration-pill">{{ durationLabel(selectedDuration()) }}</span>
       </div>
 
       <label class="field">
-        <span>Title</span>
-        <input name="title" [(ngModel)]="form.title" placeholder="CNA onboarding path" required />
+        <span>{{ lang.t('Title') }}</span>
+        <input name="title" [(ngModel)]="form.title" [placeholder]="lang.t('CNA onboarding path')" required />
       </label>
 
       <label class="field">
-        <span>Description</span>
-        <textarea name="description" [(ngModel)]="form.description" rows="3" placeholder="What this path prepares the learner to do."></textarea>
+        <span>{{ lang.t('Description') }}</span>
+        <textarea name="description" [(ngModel)]="form.description" rows="3" [placeholder]="lang.t('What this path prepares the learner to do.')"></textarea>
       </label>
 
       <div class="field-grid">
         <label class="field">
-          <span>Category</span>
-          <input name="category" [(ngModel)]="form.category" placeholder="Onboarding" />
+          <span>{{ lang.t('Category') }}</span>
+          <input name="category" [(ngModel)]="form.category" [placeholder]="lang.t('Onboarding')" />
         </label>
         <label class="field">
-          <span>Target days</span>
+          <span>{{ lang.t('Target days') }}</span>
           <input name="durationDays" type="number" min="1" [(ngModel)]="form.durationDays" />
         </label>
       </div>
 
       <label class="toggle-row">
         <input type="checkbox" name="active" [(ngModel)]="form.active" />
-        <span>Active and available for assignment</span>
+        <span>{{ lang.t('Active and available for assignment') }}</span>
       </label>
 
       <div class="course-picker">
         <div class="picker-head">
           <div>
-            <h3>Courses</h3>
-            <p>{{ filteredCourses().length }} shown from {{ courses().length }} active courses</p>
+            <h3>{{ lang.t('Courses') }}</h3>
+            <p>{{ filteredCourses().length }} {{ lang.t('shown from') }} {{ courses().length }} {{ lang.t('active courses') }}</p>
           </div>
           <input
             class="picker-search"
             type="search"
-            placeholder="Search courses"
+            [placeholder]="lang.t('Search courses')"
             [ngModel]="courseQuery()"
             name="courseQuery"
             (ngModelChange)="courseQuery.set($event)"
@@ -73,42 +73,42 @@
             />
             <span class="course-row__body">
               <strong>{{ course.title }}</strong>
-              <small>{{ course.kind || 'Course' }} · {{ course.durationMin || 0 }} min</small>
+              <small>{{ course.kind || lang.t('Course') }} · {{ course.durationMin || 0 }} {{ lang.t('min') }}</small>
             </span>
           </label>
         </div>
       </div>
 
       <button class="btn-primary" type="submit" [disabled]="busy()">
-        {{ busy() ? 'Saving...' : (form.id ? 'Save path' : 'Create path') }}
+        {{ busy() ? lang.t('Saving...') : (form.id ? lang.t('Save path') : lang.t('Create path')) }}
       </button>
     </form>
 
     <section class="panel assign-panel">
       <div class="panel-head">
         <div>
-          <h2>Assign to organization</h2>
-          <p>Managers in that organization can assign the path to learners.</p>
+          <h2>{{ lang.t('Assign to organization') }}</h2>
+          <p>{{ lang.t('Managers in that organization can assign the path to learners.') }}</p>
         </div>
       </div>
 
       <label class="field">
-        <span>Learning path</span>
+        <span>{{ lang.t('Learning path') }}</span>
         <select name="pathId" [(ngModel)]="assignmentForm.pathId">
-          <option value="">Select path</option>
+          <option value="">{{ lang.t('Select path') }}</option>
           <option *ngFor="let path of paths()" [value]="path.id">{{ path.title }}</option>
         </select>
       </label>
 
       <label class="field">
-        <span>Organization</span>
+        <span>{{ lang.t('Organization') }}</span>
         <select name="orgId" [(ngModel)]="assignmentForm.orgId">
-          <option value="">Select organization</option>
+          <option value="">{{ lang.t('Select organization') }}</option>
           <option *ngFor="let org of organizations()" [value]="org.id">{{ org.name }}</option>
         </select>
       </label>
 
-      <button class="btn-primary" type="button" [disabled]="busy()" (click)="assignPath()">Assign path</button>
+      <button class="btn-primary" type="button" [disabled]="busy()" (click)="assignPath()">{{ lang.t('Assign path') }}</button>
     </section>
   </section>
 
@@ -116,23 +116,23 @@
     <article class="path-card" *ngFor="let path of paths()" [class.path-card--inactive]="path.active === false">
       <div class="path-card__top">
         <div>
-          <span class="category">{{ path.category || 'General' }}</span>
+          <span class="category">{{ path.category || lang.t('General') }}</span>
           <h2>{{ path.title }}</h2>
-          <p>{{ path.description || 'No description yet.' }}</p>
+          <p>{{ path.description || lang.t('No description yet.') }}</p>
         </div>
-        <button class="btn-ghost" type="button" (click)="edit(path)">Edit</button>
+        <button class="btn-ghost" type="button" (click)="edit(path)">{{ lang.t('Edit') }}</button>
       </div>
 
       <div class="path-stats">
-        <span>{{ path.courseIds.length }} courses</span>
-        <span>{{ path.durationDays || 0 }} target days</span>
-        <span>{{ pathAssignments(path.id).length }} organizations</span>
-        <span>{{ path.active === false ? 'Inactive' : 'Active' }}</span>
+        <span>{{ path.courseIds.length }} {{ lang.t('courses') }}</span>
+        <span>{{ path.durationDays || 0 }} {{ lang.t('target days') }}</span>
+        <span>{{ pathAssignments(path.id).length }} {{ lang.t('organizations') }}</span>
+        <span>{{ path.active === false ? lang.t('Inactive') : lang.t('Active') }}</span>
       </div>
 
       <div class="course-chips">
         <span *ngFor="let courseId of path.courseIds.slice(0, 5)">{{ courseTitle(courseId) }}</span>
-        <span *ngIf="path.courseIds.length > 5">+{{ path.courseIds.length - 5 }} more</span>
+        <span *ngIf="path.courseIds.length > 5">+{{ path.courseIds.length - 5 }} {{ lang.t('more') }}</span>
       </div>
 
       <div class="org-chips" *ngIf="pathAssignments(path.id).length">
@@ -144,8 +144,8 @@
     </article>
 
     <div class="empty" *ngIf="!paths().length">
-      <h2>No learning paths yet</h2>
-      <p>Create the first path by selecting a title and courses.</p>
+      <h2>{{ lang.t('No learning paths yet') }}</h2>
+      <p>{{ lang.t('Create the first path by selecting a title and courses.') }}</p>
     </div>
   </section>
 </main>

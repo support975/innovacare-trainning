@@ -8,6 +8,7 @@ import { SuperAdminBillingService } from '../services/super-admin-billing';
 import { SuperAdminLogsService } from '../services/super-admin-logs';
 import { SuperAdminOrganizationsService } from '../services/super-admin-organizations';
 import { PlanType, SuperAdminBillingRecord, SuperAdminOrganization } from '../models/super-admin.models';
+import { LanguageService } from '../../../shared/services/language';
 
 type BillingStatus = 'active' | 'trial' | 'past_due' | 'cancelled';
 type ManualPaymentMethod = 'mobile_money' | 'bank_transfer' | 'cash' | 'check' | 'other';
@@ -61,6 +62,7 @@ export class Billing {
   private readonly orgsSvc = inject(SuperAdminOrganizationsService);
   private readonly logs = inject(SuperAdminLogsService);
   private readonly auth = inject(AuthService);
+  readonly lang = inject(LanguageService);
 
   readonly statusFilter = signal<BillingStatus | 'all'>('all');
   readonly planFilter = signal<PlanType | 'all'>('all');
@@ -208,12 +210,12 @@ export class Billing {
     const orgName = this.newBillOrgName().trim();
 
     if (!orgId || !orgName) {
-      this.setNotice('Select an organization or enter an organization name before creating a bill.');
+      this.setNotice(this.lang.t('Select an organization or enter an organization name before creating a bill.'));
       return;
     }
 
     if (!Number.isFinite(amount) || amount <= 0) {
-      this.setNotice('Enter a valid bill amount before creating a bill.');
+      this.setNotice(this.lang.t('Enter a valid bill amount before creating a bill.'));
       return;
     }
 
@@ -262,7 +264,7 @@ export class Billing {
       this.selectedId.set(id);
       this.resetNewBillForm();
       this.createPanelOpen.set(false);
-      this.setNotice('Manual bill created.');
+      this.setNotice(this.lang.t('Manual bill created.'));
     } finally {
       this.saving.set(false);
     }
@@ -278,7 +280,7 @@ export class Billing {
         lastActionBy: this.profile()?.email ?? null,
       } as Partial<SuperAdminBillingRecord>);
       await this.audit('billing_status_updated', record, `Billing status changed to ${status}.`);
-      this.setNotice('Billing status updated.');
+      this.setNotice(this.lang.t('Billing status updated.'));
     } finally {
       this.saving.set(false);
     }
@@ -294,7 +296,7 @@ export class Billing {
         lastActionBy: this.profile()?.email ?? null,
       } as Partial<SuperAdminBillingRecord>);
       await this.audit('billing_plan_updated', record, `Billing plan changed to ${plan}.`);
-      this.setNotice('Plan updated.');
+      this.setNotice(this.lang.t('Plan updated.'));
     } finally {
       this.saving.set(false);
     }
@@ -310,7 +312,7 @@ export class Billing {
         lastActionBy: this.profile()?.email ?? null,
       } as Partial<SuperAdminBillingRecord>);
       await this.audit('billing_notes_saved', record, 'Billing notes saved.');
-      this.setNotice('Billing notes saved.');
+      this.setNotice(this.lang.t('Billing notes saved.'));
     } finally {
       this.saving.set(false);
     }
@@ -320,7 +322,7 @@ export class Billing {
     if (!record.id) return;
     const amount = Number(this.manualAmount() ?? 0);
     if (!Number.isFinite(amount) || amount <= 0) {
-      this.setNotice('Enter a valid payment amount before recording payment.');
+      this.setNotice(this.lang.t('Enter a valid payment amount before recording payment.'));
       return;
     }
 
@@ -361,7 +363,7 @@ export class Billing {
       this.manualPayerName.set('');
       this.manualPayerPhone.set('');
       this.manualNote.set('');
-      this.setNotice('Manual payment recorded.');
+      this.setNotice(this.lang.t('Manual payment recorded.'));
     } finally {
       this.saving.set(false);
     }
@@ -378,7 +380,7 @@ export class Billing {
         lastActionBy: this.profile()?.email ?? null,
       } as Partial<SuperAdminBillingRecord>);
       await this.audit('billing_payment_reminder_started', record, 'Payment reminder email opened.');
-      this.setNotice('Payment reminder opened and logged.');
+      this.setNotice(this.lang.t('Payment reminder opened and logged.'));
     } finally {
       this.saving.set(false);
     }
@@ -448,11 +450,11 @@ export class Billing {
 
   renewalState(record: BillingRecord): string {
     const end = this.toDate(record.periodEnd);
-    if (!end) return 'No renewal date';
+    if (!end) return this.lang.t('No renewal date');
     const days = Math.ceil((+end - Date.now()) / 86_400_000);
-    if (days < 0) return `${Math.abs(days)} days overdue`;
-    if (days === 0) return 'Renews today';
-    return `${days} days remaining`;
+    if (days < 0) return `${Math.abs(days)} ${this.lang.t('days overdue')}`;
+    if (days === 0) return this.lang.t('Renews today');
+    return `${days} ${this.lang.t('days remaining')}`;
   }
 
   hasStripeLink(record: BillingRecord): boolean {
@@ -460,7 +462,8 @@ export class Billing {
   }
 
   methodLabel(method?: string | null): string {
-    return this.manualMethodOptions.find((option) => option.value === method)?.label ?? (method || 'Manual');
+    const found = this.manualMethodOptions.find((option) => option.value === method)?.label;
+    return found ? this.lang.t(found) : (method || this.lang.t('Manual'));
   }
 
   recentManualPayments(record: BillingRecord): ManualPaymentEntry[] {
@@ -479,21 +482,21 @@ export class Billing {
     const name = record.orgName || record.orgId;
     const amount = this.formatMoney(record.amount);
     return [
-      `Hello,`,
+      this.lang.t('Hello,'),
       '',
-      `I am following up on the Innovacare Training billing record for ${name}.`,
-      `Current status: ${record.status}. Amount on file: ${amount}.`,
+      `${this.lang.t('I am following up on the Innovacare Training billing record for')} ${name}.`,
+      `${this.lang.t('Current status:')} ${record.status}. ${this.lang.t('Amount on file:')} ${amount}.`,
       '',
-      `Please let us know if you would like us to resend a secure payment link or update the billing contact.`,
+      this.lang.t('Please let us know if you would like us to resend a secure payment link or update the billing contact.'),
       '',
-      `Best regards,`,
-      `Innovacare Training Billing`,
+      this.lang.t('Best regards,'),
+      this.lang.t('Innovacare Training Billing'),
     ].join('\n');
   }
 
   private openReminderEmail(record: BillingRecord): void {
     const email = record.billingEmail || '';
-    const subject = `Innovacare Training billing follow-up - ${record.orgName || record.orgId}`;
+    const subject = `${this.lang.t('Innovacare Training billing follow-up')} - ${record.orgName || record.orgId}`;
     const href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(this.reminderDraft())}`;
     window.location.href = href;
   }
