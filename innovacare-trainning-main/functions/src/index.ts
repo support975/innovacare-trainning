@@ -55,9 +55,6 @@ const TWILIO_ACCOUNT_SID = defineSecret("TWILIO_ACCOUNT_SID");
 const TWILIO_AUTH_TOKEN = defineSecret("TWILIO_AUTH_TOKEN");
 const TWILIO_FROM_NUMBER = defineSecret("TWILIO_FROM_NUMBER");
 const ANTHROPIC_API_KEY = defineSecret("ANTHROPIC_API_KEY");
-const TALVIEW_API_KEY = defineSecret("TALVIEW_API_KEY");
-const TALVIEW_API_SECRET = defineSecret("TALVIEW_API_SECRET");
-const TALVIEW_WEBHOOK_SECRET = defineSecret("TALVIEW_WEBHOOK_SECRET");
 const PUBLIC_APP_URL = "https://www.innovacaretrainning.com";
 
 /* ─────────── Helpers & types ─────────── */
@@ -3583,8 +3580,13 @@ interface CreateRemoteProctoringSessionPayload {
   examDurationMinutes: number;
 }
 
+// Not bound to TALVIEW_API_KEY/TALVIEW_API_SECRET yet: the real adapter (Phase 5)
+// isn't implemented, so nothing here reads those secrets. Binding unused secrets
+// to a function requires them to be provisioned in Secret Manager before deploy
+// (firebase deploy prompts interactively for a value, which breaks non-interactive
+// CI) — add the binding back in the same change that wires in the real adapter.
 export const createRemoteProctoringSession = onCall(
-  {cors: callableCors, secrets: [TALVIEW_API_KEY, TALVIEW_API_SECRET]},
+  {cors: callableCors},
   async (request: CallableRequest<CreateRemoteProctoringSessionPayload>) => {
     if (!request.auth?.uid) {
       throw new HttpsError("unauthenticated", "Authentication required");
@@ -3661,97 +3663,99 @@ export const createRemoteProctoringSession = onCall(
   },
 );
 
-export const talviewWebhook = onRequest(
-  {secrets: [TALVIEW_API_KEY, TALVIEW_API_SECRET, TALVIEW_WEBHOOK_SECRET]},
-  async (request, response) => {
-    if (request.method !== "POST") {
-      response.status(405).send("Method not allowed");
-      return;
-    }
-    if (!TALVIEW_WEBHOOK_SECRET.value()) {
-      // Phase 5 not yet configured - no real vendor should ever be calling this.
-      response.status(503).send("Remote proctoring vendor is not configured.");
-      return;
-    }
+// Not bound to any TALVIEW_* secret yet - see the comment on
+// createRemoteProctoringSession above. Add the binding back alongside the
+// real signature-verification logic once functions/src/proctoring/talview-adapter.ts
+// exists.
+export const talviewWebhook = onRequest(async (request, response) => {
+  if (request.method !== "POST") {
+    response.status(405).send("Method not allowed");
+    return;
+  }
 
-    const adapter = getRemoteProctoringAdapter();
-    try {
-      adapter.verifyWebhookSignature(
-        request.rawBody,
-        request.headers as Record<string, string | string[] | undefined>,
-      );
-    } catch (error) {
-      response.status(400).send(`Webhook signature verification failed: ${(error as Error).message}`);
-      return;
-    }
+  const adapter = getRemoteProctoringAdapter();
+  if (adapter.vendorId !== "talview") {
+    // Phase 5 not yet implemented - no real vendor should ever be calling this.
+    response.status(503).send("Remote proctoring vendor is not configured.");
+    return;
+  }
 
-    const normalized = adapter.parseWebhookEvent(request.rawBody);
-    const indexSnap = await db.doc(`talviewSessionIndex/${normalized.vendorSessionId}`).get();
-    if (!indexSnap.exists) {
-      response.status(404).send("Unknown vendor session");
-      return;
-    }
-    const {sessionId, candidateUid} = indexSnap.data() as {sessionId: string; candidateUid: string};
-    const recordRef = db.doc(`examSessions/${sessionId}/remoteProctoring/${candidateUid}`);
+  try {
+    adapter.verifyWebhookSignature(
+      request.rawBody,
+      request.headers as Record<string, string | string[] | undefined>,
+    );
+  } catch (error) {
+    response.status(400).send(`Webhook signature verification failed: ${(error as Error).message}`);
+    return;
+  }
 
-    switch (normalized.type) {
-    case "identity_verified":
-      await recordRef.set({status: "in_progress", identityVerified: true, updatedAt: nowTs()}, {merge: true});
-      await db.collection("proctorAuditLogs").add({
-        sessionId, proctorUid: "system", candidateUid, action: "verified",
-        details: "Identity verified by vendor.", timestamp: nowTs(),
-      });
-      break;
-    case "identity_rejected":
-      await recordRef.set(
-        {status: "identity_rejected", identityVerified: false, updatedAt: nowTs()},
-        {merge: true},
-      );
-      await db.collection("proctorAuditLogs").add({
-        sessionId, proctorUid: "system", candidateUid, action: "rejected",
-        details: normalized.payload.reason || "Identity rejected by vendor.", timestamp: nowTs(),
-      });
-      break;
-    case "flag_raised": {
-      const flag = normalized.payload.flag;
-      if (flag) {
-        await recordRef.set({
-          status: "flagged",
-          flags: admin.firestore.FieldValue.arrayUnion({
-            id: nanoid(12),
-            severity: flag.severity,
-            type: flag.type,
-            details: flag.details || null,
-            evidenceUrl: flag.evidenceUrl || null,
-            detectedAt: nowTs(),
-          }),
-          updatedAt: nowTs(),
-        }, {merge: true});
-        await db.collection("proctorAuditLogs").add({
-          sessionId, proctorUid: "system", candidateUid, action: "proctoring_flagged",
-          severity: flag.severity, details: flag.type, timestamp: nowTs(),
-        });
-      }
-      break;
-    }
-    case "session_completed":
-      await recordRef.set({status: "completed", updatedAt: nowTs()}, {merge: true});
-      await db.collection("proctorAuditLogs").add({
-        sessionId, proctorUid: "system", candidateUid, action: "monitoring_stop", timestamp: nowTs(),
-      });
-      break;
-    case "session_terminated":
-      await recordRef.set({status: "terminated", updatedAt: nowTs()}, {merge: true});
-      await db.collection("proctorAuditLogs").add({
-        sessionId, proctorUid: "system", candidateUid, action: "blocked",
-        details: normalized.payload.reason || "Session terminated by vendor.", timestamp: nowTs(),
-      });
-      break;
-    }
+  const normalized = adapter.parseWebhookEvent(request.rawBody);
+  const indexSnap = await db.doc(`talviewSessionIndex/${normalized.vendorSessionId}`).get();
+  if (!indexSnap.exists) {
+    response.status(404).send("Unknown vendor session");
+    return;
+  }
+  const {sessionId, candidateUid} = indexSnap.data() as {sessionId: string; candidateUid: string};
+  const recordRef = db.doc(`examSessions/${sessionId}/remoteProctoring/${candidateUid}`);
 
-    response.json({received: true});
-  },
-);
+  switch (normalized.type) {
+  case "identity_verified":
+    await recordRef.set({status: "in_progress", identityVerified: true, updatedAt: nowTs()}, {merge: true});
+    await db.collection("proctorAuditLogs").add({
+      sessionId, proctorUid: "system", candidateUid, action: "verified",
+      details: "Identity verified by vendor.", timestamp: nowTs(),
+    });
+    break;
+  case "identity_rejected":
+    await recordRef.set(
+      {status: "identity_rejected", identityVerified: false, updatedAt: nowTs()},
+      {merge: true},
+    );
+    await db.collection("proctorAuditLogs").add({
+      sessionId, proctorUid: "system", candidateUid, action: "rejected",
+      details: normalized.payload.reason || "Identity rejected by vendor.", timestamp: nowTs(),
+    });
+    break;
+  case "flag_raised": {
+    const flag = normalized.payload.flag;
+    if (flag) {
+      await recordRef.set({
+        status: "flagged",
+        flags: admin.firestore.FieldValue.arrayUnion({
+          id: nanoid(12),
+          severity: flag.severity,
+          type: flag.type,
+          details: flag.details || null,
+          evidenceUrl: flag.evidenceUrl || null,
+          detectedAt: nowTs(),
+        }),
+        updatedAt: nowTs(),
+      }, {merge: true});
+      await db.collection("proctorAuditLogs").add({
+        sessionId, proctorUid: "system", candidateUid, action: "proctoring_flagged",
+        severity: flag.severity, details: flag.type, timestamp: nowTs(),
+      });
+    }
+    break;
+  }
+  case "session_completed":
+    await recordRef.set({status: "completed", updatedAt: nowTs()}, {merge: true});
+    await db.collection("proctorAuditLogs").add({
+      sessionId, proctorUid: "system", candidateUid, action: "monitoring_stop", timestamp: nowTs(),
+    });
+    break;
+  case "session_terminated":
+    await recordRef.set({status: "terminated", updatedAt: nowTs()}, {merge: true});
+    await db.collection("proctorAuditLogs").add({
+      sessionId, proctorUid: "system", candidateUid, action: "blocked",
+      details: normalized.payload.reason || "Session terminated by vendor.", timestamp: nowTs(),
+    });
+    break;
+  }
+
+  response.json({received: true});
+});
 
 export const cleanupAbandonedRemoteProctoringSessions = onSchedule("every 60 minutes", async () => {
   const ABANDON_AFTER_MS = 6 * 60 * 60 * 1000; // 6h grace window past session creation
