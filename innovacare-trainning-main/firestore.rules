@@ -1706,6 +1706,20 @@ service cloud.firestore {
           || isManagerOrAbove()
           || myRole() == 'proctor';
       }
+
+      // ── REMOTE PROCTORING (vendor-backed, e.g. Talview) ────────────────
+      // Vendor state (status, identityVerified, flags[*] up to reviewedBy)
+      // is written exclusively by the talviewWebhook Cloud Function (Admin
+      // SDK, bypasses rules). Staff may only touch the human-review
+      // decision fields; clients never write vendor state directly.
+      match /remoteProctoring/{uid} {
+        allow read: if isSignedIn()
+          && (request.auth.uid == uid || isManagerOrAbove() || myRole() == 'proctor');
+        allow create, delete: if false;
+        allow update: if (isManagerOrAbove() || myRole() == 'proctor')
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['flags', 'finalDecision', 'reviewedBy', 'reviewedAt', 'reviewNotes', 'updatedAt']);
+      }
     }
 
     // ── PROCTOR VERIFICATIONS ─────────────────────────────────────────────
@@ -1744,6 +1758,13 @@ service cloud.firestore {
         && request.resource.data.status == 'pending';
       allow read: if isSignedIn() && resource.data.requestedByUid == request.auth.uid;
       allow update, delete: if false; // only the Cloud Function mutates these
+    }
+
+    // ── TALVIEW SESSION INDEX (webhook routing lookup) ──────────────────────
+    // vendorSessionId -> {sessionId, candidateUid}. Server-only: written by
+    // createRemoteProctoringSession, read by talviewWebhook, both Admin SDK.
+    match /talviewSessionIndex/{vendorSessionId} {
+      allow read, write: if false;
     }
 
     // ── EXAM ATTEMPTS (Results & Email Notifications) ──────────────────────

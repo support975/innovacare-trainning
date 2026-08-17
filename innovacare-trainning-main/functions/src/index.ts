@@ -16,6 +16,8 @@ import Anthropic from "@anthropic-ai/sdk";
 import {GoogleCloudTtsProvider} from "./tts/google-cloud-tts-provider.js";
 import {TtsProvider} from "./tts/tts-provider.js";
 import {createPublicBlogArticleHandler} from "./public-blog.js";
+import {RemoteProctoringVendorAdapter} from "./proctoring/adapter.js";
+import {MockRemoteProctoringAdapter} from "./proctoring/mock-adapter.js";
 
 /* ─────────── Init & global opts ─────────── */
 admin.initializeApp();
@@ -53,6 +55,9 @@ const TWILIO_ACCOUNT_SID = defineSecret("TWILIO_ACCOUNT_SID");
 const TWILIO_AUTH_TOKEN = defineSecret("TWILIO_AUTH_TOKEN");
 const TWILIO_FROM_NUMBER = defineSecret("TWILIO_FROM_NUMBER");
 const ANTHROPIC_API_KEY = defineSecret("ANTHROPIC_API_KEY");
+const TALVIEW_API_KEY = defineSecret("TALVIEW_API_KEY");
+const TALVIEW_API_SECRET = defineSecret("TALVIEW_API_SECRET");
+const TALVIEW_WEBHOOK_SECRET = defineSecret("TALVIEW_WEBHOOK_SECRET");
 const PUBLIC_APP_URL = "https://www.innovacaretrainning.com";
 
 /* ─────────── Helpers & types ─────────── */
@@ -3551,6 +3556,231 @@ export const processKioskCandidateCreateRequest = onDocumentCreated(
     }
   },
 );
+
+/* ─────────── Remote Proctoring (diaspora candidates) ───────────
+ * Vendor-agnostic pipeline: createRemoteProctoringSession opens a vendor
+ * session and records it under examSessions/{sessionId}/remoteProctoring/{uid};
+ * talviewWebhook applies vendor-reported state changes (identity result,
+ * violation flags, completion); cleanupAbandonedRemoteProctoringSessions
+ * sweeps sessions nobody ever finished. All three depend only on the
+ * RemoteProctoringVendorAdapter interface (./proctoring/adapter.ts) —
+ * swapping vendors means adding a real adapter and changing
+ * getRemoteProctoringAdapter() below, nothing else here.
+ */
+function getRemoteProctoringAdapter(): RemoteProctoringVendorAdapter {
+  // Phase 5 (blocked on Talview credentials): once
+  // functions/src/proctoring/talview-adapter.ts exists, branch on
+  // TALVIEW_API_KEY.value() here to return it instead. Until then every
+  // remote-proctoring session runs against the mock.
+  return new MockRemoteProctoringAdapter();
+}
+
+interface CreateRemoteProctoringSessionPayload {
+  sessionId: string;
+  candidateUid: string;
+  candidateName: string;
+  candidateEmail: string;
+  examDurationMinutes: number;
+}
+
+export const createRemoteProctoringSession = onCall(
+  {cors: callableCors, secrets: [TALVIEW_API_KEY, TALVIEW_API_SECRET]},
+  async (request: CallableRequest<CreateRemoteProctoringSessionPayload>) => {
+    if (!request.auth?.uid) {
+      throw new HttpsError("unauthenticated", "Authentication required");
+    }
+
+    const sessionId = String(request.data?.sessionId || "");
+    const candidateUid = String(request.data?.candidateUid || "");
+    if (!sessionId || !candidateUid) {
+      throw new HttpsError("invalid-argument", "sessionId and candidateUid are required");
+    }
+    if (candidateUid !== request.auth.uid) {
+      throw new HttpsError("permission-denied", "You may only start a proctoring session for yourself.");
+    }
+
+    const sessionSnap = await db.doc(`examSessions/${sessionId}`).get();
+    if (!sessionSnap.exists) {
+      throw new HttpsError("not-found", "Exam session not found.");
+    }
+    const session = sessionSnap.data() as {enrolledCandidateIds?: string[]; durationMinutes?: number};
+    if (!session.enrolledCandidateIds?.includes(candidateUid)) {
+      throw new HttpsError("permission-denied", "You are not enrolled in this exam session.");
+    }
+
+    const adapter = getRemoteProctoringAdapter();
+    const vendorSession = await adapter.createVendorSession({
+      sessionId,
+      candidateUid,
+      candidateName: cleanOptionalString(request.data?.candidateName, 200) || "",
+      candidateEmail: cleanOptionalString(request.data?.candidateEmail, 200) ||
+        String(request.auth.token.email || ""),
+      examDurationMinutes: Number(request.data?.examDurationMinutes) || session.durationMinutes || 60,
+    });
+
+    const isMock = adapter.vendorId === "mock";
+    // The mock adapter has no real vendor to wait on, so simulate an
+    // instant identity check (and, for roughly a third of sessions, seed
+    // one low-severity flag) purely so the review-queue UI has something to
+    // exercise without a live Talview account. Real sessions start pending
+    // and are only ever updated by talviewWebhook below.
+    const seedFlag = isMock && Math.random() < 0.33;
+
+    const record = {
+      vendorId: adapter.vendorId,
+      vendorSessionId: vendorSession.vendorSessionId,
+      status: isMock ? (seedFlag ? "flagged" : "identity_verified") : "identity_pending",
+      identityVerified: isMock ? true : null,
+      flags: seedFlag ? [{
+        id: nanoid(12),
+        severity: "low",
+        type: "focus_loss",
+        detectedAt: nowTs(),
+        details: "[mock] Candidate looked away from the camera for an extended period.",
+      }] : [],
+      createdAt: nowTs(),
+      updatedAt: nowTs(),
+    };
+
+    await db.doc(`examSessions/${sessionId}/remoteProctoring/${candidateUid}`).set(record, {merge: true});
+    await db.doc(`talviewSessionIndex/${vendorSession.vendorSessionId}`).set({
+      sessionId,
+      candidateUid,
+      createdAt: nowTs(),
+    });
+    await db.collection("proctorAuditLogs").add({
+      sessionId,
+      proctorUid: "system",
+      candidateUid,
+      action: "monitoring_start",
+      details: `vendor=${adapter.vendorId}`,
+      timestamp: nowTs(),
+    });
+
+    return vendorSession;
+  },
+);
+
+export const talviewWebhook = onRequest(
+  {secrets: [TALVIEW_API_KEY, TALVIEW_API_SECRET, TALVIEW_WEBHOOK_SECRET]},
+  async (request, response) => {
+    if (request.method !== "POST") {
+      response.status(405).send("Method not allowed");
+      return;
+    }
+    if (!TALVIEW_WEBHOOK_SECRET.value()) {
+      // Phase 5 not yet configured - no real vendor should ever be calling this.
+      response.status(503).send("Remote proctoring vendor is not configured.");
+      return;
+    }
+
+    const adapter = getRemoteProctoringAdapter();
+    try {
+      adapter.verifyWebhookSignature(
+        request.rawBody,
+        request.headers as Record<string, string | string[] | undefined>,
+      );
+    } catch (error) {
+      response.status(400).send(`Webhook signature verification failed: ${(error as Error).message}`);
+      return;
+    }
+
+    const normalized = adapter.parseWebhookEvent(request.rawBody);
+    const indexSnap = await db.doc(`talviewSessionIndex/${normalized.vendorSessionId}`).get();
+    if (!indexSnap.exists) {
+      response.status(404).send("Unknown vendor session");
+      return;
+    }
+    const {sessionId, candidateUid} = indexSnap.data() as {sessionId: string; candidateUid: string};
+    const recordRef = db.doc(`examSessions/${sessionId}/remoteProctoring/${candidateUid}`);
+
+    switch (normalized.type) {
+    case "identity_verified":
+      await recordRef.set({status: "in_progress", identityVerified: true, updatedAt: nowTs()}, {merge: true});
+      await db.collection("proctorAuditLogs").add({
+        sessionId, proctorUid: "system", candidateUid, action: "verified",
+        details: "Identity verified by vendor.", timestamp: nowTs(),
+      });
+      break;
+    case "identity_rejected":
+      await recordRef.set(
+        {status: "identity_rejected", identityVerified: false, updatedAt: nowTs()},
+        {merge: true},
+      );
+      await db.collection("proctorAuditLogs").add({
+        sessionId, proctorUid: "system", candidateUid, action: "rejected",
+        details: normalized.payload.reason || "Identity rejected by vendor.", timestamp: nowTs(),
+      });
+      break;
+    case "flag_raised": {
+      const flag = normalized.payload.flag;
+      if (flag) {
+        await recordRef.set({
+          status: "flagged",
+          flags: admin.firestore.FieldValue.arrayUnion({
+            id: nanoid(12),
+            severity: flag.severity,
+            type: flag.type,
+            details: flag.details || null,
+            evidenceUrl: flag.evidenceUrl || null,
+            detectedAt: nowTs(),
+          }),
+          updatedAt: nowTs(),
+        }, {merge: true});
+        await db.collection("proctorAuditLogs").add({
+          sessionId, proctorUid: "system", candidateUid, action: "proctoring_flagged",
+          severity: flag.severity, details: flag.type, timestamp: nowTs(),
+        });
+      }
+      break;
+    }
+    case "session_completed":
+      await recordRef.set({status: "completed", updatedAt: nowTs()}, {merge: true});
+      await db.collection("proctorAuditLogs").add({
+        sessionId, proctorUid: "system", candidateUid, action: "monitoring_stop", timestamp: nowTs(),
+      });
+      break;
+    case "session_terminated":
+      await recordRef.set({status: "terminated", updatedAt: nowTs()}, {merge: true});
+      await db.collection("proctorAuditLogs").add({
+        sessionId, proctorUid: "system", candidateUid, action: "blocked",
+        details: normalized.payload.reason || "Session terminated by vendor.", timestamp: nowTs(),
+      });
+      break;
+    }
+
+    response.json({received: true});
+  },
+);
+
+export const cleanupAbandonedRemoteProctoringSessions = onSchedule("every 60 minutes", async () => {
+  const ABANDON_AFTER_MS = 6 * 60 * 60 * 1000; // 6h grace window past session creation
+  const threshold = Date.now() - ABANDON_AFTER_MS;
+
+  const stuck = await db.collectionGroup("remoteProctoring")
+    .where("status", "in", ["pending", "identity_pending", "identity_verified", "in_progress"])
+    .get();
+
+  for (const docSnap of stuck.docs) {
+    const data = docSnap.data();
+    const createdAt = data.createdAt as admin.firestore.Timestamp | undefined;
+    if (!createdAt || createdAt.toMillis() > threshold) continue;
+
+    const sessionId = docSnap.ref.parent.parent?.id;
+    const candidateUid = docSnap.id;
+    await docSnap.ref.set({status: "expired", updatedAt: nowTs()}, {merge: true});
+    if (sessionId) {
+      await db.collection("proctorAuditLogs").add({
+        sessionId,
+        proctorUid: "system",
+        candidateUid,
+        action: "blocked",
+        details: "Remote proctoring session expired (abandoned).",
+        timestamp: nowTs(),
+      });
+    }
+  }
+});
 
 export const onExamCompleted = onDocumentCreated(
   {

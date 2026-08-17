@@ -237,6 +237,18 @@
         />
       </div>
 
+      <div class="form-group">
+        <label>{{ lang.t('Remote Proctoring') }}</label>
+        <select
+          [(ngModel)]="newSession().proctoringVendor"
+          name="proctoringVendor"
+          [disabled]="busy()"
+        >
+          <option value="none">{{ lang.t('None (onsite / kiosk only)') }}</option>
+          <option value="talview">{{ lang.t('Talview (remote, diaspora candidates)') }}</option>
+        </select>
+      </div>
+
       <button type="submit" class="btn-primary" [disabled]="busy()">
         {{ busy() ? lang.t('Creating...') : lang.t('Create Session') }}
       </button>

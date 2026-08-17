@@ -112,6 +112,23 @@ export const routes: Routes = [
   },
 
   {
+    // Remote (vendor-proctored, diaspora) candidates only — see
+    // exam-session-login.ts, which branches here instead of
+    // exam-session-proctor-verify when the session has proctoringVendor set.
+    path: 'exam-session-remote-precheck',
+    loadComponent: () =>
+      import('./features/learner/exam-session-remote-precheck/exam-session-remote-precheck')
+        .then(m => m.ExamSessionRemotePrecheckComponent),
+  },
+
+  {
+    path: 'exam-session-remote-runner',
+    loadComponent: () =>
+      import('./features/learner/exam-session-remote-runner-shell/exam-session-remote-runner-shell')
+        .then(m => m.ExamSessionRemoteRunnerShellComponent),
+  },
+
+  {
     path: 'exam-results',
     loadComponent: () =>
       import('./features/learner/exam-results/exam-results')

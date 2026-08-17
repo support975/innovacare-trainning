@@ -1,0 +1,154 @@
+<div class="review-center">
+  <!-- ── Session list view ─────────────────────────────────────────── -->
+  <ng-container *ngIf="!selectedSession()">
+    <div class="page-header">
+      <h1>🌐 {{ lang.t('Remote Proctoring Review') }}</h1>
+      <p class="subtitle">{{ lang.t('Review vendor-flagged incidents for remote (diaspora) exam candidates.') }}</p>
+    </div>
+
+    <div *ngIf="error()" class="alert alert-error">{{ error() }}</div>
+
+    <div class="session-grid">
+      <div class="session-card" *ngFor="let s of sessions()" (click)="selectSession(s)">
+        <div class="session-card-title">{{ examTitle(s.examId) }}</div>
+        <div class="session-card-meta">
+          <span>📅 {{ s.sessionDate | toDate | date: 'MMM d, y HH:mm' }}</span>
+          <span class="status-chip" [class.chip-active]="s.status === 'active'">{{ s.status }}</span>
+        </div>
+      </div>
+      <div *ngIf="sessions().length === 0" class="empty-state">
+        {{ lang.t('No vendor-proctored sessions yet.') }}
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ── Session detail view ───────────────────────────────────────── -->
+  <ng-container *ngIf="selectedSession() as session">
+    <button class="btn-link" (click)="backToSessions()">← {{ lang.t('All sessions') }}</button>
+
+    <div class="page-header">
+      <h1>{{ examTitle(session.examId) }}</h1>
+      <p class="subtitle">
+        {{ session.sessionDate | toDate | date: 'MMMM d, y • HH:mm' }} — {{ lang.t('Status:') }} {{ session.status }}
+      </p>
+    </div>
+
+    <div *ngIf="error()" class="alert alert-error">{{ error() }}</div>
+    <div *ngIf="success()" class="alert alert-success">{{ success() }}</div>
+
+    <div class="stats-row" *ngIf="stats() as st">
+      <div class="stat-tile"><span class="stat-value">{{ st.total }}</span><span class="stat-label">{{ lang.t('Candidates') }}</span></div>
+      <div class="stat-tile stat-warn"><span class="stat-value">{{ st.flagged }}</span><span class="stat-label">{{ lang.t('Flagged') }}</span></div>
+      <div class="stat-tile stat-warn"><span class="stat-value">{{ st.unreviewed }}</span><span class="stat-label">{{ lang.t('Needs review') }}</span></div>
+      <div class="stat-tile stat-pass"><span class="stat-value">{{ st.cleared }}</span><span class="stat-label">{{ lang.t('Cleared') }}</span></div>
+    </div>
+
+    <div class="detail-layout">
+      <div class="candidates-panel">
+        <div class="panel-header">
+          <h2>{{ lang.t('Candidates') }}</h2>
+          <button class="btn-secondary" (click)="refreshCandidates()" [disabled]="loading()">↻ {{ lang.t('Refresh') }}</button>
+        </div>
+
+        <div *ngIf="loading()" class="empty-state">{{ lang.t('Loading candidates…') }}</div>
+
+        <table class="candidates-table" *ngIf="!loading()">
+          <thead>
+            <tr>
+              <th>{{ lang.t('Name') }}</th>
+              <th>{{ lang.t('Flags') }}</th>
+              <th>{{ lang.t('Status') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let c of candidates(); trackBy: trackByUid"
+              (click)="openCandidate(c)"
+              [class.row-selected]="selectedCandidate()?.uid === c.uid"
+            >
+              <td>
+                <div class="cand-name">{{ c.name }}</div>
+                <div class="cand-email">{{ c.email }}</div>
+              </td>
+              <td>
+                <span *ngIf="c.record.flags?.length" class="flag-count">{{ c.record.flags.length }}</span>
+                <span *ngIf="!c.record.flags?.length" class="score-none">—</span>
+              </td>
+              <td><span class="badge" [ngClass]="statusClass(c)">{{ statusLabel(c) }}</span></td>
+            </tr>
+            <tr *ngIf="candidates().length === 0">
+              <td colspan="3" class="empty-state">{{ lang.t('No candidates enrolled in this session.') }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="candidate-detail" *ngIf="selectedCandidate() as c">
+        <div class="panel-header">
+          <h2>{{ c.name }}</h2>
+          <button class="btn-close" (click)="closeCandidate()">✕</button>
+        </div>
+
+        <div class="detail-section">
+          <h3>{{ lang.t('Candidate') }}</h3>
+          <div class="detail-row"><span class="lbl">{{ lang.t('Email') }}</span><span class="val">{{ c.email || '—' }}</span></div>
+          <div class="detail-row"><span class="lbl">{{ lang.t('Identity verified') }}</span>
+            <span class="val">{{ c.record.identityVerified ? lang.t('✓ Yes') : lang.t('✗ No') }}</span>
+          </div>
+          <div class="detail-row"><span class="lbl">{{ lang.t('Status:') }}</span><span class="val">{{ statusLabel(c) }}</span></div>
+        </div>
+
+        <div class="detail-section">
+          <h3>{{ lang.t('Monitoring alerts') }}</h3>
+          <p class="muted" *ngIf="!c.record.flags?.length">{{ lang.t('No alerts recorded.') }}</p>
+
+          <div class="flag-row" *ngFor="let f of c.record.flags">
+            <div class="flag-row-top">
+              <span class="badge" [ngClass]="severityClass(f.severity)">{{ f.severity }}</span>
+              <span class="flag-type">{{ f.type }}</span>
+              <span class="flag-time">{{ f.detectedAt | toDate | date: 'short' }}</span>
+            </div>
+            <p class="flag-details" *ngIf="f.details">{{ f.details }}</p>
+
+            <div class="flag-actions" *ngIf="!f.reviewDecision">
+              <button class="btn-mini approve" [disabled]="busy()" (click)="reviewFlag(c, f.id, 'dismissed')">{{ lang.t('Dismiss') }}</button>
+              <button class="btn-mini reject" [disabled]="busy()" (click)="reviewFlag(c, f.id, 'confirmed_violation')">{{ lang.t('Confirm violation') }}</button>
+              <button class="btn-mini" [disabled]="busy()" (click)="reviewFlag(c, f.id, 'escalated')">{{ lang.t('Escalate') }}</button>
+            </div>
+            <div class="flag-reviewed" *ngIf="f.reviewDecision">
+              {{ lang.t('Reviewed:') }} {{ f.reviewDecision }}
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>{{ lang.t('Final decision') }}</h3>
+          <textarea
+            class="review-notes"
+            [(ngModel)]="reviewNotes"
+            [placeholder]="lang.t('Optional reviewer notes…')"
+          ></textarea>
+          <div class="decision-actions">
+            <button class="btn-success" [disabled]="busy()" (click)="finalizeDecision(c, 'cleared')">
+              ✓ {{ lang.t('Clear candidate') }}
+            </button>
+            <button class="btn-secondary" [disabled]="busy()" (click)="finalizeDecision(c, 'flagged_pass')">
+              {{ lang.t('Clear with flags noted') }}
+            </button>
+            <button class="btn-danger" [disabled]="busy()" (click)="finalizeDecision(c, 'invalidated')">
+              ✗ {{ lang.t('Invalidate attempt') }}
+            </button>
+          </div>
+          <p class="muted" *ngIf="c.record.finalDecision">
+            {{ lang.t('Current decision:') }} {{ statusLabel(c) }}
+            <span *ngIf="c.record.reviewNotes"> — {{ c.record.reviewNotes }}</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="candidate-detail candidate-detail-empty" *ngIf="!selectedCandidate()">
+        <p class="muted">{{ lang.t('Select a candidate to see details and take action.') }}</p>
+      </div>
+    </div>
+  </ng-container>
+</div>

@@ -2,6 +2,8 @@
 import { ApplicationConfig } from '@angular/core';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { routes } from './app.routes';
+import { REMOTE_PROCTORING_ADAPTER } from './data/remote-proctoring-adapter';
+import { MockRemoteProctoringAdapter } from './data/mock-remote-proctoring.adapter';
 
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
@@ -63,5 +65,11 @@ export const appConfig: ApplicationConfig = {
         return getFirestore();
       }
     }),
+
+    // Remote proctoring vendor (Talview) adapter. Swap this to a real
+    // TalviewRemoteProctoringAdapter once functions/src/proctoring/talview-adapter.ts
+    // and its frontend counterpart exist (see the plan's Phase 5) — every
+    // consumer only depends on the RemoteProctoringAdapter interface.
+    { provide: REMOTE_PROCTORING_ADAPTER, useClass: MockRemoteProctoringAdapter },
   ],
 };

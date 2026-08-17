@@ -1,0 +1,72 @@
+.remote-shell {
+  position: relative;
+}
+
+.proctoring-rail {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: 280px;
+}
+
+.rail-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(20, 20, 30, 0.85);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.rail-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #28a745;
+  animation: rail-pulse 2s infinite;
+}
+
+@keyframes rail-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.rail-flag {
+  background: #fff8e1;
+  border-left: 4px solid #ffb300;
+  color: #8a6100;
+  font-size: 0.75rem;
+  padding: 8px 10px;
+  border-radius: 4px;
+  text-align: right;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+.rail-flag.severity-high {
+  border-left-color: #dc3545;
+  background: #fdecea;
+  color: #a71d2a;
+}
+
+.rail-widget:empty {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .proctoring-rail {
+    max-width: calc(100vw - 24px);
+  }
+}

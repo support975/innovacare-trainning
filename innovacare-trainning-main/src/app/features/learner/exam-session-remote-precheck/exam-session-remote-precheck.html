@@ -1,0 +1,64 @@
+<div class="precheck-container">
+  <div class="precheck-card">
+    <div class="card-header">
+      <h1>{{ lang.t('Identity & Proctoring Check') }}</h1>
+      <p class="subtitle">{{ lang.t('A few quick steps before your exam begins') }}</p>
+    </div>
+
+    <div class="step-track">
+      <div class="step-dot" [class.active]="step() !== 'starting'" [class.done]="step() === 'identity_verified'">1</div>
+      <div class="step-line"></div>
+      <div class="step-dot" [class.active]="step() === 'identity_verified'">2</div>
+    </div>
+
+    <ng-container [ngSwitch]="step()">
+      <div *ngSwitchCase="'starting'" class="step-panel">
+        <div class="spinner"></div>
+        <p>{{ lang.t('Preparing your identity verification session…') }}</p>
+      </div>
+
+      <div *ngSwitchCase="'identity_pending'" class="step-panel">
+        <div class="widget-region" #widgetContainer></div>
+        <div class="status-indicator status-pending">
+          <div class="status-dot"></div>
+          <span>{{ lang.t('Verifying your identity…') }}</span>
+        </div>
+        <p class="hint">{{ lang.t('Keep this window open. This usually takes less than a minute.') }}</p>
+      </div>
+
+      <div *ngSwitchCase="'identity_verified'" class="step-panel">
+        <div class="status-indicator status-verified">
+          <div class="status-dot"></div>
+          <span>{{ lang.t('Identity verified') }}</span>
+        </div>
+
+        <div class="flag-notice" *ngIf="flagNotice()">
+          {{ lang.t('A monitoring note was recorded during setup. It will be reviewed by staff and does not stop your exam.') }}
+        </div>
+
+        <div class="info-box">
+          <p>
+            <strong>{{ lang.t('Important:') }}</strong>
+            {{ lang.t('Your session will be monitored for the duration of the exam. Stay in frame, avoid leaving the window, and keep your microphone and camera on.') }}
+          </p>
+        </div>
+
+        <button class="btn-start" (click)="startExam()">{{ lang.t('Start Exam') }}</button>
+      </div>
+
+      <div *ngSwitchCase="'identity_rejected'" class="step-panel">
+        <div class="status-indicator status-rejected">
+          <div class="status-dot"></div>
+          <span>{{ lang.t('Verification could not be completed') }}</span>
+        </div>
+        <p>{{ lang.t('Please contact your exam proctor for assistance — this exam cannot start without a completed identity check.') }}</p>
+        <button class="btn-back" (click)="contactProctor()">{{ lang.t('Back to Login') }}</button>
+      </div>
+
+      <div *ngSwitchCase="'error'" class="step-panel">
+        <div class="error-message">{{ errorMessage() }}</div>
+        <button class="btn-back" (click)="contactProctor()">{{ lang.t('Back to Login') }}</button>
+      </div>
+    </ng-container>
+  </div>
+</div>

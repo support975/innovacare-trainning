@@ -1,0 +1,14 @@
+<div class="remote-shell">
+  <div class="proctoring-rail" *ngIf="ready()">
+    <div class="rail-status">
+      <span class="rail-dot"></span>
+      {{ lang.t('Proctoring active') }}
+    </div>
+    <div class="rail-flag" *ngIf="latestFlagSeverity() as severity" [class]="'severity-' + severity">
+      {{ lang.t('A monitoring alert was recorded. Your exam continues normally; this will be reviewed by staff.') }}
+    </div>
+    <div #widgetContainer class="rail-widget"></div>
+  </div>
+
+  <app-blueprint-exam-runner *ngIf="ready()"></app-blueprint-exam-runner>
+</div>

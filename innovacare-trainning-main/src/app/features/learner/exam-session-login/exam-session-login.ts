@@ -99,8 +99,16 @@ export class ExamSessionLoginComponent implements OnInit {
         pwVal
       );
 
-      // Navigate to proctor verification (with learner info for verification)
-      await this.router.navigate(['/exam-session-proctor-verify'], {
+      // Vendor-proctored (Talview) sessions skip the self-attested selfie
+      // step entirely and go through the rigorous precheck flow instead —
+      // no same-session fallback to self-verify if the vendor is
+      // unreachable, since that would be a bypass for a flow meant to be
+      // rigorous. Sessions without a vendor keep today's behavior.
+      const targetRoute = this.sessionInfo()?.proctoringVendor === 'talview'
+        ? '/exam-session-remote-precheck'
+        : '/exam-session-proctor-verify';
+
+      await this.router.navigate([targetRoute], {
         queryParams: {
           sessionId: this.sessionId,
           token: token.token,

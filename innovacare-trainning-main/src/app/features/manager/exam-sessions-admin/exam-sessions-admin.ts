@@ -57,6 +57,7 @@ export class ExamSessionsAdminComponent implements OnInit {
     durationMinutes: 120,
     enrolledCandidateIds: [],
     requireIdentityVerification: true,
+    proctoringVendor: 'none' as 'none' | 'talview',
     status: 'scheduled' as const,
   });
 
@@ -181,6 +182,7 @@ export class ExamSessionsAdminComponent implements OnInit {
         durationMinutes: session.durationMinutes,
         enrolledCandidateIds: session.enrolledCandidateIds,
         requireIdentityVerification: session.requireIdentityVerification,
+        proctoringVendor: session.proctoringVendor,
         status: session.status,
       });
 
@@ -221,6 +223,7 @@ export class ExamSessionsAdminComponent implements OnInit {
       durationMinutes: 120,
       enrolledCandidateIds: [],
       requireIdentityVerification: true,
+      proctoringVendor: 'none',
       status: 'scheduled',
     });
   }
