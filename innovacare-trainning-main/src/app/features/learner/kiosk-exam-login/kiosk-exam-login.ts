@@ -258,6 +258,7 @@ export class KioskExamLoginComponent implements OnInit, OnDestroy {
           name: candidate.name,
           stationId: this.stationNumber,
           token,
+          mode: 'kiosk',
         },
         replaceUrl: true,
       });

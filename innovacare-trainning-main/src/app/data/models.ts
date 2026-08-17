@@ -810,6 +810,10 @@ export interface ExamSession {
   // Proctoring setup
   proctorIds?: string[];      // UIDs of assigned proctors
   requireIdentityVerification: boolean;
+  // Remote/vendor-proctored sessions (diaspora candidates): 'none' = the
+  // existing self-verify onsite/token-login flow; 'talview' = candidates are
+  // routed through the remote-precheck flow (see RemoteProctoringRecord).
+  proctoringVendor?: 'none' | 'talview';
 
   // Onsite Access Control
   accessPassword?: string;    // hashed password for onsite login
@@ -852,9 +856,49 @@ export interface ProctorAuditLog {
   sessionId: string;
   proctorUid: string;
   candidateUid: string;
-  action: 'verified' | 'rejected' | 'unlocked' | 'blocked' | 'monitoring_start' | 'monitoring_stop';
+  action: 'verified' | 'rejected' | 'unlocked' | 'blocked' | 'monitoring_start' | 'monitoring_stop'
+        | 'proctoring_flagged' | 'proctoring_reviewed';
   details?: string;
+  severity?: 'low' | 'medium' | 'high';
   timestamp: any;             // Firestore Timestamp
+}
+
+/**
+ * Vendor-backed remote proctoring for a single candidate's session, stored at
+ * examSessions/{sessionId}/remoteProctoring/{candidateUid}. Vendor-state
+ * fields (status, identityVerified, flags[*] up to reviewedBy) are written
+ * exclusively by the Cloud Functions webhook handler, never the client.
+ */
+export interface RemoteProctoringRecord {
+  id?: string;                // = candidateUid
+  vendorId: 'talview';
+  vendorSessionId: string;
+
+  status: 'pending' | 'identity_pending' | 'identity_verified' | 'identity_rejected'
+        | 'in_progress' | 'flagged' | 'completed' | 'terminated' | 'expired';
+  identityVerified: boolean | null;
+
+  flags: Array<{
+    id: string;
+    severity: 'low' | 'medium' | 'high';
+    type: string;              // vendor-normalized violation type, e.g. 'multiple_faces', 'no_face', 'focus_loss'
+    detectedAt: any;           // Firestore Timestamp
+    details?: string;
+    evidenceUrl?: string;
+    reviewedBy?: string;
+    reviewDecision?: 'dismissed' | 'escalated' | 'confirmed_violation';
+    reviewedAt?: any;
+  }>;
+
+  // Human decision after the session completes, gating result release when flags exist.
+  finalDecision?: 'cleared' | 'flagged_pass' | 'invalidated';
+  reviewedBy?: string;
+  reviewedAt?: any;
+  reviewNotes?: string;
+
+  lastHeartbeatAt?: any;       // Firestore Timestamp - last widget/webhook activity
+  createdAt?: any;
+  updatedAt?: any;
 }
 
 

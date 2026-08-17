@@ -180,6 +180,13 @@ const routes: Routes = [
           ),
       },
       {
+        path: 'remote-proctoring-review',
+        loadComponent: () =>
+          import('./remote-proctoring-review/remote-proctoring-review').then(
+            m => m.RemoteProctoringReviewComponent
+          ),
+      },
+      {
         path: 'rewards-center',
         canMatch: [planFeatureCanMatch('manager.rewardsCenter')],
         loadComponent: () =>

@@ -152,6 +152,7 @@ export class ExamSessionLauncherComponent implements OnInit, OnDestroy {
         examId: session.examId,
         candidateUid: this.candidateUid,
         token: this.token,
+        mode: 'remote',
       },
     });
   }

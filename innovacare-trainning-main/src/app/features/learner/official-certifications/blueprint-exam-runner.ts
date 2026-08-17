@@ -154,10 +154,16 @@ export class BlueprintExamRunnerComponent implements OnInit, OnDestroy {
     this.applicationId = this.route.snapshot.paramMap.get('applicationId') || '';
     this.blueprintId = this.route.snapshot.paramMap.get('blueprintId') || '';
 
-    // Kiosk mode: session-based exam launched from the kiosk login page
+    // Session-based exam launched via query params (kiosk station or remote
+    // token login), as opposed to an authenticated in-app route with
+    // blueprintId as a route param. The two entry points that produce this
+    // shape (kiosk-exam-login.ts and exam-session-launcher.ts) always set
+    // `mode` explicitly to 'kiosk' or 'remote'; if it's ever missing (e.g. a
+    // hand-crafted URL) fail closed into kiosk lockdown rather than opening
+    // up the more permissive remote-proctoring branch by default.
     const qp = this.route.snapshot.queryParamMap;
     if (!this.blueprintId && qp.get('examId')) {
-      this.kioskMode = true;
+      this.kioskMode = qp.get('mode') !== 'remote';
       this.blueprintId = qp.get('examId') || '';
       this.kioskSessionId = qp.get('sessionId') || '';
       this.kioskStationId = qp.get('stationId') || '';
