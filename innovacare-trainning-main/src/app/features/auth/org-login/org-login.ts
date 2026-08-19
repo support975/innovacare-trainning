@@ -6,6 +6,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 import { AuthService } from '../../../core/auth';
 import { OrganizationsService, PublicOrganization } from '../../../shared/services/organizations.service';
 import { PublicTranslateDirective } from '../../../shared/directives/public-translate.directive';
+import { LoginFailureReporterService } from '../../../data/login-failure-reporter.service';
 
 @Component({
   selector: 'app-org-login',
@@ -19,6 +20,7 @@ export class OrgLoginComponent {
   private auth = inject(AuthService);
   private orgService = inject(OrganizationsService);
   private router = inject(Router);
+  private loginFailureReporter = inject(LoginFailureReporterService);
 
   loading = signal(false);
   error = signal<string | null>(null);
@@ -72,8 +74,9 @@ export class OrgLoginComponent {
     this.loading.set(true);
     this.error.set(null);
 
+    const { email, password } = this.form.getRawValue();
+
     try {
-      const { email, password } = this.form.getRawValue();
       const org = this.selectedOrg()!;
 
       await this.auth.loginWithEmail(email!, password!, org.id);
@@ -81,6 +84,7 @@ export class OrgLoginComponent {
       await this.router.navigateByUrl(`/org/${org.id}/dashboard`, { replaceUrl: true });
     } catch (e: any) {
       this.error.set(e?.message ?? 'Échec de la connexion');
+      this.loginFailureReporter.report(email!);
     } finally {
       this.loading.set(false);
     }

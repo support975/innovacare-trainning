@@ -1,0 +1,35 @@
+<button type="button" class="bell-btn" (click)="toggle()" [attr.aria-label]="lang.t('Notifications')">
+  <span class="bell-icon">🔔</span>
+  <span class="badge" *ngIf="unreadCount() > 0">{{ unreadCount() > 9 ? '9+' : unreadCount() }}</span>
+</button>
+
+<div class="panel" *ngIf="open()">
+  <div class="panel-header">
+    <div>
+      <div class="panel-title">{{ lang.t('Notifications') }}</div>
+      <div class="panel-sub">{{ unreadCount() }} {{ lang.t('unread') }}</div>
+    </div>
+  </div>
+
+  <div class="list">
+    <button
+      type="button"
+      class="row"
+      *ngFor="let n of notifications(); trackBy: trackById"
+      [class.unread]="isUnread(n)"
+      [class.severity-critical]="n.severity === 'critical'"
+      (click)="openNotification(n)"
+    >
+      <div class="icon">{{ severityIcon(n) }}</div>
+      <div class="content">
+        <div class="title">{{ lang.t(n.title) }}</div>
+        <div class="message">{{ lang.t(n.message, n.messageParams) }}</div>
+      </div>
+    </button>
+
+    <div class="empty" *ngIf="notifications().length === 0">
+      <div class="empty-icon">🔔</div>
+      <p>{{ lang.t('No notifications') }}</p>
+    </div>
+  </div>
+</div>

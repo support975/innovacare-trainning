@@ -295,6 +295,15 @@
                 💻 {{ lang.t('Kiosk') }}
               </button>
               <button
+                class="btn-small"
+                *ngIf="session.proctoringVendor === 'talview'"
+                (click)="copyRemoteLoginLink(session.id || '')"
+                [disabled]="busy()"
+                [title]="lang.t('Copy the remote candidate login link for this session')"
+              >
+                🌐 {{ lang.t('Remote link') }}
+              </button>
+              <button
                 class="btn-small btn-delete"
                 (click)="deleteSession(session.id || '')"
                 [disabled]="busy()"

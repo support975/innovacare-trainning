@@ -901,6 +901,30 @@ export interface RemoteProctoringRecord {
   updatedAt?: any;
 }
 
+/**
+ * Admin-facing notification (intake events, security alerts), written
+ * exclusively by Cloud Functions. A shared inbox, not per-user copies:
+ * multiple managers/superAdmins can see and mark the same doc read.
+ */
+export interface AdminNotification {
+  id?: string;
+  type: 'demo_request' | 'course_access_request' | 'login_failure_alert';
+  severity: 'info' | 'warning' | 'critical';
+  scope: 'global' | 'org';
+  orgId?: string;             // required when scope === 'org'
+  // title/message are LanguageService.t() translation keys (literal-English
+  // convention, e.g. 'New demo request'), not pre-rendered text - a shared
+  // inbox can be read by admins in either language. messageParams feeds the
+  // key's {param} interpolation (e.g. {name}, {org}).
+  title: string;
+  message: string;
+  messageParams?: Record<string, string>;
+  targetUrl: string;          // in-app deep link, e.g. /superAdmin/demo-requests
+  relatedId?: string;         // id of the source doc (demoRequests/{id}, etc.)
+  readBy: string[];           // uids that have marked this notification read
+  createdAt?: any;
+}
+
 
 
 

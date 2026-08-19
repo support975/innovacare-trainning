@@ -6,6 +6,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../../core/auth';
 import { LanguageService } from '../../../shared/services/language';
+import { AdminNotificationBellComponent } from '../../../shared/components/notifications/admin-notification-bell/admin-notification-bell';
 
 type NavItem = {
   label: string;
@@ -21,7 +22,7 @@ type NavSection = {
 
 @Component({
   selector: 'app-shell',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, AdminNotificationBellComponent],
   templateUrl: './shell.html',
   styleUrl: './shell.css',
 })
