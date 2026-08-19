@@ -6,6 +6,7 @@ import { combineLatest, firstValueFrom } from 'rxjs';
 import { filter, map, take } from 'rxjs/operators';
 import { AuthService, AppProfile } from '../../../core/auth';
 import { PublicTranslateDirective } from '../../../shared/directives/public-translate.directive';
+import { LoginFailureReporterService } from '../../../data/login-failure-reporter.service';
 
 function defaultRouteForRole(role: AppProfile['role']): string {
   switch (role) {
@@ -34,6 +35,7 @@ export class LoginComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private loginFailureReporter = inject(LoginFailureReporterService);
 
   loading = signal(false);
   error = signal<string | null>(null);
@@ -64,14 +66,16 @@ export class LoginComponent {
     this.loading.set(true);
     this.error.set(null);
 
+    const { email, password } = this.form.getRawValue();
+
     try {
-      const { email, password } = this.form.getRawValue();
       await this.auth.loginWithEmail(email!, password!);
 
       const profile = await this.waitForFreshProfile();
       await this.router.navigateByUrl(defaultRouteForRole(profile.role), { replaceUrl: true });
     } catch (e: any) {
       this.error.set(e?.message ?? 'Échec de la connexion');
+      this.loginFailureReporter.report(email!);
     } finally {
       this.loading.set(false);
     }

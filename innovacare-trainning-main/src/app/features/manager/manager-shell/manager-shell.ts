@@ -10,7 +10,7 @@ import { AuthService } from '../../../core/auth';
 import { ActingOrgService } from '../../../core/organization/services/acting-org.service';
 import { LanguageService } from '../../../shared/services/language';
 import { DemoService } from '../../../shared/services/demo.service';
-import { NotificationBellPlainComponent } from '../../../shared/components/notifications/notification-bell-plain/notification-bell-plain';
+import { AdminNotificationBellComponent } from '../../../shared/components/notifications/admin-notification-bell/admin-notification-bell';
 import {
   PlanFeature,
   entitlementsForPlan,
@@ -59,7 +59,7 @@ function safeBrandColor(value?: string): string {
 @Component({
   selector: 'app-manager-shell',
   standalone: true,
-  imports: [CommonModule, RouterModule, NotificationBellPlainComponent],
+  imports: [CommonModule, RouterModule, AdminNotificationBellComponent],
   templateUrl: './manager-shell.html',
   styleUrl: './manager-shell.css'
 })

@@ -1767,6 +1767,33 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // ── ADMIN NOTIFICATIONS (intake + security alerts) ──────────────────────
+    // Written exclusively by Cloud Functions. A shared inbox: readers may
+    // only append their own uid to readBy, never touch anything else.
+    match /adminNotifications/{notificationId} {
+      allow read: if isSignedIn() && (
+        (resource.data.scope == 'global' && isSuperAdmin()) ||
+        (resource.data.scope == 'org' && isManagerOrAbove() && resource.data.orgId == myOrgId())
+      );
+      allow create, delete: if false;
+      allow update: if isSignedIn() && (
+          (resource.data.scope == 'global' && isSuperAdmin()) ||
+          (resource.data.scope == 'org' && isManagerOrAbove() && resource.data.orgId == myOrgId())
+        )
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy'])
+        // New readBy must be exactly the old list plus (only) the caller's own uid.
+        && request.resource.data.readBy.hasAll(resource.data.readBy)
+        && request.resource.data.readBy.hasOnly(resource.data.readBy.concat([request.auth.uid]));
+    }
+
+    // ── LOGIN FAILURE EVENTS (security telemetry) ───────────────────────────
+    // Raw signal, not meant to be client-readable even by admins - the
+    // adminNotifications alert above is the intended surface. Written only
+    // by the recordLoginFailure Cloud Function (public invoker, Admin SDK).
+    match /loginFailureEvents/{eventId} {
+      allow read, write: if false;
+    }
+
     // ── EXAM ATTEMPTS (Results & Email Notifications) ──────────────────────
     match /examAttempts/{attemptId} {
       allow read: if isSignedIn() && (

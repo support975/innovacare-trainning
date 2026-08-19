@@ -4240,6 +4240,184 @@ export const createAgentTaskFromContact = onDocumentCreated(
   },
 );
 
+/* ─────────── Admin Notifications (intakes + security alerts) ───────────
+ * Shared inbox (adminNotifications) for events an admin should be told
+ * about proactively rather than discovering by visiting a page. Global
+ * (superAdmin) notifications and org-scoped (manager) notifications are
+ * both written here; firestore.rules restricts each doc's readers to the
+ * matching audience. See src/app/shared/components/notifications/admin-notification-bell
+ * for the frontend consumer.
+ */
+async function resolveAdminRecipients(scope: "global" | "org", orgId?: string | null): Promise<string[]> {
+  const usersQuery = scope === "global" ?
+    db.collection("users").where("role", "==", "super_admin") :
+    orgId ?
+      db.collection("users").where("orgId", "==", orgId).where("role", "in", ["manager", "admin"]) :
+      null;
+  if (!usersQuery) return [];
+
+  const snap = await usersQuery.get();
+  return snap.docs
+    .map((d) => String(d.data().email || ""))
+    .filter((email) => email.length > 0);
+}
+
+export const notifyAdminsOnDemoRequest = onDocumentCreated(
+  "demoRequests/{requestId}",
+  async (event) => {
+    const snap = event.data;
+    if (!snap) return;
+    const data = snap.data();
+    const requestId = String(event.params.requestId);
+    const fullName = cleanOptionalString(data.fullName, 120);
+    const orgName = cleanOptionalString(data.organizationName, 160);
+
+    await db.collection("adminNotifications").add({
+      type: "demo_request",
+      severity: "info",
+      scope: "global",
+      title: "New demo request",
+      message: "{name} from {org} requested a demo.",
+      messageParams: {name: fullName || "Someone", org: orgName || "an organization"},
+      targetUrl: "/superAdmin/demo-requests",
+      relatedId: requestId,
+      readBy: [],
+      createdAt: data.createdAt || nowTs(),
+    });
+  },
+);
+
+export const notifyAdminsOnCourseAccessRequest = onDocumentCreated(
+  "courseAccessRequests/{requestId}",
+  async (event) => {
+    const snap = event.data;
+    if (!snap) return;
+    const data = snap.data();
+    const requestId = String(event.params.requestId);
+    const userName = cleanOptionalString(data.userName, 120) || cleanOptionalString(data.userEmail, 180);
+    const courseTitle = cleanOptionalString(data.courseTitle, 200);
+
+    // courseAccessRequests carries no orgId of its own - resolve it from the
+    // requesting learner's profile so the notification reaches their org's
+    // managers rather than nobody.
+    let orgId: string | null = null;
+    const uid = String(data.uid || "");
+    if (uid) {
+      try {
+        const userSnap = await db.doc(`users/${uid}`).get();
+        orgId = (userSnap.data()?.orgId as string) || null;
+      } catch {
+        // Best-effort - the notification still fires (globally) if this lookup fails.
+      }
+    }
+
+    await db.collection("adminNotifications").add({
+      type: "course_access_request",
+      severity: "info",
+      scope: orgId ? "org" : "global",
+      orgId: orgId || null,
+      title: "New course access request",
+      message: "{name} requested access to \"{course}\".",
+      messageParams: {name: userName || "A learner", course: courseTitle || "a course"},
+      targetUrl: "/manager/course-access-requests",
+      relatedId: requestId,
+      readBy: [],
+      createdAt: data.createdAt || nowTs(),
+    });
+  },
+);
+
+interface RecordLoginFailurePayload {
+  email: string;
+}
+
+// Public invoker: the caller has, by definition, just failed to
+// authenticate and holds no session - same pattern as startDemo/
+// demoSwitchIdentity above.
+export const recordLoginFailure = onCall(
+  {cors: callableCors, invoker: "public"},
+  async (request: CallableRequest<RecordLoginFailurePayload>) => {
+    const email = agentSafeEmail(request.data?.email);
+    if (!email || !email.includes("@")) return {recorded: false};
+
+    let uid: string | null = null;
+    let orgId: string | null = null;
+    try {
+      const userSnap = await db.collection("users").where("email", "==", email).limit(1).get();
+      if (!userSnap.empty) {
+        uid = userSnap.docs[0].id;
+        orgId = (userSnap.docs[0].data().orgId as string) || null;
+      }
+    } catch {
+      // Best-effort lookup only - never fail the write over this.
+    }
+
+    await db.collection("loginFailureEvents").add({
+      email,
+      uid,
+      orgId,
+      attemptedAt: nowTs(),
+    });
+
+    return {recorded: true};
+  },
+);
+
+const LOGIN_FAILURE_ALERT_THRESHOLD = 5;
+const LOGIN_FAILURE_WINDOW_MS = 15 * 60 * 1000;
+
+export const onLoginFailureBurst = onDocumentCreated(
+  {document: "loginFailureEvents/{eventId}", secrets: [SENDGRID_API_KEY, SENDGRID_FROM_EMAIL]},
+  async (event) => {
+    const snap = event.data;
+    if (!snap) return;
+    const data = snap.data();
+    const email = String(data.email || "");
+    if (!email) return;
+
+    const since = admin.firestore.Timestamp.fromMillis(Date.now() - LOGIN_FAILURE_WINDOW_MS);
+    const recentSnap = await db.collection("loginFailureEvents")
+      .where("email", "==", email)
+      .where("attemptedAt", ">=", since)
+      .get();
+
+    // Fire exactly once per burst - not on every failure past the threshold.
+    if (recentSnap.size !== LOGIN_FAILURE_ALERT_THRESHOLD) return;
+
+    const orgId = (data.orgId as string) || null;
+    const scope: "global" | "org" = orgId ? "org" : "global";
+
+    await db.collection("adminNotifications").add({
+      type: "login_failure_alert",
+      severity: "critical",
+      scope,
+      orgId,
+      title: "Repeated failed login attempts",
+      message: "{threshold} failed login attempts for {email} in the last 15 minutes.",
+      messageParams: {threshold: String(LOGIN_FAILURE_ALERT_THRESHOLD), email},
+      targetUrl: scope === "org" ? "/manager/dashboard" : "/superAdmin/dashboard",
+      relatedId: email,
+      readBy: [],
+      createdAt: nowTs(),
+    });
+
+    const recipients = await resolveAdminRecipients(scope, orgId);
+    if (recipients.length) {
+      await db.collection("mail").add({
+        to: recipients,
+        message: {
+          subject: "⚠️ Security alert: repeated failed logins",
+          html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#1a2b4a">
+            <h2 style="color:#b91c1c">Repeated failed login attempts</h2>
+            <p>${LOGIN_FAILURE_ALERT_THRESHOLD} failed login attempts were recorded for <strong>${escapeHtml(email)}</strong> in the last 15 minutes.</p>
+            <p>This may indicate a brute-force attempt against this account. Review recent activity and consider contacting the user.</p>
+          </div>`,
+        },
+      });
+    }
+  },
+);
+
 export const backfillAgentTasks = onCall(
   {cors: callableCors},
   async (request: CallableRequest<{limit?: number}>) => {

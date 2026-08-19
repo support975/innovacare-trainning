@@ -2868,6 +2868,16 @@ const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     'None (onsite / kiosk only)': 'Aucune (sur place / kiosque uniquement)',
     'Talview (remote, diaspora candidates)': 'Talview (à distance, candidats de la diaspora)',
     'Review flagged incidents for remote (diaspora) candidates': 'Examiner les incidents signalés pour les candidats à distance (diaspora)',
+    'unread': 'non lu(s)',
+    'No notifications': 'Aucune notification',
+    'New demo request': 'Nouvelle demande de démo',
+    '{name} from {org} requested a demo.': '{name} de {org} a demandé une démo.',
+    'New course access request': 'Nouvelle demande d’accès à un cours',
+    '{name} requested access to "{course}".': '{name} a demandé l’accès à « {course} ».',
+    'Repeated failed login attempts': 'Tentatives de connexion échouées répétées',
+    '{threshold} failed login attempts for {email} in the last 15 minutes.': '{threshold} tentatives de connexion échouées pour {email} au cours des 15 dernières minutes.',
+    'Remote link': 'Lien à distance',
+    'Copy the remote candidate login link for this session': 'Copier le lien de connexion pour le candidat à distance de cette session',
   },
 };
 

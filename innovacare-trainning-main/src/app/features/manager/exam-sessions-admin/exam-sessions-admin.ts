@@ -322,6 +322,12 @@ export class ExamSessionsAdminComponent implements OnInit {
     return center ? `${center.name} (${center.city})` : centerId;
   }
 
+  copyRemoteLoginLink(sessionId: string): void {
+    const baseUrl = window.location.origin;
+    const loginUrl = `${baseUrl}/exam-session-login?sessionId=${sessionId}`;
+    this.copyToClipboard(loginUrl);
+  }
+
   openKioskSetup(sessionId: string): void {
     const baseUrl = window.location.origin;
     const urls: Array<{ stationId: string; url: string }> = [];
