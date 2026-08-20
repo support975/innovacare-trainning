@@ -13,6 +13,7 @@ import Stripe from "stripe";
 import sgMail from "@sendgrid/mail";
 import twilio from "twilio";
 import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import {GoogleCloudTtsProvider} from "./tts/google-cloud-tts-provider.js";
 import {TtsProvider} from "./tts/tts-provider.js";
 import {createPublicBlogArticleHandler} from "./public-blog.js";
@@ -55,6 +56,7 @@ const TWILIO_ACCOUNT_SID = defineSecret("TWILIO_ACCOUNT_SID");
 const TWILIO_AUTH_TOKEN = defineSecret("TWILIO_AUTH_TOKEN");
 const TWILIO_FROM_NUMBER = defineSecret("TWILIO_FROM_NUMBER");
 const ANTHROPIC_API_KEY = defineSecret("ANTHROPIC_API_KEY");
+const OPENAI_API_KEY = defineSecret("OPENAI_API_KEY");
 const PUBLIC_APP_URL = "https://www.innovacaretrainning.com";
 
 /* ─────────── Helpers & types ─────────── */
@@ -4805,7 +4807,7 @@ const buildSystemPrompt = (context: ChatPayload["context"]): string => {
 };
 
 export const chatWithAI = onCall(
-  {secrets: [ANTHROPIC_API_KEY], cors: callableCors},
+  {secrets: [OPENAI_API_KEY], cors: callableCors},
   async (request: CallableRequest<ChatPayload>) => {
     const {messages, context} = request.data;
 
@@ -4826,20 +4828,19 @@ export const chatWithAI = onCall(
       }
     }
 
-    const anthropic = new Anthropic({apiKey: ANTHROPIC_API_KEY.value()});
+    const openai = new OpenAI({apiKey: OPENAI_API_KEY.value()});
     const systemPrompt = buildSystemPrompt(context);
 
-    const response = await anthropic.messages.create({
-      model: "claude-sonnet-5",
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
       max_tokens: 2048,
-      system: systemPrompt,
-      messages: messages as Anthropic.MessageParam[],
+      messages: [
+        {role: "system", content: systemPrompt},
+        ...(messages as {role: "user" | "assistant"; content: string}[]),
+      ],
     });
 
-    const text = response.content
-      .filter((b): b is Anthropic.TextBlock => b.type === "text")
-      .map((b) => b.text)
-      .join("");
+    const text = response.choices[0]?.message?.content ?? "";
 
     // Optionally persist chat to Firestore if user is authenticated
     const uid = request.auth?.uid;
