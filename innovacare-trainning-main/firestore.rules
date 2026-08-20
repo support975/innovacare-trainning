@@ -334,13 +334,15 @@ service cloud.firestore {
     }
 
     function canReadEvent(eventData) {
-      return (!isSignedIn() && isPublicEvent(eventData))
+      // Unlike courses, the events catalog (events-catalog.ts) merges the
+      // public catalog with the org catalog for every signed-in learner —
+      // org membership never narrows visibility of a genuinely public
+      // webinar, it only adds org-specific ones on top. So "public" here
+      // means public to anyone, signed in or not.
+      return isPublicEvent(eventData)
         || isSuperAdmin()
         || isEventAssignedToMyOrg(eventData)
-        || isEventReachableByMyOrg(eventData)
-        // Individual/guest users (accountType:'individual', orgId:null) —
-        // same public-visitor rule as courses, but while signed in.
-        || (isSignedIn() && myOrgId() == null && isPublicEvent(eventData));
+        || isEventReachableByMyOrg(eventData);
     }
 
     function isLearningPathMappedToMyOrg(pathId) {
