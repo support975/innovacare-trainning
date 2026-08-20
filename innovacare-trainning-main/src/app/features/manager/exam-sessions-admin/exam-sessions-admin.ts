@@ -13,6 +13,7 @@ import { Observable } from 'rxjs';
 
 import { ToDatePipe } from '../../../shared/pipes/to-date.pipe';
 import { LanguageService } from '../../../shared/services/language';
+import { publicAppOrigin } from '../../../shared/utils/public-app-origin';
 
 interface ExamAttemptVm {
   id: string;
@@ -428,13 +429,13 @@ export class ExamSessionsAdminComponent implements OnInit {
   }
 
   copyRemoteLoginLink(sessionId: string): void {
-    const baseUrl = window.location.origin;
+    const baseUrl = publicAppOrigin();
     const loginUrl = `${baseUrl}/exam-session-login?sessionId=${sessionId}`;
     this.copyToClipboard(loginUrl);
   }
 
   openKioskSetup(sessionId: string): void {
-    const baseUrl = window.location.origin;
+    const baseUrl = publicAppOrigin();
     const urls: Array<{ stationId: string; url: string }> = [];
 
     for (let i = 1; i <= 10; i++) {

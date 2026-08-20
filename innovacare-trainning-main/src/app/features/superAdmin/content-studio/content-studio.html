@@ -266,7 +266,7 @@
               <span *ngIf="!article().heroImageUrl">{{ lang.t('Innovacare Training') }}</span>
             </div>
             <div>
-              <small>innovacare-training.web.app</small>
+              <small>{{ publicUrl().replace('https://', '') }}</small>
               <strong>{{ article().ogTitle || article().title || lang.t('Open Graph Title') }}</strong>
               <p>{{ article().ogDescription || article().metaDescription || lang.t('Open Graph description for social sharing.') }}</p>
             </div>

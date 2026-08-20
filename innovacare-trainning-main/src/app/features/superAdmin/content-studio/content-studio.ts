@@ -14,6 +14,7 @@ import {
   slugify,
 } from '../services/content-studio.service';
 import { LanguageService } from '../../../shared/services/language';
+import { publicAppOrigin } from '../../../shared/utils/public-app-origin';
 
 @Component({
   selector: 'app-content-studio',
@@ -78,7 +79,7 @@ export class ContentStudioComponent {
 
   readonly publishedArticles = computed(() => this.articles().filter((item) => item.status === 'published'));
   readonly seoScore = computed(() => this.computeSeoScore(this.article()));
-  readonly publicUrl = computed(() => `https://innovacare-training.web.app/blog/${this.article().slug || 'your-slug'}`);
+  readonly publicUrl = computed(() => `${publicAppOrigin()}/blog/${this.article().slug || 'your-slug'}`);
   readonly shareLinks = computed(() => {
     const url = encodeURIComponent(this.publicUrl());
     const title = encodeURIComponent(this.article().ogTitle || this.article().title || 'Innovacare Training');

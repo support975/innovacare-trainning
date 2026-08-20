@@ -1,9 +1,9 @@
 import QRCode from 'qrcode';
+import { publicAppOrigin } from './public-app-origin';
 
 /** Deep link into the public member-verification page for a given credential number. */
 export function memberVerificationUrl(membershipNumber: string): string {
-  const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  return `${origin}/verify-member/${encodeURIComponent(membershipNumber)}`;
+  return `${publicAppOrigin()}/verify-member/${encodeURIComponent(membershipNumber)}`;
 }
 
 /** Renders a QR code (pointing at the public verification page) as a data URL for use in an <img>. */

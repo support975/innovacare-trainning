@@ -8,6 +8,7 @@ import { LanguageService } from '../../../../shared/services/language';
 import { PublicSiteNavComponent } from '../../../../shared/components/public-site-nav/public-site-nav';
 import { Tilt3dDirective } from '../../../../shared/directives/tilt-3d.directive';
 import { WebinarEvent } from '../../../../data/models';
+import { publicAppOrigin } from '../../../../shared/utils/public-app-origin';
 
 interface WebinarCardVm {
   event: WebinarEvent;
@@ -76,8 +77,7 @@ export class WebinarsPageComponent {
   }
 
   shareLinksFor(event: WebinarEvent): { whatsapp: string; facebook: string; linkedin: string } {
-    const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    const url = encodeURIComponent(`${origin}/webinars/${event.id}`);
+    const url = encodeURIComponent(`${publicAppOrigin()}/webinars/${event.id}`);
     const title = encodeURIComponent(event.title || 'Webinar');
     return {
       whatsapp: `https://wa.me/?text=${title}%20${url}`,
