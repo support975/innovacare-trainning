@@ -1658,6 +1658,18 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow create, update: if isManagerOrAbove()
         && request.resource.data.orgId == myOrgId();
+      // An enrolled candidate may append their own access token when logging
+      // in to the session — nothing else about the session may change, and
+      // any pre-existing tokens must be preserved (append-only).
+      allow update: if isSignedIn()
+        && resource.data.enrolledCandidateIds.hasAny([request.auth.uid])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['accessTokens'])
+        && (resource.data.keys().hasAny(['accessTokens'])
+              ? request.resource.data.accessTokens.hasAll(resource.data.accessTokens)
+              : true)
+        && request.resource.data.accessTokens.size() > 0
+        && request.resource.data.accessTokens[request.resource.data.accessTokens.size() - 1].candidateUid
+              == request.auth.uid;
       allow delete: if isManagerOrAbove()
         && resource.data.orgId == myOrgId();
 
