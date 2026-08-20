@@ -7,11 +7,27 @@ import { ProctorService } from '../../../data/proctor.service';
 import { ExamSessionAuthService } from '../../../data/exam-session-auth.service';
 import { ExamBlueprintService } from '../../../data/exam-blueprint.service';
 import { ExamCenter, ExamSession } from '../../../data/models';
-import { Firestore, collection, collectionData, doc, query, updateDoc, deleteDoc, where } from '@angular/fire/firestore';
+import { Firestore, collection, collectionData, doc, query, orderBy, limit, updateDoc, deleteDoc, where } from '@angular/fire/firestore';
+import { Functions, httpsCallable } from '@angular/fire/functions';
 import { Observable } from 'rxjs';
 
 import { ToDatePipe } from '../../../shared/pipes/to-date.pipe';
 import { LanguageService } from '../../../shared/services/language';
+
+interface ExamAttemptVm {
+  id: string;
+  sessionId?: string | null;
+  candidateUid?: string;
+  candidateEmail?: string | null;
+  candidateName?: string | null;
+  score?: number;
+  passed?: boolean;
+  completedAt?: unknown;
+  resultsSent?: boolean;
+  displayEmail?: string;
+  displayName?: string;
+}
+
 @Component({
   selector: 'app-exam-sessions-admin',
   standalone: true,
@@ -24,10 +40,11 @@ export class ExamSessionsAdminComponent implements OnInit {
   private examSessionAuthService = inject(ExamSessionAuthService);
   private blueprintService = inject(ExamBlueprintService);
   private afs = inject(Firestore);
+  private functions = inject(Functions);
   readonly lang = inject(LanguageService);
 
   // Tab state
-  activeTab = signal<'centers' | 'sessions'>('centers');
+  activeTab = signal<'centers' | 'sessions' | 'results'>('centers');
   sessionPasswords = signal<Record<string, string>>({});
 
   // User's organization
@@ -100,6 +117,26 @@ export class ExamSessionsAdminComponent implements OnInit {
     return this.learners().filter((u) => enrolled.has(u.id));
   });
 
+  // Results — session-based candidates (kiosk or remote/diaspora) never see
+  // a score in-app; sendResults() emails it to them on demand.
+  examAttempts = signal<ExamAttemptVm[]>([]);
+  sendingResultsFor = signal<string | null>(null);
+
+  readonly sessionResults = computed<ExamAttemptVm[]>(() => {
+    const sessionIds = new Set(this.sessions().map((s) => s.id));
+    const learnersById = new Map(this.learners().map((u) => [u.id, u]));
+    return this.examAttempts()
+      .filter((a) => a.sessionId && sessionIds.has(a.sessionId))
+      .map((a) => {
+        const learner = learnersById.get(a.candidateUid || '');
+        return {
+          ...a,
+          displayEmail: a.candidateEmail || learner?.email || '',
+          displayName: a.candidateName || learner?.displayName || '',
+        };
+      });
+  });
+
   ngOnInit() {
     // Get current user's organization
     this.authService.profile$.subscribe((profile: any) => {
@@ -135,6 +172,17 @@ export class ExamSessionsAdminComponent implements OnInit {
         this.loadPublishedExams(profile.orgId);
       }
     });
+
+    // Recent exam attempts, for the Results tab — filtered client-side to
+    // this org's sessions in the sessionResults computed above.
+    const attemptsQuery = query(
+      collection(this.afs, 'examAttempts'),
+      orderBy('completedAt', 'desc'),
+      limit(300)
+    );
+    (collectionData(attemptsQuery, { idField: 'id' }) as Observable<ExamAttemptVm[]>).subscribe(
+      (list) => this.examAttempts.set(list)
+    );
   }
 
   private loadSessionsByOrg(orgId: string): void {
@@ -358,6 +406,25 @@ export class ExamSessionsAdminComponent implements OnInit {
   getCenterName(centerId: string): string {
     const center = this.availableCenters().find(c => c.id === centerId);
     return center ? `${center.name} (${center.city})` : centerId;
+  }
+
+  async sendResults(attemptId: string): Promise<void> {
+    this.sendingResultsFor.set(attemptId);
+    try {
+      const callable = httpsCallable<{ attemptId: string }, { sent: boolean }>(
+        this.functions,
+        'sendExamResultEmail'
+      );
+      await callable({ attemptId });
+      this.examAttempts.update((list) =>
+        list.map((a) => (a.id === attemptId ? { ...a, resultsSent: true } : a))
+      );
+      this.notice.set(`✓ ${this.lang.t('Results email sent.')}`);
+    } catch (e: any) {
+      this.notice.set(e?.message || this.lang.t('Failed to send results email.'));
+    } finally {
+      this.sendingResultsFor.set(null);
+    }
   }
 
   copyRemoteLoginLink(sessionId: string): void {

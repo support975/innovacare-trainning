@@ -2887,6 +2887,16 @@ const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     'Failed to enroll the candidate.': 'Échec de l’inscription du candidat.',
     'Failed to remove the candidate.': 'Échec du retrait du candidat.',
     'Add': 'Ajouter',
+    'Exam Results': 'Résultats d’examen',
+    'Candidates never see a score after submitting — send them their result by email when ready.': 'Les candidats ne voient jamais leur score après avoir soumis l’examen — envoyez-leur leur résultat par courriel quand vous êtes prêt.',
+    'Result': 'Résultat',
+    'Pass': 'Réussi',
+    'Did not pass': 'Non réussi',
+    'Sent': 'Envoyé',
+    'Send Results': 'Envoyer les résultats',
+    'No submitted exam attempts yet for your sessions.': 'Aucune tentative d’examen soumise pour vos sessions pour le moment.',
+    'Results email sent.': 'Courriel de résultats envoyé.',
+    'Failed to send results email.': 'Échec de l’envoi du courriel de résultats.',
   },
 };
 

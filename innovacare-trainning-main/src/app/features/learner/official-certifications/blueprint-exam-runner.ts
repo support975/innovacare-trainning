@@ -5,7 +5,7 @@ import { AuthService } from '../../../core/auth';
 import { ExamBlueprintService } from '../../../data/exam-blueprint.service';
 import { CandidateApplicationService } from '../../../shared/certification-authority/candidate-application.service';
 import { ExamBlueprint, ExamBlueprintQuestion } from '../../../data/exam-blueprint.model';
-import { Firestore, collection, addDoc, doc, setDoc, serverTimestamp } from '@angular/fire/firestore';
+import { Firestore, collection, addDoc, doc, getDoc, setDoc, serverTimestamp } from '@angular/fire/firestore';
 import { Auth, signOut } from '@angular/fire/auth';
 
 type QuestionResultDetail = {
@@ -209,6 +209,21 @@ export class BlueprintExamRunnerComponent implements OnInit, OnDestroy {
     this.storageKey = `blueprintExam:${this.blueprintId}:${this.uid}`;
 
     try {
+      // A session-based candidate (kiosk or remote/diaspora) who already
+      // submitted this exam must never be able to re-enter it — not via a
+      // fresh login (loginToExamSession rejects that server-side) and not
+      // by revisiting/forward-navigating back to this exact URL. One
+      // verification/access = one attempt, enforced here too.
+      if (this.sessionBased && this.kioskSessionId) {
+        const verificationSnap = await getDoc(
+          doc(this.afs, `examSessions/${this.kioskSessionId}/candidateVerifications/${this.uid}`)
+        );
+        if (verificationSnap.exists() && verificationSnap.data()?.['examCompleted'] === true) {
+          this.notice.set('You have already submitted this exam. Your results will be sent to you by email.');
+          return;
+        }
+      }
+
       // Only the in-app certification-application flow tracks an
       // applicationId — session-based candidates (kiosk or remote/diaspora)
       // are enrolled directly on the exam session instead.
@@ -470,8 +485,10 @@ export class BlueprintExamRunnerComponent implements OnInit, OnDestroy {
           completedAt: serverTimestamp(),
         });
 
-        // Redirect to results page (learner flow only)
-        if (!this.kioskMode) {
+        // Redirect to results page — the in-app certification-application
+        // flow only. Session-based candidates (kiosk or remote/diaspora)
+        // never see a score here at all; results are communicated later.
+        if (!this.kioskMode && !this.sessionBased) {
           await this.router.navigate(['/exam-results'], {
             queryParams: { attemptId: attemptRef.id },
           });
@@ -482,10 +499,12 @@ export class BlueprintExamRunnerComponent implements OnInit, OnDestroy {
 
       this.clearLocalState();
 
-      if (this.kioskMode) {
-        // Consume the verification: one verification = one attempt. The
-        // candidate can no longer log in at the kiosk unless the proctor
-        // verifies them again.
+      if (this.sessionBased) {
+        // Consume the verification/access: one verification = one attempt,
+        // for kiosk and remote/diaspora candidates alike. A completed
+        // session can never be re-entered — not by logging in again
+        // (loginToExamSession rejects it server-side) and not by
+        // revisiting this exam URL (the ngOnInit guard above rejects it).
         try {
           await setDoc(
             doc(this.afs, `examSessions/${this.kioskSessionId}/candidateVerifications/${this.uid}`),
@@ -500,9 +519,27 @@ export class BlueprintExamRunnerComponent implements OnInit, OnDestroy {
           console.error('Failed to consume verification:', e);
         }
 
-        // Kiosk stations return straight to the session login page for the
-        // next candidate — no results screen, no navigable history.
-        await this.exitKioskToLogin();
+        if (this.kioskMode) {
+          // Kiosk stations return straight to the session login page for
+          // the next candidate — no results screen, no navigable history.
+          await this.exitKioskToLogin();
+          return;
+        }
+
+        // Remote/onsite session-based candidates (diaspora): no results
+        // shown here — sign out and send them back to the session login
+        // page with a submitted confirmation. replaceUrl removes this exam
+        // page from history, so a browser-back press can never land back
+        // on a resumable exam.
+        try {
+          await signOut(this.fbAuth);
+        } catch (e) {
+          console.error('Failed to sign out after exam submission:', e);
+        }
+        await this.router.navigate(['/exam-session-login'], {
+          queryParams: { sessionId: this.kioskSessionId, submitted: '1' },
+          replaceUrl: true,
+        });
         return;
       }
 

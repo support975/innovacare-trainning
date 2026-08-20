@@ -3554,6 +3554,201 @@ export const processKioskCandidateCreateRequest = onDocumentCreated(
   },
 );
 
+/* ─────────── Exam Session Login (self-service candidate login) ───────────
+ * exam-session-login.ts lets a candidate log in with just their email and
+ * the session's shared password — no pre-existing Firebase Auth session is
+ * assumed. Kiosk stations get an identity via signInAnonymously(); a
+ * candidate opening this link from home has no equivalent, so
+ * request.auth.uid can never be trusted to already equal candidateUid at
+ * this point — and the email -> uid lookup itself needs broader `users`
+ * read access than a bare candidate should ever be granted client-side
+ * (firestore.rules only lets managers/admins query other users' profiles).
+ * This callable does the whole thing server-side (Admin SDK, bypasses
+ * rules): resolve email to a uid, verify enrollment + password, issue the
+ * access token, and mint a Firebase custom token for candidateUid so the
+ * client can sign in as themselves — the "remote" equivalent of the
+ * kiosk's anonymous session — before anything downstream (remote
+ * proctoring, exam submission) relies on request.auth.uid matching the
+ * candidate.
+ */
+function simpleHashPassword(password: string): string {
+  let hash = 0;
+  for (let i = 0; i < password.length; i++) {
+    const char = password.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return "hash_" + Math.abs(hash).toString(36);
+}
+
+interface LoginToExamSessionPayload {
+  sessionId: string;
+  email: string;
+  password: string;
+}
+
+export const loginToExamSession = onCall(
+  {cors: callableCors, invoker: "public"},
+  async (request: CallableRequest<LoginToExamSessionPayload>) => {
+    const sessionId = String(request.data?.sessionId || "");
+    const email = String(request.data?.email || "").trim().toLowerCase();
+    const password = String(request.data?.password || "");
+    if (!sessionId || !email || !password) {
+      throw new HttpsError("invalid-argument", "sessionId, email and password are required.");
+    }
+
+    const userQuery = await db.collection("users").where("email", "==", email).limit(1).get();
+    if (userQuery.empty) {
+      throw new HttpsError("not-found", "Email not found. Please check and try again.");
+    }
+    const candidateUid = userQuery.docs[0].id;
+
+    const sessionRef = db.doc(`examSessions/${sessionId}`);
+    const sessionSnap = await sessionRef.get();
+    if (!sessionSnap.exists) {
+      throw new HttpsError("not-found", "Session not found.");
+    }
+    const session = sessionSnap.data() as {enrolledCandidateIds?: string[]; accessPassword?: string};
+    if (!session.enrolledCandidateIds?.includes(candidateUid)) {
+      throw new HttpsError("permission-denied", "You are not enrolled in this exam session.");
+    }
+    if (session.accessPassword !== simpleHashPassword(password)) {
+      throw new HttpsError("permission-denied", "Invalid password.");
+    }
+
+    // One verification/access = one attempt: a candidate who already
+    // submitted this exam (blueprint-exam-runner.ts consumes this same
+    // record on submission) can never log back in for a second try.
+    const verificationSnap = await db
+      .doc(`examSessions/${sessionId}/candidateVerifications/${candidateUid}`)
+      .get();
+    if (verificationSnap.exists && verificationSnap.data()?.examCompleted === true) {
+      throw new HttpsError(
+        "permission-denied",
+        "You have already completed this exam. Your results will be sent to you by email."
+      );
+    }
+
+    const token = nanoid(32);
+    const expiresAt = new Date(Date.now() + 4 * 60 * 60 * 1000);
+
+    await sessionRef.update({
+      accessTokens: admin.firestore.FieldValue.arrayUnion({
+        candidateUid,
+        token,
+        issuedAt: new Date(),
+        expiresAt,
+      }),
+    });
+
+    let customToken: string;
+    try {
+      customToken = await admin.auth().createCustomToken(candidateUid);
+    } catch (error) {
+      console.error("loginToExamSession: createCustomToken failed", error);
+      throw new HttpsError("internal", "Could not start your exam session. Please try again shortly.");
+    }
+
+    return {candidateUid, token, expiresAt: expiresAt.getTime(), customToken};
+  },
+);
+
+/* ─────────── Send exam results by email (manager-triggered) ───────────
+ * Session-based candidates (kiosk or remote/diaspora) never see a score
+ * in-app — blueprint-exam-runner.ts deliberately shows nothing on
+ * submission. A manager reviews attempts in exam-sessions-admin.ts and
+ * triggers this to email the candidate their pass/fail result on demand.
+ */
+const MANAGER_ROLES = ["manager", "admin", "super_admin", "superAdmin"];
+
+interface SendExamResultEmailPayload {
+  attemptId: string;
+}
+
+export const sendExamResultEmail = onCall(
+  {cors: callableCors},
+  async (request: CallableRequest<SendExamResultEmailPayload>) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "Sign in required.");
+    }
+
+    const callerSnap = await db.doc(`users/${uid}`).get();
+    const caller = callerSnap.data() as {role?: string; orgId?: string} | undefined;
+    if (!caller || !MANAGER_ROLES.includes(caller.role || "")) {
+      throw new HttpsError("permission-denied", "Manager access required.");
+    }
+
+    const attemptId = String(request.data?.attemptId || "");
+    if (!attemptId) {
+      throw new HttpsError("invalid-argument", "attemptId is required.");
+    }
+
+    const attemptRef = db.doc(`examAttempts/${attemptId}`);
+    const attemptSnap = await attemptRef.get();
+    if (!attemptSnap.exists) {
+      throw new HttpsError("not-found", "Exam attempt not found.");
+    }
+    const attempt = attemptSnap.data() as {
+      candidateUid?: string;
+      candidateEmail?: string | null;
+      candidateName?: string | null;
+      score?: number;
+      passed?: boolean;
+      sessionId?: string | null;
+    };
+
+    // A plain manager/admin may only send results for their own
+    // organization's sessions; super admins are unscoped.
+    if (caller.role === "manager" || caller.role === "admin") {
+      if (!attempt.sessionId) {
+        throw new HttpsError("permission-denied", "This attempt is not tied to a managed session.");
+      }
+      const sessionSnap = await db.doc(`examSessions/${attempt.sessionId}`).get();
+      const sessionOrgId = sessionSnap.exists ? (sessionSnap.data() as {orgId?: string})?.orgId : undefined;
+      if (!sessionOrgId || sessionOrgId !== caller.orgId) {
+        throw new HttpsError("permission-denied", "You may only send results for your own organization's sessions.");
+      }
+    }
+
+    let email = attempt.candidateEmail || "";
+    if (!email && attempt.candidateUid) {
+      const userSnap = await db.doc(`users/${attempt.candidateUid}`).get();
+      email = (userSnap.data() as {email?: string} | undefined)?.email || "";
+    }
+    if (!email) {
+      throw new HttpsError("failed-precondition", "No email on file for this candidate.");
+    }
+
+    const passed = attempt.passed === true;
+    const name = attempt.candidateName || "Candidate";
+
+    await db.collection("mail").add({
+      to: [email],
+      message: {
+        subject: passed ? "Your exam results: Pass" : "Your exam results",
+        html: `
+          <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;color:#1a2b4a">
+            <h2 style="color:#1a3f6f">Exam Results</h2>
+            <p>Dear ${name},</p>
+            <p>Your exam has been graded. Result: <strong>${passed ? "PASS" : "DID NOT PASS"}</strong></p>
+            <p>Score: ${typeof attempt.score === "number" ? attempt.score + "%" : "N/A"}</p>
+            <p style="color:#9ca3af;font-size:12px;margin-top:24px">This is an automated message from your training portal.</p>
+          </div>
+        `,
+      },
+    });
+
+    await attemptRef.update({
+      resultsSent: true,
+      resultsSentAt: nowTs(),
+      resultsSentBy: uid,
+    });
+
+    return {sent: true};
+  },
+);
+
 /* ─────────── Remote Proctoring (diaspora candidates) ───────────
  * Vendor-agnostic pipeline: createRemoteProctoringSession opens a vendor
  * session and records it under examSessions/{sessionId}/remoteProctoring/{uid};
