@@ -41,6 +41,11 @@ export class BlueprintExamRunnerComponent implements OnInit, OnDestroy {
 
   // Kiosk mode: launched from the kiosk exam login with query params instead of route params
   kioskMode = false;
+  // True for both kiosk and remote (diaspora) session-based launches — i.e.
+  // anything driven by query params rather than an in-app applicationId
+  // route. Session-based candidates never have a certification application
+  // to track, so the applicationId-only branches below must not run for them.
+  private sessionBased = false;
   private kioskSessionId = '';
   private kioskStationId = '';
   private kioskCandidateEmail = '';
@@ -163,6 +168,7 @@ export class BlueprintExamRunnerComponent implements OnInit, OnDestroy {
     // up the more permissive remote-proctoring branch by default.
     const qp = this.route.snapshot.queryParamMap;
     if (!this.blueprintId && qp.get('examId')) {
+      this.sessionBased = true;
       this.kioskMode = qp.get('mode') !== 'remote';
       this.blueprintId = qp.get('examId') || '';
       this.kioskSessionId = qp.get('sessionId') || '';
@@ -180,13 +186,18 @@ export class BlueprintExamRunnerComponent implements OnInit, OnDestroy {
       }
     }
 
-    if (!this.blueprintId || (!this.applicationId && !this.kioskMode)) {
+    if (!this.blueprintId || (!this.applicationId && !this.sessionBased)) {
       this.notice.set('Invalid exam link.');
       return;
     }
 
     if (!this.kioskMode) {
-      this.uid = this.auth.currentUid || '';
+      // Session-based remote (diaspora) candidates already have their uid
+      // from the query param; only fall back to the signed-in user for the
+      // in-app application flow, where the route never carries a uid.
+      if (!this.sessionBased) {
+        this.uid = this.auth.currentUid || '';
+      }
       // Remote candidates (diaspora) take this exam online: enable the
       // lightweight proctoring guard — tab-switch detection + unload warning.
       this.onlineProctored = true;
@@ -198,7 +209,10 @@ export class BlueprintExamRunnerComponent implements OnInit, OnDestroy {
     this.storageKey = `blueprintExam:${this.blueprintId}:${this.uid}`;
 
     try {
-      if (!this.kioskMode) {
+      // Only the in-app certification-application flow tracks an
+      // applicationId — session-based candidates (kiosk or remote/diaspora)
+      // are enrolled directly on the exam session instead.
+      if (!this.kioskMode && !this.sessionBased) {
         const application = await this.applicationsSvc.getApplication(this.applicationId);
         if (!application || !['eligible', 'approved_for_exam'].includes(application.status)) {
           this.notice.set('This exam is not available for your application.');
@@ -426,7 +440,7 @@ export class BlueprintExamRunnerComponent implements OnInit, OnDestroy {
         details,
       });
 
-      if (!this.kioskMode) {
+      if (!this.kioskMode && !this.sessionBased) {
         await this.applicationsSvc.markExamCompleted(this.applicationId, {
           blueprintId: this.blueprintId,
           percent,
