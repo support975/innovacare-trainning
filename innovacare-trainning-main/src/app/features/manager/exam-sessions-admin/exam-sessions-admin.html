@@ -277,6 +277,14 @@
             <td>
               <button
                 class="btn-small"
+                (click)="openEnrollModal(session)"
+                [disabled]="busy()"
+                [title]="lang.t('Enroll candidates in this session')"
+              >
+                👤 {{ lang.t('Enroll') }} ({{ (session.enrolledCandidateIds || []).length }})
+              </button>
+              <button
+                class="btn-small"
                 (click)="generateAccessPassword(session.id || '')"
                 [disabled]="busy()"
                 [title]="lang.t('Generate onsite access password')"
@@ -353,6 +361,52 @@
       </div>
 
       <button class="btn-primary" (click)="closeKioskModal()">{{ lang.t('Done') }}</button>
+    </div>
+  </div>
+
+  <!-- Candidate Enrollment Modal -->
+  <div class="modal" *ngIf="enrollModalOpen()" [class.open]="enrollModalOpen()">
+    <div class="modal-content">
+      <button class="close-btn" (click)="closeEnrollModal()">&times;</button>
+      <h2>{{ lang.t('Enroll Candidates') }}</h2>
+      <p class="subtitle">{{ lang.t('Only enrolled candidates can log in to this session — kiosk or remote.') }}</p>
+
+      <div class="enrolled-list" *ngIf="enrolledLearners().length > 0">
+        <h3>{{ lang.t('Enrolled') }} ({{ enrolledLearners().length }})</h3>
+        <div class="candidate-row" *ngFor="let u of enrolledLearners()">
+          <span class="candidate-name">{{ u.displayName || u.email }}</span>
+          <span class="candidate-email">{{ u.email }}</span>
+          <button
+            class="btn-small btn-delete"
+            (click)="unenrollCandidate(u.id)"
+            [disabled]="busy()"
+          >
+            {{ lang.t('Remove') }}
+          </button>
+        </div>
+      </div>
+
+      <div class="enroll-search">
+        <h3>{{ lang.t('Add a candidate') }}</h3>
+        <input
+          type="text"
+          [(ngModel)]="learnerSearchQuery"
+          name="learnerSearchQuery"
+          [placeholder]="lang.t('Search by name or email…')"
+        />
+        <div class="candidate-row" *ngFor="let u of filteredLearners()">
+          <span class="candidate-name">{{ u.displayName || u.email }}</span>
+          <span class="candidate-email">{{ u.email }}</span>
+          <button class="btn-small btn-primary" (click)="enrollCandidate(u.id)" [disabled]="busy()">
+            {{ lang.t('Add') }}
+          </button>
+        </div>
+        <p class="muted" *ngIf="filteredLearners().length === 0">
+          {{ lang.t('No matching learner accounts in your organization.') }}
+        </p>
+      </div>
+
+      <button class="btn-primary" (click)="closeEnrollModal()">{{ lang.t('Done') }}</button>
     </div>
   </div>
 </div>

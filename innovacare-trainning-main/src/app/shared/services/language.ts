@@ -2878,6 +2878,15 @@ const TRANSLATIONS: Record<AppLanguage, Record<string, string>> = {
     '{threshold} failed login attempts for {email} in the last 15 minutes.': '{threshold} tentatives de connexion échouées pour {email} au cours des 15 dernières minutes.',
     'Remote link': 'Lien à distance',
     'Copy the remote candidate login link for this session': 'Copier le lien de connexion pour le candidat à distance de cette session',
+    'Enroll Candidates': 'Inscrire des candidats',
+    'Only enrolled candidates can log in to this session — kiosk or remote.': 'Seuls les candidats inscrits peuvent se connecter à cette session — kiosque ou à distance.',
+    'Add a candidate': 'Ajouter un candidat',
+    'No matching learner accounts in your organization.': 'Aucun compte apprenant correspondant dans votre organisation.',
+    'Enroll': 'Inscrire',
+    'Enroll candidates in this session': 'Inscrire des candidats à cette session',
+    'Failed to enroll the candidate.': 'Échec de l’inscription du candidat.',
+    'Failed to remove the candidate.': 'Échec du retrait du candidat.',
+    'Add': 'Ajouter',
   },
 };
 
