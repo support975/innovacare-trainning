@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -7,7 +7,8 @@ import { ProctorService } from '../../../data/proctor.service';
 import { ExamSessionAuthService } from '../../../data/exam-session-auth.service';
 import { ExamBlueprintService } from '../../../data/exam-blueprint.service';
 import { ExamCenter, ExamSession } from '../../../data/models';
-import { Firestore, doc, updateDoc, deleteDoc } from '@angular/fire/firestore';
+import { Firestore, collection, collectionData, doc, query, updateDoc, deleteDoc, where } from '@angular/fire/firestore';
+import { Observable } from 'rxjs';
 
 import { ToDatePipe } from '../../../shared/pipes/to-date.pipe';
 import { LanguageService } from '../../../shared/services/language';
@@ -72,6 +73,33 @@ export class ExamSessionsAdminComponent implements OnInit {
   kioskModalOpen = signal(false);
   kioskUrls = signal<Array<{ stationId: string; url: string; qrCode?: string }>>([]);
 
+  // Candidate enrollment - see openEnrollModal(). enrolledCandidateIds on
+  // ExamSession is read everywhere (exam-session-login.ts, session-monitor.ts)
+  // but nothing in the app ever wrote to it until this modal - candidates
+  // could never actually log in to a session, kiosk or remote, without it.
+  enrollModalOpen = signal(false);
+  enrollingSession = signal<ExamSession | null>(null);
+  learners = signal<Array<{ id: string; displayName?: string; email?: string }>>([]);
+  learnerSearchQuery = signal('');
+
+  readonly filteredLearners = computed(() => {
+    const q = this.learnerSearchQuery().toLowerCase().trim();
+    const enrolled = new Set(this.enrollingSession()?.enrolledCandidateIds || []);
+    return this.learners()
+      .filter((u) => !enrolled.has(u.id))
+      .filter(
+        (u) =>
+          !q ||
+          u.displayName?.toLowerCase().includes(q) ||
+          u.email?.toLowerCase().includes(q)
+      );
+  });
+
+  readonly enrolledLearners = computed(() => {
+    const enrolled = new Set(this.enrollingSession()?.enrolledCandidateIds || []);
+    return this.learners().filter((u) => enrolled.has(u.id));
+  });
+
   ngOnInit() {
     // Get current user's organization
     this.authService.profile$.subscribe((profile: any) => {
@@ -88,6 +116,16 @@ export class ExamSessionsAdminComponent implements OnInit {
 
         // Load all sessions for this org
         this.loadSessionsByOrg(profile.orgId);
+
+        // Load learners for the candidate-enrollment picker
+        const learnersQuery = query(
+          collection(this.afs, 'users'),
+          where('orgId', '==', profile.orgId),
+          where('role', '==', 'learner')
+        );
+        (collectionData(learnersQuery, { idField: 'id' }) as Observable<
+          Array<{ id: string; displayName?: string; email?: string }>
+        >).subscribe((list) => this.learners.set(list));
       }
     });
 
@@ -346,6 +384,57 @@ export class ExamSessionsAdminComponent implements OnInit {
 
   closeKioskModal(): void {
     this.kioskModalOpen.set(false);
+  }
+
+  openEnrollModal(session: ExamSession): void {
+    this.enrollingSession.set(session);
+    this.learnerSearchQuery.set('');
+    this.enrollModalOpen.set(true);
+  }
+
+  closeEnrollModal(): void {
+    this.enrollModalOpen.set(false);
+    this.enrollingSession.set(null);
+  }
+
+  async enrollCandidate(uid: string): Promise<void> {
+    const session = this.enrollingSession();
+    if (!session?.id) return;
+    const current = session.enrolledCandidateIds || [];
+    if (current.includes(uid)) return;
+
+    this.busy.set(true);
+    try {
+      const updated = [...current, uid];
+      await this.proctorService.updateSession(session.id, { enrolledCandidateIds: updated });
+      this.enrollingSession.set({ ...session, enrolledCandidateIds: updated });
+      this.sessions.update((list) =>
+        list.map((s) => (s.id === session.id ? { ...s, enrolledCandidateIds: updated } : s))
+      );
+    } catch (e: any) {
+      this.notice.set(e?.message || this.lang.t('Failed to enroll the candidate.'));
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  async unenrollCandidate(uid: string): Promise<void> {
+    const session = this.enrollingSession();
+    if (!session?.id) return;
+    const updated = (session.enrolledCandidateIds || []).filter((id) => id !== uid);
+
+    this.busy.set(true);
+    try {
+      await this.proctorService.updateSession(session.id, { enrolledCandidateIds: updated });
+      this.enrollingSession.set({ ...session, enrolledCandidateIds: updated });
+      this.sessions.update((list) =>
+        list.map((s) => (s.id === session.id ? { ...s, enrolledCandidateIds: updated } : s))
+      );
+    } catch (e: any) {
+      this.notice.set(e?.message || this.lang.t('Failed to remove the candidate.'));
+    } finally {
+      this.busy.set(false);
+    }
   }
 
   copyToClipboard(text: string): void {
