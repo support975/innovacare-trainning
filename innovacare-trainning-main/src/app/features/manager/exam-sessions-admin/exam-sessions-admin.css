@@ -450,6 +450,16 @@ tbody tr:hover {
   font-style: italic;
 }
 
+.pass {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.fail {
+  color: #dc3545;
+  font-weight: 600;
+}
+
 @media (max-width: 768px) {
   .exam-admin {
     padding: 1rem;

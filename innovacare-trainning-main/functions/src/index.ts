@@ -3653,6 +3653,102 @@ export const loginToExamSession = onCall(
   },
 );
 
+/* ─────────── Send exam results by email (manager-triggered) ───────────
+ * Session-based candidates (kiosk or remote/diaspora) never see a score
+ * in-app — blueprint-exam-runner.ts deliberately shows nothing on
+ * submission. A manager reviews attempts in exam-sessions-admin.ts and
+ * triggers this to email the candidate their pass/fail result on demand.
+ */
+const MANAGER_ROLES = ["manager", "admin", "super_admin", "superAdmin"];
+
+interface SendExamResultEmailPayload {
+  attemptId: string;
+}
+
+export const sendExamResultEmail = onCall(
+  {cors: callableCors},
+  async (request: CallableRequest<SendExamResultEmailPayload>) => {
+    const uid = request.auth?.uid;
+    if (!uid) {
+      throw new HttpsError("unauthenticated", "Sign in required.");
+    }
+
+    const callerSnap = await db.doc(`users/${uid}`).get();
+    const caller = callerSnap.data() as {role?: string; orgId?: string} | undefined;
+    if (!caller || !MANAGER_ROLES.includes(caller.role || "")) {
+      throw new HttpsError("permission-denied", "Manager access required.");
+    }
+
+    const attemptId = String(request.data?.attemptId || "");
+    if (!attemptId) {
+      throw new HttpsError("invalid-argument", "attemptId is required.");
+    }
+
+    const attemptRef = db.doc(`examAttempts/${attemptId}`);
+    const attemptSnap = await attemptRef.get();
+    if (!attemptSnap.exists) {
+      throw new HttpsError("not-found", "Exam attempt not found.");
+    }
+    const attempt = attemptSnap.data() as {
+      candidateUid?: string;
+      candidateEmail?: string | null;
+      candidateName?: string | null;
+      score?: number;
+      passed?: boolean;
+      sessionId?: string | null;
+    };
+
+    // A plain manager/admin may only send results for their own
+    // organization's sessions; super admins are unscoped.
+    if (caller.role === "manager" || caller.role === "admin") {
+      if (!attempt.sessionId) {
+        throw new HttpsError("permission-denied", "This attempt is not tied to a managed session.");
+      }
+      const sessionSnap = await db.doc(`examSessions/${attempt.sessionId}`).get();
+      const sessionOrgId = sessionSnap.exists ? (sessionSnap.data() as {orgId?: string})?.orgId : undefined;
+      if (!sessionOrgId || sessionOrgId !== caller.orgId) {
+        throw new HttpsError("permission-denied", "You may only send results for your own organization's sessions.");
+      }
+    }
+
+    let email = attempt.candidateEmail || "";
+    if (!email && attempt.candidateUid) {
+      const userSnap = await db.doc(`users/${attempt.candidateUid}`).get();
+      email = (userSnap.data() as {email?: string} | undefined)?.email || "";
+    }
+    if (!email) {
+      throw new HttpsError("failed-precondition", "No email on file for this candidate.");
+    }
+
+    const passed = attempt.passed === true;
+    const name = attempt.candidateName || "Candidate";
+
+    await db.collection("mail").add({
+      to: [email],
+      message: {
+        subject: passed ? "Your exam results: Pass" : "Your exam results",
+        html: `
+          <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;color:#1a2b4a">
+            <h2 style="color:#1a3f6f">Exam Results</h2>
+            <p>Dear ${name},</p>
+            <p>Your exam has been graded. Result: <strong>${passed ? "PASS" : "DID NOT PASS"}</strong></p>
+            <p>Score: ${typeof attempt.score === "number" ? attempt.score + "%" : "N/A"}</p>
+            <p style="color:#9ca3af;font-size:12px;margin-top:24px">This is an automated message from your training portal.</p>
+          </div>
+        `,
+      },
+    });
+
+    await attemptRef.update({
+      resultsSent: true,
+      resultsSentAt: nowTs(),
+      resultsSentBy: uid,
+    });
+
+    return {sent: true};
+  },
+);
+
 /* ─────────── Remote Proctoring (diaspora candidates) ───────────
  * Vendor-agnostic pipeline: createRemoteProctoringSession opens a vendor
  * session and records it under examSessions/{sessionId}/remoteProctoring/{uid};

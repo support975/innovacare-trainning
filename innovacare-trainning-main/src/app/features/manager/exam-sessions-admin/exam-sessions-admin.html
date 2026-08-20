@@ -20,6 +20,13 @@
     >
       {{ lang.t('Sessions') }}
     </button>
+    <button
+      class="tab-btn"
+      [class.active]="activeTab() === 'results'"
+      (click)="activeTab.set('results')"
+    >
+      {{ lang.t('Results') }}
+    </button>
   </div>
 
   <!-- CENTERS TAB -->
@@ -324,6 +331,57 @@
         </tbody>
       </table>
     </div>
+  </section>
+
+  <!-- RESULTS TAB -->
+  <section *ngIf="activeTab() === 'results'" class="tab-content">
+    <h2>{{ lang.t('Exam Results') }}</h2>
+    <p class="subtitle">
+      {{ lang.t('Candidates never see a score after submitting — send them their result by email when ready.') }}
+    </p>
+
+    <div class="centers-list" *ngIf="sessionResults().length > 0; else noResults">
+      <table>
+        <thead>
+          <tr>
+            <th>{{ lang.t('Candidate') }}</th>
+            <th>{{ lang.t('Score') }}</th>
+            <th>{{ lang.t('Result') }}</th>
+            <th>{{ lang.t('Submitted') }}</th>
+            <th>{{ lang.t('Actions') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let attempt of sessionResults()">
+            <td>
+              <div>{{ attempt.displayName || attempt.displayEmail || attempt.candidateUid }}</div>
+              <div class="muted" *ngIf="attempt.displayName">{{ attempt.displayEmail }}</div>
+            </td>
+            <td>{{ attempt.score }}%</td>
+            <td>
+              <span [class.pass]="attempt.passed" [class.fail]="!attempt.passed">
+                {{ attempt.passed ? lang.t('Pass') : lang.t('Did not pass') }}
+              </span>
+            </td>
+            <td>{{ attempt.completedAt | toDate | date: 'short' }}</td>
+            <td>
+              <button
+                class="btn-small"
+                (click)="sendResults(attempt.id)"
+                [disabled]="busy() || sendingResultsFor() === attempt.id || attempt.resultsSent"
+              >
+                {{ attempt.resultsSent
+                  ? '✓ ' + lang.t('Sent')
+                  : (sendingResultsFor() === attempt.id ? lang.t('Sending…') : lang.t('Send Results')) }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <ng-template #noResults>
+      <p class="muted">{{ lang.t('No submitted exam attempts yet for your sessions.') }}</p>
+    </ng-template>
   </section>
 
   <!-- Kiosk Setup Modal -->
