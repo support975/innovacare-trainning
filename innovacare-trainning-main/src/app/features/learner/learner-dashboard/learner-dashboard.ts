@@ -387,6 +387,12 @@ export class LearnerDashboardComponent {
 
 // petit helper d’affichage
 dueLabel(enr: EnrollmentDoc, course: CourseDoc): string {
+  // A completed course is never "overdue" — the due date only matters
+  // while the assignment is still outstanding.
+  if (enr.status === 'completed') {
+    const completedTs = epochMs(enr.completedAt);
+    return completedTs ? `Completed ${new Date(completedTs).toLocaleDateString()}` : 'Completed';
+  }
   const now = Date.now();
   const enrDue = epochMs(enr.dueDate);
   const courseDue = epochMs(course?.dueDate);
