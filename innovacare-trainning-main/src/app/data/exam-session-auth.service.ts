@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Firestore, doc, getDoc, setDoc, updateDoc, serverTimestamp, arrayUnion } from '@angular/fire/firestore';
+import { Firestore, doc, getDoc, setDoc, updateDoc, arrayUnion } from '@angular/fire/firestore';
 import { BehaviorSubject } from 'rxjs';
 
 export interface ExamSessionToken {
@@ -65,7 +65,7 @@ export class ExamSessionAuthService {
         accessTokens: arrayUnion({
           candidateUid,
           token,
-          issuedAt: serverTimestamp(),
+          issuedAt: new Date(),
           expiresAt: new Date(expiresAt),
         }),
       });
