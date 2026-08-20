@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ExamSessionAuthService } from '../../../data/exam-session-auth.service';
-import { Firestore, doc, getDoc, collection, query, where, getDocs } from '@angular/fire/firestore';
+import { Firestore, doc, getDoc } from '@angular/fire/firestore';
+import { Auth, signInAnonymously, signOut } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-exam-session-login',
@@ -17,6 +18,7 @@ export class ExamSessionLoginComponent implements OnInit {
   private router = inject(Router);
   private authService = inject(ExamSessionAuthService);
   private afs = inject(Firestore);
+  private fbAuth = inject(Auth);
 
   sessionId = '';
   sessionInfo = signal<any | null>(null);
@@ -27,14 +29,30 @@ export class ExamSessionLoginComponent implements OnInit {
   loading = signal(false);
   error = signal('');
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.sessionId = this.route.snapshot.queryParamMap.get('sessionId') || '';
     if (!this.sessionId) {
       this.error.set('Missing session ID.');
       return;
     }
 
-    this.loadSessionInfo();
+    // This page has no logged-in candidate identity yet — establish (or
+    // reset to) a clean anonymous session so the session-info read below
+    // succeeds regardless of whatever was signed in in this browser
+    // before. Mirrors kiosk-exam-login.ts, which needs the identical
+    // pre-login read access for the same reason.
+    try {
+      if (this.fbAuth.currentUser && !this.fbAuth.currentUser.isAnonymous) {
+        await signOut(this.fbAuth);
+      }
+      if (!this.fbAuth.currentUser) {
+        await signInAnonymously(this.fbAuth);
+      }
+    } catch (e) {
+      console.error('Anonymous sign-in failed:', e);
+    }
+
+    await this.loadSessionInfo();
   }
 
   private async loadSessionInfo(): Promise<void> {
@@ -66,38 +84,10 @@ export class ExamSessionLoginComponent implements OnInit {
     this.error.set('');
 
     try {
-      // Look up learner by email to verify enrollment
-      const usersQuery = query(
-        collection(this.afs, 'users'),
-        where('email', '==', emailVal)
-      );
-      const userSnap = await getDocs(usersQuery);
-
-      if (userSnap.empty) {
-        this.error.set('Email not found. Please check and try again.');
-        this.loading.set(false);
-        return;
-      }
-
-      const learner = userSnap.docs[0].data();
-      const candidateUid = userSnap.docs[0].id;
-
-      // Verify candidate is enrolled in this session
-      const sessionData = this.sessionInfo();
-      if (!sessionData?.enrolledCandidateIds?.includes(candidateUid)) {
-        this.error.set('You are not enrolled in this exam session.');
-        this.loading.set(false);
-        return;
-      }
-
-      // Authenticate with session
-      const token = await this.authService.loginToSession(
-        this.sessionId,
-        candidateUid,
-        learner['displayName'] || emailVal,
-        emailVal,
-        pwVal
-      );
+      // Email -> uid resolution, enrollment check, and password
+      // verification all happen server-side in loginToExamSession — see
+      // ExamSessionAuthService.loginToSession for why.
+      const token = await this.authService.loginToSession(this.sessionId, emailVal, pwVal);
 
       // Vendor-proctored (Talview) sessions skip the self-attested selfie
       // step entirely and go through the rigorous precheck flow instead —
@@ -112,7 +102,7 @@ export class ExamSessionLoginComponent implements OnInit {
         queryParams: {
           sessionId: this.sessionId,
           token: token.token,
-          candidateUid: candidateUid,
+          candidateUid: token.candidateUid,
           learnerEmail: emailVal,
         },
       });

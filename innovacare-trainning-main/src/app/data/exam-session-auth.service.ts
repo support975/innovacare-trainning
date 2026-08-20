@@ -1,5 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { Firestore, doc, getDoc, setDoc, updateDoc, arrayUnion } from '@angular/fire/firestore';
+import { Firestore, doc, getDoc } from '@angular/fire/firestore';
+import { Auth, signInWithCustomToken } from '@angular/fire/auth';
+import { Functions, httpsCallable } from '@angular/fire/functions';
 import { BehaviorSubject } from 'rxjs';
 
 export interface ExamSessionToken {
@@ -10,11 +12,19 @@ export interface ExamSessionToken {
 }
 
 const STORAGE_KEY = 'exam_session_token';
-const TOKEN_DURATION_MS = 4 * 60 * 60 * 1000; // 4 hours
+
+interface LoginToExamSessionResponse {
+  candidateUid: string;
+  token: string;
+  expiresAt: number;
+  customToken: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ExamSessionAuthService {
   private afs = inject(Firestore);
+  private fbAuth = inject(Auth);
+  private functions = inject(Functions);
 
   private tokenSubject = new BehaviorSubject<ExamSessionToken | null>(this.loadTokenFromStorage());
   token$ = this.tokenSubject.asObservable();
@@ -27,54 +37,32 @@ export class ExamSessionAuthService {
     }
   }
 
-  /** Authenticate learner for a session using ID + password */
-  async loginToSession(
-    sessionId: string,
-    candidateUid: string,
-    firstName: string,
-    lastName: string,
-    password: string
-  ): Promise<ExamSessionToken> {
+  /**
+   * Authenticate a candidate for a session using their email + the
+   * session's shared password. Resolving email to a uid, verification, and
+   * the access-token write all happen server-side (loginToExamSession) —
+   * the candidate has no pre-existing Firebase Auth session for
+   * request.auth.uid to match, and firestore.rules never lets a bare
+   * client query other users' profiles by email. The callable also
+   * returns a custom token so we can sign in as the candidate here,
+   * giving everything downstream (remote proctoring, exam submission) a
+   * real, matching request.auth.uid.
+   */
+  async loginToSession(sessionId: string, email: string, password: string): Promise<ExamSessionToken> {
     try {
-      // Fetch session
-      const sessionRef = doc(this.afs, `examSessions/${sessionId}`);
-      const sessionSnap = await getDoc(sessionRef);
+      const callable = httpsCallable<
+        { sessionId: string; email: string; password: string },
+        LoginToExamSessionResponse
+      >(this.functions, 'loginToExamSession');
+      const result = await callable({ sessionId, email, password });
 
-      if (!sessionSnap.exists()) {
-        throw new Error('Session not found.');
-      }
-
-      const session = sessionSnap.data() as any;
-
-      // Verify enrolled candidate
-      if (!session.enrolledCandidateIds?.includes(candidateUid)) {
-        throw new Error('You are not enrolled in this session.');
-      }
-
-      // Verify password (simple comparison - production should use bcrypt)
-      if (session.accessPassword !== this.simpleHash(password)) {
-        throw new Error('Invalid password.');
-      }
-
-      // Generate token
-      const token = this.generateToken();
-      const expiresAt = Date.now() + TOKEN_DURATION_MS;
-
-      // Store token in session document
-      await updateDoc(sessionRef, {
-        accessTokens: arrayUnion({
-          candidateUid,
-          token,
-          issuedAt: new Date(),
-          expiresAt: new Date(expiresAt),
-        }),
-      });
+      await signInWithCustomToken(this.fbAuth, result.data.customToken);
 
       const sessionToken: ExamSessionToken = {
         sessionId,
-        candidateUid,
-        token,
-        expiresAt,
+        candidateUid: result.data.candidateUid,
+        token: result.data.token,
+        expiresAt: result.data.expiresAt,
       };
 
       this.storeToken(sessionToken);
@@ -117,24 +105,6 @@ export class ExamSessionAuthService {
   clearToken(): void {
     localStorage.removeItem(STORAGE_KEY);
     this.tokenSubject.next(null);
-  }
-
-  private generateToken(): string {
-    return Math.random().toString(36).substring(2, 15) +
-           Math.random().toString(36).substring(2, 15) +
-           Math.random().toString(36).substring(2, 15);
-  }
-
-  private simpleHash(password: string): string {
-    // Production: use bcrypt via Cloud Function
-    // This is simplified for demo
-    let hash = 0;
-    for (let i = 0; i < password.length; i++) {
-      const char = password.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash;
-    }
-    return 'hash_' + Math.abs(hash).toString(36);
   }
 
   private storeToken(token: ExamSessionToken): void {

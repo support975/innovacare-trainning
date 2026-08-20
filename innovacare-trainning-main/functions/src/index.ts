@@ -3554,6 +3554,92 @@ export const processKioskCandidateCreateRequest = onDocumentCreated(
   },
 );
 
+/* ─────────── Exam Session Login (self-service candidate login) ───────────
+ * exam-session-login.ts lets a candidate log in with just their email and
+ * the session's shared password — no pre-existing Firebase Auth session is
+ * assumed. Kiosk stations get an identity via signInAnonymously(); a
+ * candidate opening this link from home has no equivalent, so
+ * request.auth.uid can never be trusted to already equal candidateUid at
+ * this point — and the email -> uid lookup itself needs broader `users`
+ * read access than a bare candidate should ever be granted client-side
+ * (firestore.rules only lets managers/admins query other users' profiles).
+ * This callable does the whole thing server-side (Admin SDK, bypasses
+ * rules): resolve email to a uid, verify enrollment + password, issue the
+ * access token, and mint a Firebase custom token for candidateUid so the
+ * client can sign in as themselves — the "remote" equivalent of the
+ * kiosk's anonymous session — before anything downstream (remote
+ * proctoring, exam submission) relies on request.auth.uid matching the
+ * candidate.
+ */
+function simpleHashPassword(password: string): string {
+  let hash = 0;
+  for (let i = 0; i < password.length; i++) {
+    const char = password.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return "hash_" + Math.abs(hash).toString(36);
+}
+
+interface LoginToExamSessionPayload {
+  sessionId: string;
+  email: string;
+  password: string;
+}
+
+export const loginToExamSession = onCall(
+  {cors: callableCors, invoker: "public"},
+  async (request: CallableRequest<LoginToExamSessionPayload>) => {
+    const sessionId = String(request.data?.sessionId || "");
+    const email = String(request.data?.email || "").trim().toLowerCase();
+    const password = String(request.data?.password || "");
+    if (!sessionId || !email || !password) {
+      throw new HttpsError("invalid-argument", "sessionId, email and password are required.");
+    }
+
+    const userQuery = await db.collection("users").where("email", "==", email).limit(1).get();
+    if (userQuery.empty) {
+      throw new HttpsError("not-found", "Email not found. Please check and try again.");
+    }
+    const candidateUid = userQuery.docs[0].id;
+
+    const sessionRef = db.doc(`examSessions/${sessionId}`);
+    const sessionSnap = await sessionRef.get();
+    if (!sessionSnap.exists) {
+      throw new HttpsError("not-found", "Session not found.");
+    }
+    const session = sessionSnap.data() as {enrolledCandidateIds?: string[]; accessPassword?: string};
+    if (!session.enrolledCandidateIds?.includes(candidateUid)) {
+      throw new HttpsError("permission-denied", "You are not enrolled in this exam session.");
+    }
+    if (session.accessPassword !== simpleHashPassword(password)) {
+      throw new HttpsError("permission-denied", "Invalid password.");
+    }
+
+    const token = nanoid(32);
+    const expiresAt = new Date(Date.now() + 4 * 60 * 60 * 1000);
+
+    await sessionRef.update({
+      accessTokens: admin.firestore.FieldValue.arrayUnion({
+        candidateUid,
+        token,
+        issuedAt: new Date(),
+        expiresAt,
+      }),
+    });
+
+    let customToken: string;
+    try {
+      customToken = await admin.auth().createCustomToken(candidateUid);
+    } catch (error) {
+      console.error("loginToExamSession: createCustomToken failed", error);
+      throw new HttpsError("internal", "Could not start your exam session. Please try again shortly.");
+    }
+
+    return {candidateUid, token, expiresAt: expiresAt.getTime(), customToken};
+  },
+);
+
 /* ─────────── Remote Proctoring (diaspora candidates) ───────────
  * Vendor-agnostic pipeline: createRemoteProctoringSession opens a vendor
  * session and records it under examSessions/{sessionId}/remoteProctoring/{uid};
