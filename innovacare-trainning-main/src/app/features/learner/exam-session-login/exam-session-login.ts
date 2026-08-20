@@ -28,11 +28,19 @@ export class ExamSessionLoginComponent implements OnInit {
 
   loading = signal(false);
   error = signal('');
+  submitted = signal(false);
 
   async ngOnInit(): Promise<void> {
     this.sessionId = this.route.snapshot.queryParamMap.get('sessionId') || '';
     if (!this.sessionId) {
       this.error.set('Missing session ID.');
+      return;
+    }
+
+    if (this.route.snapshot.queryParamMap.get('submitted') === '1') {
+      // Landed here straight from a completed exam — nothing left to log
+      // in for, just show the confirmation and stop.
+      this.submitted.set(true);
       return;
     }
 

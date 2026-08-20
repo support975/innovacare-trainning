@@ -3616,6 +3616,19 @@ export const loginToExamSession = onCall(
       throw new HttpsError("permission-denied", "Invalid password.");
     }
 
+    // One verification/access = one attempt: a candidate who already
+    // submitted this exam (blueprint-exam-runner.ts consumes this same
+    // record on submission) can never log back in for a second try.
+    const verificationSnap = await db
+      .doc(`examSessions/${sessionId}/candidateVerifications/${candidateUid}`)
+      .get();
+    if (verificationSnap.exists && verificationSnap.data()?.examCompleted === true) {
+      throw new HttpsError(
+        "permission-denied",
+        "You have already completed this exam. Your results will be sent to you by email."
+      );
+    }
+
     const token = nanoid(32);
     const expiresAt = new Date(Date.now() + 4 * 60 * 60 * 1000);
 
