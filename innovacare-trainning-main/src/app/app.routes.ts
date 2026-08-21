@@ -231,6 +231,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/publics/blog/blog-list').then((m) => m.PublicBlogListComponent),
   },
+  {
+    path: 'blog/:slug',
+    loadComponent: () =>
+      import('./features/publics/blog/blog-article').then((m) => m.PublicBlogArticleComponent),
+  },
    {
     path: 'catalogue/:id',
     loadComponent: () =>
