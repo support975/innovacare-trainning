@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { PublicSiteNavComponent } from '../../../shared/components/public-site-nav/public-site-nav';
 import { PublicTranslateDirective } from '../../../shared/directives/public-translate.directive';
@@ -8,7 +9,7 @@ import { PublicBlogService } from './blog.service';
 @Component({
   selector: 'app-public-blog-list',
   standalone: true,
-  imports: [CommonModule, PublicSiteNavComponent, PublicTranslateDirective],
+  imports: [CommonModule, RouterModule, PublicSiteNavComponent, PublicTranslateDirective],
   template: `
     <app-public-site-nav
       page="blog"
@@ -29,7 +30,7 @@ import { PublicBlogService } from './blog.service';
 
       <section class="article-grid" *ngIf="articles().length; else emptyState">
         <article class="article-card" *ngFor="let article of articles()">
-          <a class="media" [href]="'/blog/' + article.slug" [attr.aria-label]="article.title">
+          <a class="media" [routerLink]="['/blog', article.slug]" [attr.aria-label]="article.title">
             <img *ngIf="article.heroImageUrl" [src]="article.heroImageUrl" [alt]="article.heroImageAlt || article.title" />
             <span *ngIf="!article.heroImageUrl">{{ article.category || 'Innovacare Training' }}</span>
           </a>
@@ -38,12 +39,12 @@ import { PublicBlogService } from './blog.service';
               <span>{{ article.category }}</span>
               <span>{{ article.readingMinutes || 1 }} min de lecture</span>
             </div>
-            <h2><a [href]="'/blog/' + article.slug">{{ article.title }}</a></h2>
+            <h2><a [routerLink]="['/blog', article.slug]">{{ article.title }}</a></h2>
             <p>{{ article.excerpt || article.metaDescription }}</p>
             <div class="tag-row" *ngIf="article.tags?.length">
               <span *ngFor="let tag of article.tags.slice(0, 4)">{{ tag }}</span>
             </div>
-            <a class="read-link" [href]="'/blog/' + article.slug">Lire l'article</a>
+            <a class="read-link" [routerLink]="['/blog', article.slug]">Lire l'article</a>
           </div>
         </article>
       </section>

@@ -25,6 +25,7 @@ type PublicNavPage = 'home' | 'features' | 'industries' | 'catalogue' | 'webinar
 
         <button
           class="menu-toggle"
+          [class.open]="mobileMenuOpen"
           type="button"
           (click)="toggleMobileMenu()"
           [attr.aria-expanded]="mobileMenuOpen"
@@ -48,6 +49,7 @@ type PublicNavPage = 'home' | 'features' | 'industries' | 'catalogue' | 'webinar
           <a routerLink="/webinars" [class.is-active]="isActive('webinars')" (click)="closeMobileMenu()">{{ t('public.nav.webinars') }}</a>
           <a routerLink="/pricing" [class.is-active]="isActive('pricing')" (click)="closeMobileMenu()">{{ t('public.nav.pricing') }}</a>
           <a routerLink="/ordre-professionnel" [class.is-active]="isActive('ordre')" (click)="closeMobileMenu()">{{ t('public.nav.ordre') }}</a>
+          <a routerLink="/blog" [class.is-active]="isActive('blog')" (click)="closeMobileMenu()">{{ t('public.nav.blog') }}</a>
           <a [routerLink]="['/home']" fragment="faq" [class.is-active]="isActive('faq')" (click)="closeMobileMenu()">{{ t('public.nav.faq') }}</a>
 
           <div class="nav-mobile-meta mobile-only">
@@ -116,12 +118,14 @@ type PublicNavPage = 'home' | 'features' | 'industries' | 'catalogue' | 'webinar
         background: rgba(255, 255, 255, 0.94);
         border-bottom: 1px solid rgba(214, 224, 238, 0.9);
         backdrop-filter: blur(14px);
-        transition: box-shadow 0.25s ease, background 0.25s ease;
+        transition: box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), background 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+          border-color 0.35s ease;
       }
 
       .public-nav.scrolled {
-        box-shadow: 0 2px 16px rgba(26, 63, 111, 0.12);
+        box-shadow: 0 8px 28px rgba(26, 63, 111, 0.14);
         background: rgba(255, 255, 255, 0.98);
+        border-bottom-color: rgba(214, 224, 238, 0.5);
       }
 
       .container {
@@ -160,6 +164,12 @@ type PublicNavPage = 'home' | 'features' | 'industries' | 'catalogue' | 'webinar
         font-size: 0.95rem;
         letter-spacing: 0.08em;
         box-shadow: 0 10px 20px rgba(13, 34, 64, 0.2);
+        transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease;
+      }
+
+      .brand:hover .brand-mark {
+        transform: scale(1.06) rotate(-4deg);
+        box-shadow: 0 12px 26px rgba(13, 34, 64, 0.28);
       }
 
       .brand-mark--logo {
@@ -191,7 +201,10 @@ type PublicNavPage = 'home' | 'features' | 'industries' | 'catalogue' | 'webinar
       .menu-toggle {
         display: none;
         flex-direction: column;
+        justify-content: center;
         gap: 5px;
+        width: 36px;
+        height: 36px;
         padding: 6px;
         background: none;
         border: none;
@@ -203,6 +216,21 @@ type PublicNavPage = 'home' | 'features' | 'industries' | 'catalogue' | 'webinar
         height: 2px;
         background: #1a3f6f;
         border-radius: 2px;
+        transform-origin: center;
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease, width 0.3s ease;
+      }
+
+      .menu-toggle.open span:nth-child(1) {
+        transform: translateY(7px) rotate(45deg);
+      }
+
+      .menu-toggle.open span:nth-child(2) {
+        opacity: 0;
+        width: 0;
+      }
+
+      .menu-toggle.open span:nth-child(3) {
+        transform: translateY(-7px) rotate(-45deg);
       }
 
       .nav-context {
@@ -237,13 +265,14 @@ type PublicNavPage = 'home' | 'features' | 'industries' | 'catalogue' | 'webinar
       }
 
       .nav a {
+        position: relative;
         padding: 0.7rem 1rem;
         border-radius: 999px;
         color: #1a2b4a;
         font-size: 0.92rem;
         font-weight: 600;
         text-decoration: none;
-        transition: color 0.2s, background 0.2s, transform 0.2s;
+        transition: color 0.25s ease, background 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       }
 
       .nav a:hover {
@@ -252,10 +281,24 @@ type PublicNavPage = 'home' | 'features' | 'industries' | 'catalogue' | 'webinar
         transform: translateY(-1px);
       }
 
+      .nav a:active {
+        transform: translateY(0);
+      }
+
       .nav a.is-active {
         color: #0d2240;
         background: rgba(0, 167, 157, 0.18);
-        box-shadow: inset 0 0 0 1px rgba(0, 167, 157, 0.12);
+        box-shadow: inset 0 0 0 1px rgba(0, 167, 157, 0.16);
+        animation: nav-pill-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      @keyframes nav-pill-in {
+        from {
+          transform: scale(0.94);
+        }
+        to {
+          transform: scale(1);
+        }
       }
 
       .nav-actions {
@@ -295,18 +338,25 @@ type PublicNavPage = 'home' | 'features' | 'industries' | 'catalogue' | 'webinar
       }
 
       .nav-cta {
+        position: relative;
+        overflow: hidden;
         padding: 0.7rem 1.15rem;
         border: 1px solid transparent;
         border-radius: 999px;
         font-size: 0.88rem;
         font-weight: 700;
         cursor: pointer;
-        transition: background 0.2s, transform 0.15s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
+        transition: background 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s,
+          color 0.2s, box-shadow 0.25s ease;
         white-space: nowrap;
       }
 
       .nav-cta:hover {
-        transform: translateY(-1px);
+        transform: translateY(-2px);
+      }
+
+      .nav-cta:active {
+        transform: translateY(0);
       }
 
       .nav-cta--accent {
@@ -315,10 +365,32 @@ type PublicNavPage = 'home' | 'features' | 'industries' | 'catalogue' | 'webinar
         box-shadow: 0 10px 20px rgba(242, 107, 33, 0.24);
       }
 
+      .nav-cta--accent::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(115deg, transparent 20%, rgba(255, 255, 255, 0.45) 50%, transparent 80%);
+        transform: translateX(-120%);
+        transition: transform 0.6s ease;
+      }
+
+      .nav-cta--accent:hover::after {
+        transform: translateX(120%);
+      }
+
+      .nav-cta--accent:hover {
+        box-shadow: 0 14px 26px rgba(242, 107, 33, 0.32);
+      }
+
       .nav-cta--ghost {
         background: #ffffff;
         color: #1a3f6f;
         border-color: rgba(26, 63, 111, 0.16);
+      }
+
+      .nav-cta--ghost:hover {
+        border-color: rgba(26, 63, 111, 0.32);
+        box-shadow: 0 8px 18px rgba(26, 63, 111, 0.1);
       }
 
       .nav-mobile-meta {
@@ -392,7 +464,8 @@ type PublicNavPage = 'home' | 'features' | 'industries' | 'catalogue' | 'webinar
           box-shadow: none;
           opacity: 0;
           pointer-events: none;
-          transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+          transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1), padding 0.35s ease, opacity 0.25s ease,
+            box-shadow 0.25s ease;
         }
 
         .nav.open {
@@ -407,6 +480,35 @@ type PublicNavPage = 'home' | 'features' | 'industries' | 'catalogue' | 'webinar
         .nav a {
           padding: 0.9rem 1rem;
           border-radius: 16px;
+        }
+
+        .nav.open > * {
+          animation: nav-item-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+        }
+
+        .nav.open > *:nth-child(1) { animation-delay: 0.03s; }
+        .nav.open > *:nth-child(2) { animation-delay: 0.06s; }
+        .nav.open > *:nth-child(3) { animation-delay: 0.09s; }
+        .nav.open > *:nth-child(4) { animation-delay: 0.12s; }
+        .nav.open > *:nth-child(5) { animation-delay: 0.15s; }
+        .nav.open > *:nth-child(6) { animation-delay: 0.18s; }
+        .nav.open > *:nth-child(7) { animation-delay: 0.21s; }
+        .nav.open > *:nth-child(8) { animation-delay: 0.24s; }
+        .nav.open > *:nth-child(9) { animation-delay: 0.27s; }
+        .nav.open > *:nth-child(10) { animation-delay: 0.3s; }
+        .nav.open > *:nth-child(11) { animation-delay: 0.33s; }
+        .nav.open > *:nth-child(12) { animation-delay: 0.36s; }
+        .nav.open > *:nth-child(13) { animation-delay: 0.39s; }
+
+        @keyframes nav-item-in {
+          from {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
 
         .nav .language-switch {
@@ -516,7 +618,7 @@ export class PublicSiteNavComponent {
     });
   }
 
-  isActive(item: 'home' | 'solutions' | 'industries' | 'catalogue' | 'webinars' | 'pricing' | 'ordre' | 'faq'): boolean {
+  isActive(item: 'home' | 'solutions' | 'industries' | 'catalogue' | 'webinars' | 'pricing' | 'ordre' | 'blog' | 'faq'): boolean {
     const currentPath = this.currentPath();
     const currentFragment = this.currentFragment();
 
@@ -535,6 +637,8 @@ export class PublicSiteNavComponent {
         return currentPath === '/pricing';
       case 'ordre':
         return currentPath === '/ordre-professionnel';
+      case 'blog':
+        return currentPath === '/blog' || currentPath.startsWith('/blog/');
       case 'faq':
         return currentPath === '/home' && currentFragment === 'faq';
     }
