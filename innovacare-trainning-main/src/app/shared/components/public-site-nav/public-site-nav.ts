@@ -23,18 +23,24 @@ type PublicNavPage = 'home' | 'features' | 'industries' | 'catalogue' | 'webinar
           </span>
         </a>
 
-        <button
-          class="menu-toggle"
-          [class.open]="mobileMenuOpen"
-          type="button"
-          (click)="toggleMobileMenu()"
-          [attr.aria-expanded]="mobileMenuOpen"
-          aria-label="Ouvrir le menu"
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
+        <div class="compact-actions">
+          <button class="nav-cta nav-cta--ghost nav-cta--compact" type="button" (click)="login()">
+            {{ t('public.nav.login') }}
+          </button>
+
+          <button
+            class="menu-toggle"
+            [class.open]="mobileMenuOpen"
+            type="button"
+            (click)="toggleMobileMenu()"
+            [attr.aria-expanded]="mobileMenuOpen"
+            aria-label="Ouvrir le menu"
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
 
         <div class="nav-context desktop-only" aria-label="Résumé de la page">
             <span class="nav-context__label">{{ publicText(contextLabel) }}</span>
@@ -66,9 +72,6 @@ type PublicNavPage = 'home' | 'features' | 'industries' | 'catalogue' | 'webinar
             </button>
           </div>
 
-          <button class="nav-cta nav-cta--ghost mobile-only" type="button" (click)="login()">
-            {{ t('public.nav.login') }}
-          </button>
           <button class="nav-cta nav-cta--accent mobile-only" type="button" (click)="openDemoDialog()">
             {{ t('public.nav.demo') }}
           </button>
@@ -198,8 +201,14 @@ type PublicNavPage = 'home' | 'features' | 'industries' | 'catalogue' | 'webinar
         font-weight: 800;
       }
 
-      .menu-toggle {
+      .compact-actions {
         display: none;
+        align-items: center;
+        gap: 0.6rem;
+      }
+
+      .menu-toggle {
+        display: flex;
         flex-direction: column;
         justify-content: center;
         gap: 5px;
@@ -420,24 +429,12 @@ type PublicNavPage = 'home' | 'features' | 'industries' | 'catalogue' | 'webinar
         display: flex;
       }
 
-      @media (max-width: 1024px) {
-        .header-inner {
-          flex-wrap: wrap;
-        }
-
-        .nav-context {
-          order: 3;
-          width: 100%;
-          padding: 0;
-        }
-      }
-
-      @media (max-width: 768px) {
+      @media (max-width: 1850px) {
         .container {
           padding: 0 1.25rem;
         }
 
-        .menu-toggle {
+        .compact-actions {
           display: flex;
         }
 
@@ -498,7 +495,6 @@ type PublicNavPage = 'home' | 'features' | 'industries' | 'catalogue' | 'webinar
         .nav.open > *:nth-child(10) { animation-delay: 0.3s; }
         .nav.open > *:nth-child(11) { animation-delay: 0.33s; }
         .nav.open > *:nth-child(12) { animation-delay: 0.36s; }
-        .nav.open > *:nth-child(13) { animation-delay: 0.39s; }
 
         @keyframes nav-item-in {
           from {
@@ -570,7 +566,7 @@ export class PublicSiteNavComponent {
 
   @HostListener('window:resize')
   onWindowResize(): void {
-    if (typeof window !== 'undefined' && window.innerWidth > 768 && this.mobileMenuOpen) {
+    if (typeof window !== 'undefined' && window.innerWidth > 1850 && this.mobileMenuOpen) {
       this.closeMobileMenu();
     }
   }
