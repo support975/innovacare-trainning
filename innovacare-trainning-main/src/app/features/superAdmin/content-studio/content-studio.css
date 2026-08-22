@@ -436,6 +436,14 @@ label small,
 .preview article {
   color: #1e293b;
   line-height: 1.7;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.preview article * {
+  max-width: 100%;
+  white-space: normal !important;
 }
 
 .preview article h2 {
@@ -445,6 +453,10 @@ label small,
 .preview article p,
 .preview article ul {
   margin: 0.5rem 0;
+}
+
+.preview article img {
+  height: auto;
 }
 
 .actions {
