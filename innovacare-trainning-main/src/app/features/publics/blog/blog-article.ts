@@ -161,6 +161,14 @@ import { MarketingArticle } from '../../superAdmin/services/content-studio.servi
       color: #26364f;
       line-height: 1.75;
       font-size: 1.05rem;
+      max-width: 100%;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+
+    .article-body * {
+      max-width: 100%;
+      white-space: normal !important;
     }
 
     .article-body :is(h2, h3) {
