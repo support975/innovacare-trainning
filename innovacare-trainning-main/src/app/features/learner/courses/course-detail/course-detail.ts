@@ -82,6 +82,17 @@ export interface Course {
       blocks: Array<any>;
     }>;
   }>;
+
+  materials?: CourseMaterial[];
+}
+
+export interface CourseMaterial {
+  id: string;
+  name: string;
+  url: string;
+  fileType?: string;
+  sizeBytes?: number;
+  uploadedAt?: any;
 }
 
 export interface Certification {
@@ -160,6 +171,7 @@ export class CourseDetail {
         isPublic: false,
         allowedEmailDomains: [],
         sections: [],
+        materials: [],
       },
     }
   );

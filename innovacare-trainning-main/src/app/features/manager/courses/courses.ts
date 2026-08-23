@@ -10,9 +10,10 @@ import {
 } from '@angular/forms';
 
 import { CoursesRepo } from '../../../data/courses.repo';
-import { Course, Section, Lesson, Block } from '../../../data/models';
+import { Course, CourseMaterial, Section, Lesson, Block } from '../../../data/models';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ActingOrgService } from '../../../core/organization/services/acting-org.service';
+import { Storage, ref, uploadBytes, getDownloadURL } from '@angular/fire/storage';
 
 import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -162,8 +163,12 @@ export class Courses {
   private tts = inject(TtsGenerationService);
   private orgContext = inject(ActingOrgService);
   readonly lang = inject(LanguageService);
+  private readonly storage = inject(Storage);
 
   editId: string | null = null;
+  materials = signal<CourseMaterial[]>([]);
+  uploadingMaterial = signal(false);
+  materialError = '';
   loadingEdit = false;
   duplicatingId: string | null = null;
   deletingId: string | null = null;
@@ -357,6 +362,8 @@ export class Courses {
       prerequisitesText: this.arrayToCsv(data.prerequisites),
       requirementsText: this.arrayToCsv(data.requirements),
     });
+
+    this.materials.set(Array.isArray(data.materials) ? data.materials : []);
 
     this.sectionsFA.clear();
 
@@ -1849,6 +1856,49 @@ export class Courses {
     this.jsonAppliedNotice = '';
     this.currentJsonPreview = '';
     this.sectionsFA.clear();
+    this.materials.set([]);
+    this.materialError = '';
+  }
+
+  /* ============================
+     Materials (PDF attachments)
+  ============================ */
+
+  async uploadMaterial(event: Event): Promise<void> {
+    if (!this.canManageCourses) return;
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    this.materialError = '';
+    this.uploadingMaterial.set(true);
+    try {
+      const pathId = this.editId || 'draft';
+      const filePath = `courseMaterials/${pathId}/${Date.now()}_${file.name}`;
+      const storageRef = ref(this.storage, filePath);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+
+      const material: CourseMaterial = {
+        id: `mat-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        name: file.name,
+        url,
+        fileType: file.type,
+        sizeBytes: file.size,
+        uploadedAt: Date.now(),
+      };
+      this.materials.update((list) => [...list, material]);
+    } catch (err: any) {
+      this.materialError = err?.message || this.lang.t('Material upload failed.');
+    } finally {
+      this.uploadingMaterial.set(false);
+      input.value = '';
+    }
+  }
+
+  removeMaterial(id: string): void {
+    if (!this.canManageCourses) return;
+    this.materials.update((list) => list.filter((m) => m.id !== id));
   }
 
   /* ============================
@@ -1897,6 +1947,7 @@ export class Courses {
         healthMeta: src.healthMeta ?? undefined,
         orgId: src.orgId ?? null,
         orgType: src.orgType,
+        materials: Array.isArray(src.materials) ? [...src.materials] : [],
 
         sections: (src.sections ?? []).map((s, si) => ({
           id: crypto.randomUUID(),
@@ -2402,6 +2453,7 @@ export class Courses {
         passingScore: Number(this.form.value.passingScore ?? 80),
         lockedSequence: !!this.form.value.lockedSequence,
         isPublic: !!this.form.value.isPublic,
+        materials: this.materials(),
 
         sections,
       };

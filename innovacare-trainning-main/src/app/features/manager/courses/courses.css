@@ -227,6 +227,36 @@ select.field-input {
   line-height: 1.5;
 }
 
+.material-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.material-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid #e4ecf7;
+  border-radius: 8px;
+  background: #f8faff;
+}
+
+.material-row__name {
+  color: #1a3f6f;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  word-break: break-word;
+}
+
+.material-row__name:hover {
+  text-decoration: underline;
+}
+
 .grid-4 {
   display: grid;
   gap: 12px;
@@ -659,6 +689,16 @@ select.field-input {
 
 .btn-outline:hover {
   background: #1a3f6f;
+  color: #ffffff;
+}
+
+.btn-outline.btn-danger {
+  border-color: #b3261e;
+  color: #b3261e;
+}
+
+.btn-outline.btn-danger:hover {
+  background: #b3261e;
   color: #ffffff;
 }
 

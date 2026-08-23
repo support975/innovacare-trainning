@@ -61,6 +61,19 @@ service firebase.storage {
         && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['super_admin', 'superAdmin'];
     }
 
+    // Course material attachments (PDFs, etc.) shown on the learner course
+    // detail page for download. Readable by any signed-in user (materials
+    // aren't publicly discoverable without reading the course doc, which is
+    // itself access-controlled by firestore.rules' canReadCourse()).
+    // Writable only by super_admin/admin, matching firestore.rules'
+    // isSuperAdmin()/isAdminOrAbove() write gate on the courses collection.
+    match /courseMaterials/{courseId}/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null
+        && firestore.exists(/databases/(default)/documents/users/$(request.auth.uid))
+        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['super_admin', 'superAdmin', 'admin'];
+    }
+
     match /{allPaths=**} {
       allow read, write: if false;
     }
