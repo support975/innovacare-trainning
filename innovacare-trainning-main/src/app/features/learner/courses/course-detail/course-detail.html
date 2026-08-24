@@ -210,6 +210,25 @@
           </div>
         </div>
       </section>
+
+      <!-- Materials -->
+      <section class="card block lift" *ngIf="course().materials?.length">
+        <div class="block-head">
+          <div class="block-title">
+            <span class="dot-emoji">📎</span> Materials
+            <span class="muted">({{ course().materials!.length }})</span>
+          </div>
+        </div>
+
+        <div class="cert-list">
+          <div class="cert-row" *ngFor="let m of course().materials">
+            <div class="name">
+              <div class="title">{{ m.name }}</div>
+            </div>
+            <a class="btn link" [href]="m.url" target="_blank" rel="noopener" [download]="m.name">Download →</a>
+          </div>
+        </div>
+      </section>
     </div>
 
     <aside class="col-right">

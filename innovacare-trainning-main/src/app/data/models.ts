@@ -99,7 +99,18 @@ export interface Course {
   level: 'Beginner' | 'Intermediate' | 'Advanced';
   certification?: boolean;      // enable exam blueprint creation for this course
   accreditationId?: string;     // FK into accreditations, supersedes the flat ceCredit field going forward
+  materials?: CourseMaterial[]; // downloadable attachments (PDFs, etc.) shown on the course detail page
 
+}
+
+/** Downloadable attachment (PDF, doc, etc.) surfaced on the learner course detail page. */
+export interface CourseMaterial {
+  id: string;
+  name: string;
+  url: string;           // Storage downloadURL
+  fileType?: string;     // mime type, e.g. 'application/pdf'
+  sizeBytes?: number;
+  uploadedAt?: any;
 }
 
 /** Reusable speaker profile — attached to webinars/events (and later, faculty-led courses). */

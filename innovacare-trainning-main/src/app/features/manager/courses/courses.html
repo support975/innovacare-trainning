@@ -164,6 +164,34 @@
       </div>
     </div>
 
+    <!-- Materials -->
+    <div class="form-section">
+      <div class="form-section__head">
+        <div class="form-section__title">{{ lang.t('Materials') }}</div>
+      </div>
+
+      <div class="row">
+        <label class="field-label">{{ lang.t('Add material (PDF)') }}</label>
+        <input
+          class="file-input"
+          type="file"
+          accept="application/pdf,.pdf"
+          [disabled]="uploadingMaterial()"
+          (change)="uploadMaterial($event)"
+        />
+        <div class="field-hint">{{ lang.t('Uploaded files appear on the learner course detail page for download.') }}</div>
+        <div class="msg msg--ok" *ngIf="uploadingMaterial()">{{ lang.t('Uploading...') }}</div>
+        <div class="msg msg--error" *ngIf="materialError">{{ materialError }}</div>
+      </div>
+
+      <div class="material-list" *ngIf="materials().length">
+        <div class="material-row" *ngFor="let m of materials()">
+          <a class="material-row__name" [href]="m.url" target="_blank" rel="noopener">{{ m.name }}</a>
+          <button type="button" class="btn-outline btn-danger" (click)="removeMaterial(m.id)">{{ lang.t('Remove') }}</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Advanced Settings -->
     <div class="form-section">
       <div class="form-section__head">
