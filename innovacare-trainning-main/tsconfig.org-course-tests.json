@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": ["src/app/data/courses-organization-visibility.spec.ts"]
+}

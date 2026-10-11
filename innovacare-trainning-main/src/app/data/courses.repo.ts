@@ -199,8 +199,8 @@ export class CoursesRepo {
 
     return from(Promise.all(courseIds.map(async courseId => {
       try {
-        const snap = await getDoc(doc(this.fs, 'courses', courseId));
-        return snap.exists() ? ({ id: snap.id, ...snap.data() } as Course) : null;
+        const course = await this.load(courseId);
+        return course ? { ...course, id: courseId } : null;
       } catch {
         return this.fallbackMappedCourse(courseId);
       }
@@ -235,7 +235,7 @@ export class CoursesRepo {
   
   async load(courseId: string): Promise<Course | null> {
     const snap = await getDoc(this.getOne(courseId));
-    return snap.exists() ? (snap.data() as Course) : null;
+    return snap.exists() ? ({ ...snap.data(), id: snap.id } as Course) : null;
   }
   async create(course: Course) {
     const ref = doc(collection(this.fs, 'courses'));

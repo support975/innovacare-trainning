@@ -278,15 +278,16 @@ service cloud.firestore {
     }
 
     function isPublicCourse(courseData) {
-      return courseData.active == true && courseData.isPublic == true;
+      return courseData.get('active', false) == true && courseData.get('isPublic', false) == true;
     }
 
     function isCourseAssignedToMyOrg(courseData) {
+      // hasAny preserves list semantics and can be proven by array-contains queries.
       return isSignedIn()
         && myOrgId() != null
         && (
-          (courseData.assignedOrgIds is list && myOrgId() in courseData.assignedOrgIds)
-          || sameOrg(courseData)
+          courseData.get('assignedOrgIds', []).hasAny([myOrgId()])
+          || (courseData.get('orgId', null) != null && courseData.get('orgId', null) == myOrgId())
         );
     }
 
@@ -365,22 +366,24 @@ service cloud.firestore {
     }
 
     function canReadCourse(courseId, courseData) {
-      return (!isSignedIn() && isPublicCourse(courseData))
-        || (courseData.active == true && hasPaidIndividualEnrollment(courseId))
-        || isSuperAdmin()
+      // Resolve queryable grants before document-ID enrollment lookups. During
+      // a list query, courseId can be unknown even when assignedOrgIds is constrained.
+      return isSuperAdmin()
         || isCourseAssignedToMyOrg(courseData)
-        || isCourseMappedToMyOrg(courseId)
         // Scoped replacement for the old blanket isAdminOrAbove() grant: a
         // council ancestor admin can read courses assigned to a descendant
         // facility (what "act-as-admin" needs), but this no longer lets any
         // admin at any org read every course on the platform.
         || isCourseReachableByMyOrg(courseData)
-        || (isSignedIn()
-            && myOrgId() != null
-            && exists(/databases/$(database)/documents/users/$(request.auth.uid)/enrollments/$(courseId)))
+        || (!isSignedIn() && isPublicCourse(courseData))
         || (isSignedIn()
             && myOrgId() == null
-            && isPublicCourse(courseData));
+            && isPublicCourse(courseData))
+        || (hasPaidIndividualEnrollment(courseId) && courseData.get('active', false) == true)
+        || isCourseMappedToMyOrg(courseId)
+        || (isSignedIn()
+            && myOrgId() != null
+            && exists(/databases/$(database)/documents/users/$(request.auth.uid)/enrollments/$(courseId)));
     }
 
     function canReadCourseContent(courseId) {
