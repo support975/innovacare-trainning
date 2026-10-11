@@ -8,7 +8,7 @@ import { SuperAdminOrganizationsService } from '../../services/super-admin-organ
 import { OrganizationCourseAssignment, SuperAdminOrganization } from '../../models/super-admin.models';
 import { LanguageService } from '../../../../shared/services/language';
 
-type CourseItem = { id: string; title?: string; kind?: string; active?: boolean };
+type CourseItem = { id: string; title?: string; kind?: string; active?: boolean; assignedOrgIds?: string[] };
 
 @Component({
   selector: 'app-course-assign',
@@ -59,7 +59,11 @@ export class CourseAssign {
   });
   selectedCourseAlreadyAssigned = computed(() => {
     const courseId = this.selectedCourse();
-    return !!courseId && this.assignedCoursesForSelectedOrg().some(item => item.courseId === courseId);
+    const course = this.courses().find(item => item.id === courseId);
+    // A partial legacy grant must remain repairable from the normal Assign action.
+    return !!courseId
+      && this.assignedCoursesForSelectedOrg().some(item => item.courseId === courseId && item.active !== false)
+      && course?.assignedOrgIds?.includes(this.selectedOrg()) === true;
   });
 
   clearNotice() { this.notice.set(''); this.isError.set(false); }

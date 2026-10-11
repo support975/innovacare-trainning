@@ -15,6 +15,7 @@ import {
   setDoc,
   arrayRemove,
   arrayUnion,
+  writeBatch,
 } from '@angular/fire/firestore';
 import { filter, firstValueFrom, map, Observable, timeout } from 'rxjs';
 import { SuperAdminLogsService } from './super-admin-logs';
@@ -288,7 +289,8 @@ export class SuperAdminOrganizationsService {
     const assignmentId = `${params.orgId}_${params.courseId}`;
     const assignmentRef = doc(this.afs, `organizationCourseAssignments/${assignmentId}`);
 
-    await setDoc(assignmentRef, {
+    const batch = writeBatch(this.afs);
+    batch.set(assignmentRef, {
       orgId: params.orgId,
       courseId: params.courseId,
       active: true,
@@ -297,10 +299,11 @@ export class SuperAdminOrganizationsService {
       assignedAt: serverTimestamp(),
     } satisfies OrganizationCourseAssignment, { merge: true });
 
-    await updateDoc(doc(this.afs, `courses/${params.courseId}`), {
+    batch.update(doc(this.afs, `courses/${params.courseId}`), {
       assignedOrgIds: arrayUnion(params.orgId),
       updatedAt: serverTimestamp(),
     });
+    await batch.commit();
 
     await this.logs.audit({
       action: 'ASSIGN_COURSE_TO_ORGANIZATION',
@@ -371,12 +374,14 @@ export class SuperAdminOrganizationsService {
   ): Promise<void> {
     if (!assignment.id) throw new Error('Missing assignment id.');
 
-    await deleteDoc(doc(this.afs, `organizationCourseAssignments/${assignment.id}`));
+    const batch = writeBatch(this.afs);
+    batch.delete(doc(this.afs, `organizationCourseAssignments/${assignment.id}`));
 
-    await updateDoc(doc(this.afs, `courses/${assignment.courseId}`), {
+    batch.update(doc(this.afs, `courses/${assignment.courseId}`), {
       assignedOrgIds: arrayRemove(assignment.orgId),
       updatedAt: serverTimestamp(),
     });
+    await batch.commit();
 
     await this.logs.audit({
       action: 'REMOVE_COURSE_FROM_ORGANIZATION',
