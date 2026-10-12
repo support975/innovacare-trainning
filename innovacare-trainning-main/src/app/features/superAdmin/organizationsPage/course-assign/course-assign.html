@@ -49,7 +49,7 @@
       <svg *ngIf="!busy()" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="20 6 9 17 4 12"/>
       </svg>
-      {{ busy() ? lang.t('Assigning...') : (selectedCourseAlreadyAssigned() ? lang.t('Already Assigned') : lang.t('Assign Course')) }}
+      {{ busy() ? lang.t('Assigning...') : (selectedCourseInactive() ? lang.t('Activate and assign') : (selectedCourseAlreadyAssigned() ? lang.t('Already Assigned') : lang.t('Assign Course'))) }}
     </button>
   </div>
 
@@ -73,7 +73,12 @@
         <div class="assign-row__body">
           <div class="assign-row__name">{{ courseTitle(assignment.courseId) }}</div>
           <div class="assign-row__sub">{{ assignment.courseId }}</div>
+          <span *ngIf="courseInactive(assignment.courseId)" class="badge badge--inactive">{{ lang.t('Inactive - hidden from the organization') }}</span>
         </div>
+        <button *ngIf="courseInactive(assignment.courseId)" class="btn-ghost" type="button"
+          [disabled]="busy() || syncing()" (click)="activateAssignedCourse(assignment)">
+          {{ lang.t('Activate course') }}
+        </button>
         <button
           class="btn-danger-outline"
           type="button"
@@ -192,6 +197,7 @@
             <div class="assign-row__sub">{{ c.id }}</div>
           </div>
           <span *ngIf="c.kind" class="badge badge--info">{{ c.kind }}</span>
+          <span *ngIf="c.active === false" class="badge badge--inactive">{{ lang.t('Inactive') }}</span>
           <div class="assign-row__check" *ngIf="selectedCourse() === c.id">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 6 9 17 4 12"/>

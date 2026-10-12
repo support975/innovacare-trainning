@@ -61,6 +61,10 @@
 
         <div class="row grid import-preview__stats">
           <div>
+            <label class="field-label">{{ lang.t('Status') }}</label>
+            <div class="field-hint">{{ preview.active === false ? lang.t('Inactive - hidden from the organization') : lang.t('Active') }}</div>
+          </div>
+          <div>
             <label class="field-label">{{ lang.t('Title') }}</label>
             <div class="field-hint">{{ preview.title }}</div>
           </div>

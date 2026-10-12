@@ -19,6 +19,7 @@
 .btn-danger-outline:disabled { background: #f8fafc; border-color: #e4ecf7; color: #b0bec5; cursor: not-allowed; }
 .badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
 .badge--active   { background: #e6f4ec; color: #166534; border: 1px solid #b3ddb3; }
+.badge--inactive { background: #fff4e5; color: #854d0e; border: 1px solid #f4d19a; white-space: normal; }
 .badge--free       { background: #f4f7fb; color: #5a6a7e; border: 1px solid #e4ecf7; }
 .badge--pro        { background: #e8eef8; color: #1a3f6f; border: 1px solid #d6e0ee; }
 .badge--enterprise { background: #f2edf9; color: #6d28d9; border: 1px solid #d8b4fe; }
@@ -51,6 +52,8 @@
 .assigned-list { display: grid; }
 .assigned-row { display: flex; align-items: center; gap: 0.85rem; padding: 0.85rem 1.1rem; border-bottom: 1px solid #f4f7fb; }
 .assigned-row:last-child { border-bottom: none; }
+.assigned-row { flex-wrap: wrap; }
+.assigned-row .assign-row__body { flex-basis: 180px; }
 
 /* Assign Grid */
 .assign-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
