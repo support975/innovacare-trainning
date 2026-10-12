@@ -16,6 +16,7 @@ import {
   arrayRemove,
   arrayUnion,
   writeBatch,
+  runTransaction,
 } from '@angular/fire/firestore';
 import { filter, firstValueFrom, map, Observable, timeout } from 'rxjs';
 import { SuperAdminLogsService } from './super-admin-logs';
@@ -284,26 +285,35 @@ export class SuperAdminOrganizationsService {
   async assignCourseToOrganization(params: {
     orgId: string;
     courseId: string;
+    activateCourse?: boolean;
     actor?: { uid?: string; email?: string };
   }): Promise<string> {
     const assignmentId = `${params.orgId}_${params.courseId}`;
     const assignmentRef = doc(this.afs, `organizationCourseAssignments/${assignmentId}`);
 
-    const batch = writeBatch(this.afs);
-    batch.set(assignmentRef, {
-      orgId: params.orgId,
-      courseId: params.courseId,
-      active: true,
-      assignedByUid: params.actor?.uid ?? null,
-      assignedByEmail: params.actor?.email ?? null,
-      assignedAt: serverTimestamp(),
-    } satisfies OrganizationCourseAssignment, { merge: true });
+    const courseRef = doc(this.afs, `courses/${params.courseId}`);
+    await runTransaction(this.afs, async transaction => {
+      const course = await transaction.get(courseRef);
+      if (!course.exists()) throw new Error('This course no longer exists.');
+      if (course.data()['active'] === false && !params.activateCourse) {
+        throw new Error('This course is inactive. Activate it before assigning it to an organization.');
+      }
 
-    batch.update(doc(this.afs, `courses/${params.courseId}`), {
-      assignedOrgIds: arrayUnion(params.orgId),
-      updatedAt: serverTimestamp(),
+      transaction.set(assignmentRef, {
+        orgId: params.orgId,
+        courseId: params.courseId,
+        active: true,
+        assignedByUid: params.actor?.uid ?? null,
+        assignedByEmail: params.actor?.email ?? null,
+        assignedAt: serverTimestamp(),
+      } satisfies OrganizationCourseAssignment, { merge: true });
+
+      transaction.update(courseRef, {
+        assignedOrgIds: arrayUnion(params.orgId),
+        ...(params.activateCourse ? { active: true } : {}),
+        updatedAt: serverTimestamp(),
+      });
     });
-    await batch.commit();
 
     await this.logs.audit({
       action: 'ASSIGN_COURSE_TO_ORGANIZATION',
@@ -315,6 +325,7 @@ export class SuperAdminOrganizationsService {
       meta: {
         orgId: params.orgId,
         courseId: params.courseId,
+        activateCourse: params.activateCourse === true,
       },
     });
 

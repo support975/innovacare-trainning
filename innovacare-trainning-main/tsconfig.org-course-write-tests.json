@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": ["src/app/features/superAdmin/services/super-admin-course-grant.emulator.spec.ts"]
+}
