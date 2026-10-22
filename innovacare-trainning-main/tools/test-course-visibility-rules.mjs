@@ -82,6 +82,30 @@ try {
   )));
   assert.equal(publicCourses.size, 1);
 
+  // JSON imports may intentionally be drafts; availability requires explicit activation.
+  await setDoc(doc(superDb, 'courses', 'imported-draft'), {
+    title: 'Atypical Wounds, Dermatology & Skin Integrity', active: false,
+    isPublic: false, assignedOrgIds: ['org-a'],
+  });
+  for (const db of [managerDb, adminDb]) {
+    const draft = await assertSucceeds(getDoc(doc(db, 'courses', 'imported-draft')));
+    assert.equal(draft.data().active, false);
+  }
+  const activate = writeBatch(superDb);
+  activate.set(doc(superDb, 'organizationCourseAssignments', 'org-a_imported-draft'), {
+    orgId: 'org-a', courseId: 'imported-draft', active: true,
+  });
+  activate.update(doc(superDb, 'courses', 'imported-draft'), { active: true, assignedOrgIds: arrayUnion('org-a') });
+  await assertSucceeds(activate.commit());
+  for (const db of [managerDb, adminDb]) {
+    const available = await assertSucceeds(getDocs(query(
+      collection(db, 'courses'), where('assignedOrgIds', 'array-contains', 'org-a')
+    )));
+    assert(available.docs.some(course => course.id === 'imported-draft' && course.data().active === true));
+  }
+  await assertFails(getDoc(doc(otherDb, 'courses', 'imported-draft')));
+  await assertFails(getDoc(doc(environment.unauthenticatedContext().firestore(), 'courses', 'imported-draft')));
+
   const failedGrant = writeBatch(superDb);
   failedGrant.set(doc(superDb, 'organizationCourseAssignments', 'org-a_missing'), {
     orgId: 'org-a', courseId: 'missing', active: true,

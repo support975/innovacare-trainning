@@ -52,6 +52,7 @@ export class CourseAssign {
 
   selectedOrgName    = computed(() => this.orgs().find(o => o.id === this.selectedOrg())?.name ?? '');
   selectedCourseName = computed(() => this.courses().find(c => c.id === this.selectedCourse())?.title ?? '');
+  selectedCourseInactive = computed(() => this.courseInactive(this.selectedCourse()));
   assignedCoursesForSelectedOrg = computed(() => {
     const orgId = this.selectedOrg();
     if (!orgId) return [] as OrganizationCourseAssignment[];
@@ -63,7 +64,8 @@ export class CourseAssign {
     // A partial legacy grant must remain repairable from the normal Assign action.
     return !!courseId
       && this.assignedCoursesForSelectedOrg().some(item => item.courseId === courseId && item.active !== false)
-      && course?.assignedOrgIds?.includes(this.selectedOrg()) === true;
+      && course?.assignedOrgIds?.includes(this.selectedOrg()) === true
+      && course.active !== false;
   });
 
   clearNotice() { this.notice.set(''); this.isError.set(false); }
@@ -72,7 +74,19 @@ export class CourseAssign {
     return this.courses().find(course => course.id === courseId)?.title || courseId;
   }
 
+  courseInactive(courseId: string): boolean {
+    return this.courses().find(course => course.id === courseId)?.active === false;
+  }
+
+  private confirmActivation(courseId: string): boolean {
+    return window.confirm(this.lang.t(
+      'Activate "{course}" and make it available to the organization? This also restores access for any other organizations already assigned to this course. The public catalog setting will not change.',
+      { course: this.courseTitle(courseId) }
+    ));
+  }
+
   async assign() {
+    if (this.busy() || this.syncing()) return;
     if (!this.selectedOrg() || !this.selectedCourse()) {
       this.notice.set(this.lang.t('Select both an organisation and a course.'));
       this.isError.set(true);
@@ -83,11 +97,15 @@ export class CourseAssign {
       this.isError.set(true);
       return;
     }
+    const activateCourse = this.selectedCourseInactive();
+    if (activateCourse && !this.confirmActivation(this.selectedCourse())) return;
     this.busy.set(true);
     this.notice.set('');
     this.isError.set(false);
     try {
-      await this.orgSvc.assignCourseToOrganization({ orgId: this.selectedOrg(), courseId: this.selectedCourse() });
+      await this.orgSvc.assignCourseToOrganization({
+        orgId: this.selectedOrg(), courseId: this.selectedCourse(), activateCourse,
+      });
       this.notice.set(this.lang.t('"{course}" assigned to "{org}" successfully.', {
         course: this.selectedCourseName(),
         org: this.selectedOrgName(),
@@ -95,7 +113,28 @@ export class CourseAssign {
       this.selectedOrg.set('');
       this.selectedCourse.set('');
     } catch (e: any) {
-      this.notice.set(e?.message || this.lang.t('Assignment failed.'));
+      this.notice.set(this.lang.t(e?.message || 'Assignment failed.'));
+      this.isError.set(true);
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  async activateAssignedCourse(assignment: OrganizationCourseAssignment) {
+    if (this.busy() || this.syncing() || !this.courseInactive(assignment.courseId)) return;
+    if (!this.confirmActivation(assignment.courseId)) return;
+
+    this.busy.set(true);
+    this.clearNotice();
+    try {
+      await this.orgSvc.assignCourseToOrganization({
+        orgId: assignment.orgId, courseId: assignment.courseId, activateCourse: true,
+      });
+      this.notice.set(this.lang.t('"{course}" is now active and available to the organization.', {
+        course: this.courseTitle(assignment.courseId),
+      }));
+    } catch (e: any) {
+      this.notice.set(this.lang.t(e?.message || 'Assignment failed.'));
       this.isError.set(true);
     } finally {
       this.busy.set(false);
