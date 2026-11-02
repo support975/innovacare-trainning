@@ -44,7 +44,13 @@ jobs:
           java-version: '21'
           cache: gradle
 
-      - uses: android-actions/setup-android@v3
+      # The ubuntu runner ships the Android SDK; just make sure the
+      # platform this project compiles against is installed.
+      - name: Install Android platform 36
+        run: |
+          SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" --install "platforms;android-36" "build-tools;36.0.0" > /dev/null
 
       - run: npm ci
 
