@@ -14,7 +14,7 @@ import {
   addDoc,
   Timestamp,
 } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
+import { Observable, from, switchMap } from 'rxjs';
 import {
   ExamSession,
   ProctorVerification,
@@ -25,6 +25,26 @@ import {
 @Injectable({ providedIn: 'root' })
 export class ProctorService {
   private afs = inject(Firestore);
+  private sessionOrgCache = new Map<string, Promise<string | null>>();
+
+  /**
+   * Proctor records carry their session's orgId: the security rules only let
+   * staff of that organization read them, so every query filters on it.
+   */
+  private orgIdForSession(sessionId: string): Promise<string | null> {
+    let cached = this.sessionOrgCache.get(sessionId);
+    if (!cached) {
+      cached = getDoc(doc(this.afs, `examSessions/${sessionId}`))
+        .then((snap) => ((snap.exists() ? snap.data()?.['orgId'] : null) as string | null) ?? null)
+        .catch(() => null);
+      this.sessionOrgCache.set(sessionId, cached);
+    }
+    return cached;
+  }
+
+  private orgFilter(orgId: string | null) {
+    return orgId ? [where('orgId', '==', orgId)] : [];
+  }
 
   // ExamCenter CRUD
   async createCenter(center: Omit<ExamCenter, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
@@ -125,9 +145,11 @@ export class ProctorService {
     idPhotoUrl?: string,
     reason?: string
   ): Promise<string> {
+    const orgId = await this.orgIdForSession(sessionId);
     const ref = doc(collection(this.afs, 'proctorVerifications'));
     await setDoc(ref, {
       sessionId,
+      orgId,
       candidateUid,
       proctorUid,
       verified,
@@ -168,12 +190,19 @@ export class ProctorService {
 
   getVerification$(sessionId: string, candidateUid: string): Observable<ProctorVerification | null> {
     return new Observable<ProctorVerification | null>((sub) => {
-      const q = query(
-        collection(this.afs, 'proctorVerifications'),
-        where('sessionId', '==', sessionId),
-        where('candidateUid', '==', candidateUid)
-      );
-      collectionData(q, { idField: 'id' }).subscribe({
+      from(this.orgIdForSession(sessionId)).pipe(
+        switchMap((orgId) =>
+          collectionData(
+            query(
+              collection(this.afs, 'proctorVerifications'),
+              ...this.orgFilter(orgId),
+              where('sessionId', '==', sessionId),
+              where('candidateUid', '==', candidateUid)
+            ),
+            { idField: 'id' }
+          )
+        )
+      ).subscribe({
         next: (docs: any[]) => {
           const latest = docs[0] || null;
           sub.next(latest ? (latest as ProctorVerification) : null);
@@ -185,12 +214,19 @@ export class ProctorService {
   }
 
   listVerificationsBySession$(sessionId: string): Observable<ProctorVerification[]> {
-    const q = query(
-      collection(this.afs, 'proctorVerifications'),
-      where('sessionId', '==', sessionId),
-      orderBy('verifiedAt', 'desc')
+    return from(this.orgIdForSession(sessionId)).pipe(
+      switchMap((orgId) =>
+        collectionData(
+          query(
+            collection(this.afs, 'proctorVerifications'),
+            ...this.orgFilter(orgId),
+            where('sessionId', '==', sessionId),
+            orderBy('verifiedAt', 'desc')
+          ),
+          { idField: 'id' }
+        ) as Observable<ProctorVerification[]>
+      )
     );
-    return collectionData(q, { idField: 'id' }) as Observable<ProctorVerification[]>;
   }
 
   // Audit logging
@@ -201,9 +237,11 @@ export class ProctorService {
     action: ProctorAuditLog['action'],
     details?: string
   ): Promise<void> {
+    const orgId = await this.orgIdForSession(sessionId);
     const ref = doc(collection(this.afs, 'proctorAuditLogs'));
     await setDoc(ref, {
       sessionId,
+      orgId,
       proctorUid,
       candidateUid,
       action,
@@ -213,38 +251,33 @@ export class ProctorService {
   }
 
   listAuditLogs$(sessionId: string): Observable<ProctorAuditLog[]> {
-    const q = query(
-      collection(this.afs, 'proctorAuditLogs'),
-      where('sessionId', '==', sessionId),
-      orderBy('timestamp', 'desc')
+    return from(this.orgIdForSession(sessionId)).pipe(
+      switchMap((orgId) =>
+        collectionData(
+          query(
+            collection(this.afs, 'proctorAuditLogs'),
+            ...this.orgFilter(orgId),
+            where('sessionId', '==', sessionId),
+            orderBy('timestamp', 'desc')
+          ),
+          { idField: 'id' }
+        ) as Observable<ProctorAuditLog[]>
+      )
     );
-    return collectionData(q, { idField: 'id' }) as Observable<ProctorAuditLog[]>;
   }
 
   // Check if candidate is verified for a session today
+  /**
+   * Candidate-side check: has a proctor verified this candidate for the
+   * session? Reads the candidate's own verification record — the proctor
+   * verification log itself is readable by exam staff only.
+   */
   async isCandidateVerifiedToday(sessionId: string, candidateUid: string): Promise<boolean> {
     try {
-      const q = query(
-        collection(this.afs, 'proctorVerifications'),
-        where('sessionId', '==', sessionId),
-        where('candidateUid', '==', candidateUid)
+      const snap = await getDoc(
+        doc(this.afs, `examSessions/${sessionId}/candidateVerifications/${candidateUid}`)
       );
-
-      // Use a more direct approach with getDoc-like behavior
-      const results = await new Promise<ProctorVerification[]>((resolve, reject) => {
-        const unsub = collectionData(q, { idField: 'id' }).subscribe({
-          next: (docs: any[]) => {
-            unsub.unsubscribe();
-            resolve(docs as ProctorVerification[]);
-          },
-          error: (err) => {
-            unsub.unsubscribe();
-            reject(err);
-          },
-        });
-      });
-
-      return results.length > 0 && results[0]?.verified === true;
+      return snap.exists() && snap.data()?.['verified'] === true;
     } catch (e) {
       console.error('Error checking candidate verification:', e);
       return false;

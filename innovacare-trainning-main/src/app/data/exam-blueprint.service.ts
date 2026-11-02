@@ -12,27 +12,101 @@ import {
   where,
   serverTimestamp,
   getDocs,
+  getDoc,
+  deleteField,
 } from '@angular/fire/firestore';
-import { Observable, firstValueFrom } from 'rxjs';
+import { Observable, firstValueFrom, from, switchMap } from 'rxjs';
 import { ExamBlueprint, ExamBlueprintQuestion } from './exam-blueprint.model';
 
+type AnswerKeyEntry = { correctAnswers: string[]; explanation?: string };
+
+/**
+ * Exam blueprints are stored in two parts:
+ *  - examBlueprints/{id}: title, settings and questions WITHOUT answers —
+ *    readable by candidates once published;
+ *  - examBlueprints/{id}/private/answerKey: correct answers and
+ *    explanations, readable only by the certification authority.
+ * Candidates' exams are graded by the submitBlueprintExam Cloud Function.
+ * Authoring screens use the *ForEditing methods, which merge both parts.
+ */
 @Injectable({ providedIn: 'root' })
 export class ExamBlueprintService {
   private firestore = inject(Firestore);
 
+  private answerKeyRef(blueprintId: string) {
+    return doc(this.firestore, `examBlueprints/${blueprintId}/private/answerKey`);
+  }
+
+  private static answerEntry(q: Partial<ExamBlueprintQuestion>): AnswerKeyEntry {
+    const entry: AnswerKeyEntry = { correctAnswers: [...(q.correctAnswers ?? [])] };
+    if (q.explanation) entry.explanation = q.explanation;
+    return entry;
+  }
+
+  /** Question as stored in the public blueprint document (no answers). */
+  private static publicQuestion(q: ExamBlueprintQuestion): Omit<ExamBlueprintQuestion, 'correctAnswers' | 'explanation'> {
+    const { correctAnswers: _answers, explanation: _explanation, ...rest } = q;
+    return rest;
+  }
+
+  private async writeAnswers(
+    blueprintId: string,
+    orgId: string,
+    answers: Record<string, AnswerKeyEntry | ReturnType<typeof deleteField>>
+  ): Promise<void> {
+    if (!Object.keys(answers).length) return;
+    await setDoc(
+      this.answerKeyRef(blueprintId),
+      { orgId, answers, updatedAt: serverTimestamp() },
+      { merge: true }
+    );
+  }
+
+  /** Adds the private answers back onto a blueprint's questions (authoring only). */
+  private async withAnswers(blueprint: ExamBlueprint): Promise<ExamBlueprint> {
+    if (!blueprint.id) return blueprint;
+    const snap = await getDoc(this.answerKeyRef(blueprint.id));
+    const answers = ((snap.exists() ? snap.data()?.['answers'] : null) ?? {}) as Record<string, AnswerKeyEntry>;
+    return {
+      ...blueprint,
+      questions: (blueprint.questions ?? []).map((q) => {
+        const entry = q.id ? answers[q.id] : undefined;
+        return {
+          ...q,
+          correctAnswers: entry?.correctAnswers ?? q.correctAnswers ?? [],
+          explanation: entry?.explanation ?? q.explanation,
+        };
+      }),
+    };
+  }
+
   async createBlueprint(blueprint: ExamBlueprint): Promise<string> {
     const docRef = doc(collection(this.firestore, 'examBlueprints'));
+    const questions = blueprint.questions ?? [];
     const data = {
       ...blueprint,
+      questions: questions.map((q) => ExamBlueprintService.publicQuestion(q)),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };
     await setDoc(docRef, data);
+    await this.writeAnswers(
+      docRef.id,
+      blueprint.orgId,
+      Object.fromEntries(
+        questions
+          .filter((q) => q.id)
+          .map((q): [string, AnswerKeyEntry] => [q.id!, ExamBlueprintService.answerEntry(q)])
+      )
+    );
     return docRef.id;
   }
 
   async updateBlueprint(id: string, blueprint: Partial<ExamBlueprint>): Promise<void> {
     if (!id) throw new Error('Blueprint id is required');
+    if (blueprint.questions) {
+      throw new Error('Use addQuestion / updateQuestion / deleteQuestion to change questions.');
+    }
     const docRef = doc(this.firestore, 'examBlueprints', id);
     await updateDoc(docRef, {
       ...blueprint,
@@ -92,6 +166,20 @@ export class ExamBlueprintService {
     return collectionData(q, { idField: 'id' }) as Observable<ExamBlueprint[]>;
   }
 
+  /** Blueprints of a session with their answers, for the authoring center. */
+  getBlueprintsForEditing(sessionId: string, orgId: string): Observable<ExamBlueprint[]> {
+    return this.getBlueprints(sessionId, orgId).pipe(
+      switchMap((list) => from(Promise.all(list.map((bp) => this.withAnswers(bp)))))
+    );
+  }
+
+  /** One blueprint with its answers, for the authoring center. */
+  async getBlueprintForEditing(id: string): Promise<ExamBlueprint | null> {
+    const blueprint = await this.getBlueprint(id);
+    return blueprint ? this.withAnswers(blueprint) : null;
+  }
+
+  /** The published (answer-free) blueprint, as candidates see it. */
   async getBlueprint(id: string): Promise<ExamBlueprint | null> {
     if (!id) return null;
     const docRef = doc(this.firestore, 'examBlueprints', id);
@@ -107,14 +195,17 @@ export class ExamBlueprintService {
     const blueprint = await this.getBlueprint(blueprintId);
     if (!blueprint) throw new Error('Blueprint not found');
 
-    const questions = blueprint.questions || [];
+    const questions = (blueprint.questions || []).map((q) => ExamBlueprintService.publicQuestion(q));
     question.id = doc(collection(this.firestore, 'temp')).id;
-    questions.push(question);
+    questions.push(ExamBlueprintService.publicQuestion(question));
 
     await updateDoc(docRef, {
       questions,
       totalQuestions: questions.length,
       updatedAt: serverTimestamp(),
+    });
+    await this.writeAnswers(blueprintId, blueprint.orgId, {
+      [question.id]: ExamBlueprintService.answerEntry(question),
     });
     return question.id;
   }
@@ -124,12 +215,19 @@ export class ExamBlueprintService {
     const blueprint = await this.getBlueprint(blueprintId);
     if (!blueprint || !blueprint.questions) throw new Error('Blueprint not found');
 
-    const questions = blueprint.questions.map(q => (q.id === question.id ? question : q));
+    const questions = blueprint.questions.map((q) =>
+      ExamBlueprintService.publicQuestion(q.id === question.id ? question : q)
+    );
     const docRef = doc(this.firestore, 'examBlueprints', blueprintId);
     await updateDoc(docRef, {
       questions,
       updatedAt: serverTimestamp(),
     });
+    if (question.id) {
+      await this.writeAnswers(blueprintId, blueprint.orgId, {
+        [question.id]: ExamBlueprintService.answerEntry(question),
+      });
+    }
   }
 
   async deleteQuestion(blueprintId: string, questionId: string): Promise<void> {
@@ -137,13 +235,16 @@ export class ExamBlueprintService {
     const blueprint = await this.getBlueprint(blueprintId);
     if (!blueprint || !blueprint.questions) throw new Error('Blueprint not found');
 
-    const questions = blueprint.questions.filter(q => q.id !== questionId);
+    const questions = blueprint.questions
+      .filter((q) => q.id !== questionId)
+      .map((q) => ExamBlueprintService.publicQuestion(q));
     const docRef = doc(this.firestore, 'examBlueprints', blueprintId);
     await updateDoc(docRef, {
       questions,
       totalQuestions: questions.length,
       updatedAt: serverTimestamp(),
     });
+    await this.writeAnswers(blueprintId, blueprint.orgId, { [questionId]: deleteField() });
   }
 
   async publishBlueprint(id: string): Promise<void> {

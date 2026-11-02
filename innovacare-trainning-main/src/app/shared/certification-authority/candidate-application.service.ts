@@ -130,16 +130,8 @@ export class CandidateApplicationService {
     });
   }
 
-  async markExamCompleted(id: string, result: Record<string, any>): Promise<void> {
-    const app = await this.getApplication(id);
-    if (!app) return;
-    await updateDoc(doc(this.db, `candidateApplications/${id}`), {
-      status: 'exam_completed',
-      examResult: result,
-      examCompletedAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    } as any);
-  }
+  // Exam completion is recorded by the submitBlueprintExam Cloud Function,
+  // which grades the exam server-side; candidates can no longer write it.
 
   /**
    * Approve a candidate whose exam has passed: issues (or renews) a 1-year digital

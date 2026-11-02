@@ -44,6 +44,33 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run build
+      - name: Unit tests (exam grading)
+        run: node --test test/*.test.mjs
+
+  security-rules:
+    name: Security rules tests (Firestore + Storage emulators)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: innovacare-trainning-main/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - run: npm ci
+
+      - name: Run rules tests in the emulators
+        run: |
+          npx --yes firebase-tools@14 emulators:exec \
+            --project demo-innovacare --only firestore,storage \
+            "node tools/test-exam-security-rules.mjs && node tools/test-course-visibility-rules.mjs && node tools/test-policy-rules.mjs"
 
   build-functions-innovacare-training:
     name: Build & lint Cloud Functions (innovacare-training codebase)
