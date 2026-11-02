@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild, effect, inject } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
@@ -11,6 +11,7 @@ import {
   getDoc,
   getCountFromServer,
   serverTimestamp,
+  increment,
   collection as fsCollection,
 } from 'firebase/firestore';
 
@@ -25,6 +26,11 @@ import {
   hasCourseEmailDomainRestriction,
   normalizedAllowedEmailDomains,
 } from '../../../../shared/course-domain-access';
+import { CourseMaterial } from '../../../../data/models';
+import { MaterialsLibrary } from './materials/materials-library';
+import { MaterialDrawer } from './materials/material-drawer';
+import { LessonTimeTracker, formatDuration } from './lesson-time-tracker';
+import { materialIdFromClickTarget, materialsForLesson } from './player-materials';
 
 
 type Lang = 'EN' | 'FR' | 'ES';
@@ -147,6 +153,7 @@ interface CourseDoc {
   url?: string;
   allowedEmailDomains?: string[];
   sections?: Section[];
+  materials?: CourseMaterial[];
 }
 
 interface FlatLesson {
@@ -167,14 +174,19 @@ interface SlideDeckProgressEntry {
 
 interface EnrollmentDoc {
   slideDeckProgress?: Record<string, SlideDeckProgressEntry>;
+  /** materialId -> first/last time the learner opened it */
+  materialViews?: Record<string, unknown>;
+  /** lessonId -> active seconds spent in the lesson */
+  timeOnTask?: Record<string, number>;
 }
 
 @Component({
   selector: 'app-course-player',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, MaterialsLibrary, MaterialDrawer],
+  providers: [LessonTimeTracker],
   templateUrl: './course-player.html',
-  styleUrls: ['./course-player.css'],
+  styleUrls: ['./course-player.css', './materials/materials.css'],
 })
 export class CoursePlayer implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('viewerBodyHost') viewerBodyRef?: ElementRef<HTMLElement>;
@@ -186,12 +198,21 @@ export class CoursePlayer implements OnInit, AfterViewInit, OnDestroy {
   private sanitizer = inject(DomSanitizer);
   private breakpointObserver = inject(BreakpointObserver);
   private languageService = inject(LanguageService);
+  private timeTracker = inject(LessonTimeTracker);
 
   notice = '';
   busyId: string | null = null;
   activeIndex = 0;
   sidebarOpen = true;
   readonly languageCode = this.languageService.language;
+
+  /** Which layer the learner is looking at: the lesson itself or its materials. */
+  readonly view = signal<'lesson' | 'materials'>('lesson');
+  /** Material shown in the side drawer, if any. */
+  readonly openMaterialId = signal<string | null>(null);
+  /** Views recorded this session (shown immediately, before Firestore echoes them). */
+  private readonly localMaterialViews = signal<Record<string, true>>({});
+  private lessonMaterialsCache: { source: CourseMaterial[] | undefined; lessonId: string | null; list: CourseMaterial[] } | null = null;
 
   private sidebarTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly sidebarDelayMs = 5000;
@@ -233,7 +254,13 @@ export class CoursePlayer implements OnInit, AfterViewInit, OnDestroy {
   });
 
   ngOnInit(): void {
+    // Phones open straight into the lesson; the outline is one tap away.
+    if (this.isMobileViewport()) this.sidebarOpen = false;
     this.startSidebarAutoClose();
+    this.timeTracker.configure(
+      (lessonId, seconds) => this.saveTimeOnTask(lessonId, seconds),
+      () => this.isLessonMediaPlaying()
+    );
   }
 
   ngAfterViewInit(): void {
@@ -429,6 +456,123 @@ export class CoursePlayer implements OnInit, AfterViewInit, OnDestroy {
 
   completedLessonsCount(): number {
     return this.completedSet().size;
+  }
+
+  /* ============================
+     Materials layer
+  ============================ */
+
+  readonly materials = computed<CourseMaterial[]>(() => {
+    const list = this.course()?.materials;
+    return Array.isArray(list) ? list.filter((m) => !!m?.id && !!m?.url) : [];
+  });
+
+  readonly openMaterial = computed<CourseMaterial | null>(() => {
+    const id = this.openMaterialId();
+    return id ? this.materials().find((m) => m.id === id) ?? null : null;
+  });
+
+  readonly viewedMaterials = computed<Record<string, unknown>>(() => ({
+    ...(this.enrollment()?.materialViews ?? {}),
+    ...this.localMaterialViews(),
+  }));
+
+  /** Materials for the lesson on screen (memoized so child inputs stay stable). */
+  lessonMaterials(): CourseMaterial[] {
+    const source = this.course()?.materials;
+    const lessonId = this.current()?.id ?? null;
+    const cache = this.lessonMaterialsCache;
+    if (cache && cache.source === source && cache.lessonId === lessonId) return cache.list;
+    const list = materialsForLesson(this.materials(), lessonId);
+    this.lessonMaterialsCache = { source, lessonId, list };
+    return list;
+  }
+
+  showLesson(): void {
+    this.view.set('lesson');
+  }
+
+  showMaterials(): void {
+    this.view.set('materials');
+  }
+
+  openMaterialById(id: string): void {
+    const material = this.materials().find((m) => m.id === id);
+    if (!material) {
+      this.notice = this.t('player.materials.notFound');
+      return;
+    }
+    this.openMaterialId.set(id);
+    void this.recordMaterialView(id);
+  }
+
+  closeMaterial(): void {
+    this.openMaterialId.set(null);
+  }
+
+  showAllMaterials(): void {
+    this.openMaterialId.set(null);
+    this.view.set('materials');
+  }
+
+  private async recordMaterialView(materialId: string): Promise<void> {
+    this.localMaterialViews.update((v) => ({ ...v, [materialId]: true }));
+    const uid = this.currentUser()?.uid;
+    if (!uid) return;
+    try {
+      await setDoc(
+        fsDoc(this.afs as any, `users/${uid}/enrollments/${this.courseId}`),
+        { materialViews: { [materialId]: serverTimestamp() }, updatedAt: serverTimestamp() },
+        { merge: true }
+      );
+    } catch (e) {
+      // Viewing still works; only the report entry is missing.
+      console.warn('Could not record material view', e);
+    }
+  }
+
+  /* ============================
+     Time on task
+  ============================ */
+
+  timeOnTaskLabel(): string {
+    return formatDuration(this.timeTracker.seconds());
+  }
+
+  private readonly syncTimeOnTask = effect(() => {
+    // Re-run when lessons or the stored enrollment change.
+    this.lessons();
+    this.enrollment();
+    this.trackCurrentLessonTime();
+  });
+
+  private trackCurrentLessonTime(): void {
+    const lessonId = this.current()?.id ?? null;
+    const stored = lessonId ? Number(this.enrollment()?.timeOnTask?.[lessonId] ?? 0) : 0;
+    this.timeTracker.track(lessonId, Number.isFinite(stored) ? stored : 0);
+  }
+
+  private async saveTimeOnTask(lessonId: string, seconds: number): Promise<void> {
+    const uid = this.currentUser()?.uid;
+    if (!uid) throw new Error('not signed in');
+    await setDoc(
+      fsDoc(this.afs as any, `users/${uid}/enrollments/${this.courseId}`),
+      { timeOnTask: { [lessonId]: increment(seconds) }, updatedAt: serverTimestamp() },
+      { merge: true }
+    );
+  }
+
+  private isLessonMediaPlaying(): boolean {
+    const host = this.viewerBodyRef?.nativeElement;
+    if (!host) return false;
+    return Array.from(host.querySelectorAll('video, audio')).some(
+      (el) => !(el as HTMLMediaElement).paused && !(el as HTMLMediaElement).ended
+    );
+  }
+
+  async saveAndExit(): Promise<void> {
+    await this.timeTracker.flush();
+    this.backToCourse();
   }
 
   
@@ -1309,6 +1453,9 @@ restoreVideoTime(lessonId: string, bi: number, event: Event): void {
 
       this.activeIndex = i;
       this.notice = '';
+      this.openMaterialId.set(null);
+      this.view.set('lesson');
+      this.trackCurrentLessonTime();
       this.scheduleLessonInteractionScan();
 
       if (this.isMobileViewport()) {
@@ -1433,6 +1580,13 @@ restoreVideoTime(lessonId: string, bi: number, event: Event): void {
   }
 
   onViewerClick(event: Event): void {
+    const materialId = materialIdFromClickTarget(event.target);
+    if (materialId) {
+      event.preventDefault();
+      this.openMaterialById(materialId);
+      return;
+    }
+
     const target = event.target as HTMLElement | null;
     this.handleNativeDetailsClick(target, event);
     this.handleCustomAccordionClick(target, event);

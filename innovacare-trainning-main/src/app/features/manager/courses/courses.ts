@@ -167,6 +167,7 @@ export class Courses {
 
   editId: string | null = null;
   materials = signal<CourseMaterial[]>([]);
+  copiedMaterialId = signal<string | null>(null);
   uploadingMaterial = signal(false);
   materialError = '';
   loadingEdit = false;
@@ -1899,6 +1900,63 @@ export class Courses {
   removeMaterial(id: string): void {
     if (!this.canManageCourses) return;
     this.materials.update((list) => list.filter((m) => m.id !== id));
+  }
+
+  /** Edit a material's learner-facing settings (title, download permission…). */
+  updateMaterial(id: string, patch: Partial<Pick<CourseMaterial, 'title' | 'description' | 'downloadable'>>): void {
+    if (!this.canManageCourses) return;
+    this.materials.update((list) => list.map((m) => (m.id === id ? { ...m, ...patch } : m)));
+  }
+
+  /** Link or unlink a material to a lesson (no lessons = course-wide resource). */
+  toggleMaterialLesson(id: string, lessonId: string): void {
+    if (!this.canManageCourses || !lessonId) return;
+    this.materials.update((list) =>
+      list.map((m) => {
+        if (m.id !== id) return m;
+        const current = new Set(m.lessonIds ?? []);
+        if (current.has(lessonId)) current.delete(lessonId);
+        else current.add(lessonId);
+        return { ...m, lessonIds: [...current] };
+      })
+    );
+  }
+
+  materialHasLesson(m: CourseMaterial, lessonId: string): boolean {
+    return Array.isArray(m.lessonIds) && m.lessonIds.includes(lessonId);
+  }
+
+  /** Lessons in the form, for linking materials to them. */
+  materialLessonOptions(): Array<{ id: string; label: string }> {
+    const out: Array<{ id: string; label: string }> = [];
+    this.sectionsFA.controls.forEach((section, si) => {
+      section.controls.lessons.controls.forEach((lesson, li) => {
+        const id = (lesson.controls.id.value ?? '').trim();
+        if (!id) return;
+        const title = (lesson.controls.title.value ?? '').trim() || this.lang.t('Untitled lesson');
+        out.push({ id, label: `${si + 1}.${li + 1} ${title}` });
+      });
+    });
+    return out;
+  }
+
+  /** HTML a course author pastes into lesson text to link this material inline. */
+  materialLinkSnippet(m: CourseMaterial): string {
+    const label = (m.title || m.name || 'document').replace(/[<>&"]/g, '');
+    return `<a href="material:${m.id}">${label}</a>`;
+  }
+
+  async copyMaterialLink(m: CourseMaterial): Promise<void> {
+    const snippet = this.materialLinkSnippet(m);
+    try {
+      await navigator.clipboard.writeText(snippet);
+      this.copiedMaterialId.set(m.id);
+      setTimeout(() => {
+        if (this.copiedMaterialId() === m.id) this.copiedMaterialId.set(null);
+      }, 2000);
+    } catch {
+      this.materialError = this.lang.t('Copy failed. Select the link text and copy it manually.');
+    }
   }
 
   /* ============================
