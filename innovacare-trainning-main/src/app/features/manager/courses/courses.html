@@ -175,23 +175,73 @@
       </div>
 
       <div class="row">
-        <label class="field-label">{{ lang.t('Add material (PDF)') }}</label>
+        <label class="field-label" for="material-upload">{{ lang.t('Add material') }}</label>
         <input
+          id="material-upload"
           class="file-input"
           type="file"
-          accept="application/pdf,.pdf"
+          accept="application/pdf,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,image/*"
           [disabled]="uploadingMaterial()"
           (change)="uploadMaterial($event)"
         />
-        <div class="field-hint">{{ lang.t('Uploaded files appear on the learner course detail page for download.') }}</div>
+        <div class="field-hint">{{ lang.t('Materials appear on the course detail page and in the course player Materials tab. Link one to lessons to show it as part of those lessons.') }}</div>
         <div class="msg msg--ok" *ngIf="uploadingMaterial()">{{ lang.t('Uploading...') }}</div>
         <div class="msg msg--error" *ngIf="materialError">{{ materialError }}</div>
       </div>
 
       <div class="material-list" *ngIf="materials().length">
-        <div class="material-row" *ngFor="let m of materials()">
-          <a class="material-row__name" [href]="m.url" target="_blank" rel="noopener">{{ m.name }}</a>
-          <button type="button" class="btn-outline btn-danger" (click)="removeMaterial(m.id)">{{ lang.t('Remove') }}</button>
+        <div class="material-card" *ngFor="let m of materials()">
+          <div class="material-row">
+            <a class="material-row__name" [href]="m.url" target="_blank" rel="noopener">{{ m.name }}</a>
+            <button type="button" class="btn-outline btn-danger" (click)="removeMaterial(m.id)">{{ lang.t('Remove') }}</button>
+          </div>
+
+          <div class="material-card__fields">
+            <label class="field-label" [attr.for]="'mat-title-' + m.id">{{ lang.t('Title shown to learners') }}</label>
+            <input
+              class="field-input"
+              type="text"
+              [id]="'mat-title-' + m.id"
+              [value]="m.title ?? ''"
+              [placeholder]="m.name"
+              (change)="updateMaterial(m.id, { title: $any($event.target).value.trim() })" />
+
+            <label class="field-label" [attr.for]="'mat-desc-' + m.id">{{ lang.t('Short description (optional)') }}</label>
+            <input
+              class="field-input"
+              type="text"
+              [id]="'mat-desc-' + m.id"
+              [value]="m.description ?? ''"
+              (change)="updateMaterial(m.id, { description: $any($event.target).value.trim() })" />
+
+            <label class="material-card__check">
+              <input
+                type="checkbox"
+                [checked]="m.downloadable !== false"
+                (change)="updateMaterial(m.id, { downloadable: $any($event.target).checked })" />
+              {{ lang.t('Learners can download this file') }}
+            </label>
+
+            <fieldset class="material-card__lessons" *ngIf="materialLessonOptions().length">
+              <legend class="field-label">{{ lang.t('Show in lessons') }}</legend>
+              <div class="field-hint">{{ lang.t('Leave all unchecked to make it a course-wide resource.') }}</div>
+              <label class="material-card__check" *ngFor="let opt of materialLessonOptions()">
+                <input
+                  type="checkbox"
+                  [checked]="materialHasLesson(m, opt.id)"
+                  (change)="toggleMaterialLesson(m.id, opt.id)" />
+                {{ opt.label }}
+              </label>
+            </fieldset>
+
+            <div class="material-card__link">
+              <div class="field-hint">{{ lang.t('To link it inside lesson text, paste this into a text block:') }}</div>
+              <code class="material-card__snippet">{{ materialLinkSnippet(m) }}</code>
+              <button type="button" class="btn-outline" (click)="copyMaterialLink(m)">
+                {{ copiedMaterialId() === m.id ? lang.t('Copied') : lang.t('Copy link') }}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

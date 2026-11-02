@@ -535,8 +535,12 @@ service cloud.firestore {
           'scores',
           'slideDeckProgress',
           'examDrafts',
+          'materialViews',
+          'timeOnTask',
           'updatedAt'
         ])
+        && (!('materialViews' in request.resource.data) || request.resource.data.materialViews is map)
+        && (!('timeOnTask' in request.resource.data) || request.resource.data.timeOnTask is map)
         && request.resource.data.status in ['assigned', 'started', 'completed'];
     }
 

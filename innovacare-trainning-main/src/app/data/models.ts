@@ -103,14 +103,30 @@ export interface Course {
 
 }
 
-/** Downloadable attachment (PDF, doc, etc.) surfaced on the learner course detail page. */
+/**
+ * Course attachment (PDF, doc, form, image…). Shown on the learner course
+ * detail page and in the course player's Materials tab / document drawer.
+ *
+ * Lesson text can link to a material inline with `<a href="material:ID">…</a>`
+ * (or `data-material-id="ID"`); the player opens it beside the lesson.
+ */
 export interface CourseMaterial {
   id: string;
-  name: string;
-  url: string;           // Storage downloadURL
-  fileType?: string;     // mime type, e.g. 'application/pdf'
+  name: string;           // original file name
+  url: string;            // Storage downloadURL
+  fileType?: string;      // mime type, e.g. 'application/pdf'
   sizeBytes?: number;
   uploadedAt?: any;
+  /** Display title shown to learners (falls back to `name`). */
+  title?: string;
+  /** Short description shown in the Materials list. */
+  description?: string;
+  /** Lessons this material belongs to. Empty/missing = course-wide resource. */
+  lessonIds?: string[];
+  /** When false, learners can view the file but get no download button. Default true. */
+  downloadable?: boolean;
+  /** Who supplied it: the course author, or the learner's organization. */
+  source?: 'course' | 'organization';
 }
 
 /** Reusable speaker profile — attached to webinars/events (and later, faculty-led courses). */
