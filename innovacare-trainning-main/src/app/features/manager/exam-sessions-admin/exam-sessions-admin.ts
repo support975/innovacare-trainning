@@ -167,23 +167,31 @@ export class ExamSessionsAdminComponent implements OnInit {
       }
     });
 
-    // Load available exams when org loads
+    // Load available exams and recent attempts when the org loads
     this.authService.profile$.subscribe((profile: any) => {
       if (profile?.orgId) {
         this.loadPublishedExams(profile.orgId);
+        this.loadRecentAttempts(profile.orgId);
       }
     });
+  }
 
-    // Recent exam attempts, for the Results tab — filtered client-side to
-    // this org's sessions in the sessionResults computed above.
+  /**
+   * Recent exam attempts for the Results tab. The security rules only let
+   * staff read their own organization's attempts, so the query must filter
+   * on orgId (attempts are stamped with it by the grading function).
+   */
+  private loadRecentAttempts(orgId: string): void {
     const attemptsQuery = query(
       collection(this.afs, 'examAttempts'),
+      where('orgId', '==', orgId),
       orderBy('completedAt', 'desc'),
       limit(300)
     );
-    (collectionData(attemptsQuery, { idField: 'id' }) as Observable<ExamAttemptVm[]>).subscribe(
-      (list) => this.examAttempts.set(list)
-    );
+    (collectionData(attemptsQuery, { idField: 'id' }) as Observable<ExamAttemptVm[]>).subscribe({
+      next: (list) => this.examAttempts.set(list),
+      error: (err) => console.error('Failed to load exam attempts:', err),
+    });
   }
 
   private loadSessionsByOrg(orgId: string): void {

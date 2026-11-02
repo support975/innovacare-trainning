@@ -4209,6 +4209,7 @@ export const onEnrollmentCompleted = onDocumentUpdated(
 );
 
 export {grantManualReward, onWalletUpdated, backfillLeaderboardProjections} from "./rewards-admin";
+export {submitBlueprintExam, onExamBlueprintWritten, secureExamData} from "./exam-security";
 
 /**
  * Helper function for notification email templates.

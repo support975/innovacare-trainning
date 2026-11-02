@@ -1,53 +1,85 @@
 rules_version = '2';
 
-// Craft rules based on data in your Firestore database
-// allow write: if firestore.get(
-//    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
+// Access is checked against Firestore (cross-service rules). Organization
+// staff only ever reach files that belong to their own organization;
+// platform admins (super admins, or an active admins/{uid} record) reach all.
 service firebase.storage {
   match /b/{bucket}/o {
 
-    // Candidate certification application documents & payment receipts.
-    // Owner of the application or org certification-authority staff/admin may read/write.
-    match /candidateApplications/{applicationId}/{fileName} {
-      allow read: if request.auth != null
-        && firestore.exists(/databases/(default)/documents/candidateApplications/$(applicationId))
-        && (
-          firestore.get(/databases/(default)/documents/candidateApplications/$(applicationId)).data.candidateUserId == request.auth.uid
-          || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['admin', 'manager', 'super_admin']
-        );
+    function me() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
+    }
 
-      allow write: if request.auth != null
-        && firestore.exists(/databases/(default)/documents/candidateApplications/$(applicationId))
-        && (
-          firestore.get(/databases/(default)/documents/candidateApplications/$(applicationId)).data.candidateUserId == request.auth.uid
-          || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['admin', 'manager', 'super_admin']
-        );
+    function hasProfile() {
+      return request.auth != null
+        && firestore.exists(/databases/(default)/documents/users/$(request.auth.uid));
+    }
+
+    function isPlatformAdmin() {
+      return request.auth != null && (
+        (hasProfile() && me().get('role', '') in ['super_admin', 'superAdmin'])
+        || (firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid))
+            && firestore.get(/databases/(default)/documents/admins/$(request.auth.uid)).data.get('active', false) == true)
+      );
+    }
+
+    // Org admin/manager — or, when includeProctors, proctor — of orgId.
+    function isStaffOf(orgId, includeProctors) {
+      return hasProfile()
+        && orgId is string
+        && me().get('orgId', null) == orgId
+        && (me().get('role', '') in ['admin', 'manager']
+            || (includeProctors && me().get('role', '') == 'proctor'));
+    }
+
+    function sessionOrgId(sessionId) {
+      return firestore.exists(/databases/(default)/documents/examSessions/$(sessionId))
+        ? firestore.get(/databases/(default)/documents/examSessions/$(sessionId)).data.get('orgId', null)
+        : null;
+    }
+
+    function isExamStaffForSession(sessionId) {
+      return isPlatformAdmin() || isStaffOf(sessionOrgId(sessionId), true);
+    }
+
+    // Candidate certification application documents & payment receipts.
+    // The application's owner, or staff of the organization it was made to.
+    match /candidateApplications/{applicationId}/{fileName} {
+      function application() {
+        return firestore.get(/databases/(default)/documents/candidateApplications/$(applicationId)).data;
+      }
+      function canAccess() {
+        return request.auth != null
+          && firestore.exists(/databases/(default)/documents/candidateApplications/$(applicationId))
+          && (
+            application().candidateUserId == request.auth.uid
+            || isPlatformAdmin()
+            || isStaffOf(application().get('organizationId', null), false)
+          );
+      }
+      allow read, write: if canAccess();
     }
 
     // Onsite exam candidate documents (ID, diploma, payment proof).
-    // The candidate uploads/views their own files; staff review them.
+    // The candidate uploads/views their own files; staff of the session's
+    // organization review them.
     match /onsiteExamDocs/{sessionId}/{uid}/{fileName} {
       allow read, write: if request.auth != null
-        && (request.auth.uid == uid
-          || firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['proctor', 'admin', 'manager', 'super_admin']);
+        && (request.auth.uid == uid || isExamStaffForSession(sessionId));
     }
 
-    // Proctor identity-verification photos (ID + live photo).
-    // Proctors, managers and admins may upload and view them.
+    // Proctor identity-verification photos (ID + live photo): proctors,
+    // managers and admins of the session's organization only.
     match /proctorVerifications/{sessionId}/{fileName} {
-      allow read, write: if request.auth != null
-        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['proctor', 'admin', 'manager', 'super_admin'];
+      allow read, write: if isExamStaffForSession(sessionId);
     }
 
     // Org branding assets (logo, favicon). World-readable — a logo needs to
     // render on the login/marketing pages before/without auth. Writable only
-    // by that org's own admin/manager, checked cross-service against Firestore.
+    // by that org's own admin/manager.
     match /organizations/{orgId}/branding/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null
-        && firestore.exists(/databases/(default)/documents/users/$(request.auth.uid))
-        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.orgId == orgId
-        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['admin', 'manager'];
+      allow write: if isStaffOf(orgId, false);
     }
 
     // Content Studio article/newsletter images (uploaded via the rich text
@@ -56,22 +88,16 @@ service firebase.storage {
     // firestore.rules' isSuperAdmin() gate on the marketingArticles collection.
     match /marketingArticles/{pathId}/{fileName} {
       allow read: if true;
-      allow write: if request.auth != null
-        && firestore.exists(/databases/(default)/documents/users/$(request.auth.uid))
-        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['super_admin', 'superAdmin'];
+      allow write: if hasProfile() && me().get('role', '') in ['super_admin', 'superAdmin'];
     }
 
-    // Course material attachments (PDFs, etc.) shown on the learner course
-    // detail page for download. Readable by any signed-in user (materials
-    // aren't publicly discoverable without reading the course doc, which is
-    // itself access-controlled by firestore.rules' canReadCourse()).
-    // Writable only by super_admin/admin, matching firestore.rules'
-    // isSuperAdmin()/isAdminOrAbove() write gate on the courses collection.
+    // Course material attachments (PDFs, etc.) shown to learners. Readable by
+    // any signed-in user (materials aren't discoverable without reading the
+    // course doc, which firestore.rules' canReadCourse() protects). Writable
+    // by platform admins, matching the courses collection's write rule.
     match /courseMaterials/{courseId}/{fileName} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null
-        && firestore.exists(/databases/(default)/documents/users/$(request.auth.uid))
-        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['super_admin', 'superAdmin', 'admin'];
+      allow write: if isPlatformAdmin();
     }
 
     match /{allPaths=**} {
