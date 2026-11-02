@@ -1,0 +1,74 @@
+name: Android APK
+
+# Builds installable Android test APKs (debug-signed) of the Capacitor app.
+# One APK per backend: staging and production Firebase projects.
+on:
+  workflow_dispatch:
+  push:
+    branches: ['feat/**']
+    paths:
+      - 'innovacare-trainning-main/src/**'
+      - 'innovacare-trainning-main/android/**'
+      - 'innovacare-trainning-main/capacitor.config.ts'
+      - 'innovacare-trainning-main/package*.json'
+      - '.github/workflows/android-apk.yml'
+
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: innovacare-trainning-main
+
+jobs:
+  apk:
+    name: Build APK (${{ matrix.env }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        env: [staging, production]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: innovacare-trainning-main/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - uses: android-actions/setup-android@v3
+
+      - run: npm ci
+
+      - name: Build web app (${{ matrix.env }})
+        run: npx ng build --configuration ${{ matrix.env }}
+
+      - name: Copy web app into the Android project
+        run: npx cap sync android
+
+      - name: Build debug APK
+        working-directory: innovacare-trainning-main/android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug
+
+      - name: Name the APK
+        run: |
+          mkdir -p apk-out
+          cp android/app/build/outputs/apk/debug/app-debug.apk \
+            "apk-out/innovacare-training-${{ matrix.env }}-${GITHUB_SHA::7}.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: innovacare-training-${{ matrix.env }}-apk
+          path: innovacare-trainning-main/apk-out/*.apk
+          if-no-files-found: error
+          retention-days: 30
