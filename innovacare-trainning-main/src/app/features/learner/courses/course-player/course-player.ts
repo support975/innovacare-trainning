@@ -361,7 +361,7 @@ export class CoursePlayer implements OnInit, AfterViewInit, OnDestroy {
     return mode === 'single' ? correctCount === 1 : correctCount < choices.length;
   }
 
-  course = toSignal(
+  course = toSignal<CourseDoc, CourseDoc>(
     docData(doc(this.afs, `courses/${this.courseId}`), { idField: 'id' }) as Observable<CourseDoc>,
     {
       initialValue: {
