@@ -117,7 +117,7 @@ export class ExamBlueprintCenterComponent implements OnInit {
     this.selectedBlueprint.set(null);
     this.showBlueprintForm.set(false);
 
-    this.blueprintService.getBlueprints(session.id || '', this.orgId).subscribe({
+    this.blueprintService.getBlueprintsForEditing(session.id || '', this.orgId).subscribe({
       next: (blueprints) => {
         this.blueprints.set(blueprints);
       },
@@ -159,7 +159,7 @@ export class ExamBlueprintCenterComponent implements OnInit {
         renewalCourseIds: this.renewalForm.courseIds,
         renewalRequiredPoints: this.renewalForm.requiredPoints,
       });
-      const updated = await this.blueprintService.getBlueprint(blueprint.id);
+      const updated = await this.blueprintService.getBlueprintForEditing(blueprint.id);
       if (updated) this.selectedBlueprint.set(updated);
       this.success.set(this.lang.t('Renewal requirements saved'));
       setTimeout(() => this.success.set(null), 3000);
@@ -337,7 +337,7 @@ export class ExamBlueprintCenterComponent implements OnInit {
       this.editingQuestion.set(null);
 
       // Reload blueprint
-      const blueprint = await this.blueprintService.getBlueprint(
+      const blueprint = await this.blueprintService.getBlueprintForEditing(
         this.selectedBlueprint()?.id || ''
       );
       if (blueprint) {
@@ -363,7 +363,7 @@ export class ExamBlueprintCenterComponent implements OnInit {
         questionId
       );
 
-      const blueprint = await this.blueprintService.getBlueprint(
+      const blueprint = await this.blueprintService.getBlueprintForEditing(
         this.selectedBlueprint()?.id || ''
       );
       if (blueprint) {
@@ -388,7 +388,7 @@ export class ExamBlueprintCenterComponent implements OnInit {
         this.selectedBlueprint()?.id || ''
       );
 
-      const blueprint = await this.blueprintService.getBlueprint(
+      const blueprint = await this.blueprintService.getBlueprintForEditing(
         this.selectedBlueprint()?.id || ''
       );
       if (blueprint) {
@@ -454,7 +454,7 @@ export class ExamBlueprintCenterComponent implements OnInit {
       }
 
       // Reload blueprint
-      const updated = await this.blueprintService.getBlueprint(blueprint.id || '');
+      const updated = await this.blueprintService.getBlueprintForEditing(blueprint.id || '');
       if (updated) {
         this.selectedBlueprint.set(updated);
       }

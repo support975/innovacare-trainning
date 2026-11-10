@@ -42,20 +42,37 @@ service cloud.firestore {
       return isSignedIn() && myRole() in ['super_admin', 'superAdmin'];
     }
 
+    // Platform-level staff: super admins, or an active admins/{uid} record.
+    // An organization admin (role 'admin' with an orgId) is NOT a platform
+    // admin — they reach their own organization's data only through the
+    // org-scoped helpers (isOrgStaffFor / isOrgStaffOf / isExamStaffFor).
+    function isPlatformAdmin() {
+      return isSuperAdmin() || (isSignedIn()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.active == true);
+    }
+
+    // Kept for the platform catalog and back-office collections. Previously
+    // this also matched every org admin, which let one organization's admin
+    // read and change other organizations' data.
     function isAdminOrAbove() {
-      return isSignedIn() && (
-        (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) &&
-         get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.active == true)
-        || myRole() in ['admin', 'super_admin', 'superAdmin']
-      );
+      return isPlatformAdmin();
     }
 
     function isManager() {
       return isSignedIn() && myRole() == 'manager';
     }
 
+    // An admin or manager attached to an organization.
+    function isOrgStaff() {
+      return isSignedIn() && myRole() in ['admin', 'manager'] && myOrgId() != null;
+    }
+
+    // NOTE: still not scoped to one organization. Collections that use it
+    // directly (mail, sms, notifications…) keep their previous behaviour;
+    // exam, proctoring and people data use the org-scoped helpers instead.
     function isManagerOrAbove() {
-      return isAdminOrAbove() || isManager();
+      return isPlatformAdmin() || isOrgStaff();
     }
 
     function isOrgStaffFor(orgId) {
@@ -208,6 +225,38 @@ service cloud.firestore {
     // not a live toggle: self-serve can only move customDomainStatus to
     // 'none'/'pending' — only Super Admin sets 'active' once DNS/SSL is
     // actually provisioned.
+    // Org admin/manager (or a council admin above it) for the organization
+    // that owns `data` (a map with an orgId field). Uses data.orgId directly
+    // so list queries filtered on orgId can be checked by the rules engine.
+    function isOrgStaffOf(data) {
+      return isOrgStaffFor(data.orgId);
+    }
+
+    // Org staff for the organization a given user belongs to.
+    function isOrgStaffForUser(uid) {
+      return exists(/databases/$(database)/documents/users/$(uid))
+        && isOrgStaffOf(get(/databases/$(database)/documents/users/$(uid)).data);
+    }
+
+    // Exam operations staff for an organization: platform admins, the org's
+    // admins/managers (and council admins above it), and the org's proctors.
+    function isExamStaffFor(orgId) {
+      return isPlatformAdmin()
+        || (orgId is string && (
+              isOrgStaffFor(orgId)
+              || (isSignedIn() && myRole() == 'proctor' && myOrgId() == orgId)));
+    }
+
+    function sessionOrgId(sessionId) {
+      return exists(/databases/$(database)/documents/examSessions/$(sessionId))
+        ? get(/databases/$(database)/documents/examSessions/$(sessionId)).data.get('orgId', null)
+        : null;
+    }
+
+    function isExamStaffForSession(sessionId) {
+      return isExamStaffFor(sessionOrgId(sessionId));
+    }
+
     function isOrgAdminFor(orgId) {
       return isSignedIn() && myRole() == 'admin' && myOrgId() == orgId;
     }
@@ -588,88 +637,65 @@ service cloud.firestore {
     }
 
     // ── USERS ──────────────────────────────────────────────────────────────
-    // super_admin  → full access to every user
-    // admin        → full access (already org-admin in most setups)
-    // manager      → read-only, limited to users in the SAME org
-    // self         → read own doc; write own doc but cannot self-escalate role/active
+    // platform admin → every user (super_admin, or an active admins/{uid} doc)
+    // org admin/manager → users of their own organization (council admins:
+    //                     also their descendant facilities), read-only here;
+    //                     accounts are created/changed by Cloud Functions
+    // self → own doc, without escalating role/permissions (isSelfProfileUpdate)
     match /users/{uid} {
-      allow read: if isSuperAdmin()
-        || isAdminOrAbove()
-        || (isManager() && sameOrg(resource.data))
+      allow read: if isPlatformAdmin()
+        || isOrgStaffOf(resource.data)
         || (isSignedIn() && request.auth.uid == uid);
-
       allow create: if isSuperAdmin()
-        || (isAdminOrAbove() && hasNoRestrictedUserAuthorityFields())
+        || (isPlatformAdmin() && hasNoRestrictedUserAuthorityFields())
         || isIndividualSelfProfileCreate(uid);
-
       allow update: if isSuperAdmin()
-        || (isAdminOrAbove() && keepsRestrictedUserAuthorityFieldsUnchanged())
+        || (isPlatformAdmin() && keepsRestrictedUserAuthorityFieldsUnchanged())
         || isSelfProfileUpdate(uid);
-
-      allow delete: if isSuperAdmin() || isAdminOrAbove();
+      allow delete: if isPlatformAdmin();
     }
 
     // ── ENROLLMENTS — specific path ────────────────────────────────────────
     // Path: users/{uid}/enrollments/{eid}
-    // manager can read/write enrollments that share their orgId
-    // learner can read/write their own enrollments
+    // org staff can read/write enrollments that carry their orgId
+    // learner can read/write their own enrollments (limited keys)
     match /users/{uid}/enrollments/{eid} {
-      allow read: if isSuperAdmin()
-        || isAdminOrAbove()
-        || (isManager() && sameOrg(resource.data))
+      allow read: if isPlatformAdmin()
+        || isOrgStaffOf(resource.data)
         || (isSignedIn() && request.auth.uid == uid);
-
-      allow create: if isSuperAdmin()
-        || isAdminOrAbove()
-        || (isManager() && sameOrg(request.resource.data))
+      allow create: if isPlatformAdmin()
+        || isOrgStaffOf(request.resource.data)
         || isSelfPublicEnrollmentCreate(uid, eid);
-
-      allow update: if isSuperAdmin()
-        || isAdminOrAbove()
-        || (isManager() && sameOrg(request.resource.data))
+      allow update: if isPlatformAdmin()
+        || (isOrgStaffOf(resource.data) && isOrgStaffOf(request.resource.data))
         || isSelfEnrollmentUpdate(uid);
-
-      allow delete: if isSuperAdmin() || isAdminOrAbove();
+      allow delete: if isPlatformAdmin() || isOrgStaffOf(resource.data);
     }
 
     // ── NOTIFICATION READS ───────────────────────────────────────────────
     // Used by the in-app notification bell under users/{uid}/notificationReads/{notificationId}
     match /users/{uid}/notificationReads/{notificationId} {
-      allow read: if isSuperAdmin()
-        || isAdminOrAbove()
-        || (isSignedIn() && request.auth.uid == uid);
-
-      allow create, update, delete: if isSuperAdmin()
-        || isAdminOrAbove()
+      allow read, create, update, delete: if isPlatformAdmin()
         || (isSignedIn() && request.auth.uid == uid);
     }
 
     match /users/{uid}/licenses/{licenseId} {
-      allow read, create, update, delete: if isSuperAdmin()
-        || isAdminOrAbove()
-        || (isManager() && uid != request.auth.uid
-            && exists(/databases/$(database)/documents/users/$(uid))
-            && sameOrg(get(/databases/$(database)/documents/users/$(uid)).data))
+      allow read, create, update, delete: if isPlatformAdmin()
+        || (uid != request.auth.uid && isOrgStaffForUser(uid))
         || (isSignedIn() && request.auth.uid == uid);
     }
 
     match /users/{uid}/enrollments/{eid}/completedLessons/{lessonId} {
-      allow read: if isSuperAdmin()
-        || isAdminOrAbove()
-        || (isManager() && sameOrg(get(/databases/$(database)/documents/users/$(uid)/enrollments/$(eid)).data))
-        || (isSignedIn() && request.auth.uid == uid);
-
-      allow create, update, delete: if isSuperAdmin()
-        || isAdminOrAbove()
-        || (isManager() && sameOrg(get(/databases/$(database)/documents/users/$(uid)/enrollments/$(eid)).data))
+      allow read, create, update, delete: if isPlatformAdmin()
+        || (exists(/databases/$(database)/documents/users/$(uid)/enrollments/$(eid))
+            && isOrgStaffOf(get(/databases/$(database)/documents/users/$(uid)/enrollments/$(eid)).data))
         || (isSignedIn() && request.auth.uid == uid);
     }
 
     match /users/{uid}/examSubmissions/{submissionId} {
-      allow read: if isSuperAdmin()
-        || isAdminOrAbove()
+      allow read: if isPlatformAdmin()
+        || isOrgStaffForUser(uid)
         || (isSignedIn() && request.auth.uid == uid);
-
       allow create: if isSignedIn()
         && request.auth.uid == uid
         && request.resource.data.uid == uid
@@ -689,81 +715,69 @@ service cloud.firestore {
         && request.resource.data.examId is string
         && request.resource.data.answers is map
         && hasOptionalOfficialExamContext(request.resource.data);
-
-      allow update, delete: if isSuperAdmin() || isAdminOrAbove();
+      allow update, delete: if isPlatformAdmin();
     }
 
     match /users/{uid}/launchTickets/{ticketId} {
-      allow read: if isSuperAdmin()
-        || isAdminOrAbove()
-        || (isSignedIn() && request.auth.uid == uid);
-
-      allow create, update, delete: if isSuperAdmin()
-        || isAdminOrAbove()
+      allow read, create, update, delete: if isPlatformAdmin()
         || (isSignedIn() && request.auth.uid == uid);
     }
 
     // ── AI ASSISTANT DATA (InnovaAssist) ────────────────────────────────────
+    // Private to the learner; platform admins may read for support.
     match /users/{uid}/aiChats/{chatId} {
-      allow read: if isSuperAdmin() || isAdminOrAbove() || (isSignedIn() && request.auth.uid == uid);
+      allow read: if isPlatformAdmin() || (isSignedIn() && request.auth.uid == uid);
       allow create: if isSignedIn() && request.auth.uid == uid;
       allow delete: if isSuperAdmin() || (isSignedIn() && request.auth.uid == uid);
     }
 
     match /users/{uid}/quizSessions/{sessionId} {
-      allow read: if isSuperAdmin() || isAdminOrAbove() || (isSignedIn() && request.auth.uid == uid);
+      allow read: if isPlatformAdmin() || (isSignedIn() && request.auth.uid == uid);
       allow create, update: if isSignedIn() && request.auth.uid == uid;
       allow delete: if isSuperAdmin() || (isSignedIn() && request.auth.uid == uid);
     }
 
     match /users/{uid}/generatedNotes/{noteId} {
-      allow read: if isSuperAdmin() || isAdminOrAbove() || (isSignedIn() && request.auth.uid == uid);
+      allow read: if isPlatformAdmin() || (isSignedIn() && request.auth.uid == uid);
       allow create: if isSignedIn() && request.auth.uid == uid;
       allow delete: if isSuperAdmin() || (isSignedIn() && request.auth.uid == uid);
     }
 
     match /users/{uid}/wallet/{walletId} {
-      allow read: if isSuperAdmin()
-        || isAdminOrAbove()
-        || (isManager() && uid != request.auth.uid
-            && exists(/databases/$(database)/documents/users/$(uid))
-            && sameOrg(get(/databases/$(database)/documents/users/$(uid)).data))
+      allow read: if isPlatformAdmin()
+        || (uid != request.auth.uid && isOrgStaffForUser(uid))
         || (isSignedIn() && request.auth.uid == uid);
-
-      allow write: if isAdminOrAbove();
+      allow write: if isPlatformAdmin()
+        || (uid != request.auth.uid && isOrgStaffForUser(uid));
     }
 
     match /users/{uid}/rewards/{rewardId} {
-      allow read: if isSuperAdmin()
-        || isAdminOrAbove()
-        || (isManager() && uid != request.auth.uid
-            && exists(/databases/$(database)/documents/users/$(uid))
-            && sameOrg(get(/databases/$(database)/documents/users/$(uid)).data))
+      allow read: if isPlatformAdmin()
+        || (uid != request.auth.uid && isOrgStaffForUser(uid))
         || (isSignedIn() && request.auth.uid == uid);
-
-      allow write: if isAdminOrAbove();
+      allow write: if isPlatformAdmin()
+        || (uid != request.auth.uid && isOrgStaffForUser(uid));
     }
 
     // ── ENROLLMENTS — collectionGroup ──────────────────────────────────────
     // Required so collectionGroup('enrollments') queries work.
-    // Firestore evaluates this rule for each document in the result set.
+    // Firestore evaluates this rule for each document in the result set;
+    // org staff queries must filter on their orgId.
     match /{path=**}/enrollments/{eid} {
-      allow read: if isSuperAdmin()
-        || isAdminOrAbove()
-        || (isManager() && sameOrg(resource.data))
+      allow read: if isPlatformAdmin()
+        || isOrgStaffOf(resource.data)
         || (isSignedIn() && resource.data.uid == request.auth.uid);
-
-      allow write: if isSuperAdmin()
-        || isAdminOrAbove()
-        || (isManager() && sameOrg(request.resource.data));
+      allow write: if isPlatformAdmin()
+        || (isOrgStaffOf(request.resource.data)
+            && (resource == null || isOrgStaffOf(resource.data)));
     }
 
     // ── ORGANIZATIONS ──────────────────────────────────────────────────────
     // super_admin → full access
     // manager/admin → read their own org document only
     match /organizations/{orgId} {
-      allow read: if isSuperAdmin()
-        || isAdminOrAbove()
+      allow read: if isPlatformAdmin()
+        || isOrgStaffFor(orgId)
         || (isSignedIn() && myOrgId() == orgId);
 
       // A council admin may create a child org under itself, but only with
@@ -919,21 +933,18 @@ service cloud.firestore {
     }
 
     match /eventRegistrations/{registrationId} {
-      allow read: if isSuperAdmin()
-        || isAdminOrAbove()
-        || (isManager() && sameOrg(resource.data))
+      allow read: if isPlatformAdmin()
+        || isOrgStaffOf(resource.data)
         || (isSignedIn() && resource.data.uid == request.auth.uid);
 
-      allow create: if isSuperAdmin()
-        || isAdminOrAbove()
-        || (isManager() && sameOrg(request.resource.data))
+      allow create: if isPlatformAdmin()
+        || isOrgStaffOf(request.resource.data)
         || isSelfEventRegistrationCreate(request.resource.data);
 
-      allow update: if isSuperAdmin()
-        || isAdminOrAbove()
-        || (isManager() && sameOrg(resource.data) && sameOrg(request.resource.data));
+      allow update: if isPlatformAdmin()
+        || (isOrgStaffOf(resource.data) && isOrgStaffOf(request.resource.data));
 
-      allow delete: if isSuperAdmin() || isAdminOrAbove();
+      allow delete: if isPlatformAdmin() || isOrgStaffOf(resource.data);
     }
 
     // ── FACULTY / SPONSORS (reusable profiles for webinars/events) ─────────
@@ -958,11 +969,10 @@ service cloud.firestore {
     }
 
     match /certificates/{certificateId} {
-      allow read: if isSuperAdmin()
-        || isAdminOrAbove()
+      allow read: if isPlatformAdmin()
         || (isSignedIn() && resource.data.uid == request.auth.uid);
 
-      allow write: if isAdminOrAbove();
+      allow write: if isPlatformAdmin();
     }
 
     // ── OFFICIAL CERTIFICATION AUTHORITY ─────────────────────────────────
@@ -1020,12 +1030,13 @@ service cloud.firestore {
           isApplicationOwner(resource.data)
           && request.resource.data.organizationId == resource.data.organizationId
           && request.resource.data.candidateUserId == resource.data.candidateUserId
+          // Exam results are recorded only by the grading Cloud Function.
+          && !request.resource.data.diff(resource.data).affectedKeys()
+               .hasAny(['examResult', 'examCompletedAt', 'lastExamSubmissionId', 'examAttemptId'])
           && (
-            request.resource.data.status in ['draft', 'submitted']
-            || (
-              resource.data.status in ['eligible', 'approved_for_exam']
-              && request.resource.data.status == 'exam_completed'
-            )
+            // (Re)submit — not once the exam has been taken.
+            (request.resource.data.status in ['draft', 'submitted']
+              && !(resource.data.status in ['exam_completed', 'jury_review', 'passed', 'failed']))
             // Self-reported renewal progress and contact info: status/decision
             // fields are left untouched by the owner in this path.
             || (
@@ -1105,6 +1116,10 @@ service cloud.firestore {
       }
     }
 
+    // Published blueprints are readable by candidates, so they must never
+    // contain answers: correct answers and explanations live in the
+    // private/answerKey document below, readable only by the certification
+    // authority, and exams are graded by the submitBlueprintExam function.
     match /examBlueprints/{blueprintId} {
       allow read: if (resource.data.orgId is string
           && isCertificationAuthorityFor(resource.data.orgId))
@@ -1119,6 +1134,18 @@ service cloud.firestore {
 
       allow delete: if isSuperAdmin()
         || (resource.data.orgId is string && isCertificationAuthorityFor(resource.data.orgId));
+
+      match /private/{docId} {
+        allow read: if resource.data.orgId is string
+          && isCertificationAuthorityFor(resource.data.orgId);
+        allow create, update: if request.resource.data.orgId is string
+          && isCertificationAuthorityFor(request.resource.data.orgId)
+          && (resource == null || resource.data.orgId == request.resource.data.orgId)
+          && exists(/databases/$(database)/documents/examBlueprints/$(blueprintId))
+          && get(/databases/$(database)/documents/examBlueprints/$(blueprintId)).data.orgId == request.resource.data.orgId;
+        allow delete: if isSuperAdmin()
+          || (resource.data.orgId is string && isCertificationAuthorityFor(resource.data.orgId));
+      }
     }
 
     // Consumed by the Firebase "Trigger Email from Firestore" extension (or an
@@ -1675,49 +1702,47 @@ service cloud.firestore {
         && resource.data.orgId == myOrgId();
 
       // ── RULE AGREEMENTS (audit trail of accepted exam disclaimers) ──────
+      // Written by the candidate (signed in on the kiosk or remotely) when
+      // they accept the rules; read by the session organization's staff.
       match /ruleAgreements/{agreementId} {
-        allow read: if isManagerOrAbove() || myRole() == 'proctor';
-        // Kiosk stations (anonymous auth) record the candidate's acceptance
-        allow create: if isSignedIn();
+        allow read: if isExamStaffForSession(sessionId);
+        allow create: if isSignedIn()
+          && request.resource.data.candidateUid == request.auth.uid;
         allow update, delete: if false;
       }
 
-      // ── CANDIDATE VERIFICATIONS (for kiosk login) ──────────────────────
+      // ── CANDIDATE VERIFICATIONS ─────────────────────────────────────────
+      // Not public: a candidate reads only their own record (the kiosk
+      // signs the candidate in first, then reads it), staff of the
+      // session's organization manage all of them, and the exam is marked
+      // completed by the submitBlueprintExam function, never by a client.
+      // Member self-registration: own doc, unverified only — candidates
+      // cannot flip verified / examCompleted / candidacyApproved themselves.
       match /candidateVerifications/{uid} {
-        allow read: if true; // Allow public read for kiosk login verification
-        // 1) Kiosk consume: verified -> false, examCompleted -> true
-        // 2) Member self-registration: own doc, unverified only (candidacyApproved stays null/managed by staff only)
-        // 3) Staff (proctors/managers) manage everything
+        allow read: if isExamStaffForSession(sessionId)
+          || (isSignedIn() && request.auth.uid == uid);
         allow create: if (isSignedIn()
-            && request.resource.data.verified == false
-            && request.resource.data.examCompleted == true)
-          || (isSignedIn()
             && request.auth.uid == uid
-            && request.resource.data.candidateUid == request.auth.uid
-            && request.resource.data.verified == false
-            && request.resource.data.examCompleted == false)
-          || isManagerOrAbove()
-          || myRole() == 'proctor';
-        allow update: if (isSignedIn()
-            && request.resource.data.verified == false
-            && request.resource.data.examCompleted == true)
-          // Member self-service: submit/withdraw documents while still unverified.
-          // Cannot flip verified/examCompleted/candidacyApproved themselves.
-          || (isSignedIn()
-            && request.auth.uid == uid
-            && resource.data.verified == false
             && request.resource.data.candidateUid == request.auth.uid
             && request.resource.data.verified == false
             && request.resource.data.examCompleted == false
-            && request.resource.data.candidacyApproved == resource.data.candidacyApproved)
-          || isManagerOrAbove()
-          || myRole() == 'proctor';
+            && !request.resource.data.keys().hasAny(['candidacyApproved', 'examCompletedAt']))
+          || isExamStaffForSession(sessionId);
+        allow update: if (isSignedIn()
+            && request.auth.uid == uid
+            && resource.data.verified == false
+            && resource.data.examCompleted != true
+            && request.resource.data.candidateUid == request.auth.uid
+            && request.resource.data.verified == false
+            && request.resource.data.examCompleted == false
+            && request.resource.data.get('candidacyApproved', null) == resource.data.get('candidacyApproved', null))
+          || isExamStaffForSession(sessionId);
         // Members may withdraw their own registration while still unverified
         allow delete: if (isSignedIn()
             && request.auth.uid == uid
-            && resource.data.verified == false)
-          || isManagerOrAbove()
-          || myRole() == 'proctor';
+            && resource.data.verified == false
+            && resource.data.examCompleted != true)
+          || isExamStaffForSession(sessionId);
       }
 
       // ── REMOTE PROCTORING (vendor-backed, e.g. Talview) ────────────────
@@ -1727,9 +1752,9 @@ service cloud.firestore {
       // decision fields; clients never write vendor state directly.
       match /remoteProctoring/{uid} {
         allow read: if isSignedIn()
-          && (request.auth.uid == uid || isManagerOrAbove() || myRole() == 'proctor');
+          && (request.auth.uid == uid || isExamStaffForSession(sessionId));
         allow create, delete: if false;
-        allow update: if (isManagerOrAbove() || myRole() == 'proctor')
+        allow update: if isExamStaffForSession(sessionId)
           && request.resource.data.diff(resource.data).affectedKeys()
                .hasOnly(['flags', 'finalDecision', 'reviewedBy', 'reviewedAt', 'reviewNotes', 'updatedAt']);
       }
@@ -1737,21 +1762,26 @@ service cloud.firestore {
 
     // ── PROCTOR VERIFICATIONS ─────────────────────────────────────────────
     match /proctorVerifications/{verificationId} {
-      allow read: if isSignedIn() && (
-        isManagerOrAbove() ||
-        myRole() == 'proctor'
-      );
-      allow create, update, delete: if isManagerOrAbove() || myRole() == 'proctor';
+      // Each record carries the orgId of its exam session; staff queries
+      // must filter on orgId.
+      allow read: if isExamStaffFor(resource.data.orgId);
+      allow create: if request.resource.data.orgId is string
+        && isExamStaffFor(request.resource.data.orgId)
+        && request.resource.data.sessionId is string
+        && sessionOrgId(request.resource.data.sessionId) == request.resource.data.orgId;
+      allow update: if isExamStaffFor(resource.data.orgId)
+        && request.resource.data.orgId == resource.data.orgId;
+      allow delete: if isExamStaffFor(resource.data.orgId);
     }
 
     // ── PROCTOR AUDIT LOGS ────────────────────────────────────────────────
     match /proctorAuditLogs/{logId} {
-      allow read: if isSignedIn() && (
-        isManagerOrAbove() ||
-        myRole() == 'proctor'
-      );
-      allow create: if isManagerOrAbove() || myRole() == 'proctor';
-      allow update, delete: if isAdminOrAbove();
+      allow read: if isExamStaffFor(resource.data.orgId);
+      allow create: if request.resource.data.orgId is string
+        && isExamStaffFor(request.resource.data.orgId)
+        && request.resource.data.sessionId is string
+        && sessionOrgId(request.resource.data.sessionId) == request.resource.data.orgId;
+      allow update, delete: if isPlatformAdmin();
     }
 
     // ── CREDENTIAL EMAIL REQUESTS (card + certificate PDFs by email) ───────
@@ -1809,21 +1839,20 @@ service cloud.firestore {
 
     // ── EXAM ATTEMPTS (Results & Email Notifications) ──────────────────────
     match /examAttempts/{attemptId} {
-      allow read: if isSignedIn() && (
-        isManagerOrAbove() ||
-        (myRole() == 'learner' && resource.data.candidateUid == request.auth.uid)
-      );
-      // Learners create their own attempts; kiosk stations (anonymous auth)
-      // create session-tagged attempts on behalf of verified candidates.
-      allow create: if isSignedIn() && (
-        request.resource.data.candidateUid == request.auth.uid ||
-        request.resource.data.sessionId is string ||
-        isManagerOrAbove() ||
-        myRole() == 'proctor'
-      );
-      // Managers publish results and record card issuance on attempts
-      allow update: if isManagerOrAbove();
-      allow delete: if isAdminOrAbove();
+      // Created only by the submitBlueprintExam Cloud Function (Admin SDK),
+      // which grades against the private answer key. Every attempt carries
+      // the orgId of its blueprint; staff queries must filter on orgId.
+      allow read: if isExamStaffFor(resource.data.orgId)
+        || (isSignedIn() && resource.data.candidateUid == request.auth.uid);
+      allow create: if false;
+      // Org staff publish results and record card issuance — never the grade.
+      allow update: if (isPlatformAdmin() || isOrgStaffOf(resource.data))
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+             'candidateUid', 'blueprintId', 'applicationId', 'sessionId', 'orgId',
+             'score', 'passed', 'correctCount', 'totalQuestions', 'details',
+             'proctoringViolations', 'proctoringMode', 'completedAt', 'gradedBy'
+           ]);
+      allow delete: if isPlatformAdmin();
     }
   }
 }

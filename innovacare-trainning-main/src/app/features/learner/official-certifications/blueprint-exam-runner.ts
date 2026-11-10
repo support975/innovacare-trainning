@@ -5,8 +5,28 @@ import { AuthService } from '../../../core/auth';
 import { ExamBlueprintService } from '../../../data/exam-blueprint.service';
 import { CandidateApplicationService } from '../../../shared/certification-authority/candidate-application.service';
 import { ExamBlueprint, ExamBlueprintQuestion } from '../../../data/exam-blueprint.model';
-import { Firestore, collection, addDoc, doc, getDoc, setDoc, serverTimestamp } from '@angular/fire/firestore';
+import { Firestore, doc, getDoc } from '@angular/fire/firestore';
 import { Auth, signOut } from '@angular/fire/auth';
+import { Functions, httpsCallable } from '@angular/fire/functions';
+
+type SubmitBlueprintExamRequest = {
+  blueprintId: string;
+  answers: Record<string, string[]>;
+  applicationId?: string;
+  sessionId?: string;
+  mode?: 'kiosk' | 'remote';
+  proctoringViolations?: number;
+};
+
+type SubmitBlueprintExamResponse = {
+  attemptId: string;
+  resultsWithheld: boolean;
+  percent?: number;
+  passed?: boolean;
+  correct?: number;
+  total?: number;
+  details?: QuestionResultDetail[];
+};
 
 type QuestionResultDetail = {
   id: string;
@@ -33,6 +53,7 @@ export class BlueprintExamRunnerComponent implements OnInit, OnDestroy {
   private applicationsSvc = inject(CandidateApplicationService);
   private afs = inject(Firestore);
   private fbAuth = inject(Auth);
+  private functions = inject(Functions);
 
   applicationId = '';
   blueprintId = '';
@@ -418,107 +439,33 @@ export class BlueprintExamRunnerComponent implements OnInit, OnDestroy {
       const blueprint = this.blueprint();
       if (!blueprint) throw new Error('Exam data missing.');
 
-      const details: QuestionResultDetail[] = [];
-      let earnedPoints = 0;
-      let totalPoints = 0;
-
+      // Grading happens on the server against the private answer key — the
+      // candidate's browser never sees the correct answers.
+      const answers: Record<string, string[]> = {};
       for (const q of this.questions()) {
-        const yourSet = this.answers.get(q.id!) || new Set<string>();
-        const correctSet = new Set(q.correctAnswers || []);
-        const isCorrect =
-          yourSet.size === correctSet.size &&
-          [...yourSet].every((v) => correctSet.has(v));
-        const points = q.points || blueprint.pointsPerQuestion || 10;
-        totalPoints += points;
-        if (isCorrect) earnedPoints += points;
-
-        details.push({
-          id: q.id!,
-          order: q.order,
-          prompt: q.prompt,
-          your: Array.from(yourSet),
-          correct: Array.from(correctSet),
-          isCorrect,
-          explanation: q.explanation,
-        });
+        answers[q.id!] = Array.from(this.answers.get(q.id!) ?? []);
       }
-
-      const percent = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0;
-      const passed = percent >= this.passThreshold();
-
-      this.percent.set(percent);
-      this.result.set({
-        total: this.questions().length,
-        correct: details.filter((d) => d.isCorrect).length,
-        percent,
-        passed,
-        details,
+      const submitExam = httpsCallable<SubmitBlueprintExamRequest, SubmitBlueprintExamResponse>(
+        this.functions,
+        'submitBlueprintExam'
+      );
+      const { data: response } = await submitExam({
+        blueprintId: this.blueprintId,
+        answers,
+        ...(this.sessionBased
+          ? { sessionId: this.kioskSessionId, mode: (this.kioskMode ? 'kiosk' : 'remote') as 'kiosk' | 'remote' }
+          : { applicationId: this.applicationId }),
+        proctoringViolations: this.onlineProctored ? this.proctorViolations() : 0,
       });
-
-      if (!this.kioskMode && !this.sessionBased) {
-        await this.applicationsSvc.markExamCompleted(this.applicationId, {
-          blueprintId: this.blueprintId,
-          percent,
-          passed,
-          correct: details.filter((d) => d.isCorrect).length,
-          total: details.length,
-          completedAt: Date.now(),
-        });
-      }
-
-      // Save exam attempt for kiosk/email notifications
-      try {
-        const attemptRef = await addDoc(collection(this.afs, 'examAttempts'), {
-          candidateUid: this.uid,
-          blueprintId: this.blueprintId,
-          applicationId: this.applicationId || null,
-          sessionId: this.kioskSessionId || null,
-          candidateEmail: this.kioskCandidateEmail || null,
-          candidateName: this.kioskCandidateName || null,
-          score: percent,
-          passed,
-          correctCount: details.filter((d) => d.isCorrect).length,
-          totalQuestions: details.length,
-          details,
-          proctoringViolations: this.onlineProctored ? this.proctorViolations() : 0,
-          proctoringMode: this.kioskMode ? 'onsite_kiosk' : 'online_remote',
-          completedAt: serverTimestamp(),
-        });
-
-        // Redirect to results page — the in-app certification-application
-        // flow only. Session-based candidates (kiosk or remote/diaspora)
-        // never see a score here at all; results are communicated later.
-        if (!this.kioskMode && !this.sessionBased) {
-          await this.router.navigate(['/exam-results'], {
-            queryParams: { attemptId: attemptRef.id },
-          });
-        }
-      } catch (e) {
-        console.error('Failed to save exam attempt:', e);
-      }
 
       this.clearLocalState();
 
       if (this.sessionBased) {
-        // Consume the verification/access: one verification = one attempt,
-        // for kiosk and remote/diaspora candidates alike. A completed
-        // session can never be re-entered — not by logging in again
-        // (loginToExamSession rejects it server-side) and not by
-        // revisiting this exam URL (the ngOnInit guard above rejects it).
-        try {
-          await setDoc(
-            doc(this.afs, `examSessions/${this.kioskSessionId}/candidateVerifications/${this.uid}`),
-            {
-              verified: false,
-              examCompleted: true,
-              examCompletedAt: serverTimestamp(),
-            },
-            { merge: true }
-          );
-        } catch (e) {
-          console.error('Failed to consume verification:', e);
-        }
-
+        // The server has recorded the attempt and consumed the candidate's
+        // verification: one verification = one attempt. A completed session
+        // can never be re-entered — not by logging in again
+        // (loginToExamSession rejects it server-side) and not by revisiting
+        // this exam URL (the ngOnInit guard above rejects it).
         if (this.kioskMode) {
           // Kiosk stations return straight to the session login page for
           // the next candidate — no results screen, no navigable history.
@@ -543,9 +490,31 @@ export class BlueprintExamRunnerComponent implements OnInit, OnDestroy {
         return;
       }
 
+      const percent = response.percent ?? 0;
+      this.percent.set(percent);
+      this.result.set({
+        total: response.total ?? 0,
+        correct: response.correct ?? 0,
+        percent,
+        passed: response.passed === true,
+        details: response.details ?? [],
+      });
+
+      // In-app certification-application flow: show the results page.
+      await this.router.navigate(['/exam-results'], {
+        queryParams: { attemptId: response.attemptId },
+      });
+
       await this.animateScore(percent);
       this.phase.set('results');
     } catch (err: any) {
+      if (err?.code === 'functions/already-exists') {
+        // Already submitted (e.g. a double click or a second tab).
+        this.clearLocalState();
+        this.notice.set('You have already submitted this exam. Your results will be sent to you by email.');
+        this.phase.set('questions');
+        return;
+      }
       this.notice.set(err?.message || 'Failed to submit exam.');
       this.phase.set('questions');
       this.startTimer();

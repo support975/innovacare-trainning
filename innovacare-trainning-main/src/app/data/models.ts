@@ -861,6 +861,8 @@ export interface ExamSession {
 export interface ProctorVerification {
   id?: string;
   sessionId: string;
+  /** orgId of the exam session — required by the security rules. */
+  orgId?: string | null;
   candidateUid: string;
   proctorUid: string;
 
@@ -879,6 +881,8 @@ export interface ProctorVerification {
 }
 
 export interface ProctorAuditLog {
+  /** orgId of the exam session — required by the security rules. */
+  orgId?: string | null;
   id?: string;
   sessionId: string;
   proctorUid: string;

@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit, inject, signal, DestroyRef } from '@angul
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Firestore, doc, getDoc, collection, getDocs, addDoc, serverTimestamp, query, orderBy, limit, onSnapshot } from '@angular/fire/firestore';
+import { Firestore, doc, getDoc, collection, addDoc, serverTimestamp } from '@angular/fire/firestore';
 import { Auth, signInAnonymously, signInWithEmailAndPassword, signOut } from '@angular/fire/auth';
 import { ExamSession } from '../../../data/models';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -24,7 +24,6 @@ export class KioskExamLoginComponent implements OnInit, OnDestroy {
   sessionId = '';
   stationNumber = '';
   session = signal<ExamSession | null>(null);
-  candidates = signal<any[]>([]);
 
   email = '';
   password = '';
@@ -84,7 +83,6 @@ export class KioskExamLoginComponent implements OnInit, OnDestroy {
     }
 
     await this.loadSession();
-    await this.loadCandidates();
   }
 
   ngOnDestroy(): void {
@@ -109,35 +107,6 @@ export class KioskExamLoginComponent implements OnInit, OnDestroy {
     }
   }
 
-  private loadCandidates(): void {
-    try {
-      // Real-time listener for candidate list — updates when proctor verifies candidates
-      const verificationsRef = collection(this.afs, `examSessions/${this.sessionId}/candidateVerifications`);
-      const unsubscribe = onSnapshot(verificationsRef, (snap) => {
-        const candidatesList: any[] = [];
-        for (const doc of snap.docs) {
-          const data = doc.data() as any;
-          candidatesList.push({
-            uid: data['candidateUid'],
-            email: data['email'],
-            name: data['displayName'] || 'Candidate',
-            verified: data['verified'] === true,
-            examCompleted: data['examCompleted'] === true,
-            candidacyRejected: data['candidacyApproved'] === false,
-          });
-        }
-        this.candidates.set(candidatesList);
-      }, (err) => {
-        console.error('Failed to load candidates:', err);
-      });
-
-      // Auto-unsubscribe when component is destroyed
-      this.destroyRef.onDestroy(() => unsubscribe());
-    } catch (e: any) {
-      console.error('Failed to set up candidates listener:', e);
-    }
-  }
-
   async login(): Promise<void> {
     if (!this.email || !this.password) {
       this.error.set('Please enter email and password.');
@@ -149,53 +118,27 @@ export class KioskExamLoginComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const session = this.session();
+    if (!session) {
+      this.error.set('Session not found.');
+      return;
+    }
+
     this.loading.set(true);
     this.error.set('');
 
     try {
-      // Find candidate by email
-      const candidate = this.candidates().find((c) => (c.email || '').toLowerCase() === this.email.toLowerCase());
-
-      if (!candidate) {
-        this.error.set('Email not found. Please ask the proctor to verify your identity first.');
-        this.loading.set(false);
-        return;
-      }
-
-      if (candidate.examCompleted) {
-        this.error.set('This exam has already been completed. Each verification allows one attempt only.');
-        this.loading.set(false);
-        return;
-      }
-
-      if (candidate.candidacyRejected) {
-        this.error.set('Your candidacy was not approved for this session. Please contact the proctor.');
-        this.loading.set(false);
-        return;
-      }
-
-      if (!candidate.verified) {
-        this.error.set('Your identity has not been verified. Please ask the proctor to verify you first.');
-        this.loading.set(false);
-        return;
-      }
-
-      const session = this.session();
-      if (!session) {
-        this.error.set('Session not found.');
-        this.loading.set(false);
-        return;
-      }
-
-      // Real authentication: the enrollment email IS the candidate's account
-      // email, so verify the password against Firebase Auth. On success the
-      // station is signed in AS the candidate for the duration of the exam.
+      // 1) Real authentication: the enrollment email IS the candidate's
+      //    account email. On success the station is signed in AS the
+      //    candidate for the duration of the exam.
+      let candidateUid = '';
       try {
-        await signInWithEmailAndPassword(this.fbAuth, candidate.email, this.password);
+        const cred = await signInWithEmailAndPassword(this.fbAuth, this.email.trim(), this.password);
+        candidateUid = cred.user.uid;
       } catch (authErr: any) {
         const code = authErr?.code || '';
         if (code === 'auth/wrong-password' || code === 'auth/invalid-credential' || code === 'auth/invalid-login-credentials') {
-          this.error.set('Incorrect password. Please use your account password.');
+          this.error.set('Incorrect email or password. Please use your account password.');
         } else if (code === 'auth/too-many-requests') {
           this.error.set('Too many failed attempts. Please wait a moment and try again.');
         } else if (code === 'auth/user-not-found') {
@@ -203,19 +146,62 @@ export class KioskExamLoginComponent implements OnInit, OnDestroy {
         } else {
           this.error.set('Authentication failed. Please contact the proctor.');
         }
-        this.loading.set(false);
+        await this.resetStation();
+        return;
+      }
+
+      // 2) Only now read this candidate's own verification record — the
+      //    station never sees other candidates' details.
+      const snap = await getDoc(
+        doc(this.afs, `examSessions/${this.sessionId}/candidateVerifications/${candidateUid}`)
+      );
+      const record = snap.exists() ? (snap.data() as any) : null;
+
+      let refusal = '';
+      if (!record) {
+        refusal = 'You are not registered for this session. Please ask the proctor to verify your identity first.';
+      } else if (record['examCompleted'] === true) {
+        refusal = 'This exam has already been completed. Each verification allows one attempt only.';
+      } else if (record['candidacyApproved'] === false) {
+        refusal = 'Your candidacy was not approved for this session. Please contact the proctor.';
+      } else if (record['verified'] !== true) {
+        refusal = 'Your identity has not been verified. Please ask the proctor to verify you first.';
+      }
+      if (refusal) {
+        this.error.set(refusal);
+        await this.resetStation();
         return;
       }
 
       // Credentials accepted — show the exam rules disclaimer before starting
-      this.pendingCandidate = candidate;
+      this.pendingCandidate = {
+        uid: candidateUid,
+        email: record['email'] || this.fbAuth.currentUser?.email || this.email.trim(),
+        name: record['displayName'] || this.fbAuth.currentUser?.displayName || 'Candidate',
+      };
       this.agreed = false;
       this.error.set('');
       this.disclaimerVisible.set(true);
     } catch (e: any) {
       this.error.set(e?.message || 'Login failed. Please try again.');
+      await this.resetStation();
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  /** Sign any candidate out and return the station to its anonymous session. */
+  private async resetStation(): Promise<void> {
+    this.password = '';
+    try {
+      if (this.fbAuth.currentUser && !this.fbAuth.currentUser.isAnonymous) {
+        await signOut(this.fbAuth);
+      }
+      if (!this.fbAuth.currentUser) {
+        await signInAnonymously(this.fbAuth);
+      }
+    } catch (e) {
+      console.error('Failed to reset kiosk auth:', e);
     }
   }
 

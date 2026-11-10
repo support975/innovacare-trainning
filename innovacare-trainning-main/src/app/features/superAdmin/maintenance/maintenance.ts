@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/auth';
 import { MaintenanceService } from '../../../core/maintenance.service';
 import { LanguageService } from '../../../shared/services/language';
+import { Functions, httpsCallable } from '@angular/fire/functions';
 
 function toDatetimeLocal(value: any): string {
   if (!value) return '';
@@ -28,6 +29,11 @@ export class MaintenanceSettingsPage {
   private readonly authSvc = inject(AuthService);
   private readonly maintenanceSvc = inject(MaintenanceService);
   readonly lang = inject(LanguageService);
+  private readonly functions = inject(Functions);
+
+  securityNotice = signal('');
+  securityError = signal(false);
+  securityRunning = signal(false);
 
   bannerNotice = signal('');
   bannerError = signal(false);
@@ -88,6 +94,36 @@ export class MaintenanceSettingsPage {
       this.blockError.set(true);
     } finally {
       this.blockSaving.set(false);
+    }
+  }
+
+  /**
+   * One-time migration after the exam security update: moves answers out of
+   * published exam blueprints into their private answer keys, and stamps
+   * orgId on older exam attempts and proctor records. Safe to run again.
+   */
+  async secureExamData() {
+    this.securityNotice.set('');
+    this.securityRunning.set(true);
+    try {
+      const run = httpsCallable<void, { blueprintsSecured: number; attemptsStamped: number; proctorRecordsStamped: number }>(
+        this.functions,
+        'secureExamData'
+      );
+      const { data } = await run();
+      this.securityNotice.set(
+        this.lang.t('Exam data secured: {b} blueprints, {a} exam attempts, {p} proctor records updated.', {
+          b: data.blueprintsSecured,
+          a: data.attemptsStamped,
+          p: data.proctorRecordsStamped,
+        })
+      );
+      this.securityError.set(false);
+    } catch (e: any) {
+      this.securityNotice.set(e?.message || this.lang.t('Failed to secure exam data.'));
+      this.securityError.set(true);
+    } finally {
+      this.securityRunning.set(false);
     }
   }
 }

@@ -100,4 +100,24 @@
     </div>
   </div>
 
+  <!-- Exam Data Security Panel -->
+  <div class="panel">
+    <div class="panel__head">
+      <div>
+        <div class="panel__title">{{ lang.t('Exam data security') }}</div>
+        <div class="panel__sub">{{ lang.t('Run once after deploying the exam security update. Moves correct answers out of published exam blueprints into private answer keys, and tags older exam attempts and proctor records with their organization. Safe to run again.') }}</div>
+      </div>
+    </div>
+    <div class="settings-form">
+      <div *ngIf="securityNotice()" [class]="'notice-banner' + (securityError() ? ' notice-banner--error' : '')">
+        <span class="notice-banner__text">{{ securityNotice() }}</span>
+      </div>
+      <div class="settings-form__footer">
+        <button class="btn-primary" (click)="secureExamData()" [disabled]="securityRunning()">
+          {{ securityRunning() ? lang.t('Securing...') : lang.t('Secure exam data') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
 </div>

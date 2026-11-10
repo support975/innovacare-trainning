@@ -4,6 +4,7 @@ import {
   addDoc,
   collection,
   doc,
+  getDoc,
   getDocs,
   query,
   serverTimestamp,
@@ -67,10 +68,18 @@ export class OnsiteExamService {
 
   /** Merge candidateVerifications + ruleAgreements + examAttempts for a session. */
   async loadCandidates(sessionId: string): Promise<OnsiteCandidate[]> {
+    // Attempts are only readable by staff of the session's organization, so
+    // the query must filter on that orgId.
+    const sessionSnap = await getDoc(doc(this.afs, `examSessions/${sessionId}`));
+    const orgId = (sessionSnap.exists() ? sessionSnap.data()?.['orgId'] : null) as string | null;
+    const attemptsQuery = orgId
+      ? query(collection(this.afs, 'examAttempts'), where('orgId', '==', orgId), where('sessionId', '==', sessionId))
+      : query(collection(this.afs, 'examAttempts'), where('sessionId', '==', sessionId));
+
     const [verifSnap, agreementSnap, attemptSnap] = await Promise.all([
       getDocs(collection(this.afs, `examSessions/${sessionId}/candidateVerifications`)),
       getDocs(collection(this.afs, `examSessions/${sessionId}/ruleAgreements`)),
-      getDocs(query(collection(this.afs, 'examAttempts'), where('sessionId', '==', sessionId))),
+      getDocs(attemptsQuery),
     ]);
 
     const agreements = new Map<string, any>();
