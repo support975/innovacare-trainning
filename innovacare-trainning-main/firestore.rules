@@ -583,6 +583,8 @@ service cloud.firestore {
           'doneLessons',
           'scores',
           'slideDeckProgress',
+          'quizProgress',
+          'currentLessonId',
           'examDrafts',
           'materialViews',
           'timeOnTask',

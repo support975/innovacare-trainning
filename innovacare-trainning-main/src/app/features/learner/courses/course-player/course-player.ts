@@ -13,6 +13,7 @@ import {
   serverTimestamp,
   increment,
   collection as fsCollection,
+  deleteField,
 } from 'firebase/firestore';
 
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -172,12 +173,19 @@ interface SlideDeckProgressEntry {
   revealedCardIds?: string[];
 }
 
+interface QuizProgressEntry {
+  selected?: string[];
+  result?: 'passed' | 'failed';
+}
+
 interface EnrollmentDoc {
   slideDeckProgress?: Record<string, SlideDeckProgressEntry>;
   /** materialId -> first/last time the learner opened it */
   materialViews?: Record<string, unknown>;
   /** lessonId -> active seconds spent in the lesson */
   timeOnTask?: Record<string, number>;
+  quizProgress?: Record<string, QuizProgressEntry>;
+  currentLessonId?: string;
 }
 
 @Component({
@@ -203,6 +211,7 @@ export class CoursePlayer implements OnInit, AfterViewInit, OnDestroy {
   notice = '';
   busyId: string | null = null;
   activeIndex = 0;
+  private hasResumedPosition = false;
   sidebarOpen = true;
   readonly languageCode = this.languageService.language;
 
@@ -251,6 +260,40 @@ export class CoursePlayer implements OnInit, AfterViewInit, OnDestroy {
 
   private readonly syncSlideDeckProgress = effect(() => {
     this.hydrateSlideDeckProgress(this.enrollment()?.slideDeckProgress ?? null);
+  });
+
+  private readonly syncQuizProgress = effect(() => {
+    this.hydrateQuizProgress(this.enrollment()?.quizProgress ?? null);
+  });
+
+  // Resumes the learner's last-viewed lesson once both the enrollment doc and
+  // the course's lesson list have loaded. Runs once (guarded by
+  // hasResumedPosition) so it never fights with subsequent user navigation.
+  private readonly resumeLessonPosition = effect(() => {
+    if (this.hasResumedPosition) return;
+
+    const user = this.currentUser();
+    if (user === undefined) return; // auth state still resolving
+
+    const ls = this.lessons();
+    if (!ls.length) return; // course content not loaded yet
+
+    if (user === null) {
+      this.hasResumedPosition = true; // no signed-in user, nothing to resume
+      return;
+    }
+
+    const enr = this.enrollment();
+    if (enr === null) return; // enrollment doc not resolved yet
+
+    this.hasResumedPosition = true;
+    const targetId = enr?.currentLessonId;
+    if (targetId) {
+      const idx = ls.findIndex((l) => l.id === targetId);
+      if (idx >= 0) {
+        this.activeIndex = idx;
+      }
+    }
   });
 
   ngOnInit(): void {
@@ -313,6 +356,7 @@ export class CoursePlayer implements OnInit, AfterViewInit, OnDestroy {
     const k = this.qKey(lessonId, bi);
     this.quizSel.set(k, new Set([choiceId]));
     this.quizRes.delete(k);
+    void this.persistQuizState(lessonId, bi, { selected: [choiceId] });
   }
 
   toggleMulti(lessonId: string, bi: number, choiceId: string) {
@@ -322,6 +366,7 @@ export class CoursePlayer implements OnInit, AfterViewInit, OnDestroy {
     else set.add(choiceId);
     this.quizSel.set(k, set);
     this.quizRes.delete(k);
+    void this.persistQuizState(lessonId, bi, { selected: Array.from(set) });
   }
 
   submitQuiz(lessonId: string, bi: number, block: Block) {
@@ -346,6 +391,7 @@ export class CoursePlayer implements OnInit, AfterViewInit, OnDestroy {
 
     this.quizRes.set(k, ok ? 'passed' : 'failed');
     if (ok) this.quizLock.add(k);
+    void this.persistQuizState(lessonId, bi, { selected: Array.from(picked), result: ok ? 'passed' : 'failed' });
   }
 
   isValidQuiz(block: Block): boolean {
@@ -677,6 +723,71 @@ private async persistSlideDeckState(lessonId: string, bi: number): Promise<void>
     },
     { merge: true }
   );
+}
+
+private hydrateQuizProgress(progress: Record<string, QuizProgressEntry> | null): void {
+  this.quizSel.clear();
+  this.quizRes.clear();
+  this.quizLock.clear();
+
+  if (!progress) return;
+
+  Object.entries(progress).forEach(([key, value]) => {
+    const selected = Array.isArray(value?.selected)
+      ? value.selected.filter((id) => typeof id === 'string' && !!id)
+      : [];
+    if (selected.length) {
+      this.quizSel.set(key, new Set(selected));
+    }
+    if (value?.result === 'passed' || value?.result === 'failed') {
+      this.quizRes.set(key, value.result);
+      if (value.result === 'passed') this.quizLock.add(key);
+    }
+  });
+}
+
+private async persistQuizState(
+  lessonId: string,
+  bi: number,
+  entry: { selected: string[]; result?: 'passed' | 'failed' }
+): Promise<void> {
+  const uid = this.auth.currentUser?.uid;
+  if (!uid) return;
+
+  const key = this.qKey(lessonId, bi);
+  const enrRef = fsDoc(this.afs as any, `users/${uid}/enrollments/${this.courseId}`);
+  try {
+    await setDoc(
+      enrRef,
+      {
+        quizProgress: {
+          [key]: {
+            selected: entry.selected,
+            // Clear a stale pass/fail result when the learner is just
+            // changing their selection ahead of re-submitting.
+            result: entry.result ?? deleteField(),
+            updatedAt: serverTimestamp(),
+          },
+        },
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  } catch {
+    // Best-effort — resuming quiz state is a convenience, not critical path.
+  }
+}
+
+private async persistCurrentLesson(lessonId: string): Promise<void> {
+  const uid = this.auth.currentUser?.uid;
+  if (!uid || !lessonId) return;
+
+  const enrRef = fsDoc(this.afs as any, `users/${uid}/enrollments/${this.courseId}`);
+  try {
+    await setDoc(enrRef, { currentLessonId: lessonId, updatedAt: serverTimestamp() }, { merge: true });
+  } catch {
+    // Best-effort — resuming lesson position is a convenience, not critical path.
+  }
 }
 
 slideDeckSlides(block: Block): SlideDeckSlide[] {
@@ -1457,6 +1568,11 @@ restoreVideoTime(lessonId: string, bi: number, event: Event): void {
       this.view.set('lesson');
       this.trackCurrentLessonTime();
       this.scheduleLessonInteractionScan();
+
+      const lessonId = this.lessons()[i]?.id;
+      if (lessonId) {
+        void this.persistCurrentLesson(lessonId);
+      }
 
       if (this.isMobileViewport()) {
         this.sidebarOpen = false;
