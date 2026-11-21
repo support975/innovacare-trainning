@@ -1,0 +1,30 @@
+[
+  {
+    "origin": [
+      "https://innovacaretrainning.com",
+      "https://www.innovacaretrainning.com",
+      "https://innovacare-training.web.app",
+      "https://innovacare-training.firebaseapp.com",
+      "https://innovacaretrainning-dev.web.app",
+      "https://innovacaretrainning-dev.firebaseapp.com",
+      "https://innovacaretrainninng-staging.web.app",
+      "https://innovacaretrainninng-staging.firebaseapp.com",
+      "http://localhost:4200",
+      "http://localhost:4300"
+    ],
+    "method": ["GET", "HEAD", "PUT", "POST", "DELETE"],
+    "maxAgeSeconds": 3600,
+    "responseHeader": [
+      "Content-Type",
+      "Content-Disposition",
+      "Content-Length",
+      "Content-Range",
+      "X-Goog-Upload-Command",
+      "X-Goog-Upload-Protocol",
+      "X-Goog-Upload-Status",
+      "X-Goog-Upload-URL",
+      "X-Goog-Upload-Header-Content-Length",
+      "X-Goog-Upload-Header-Content-Type"
+    ]
+  }
+]
