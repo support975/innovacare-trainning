@@ -113,6 +113,15 @@ export function isSafeHttpUrl(url: string | undefined): boolean {
 }
 
 /**
+ * Embed URL for Microsoft's Office Online Viewer — renders Word/Excel/
+ * PowerPoint files inline in an iframe without downloading them. Works for
+ * any publicly fetchable https(s) URL, not just our own storage hosts.
+ */
+export function officeViewerUrl(url: string): string {
+  return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`;
+}
+
+/**
  * If a click landed on an inline material link inside lesson content, returns
  * the material id. Supports `href="material:ID"` (also after Angular prefixes
  * it with `unsafe:`) and `data-material-id="ID"`.
