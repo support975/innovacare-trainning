@@ -28,7 +28,15 @@ import {
 import { buildLessonTranscript } from './tts-transcript';
 import { switchMap } from 'rxjs';
 import { LanguageService } from '../../../shared/services/language';
-import { isSafeHttpUrl } from '../../learner/courses/course-player/player-materials';
+import { isSafeHttpUrl, materialKind } from '../../learner/courses/course-player/player-materials';
+
+/** Builds a Content-Disposition header value that forces a save-to-device
+ *  download (with an RFC 5987 UTF-8 fallback for non-ASCII file names). */
+function buildAttachmentDisposition(fileName: string): string {
+  const asciiName = fileName.replace(/[^\x20-\x7E]/g, '_').replace(/"/g, '');
+  const encodedName = encodeURIComponent(fileName);
+  return `attachment; filename="${asciiName}"; filename*=UTF-8''${encodedName}`;
+}
 
 /* ---------------------------
    Typed form helpers
@@ -1883,7 +1891,25 @@ export class Courses {
       const pathId = this.editId || 'draft';
       const filePath = `courseMaterials/${pathId}/${Date.now()}_${file.name}`;
       const storageRef = ref(this.storage, filePath);
-      await uploadBytes(storageRef, file);
+
+      // Office formats (Word/Excel/PowerPoint) are never rendered inline by
+      // the browser anyway — the course player's in-app preview for these
+      // fetches the file server-side via an external viewer, which ignores
+      // Content-Disposition. Forcing "attachment" here only changes what
+      // happens when a learner taps Download: the file actually saves to
+      // their device instead of the browser trying (and failing) to open
+      // the raw .pptx/.docx/.xlsx inline, so it can then be opened in
+      // whatever Office app they have installed. PDFs/images/video/audio
+      // are NOT given this header, since those rely on the browser loading
+      // the raw URL inline (an <iframe>/<img>/<video>/<audio> tag) for
+      // their own in-app preview, which "attachment" would break.
+      const kind = materialKind({ fileType: file.type, name: file.name, url: '' });
+      const metadata =
+        kind === 'doc' || kind === 'sheet' || kind === 'slides'
+          ? { contentDisposition: buildAttachmentDisposition(file.name) }
+          : undefined;
+
+      await uploadBytes(storageRef, file, metadata);
       const url = await getDownloadURL(storageRef);
 
       const material: CourseMaterial = {
