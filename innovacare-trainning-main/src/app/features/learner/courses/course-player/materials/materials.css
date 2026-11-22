@@ -174,6 +174,23 @@
   display: flex;
 }
 .cp-drawer__frame { flex: 1 1 auto; width: 100%; min-height: 100%; border: 0; background: #fff; }
+.cp-drawer__office { flex: 1 1 auto; width: 100%; min-height: 100%; display: flex; flex-direction: column; }
+.cp-drawer__office .cp-drawer__frame { min-height: 0; }
+.cp-drawer__preview-hint {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #fff;
+  border-top: 1px solid #E3E8EF;
+  font-size: 13px;
+  color: var(--cp-muted, #5B6B80);
+  text-align: center;
+}
+.cp-drawer__preview-hint a { font-weight: 700; color: var(--cp-accent, #0F6CBD); text-decoration: none; }
+.cp-drawer__preview-hint a:hover { text-decoration: underline; }
 .cp-drawer__image { max-width: 100%; height: auto; margin: auto; padding: 16px; object-fit: contain; }
 .cp-drawer__media { width: 100%; max-height: 100%; margin: auto; background: #0F2A4A; }
 .cp-drawer__audio { width: calc(100% - 32px); margin: auto 16px; }

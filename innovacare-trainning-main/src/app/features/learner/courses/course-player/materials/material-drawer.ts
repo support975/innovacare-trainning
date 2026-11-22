@@ -66,13 +66,23 @@ import {
                   <audio class="cp-drawer__audio" [src]="m.url" controls preload="metadata"></audio>
                 }
                 @default {
-                  <iframe
-                    class="cp-drawer__frame"
-                    [src]="src"
-                    [title]="title()"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowfullscreen
-                  ></iframe>
+                  <div class="cp-drawer__office">
+                    <iframe
+                      class="cp-drawer__frame"
+                      [src]="src"
+                      [title]="title()"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowfullscreen
+                    ></iframe>
+                    @if (isOfficeKind()) {
+                      <div class="cp-drawer__preview-hint">
+                        <span>{{ t('player.materials.previewTrouble') }}</span>
+                        @if (safeUrl()) {
+                          <a [href]="safeUrl()" target="_blank" rel="noopener">{{ t('player.materials.openNewTab') }}</a>
+                        }
+                      </div>
+                    }
+                  </div>
                 }
               }
             } @else {
@@ -124,6 +134,13 @@ export class MaterialDrawer {
   readonly kind = computed(() => {
     const m = this.material();
     return m ? materialKind(m) : 'file';
+  });
+  /** Office docs render via a best-effort third-party viewer that can fail
+   *  silently (cross-origin iframe — no way to detect it from here), so we
+   *  always show a visible fallback link alongside the embed for these. */
+  readonly isOfficeKind = computed(() => {
+    const k = this.kind();
+    return k === 'doc' || k === 'sheet' || k === 'slides';
   });
   readonly badge = computed(() => materialBadge(this.kind()));
   readonly title = computed(() => {
