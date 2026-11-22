@@ -2,6 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
+  FormsModule,
   FormBuilder,
   Validators,
   FormArray,
@@ -27,6 +28,7 @@ import {
 import { buildLessonTranscript } from './tts-transcript';
 import { switchMap } from 'rxjs';
 import { LanguageService } from '../../../shared/services/language';
+import { isSafeHttpUrl } from '../../learner/courses/course-player/player-materials';
 
 /* ---------------------------
    Typed form helpers
@@ -150,7 +152,7 @@ type CourseTypeFilter = 'all' | Course['type'];
 @Component({
   selector: 'app-courses',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DragDropModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, DragDropModule],
   templateUrl: './courses.html',
   styleUrl: './courses.css',
 })
@@ -170,6 +172,8 @@ export class Courses {
   copiedMaterialId = signal<string | null>(null);
   uploadingMaterial = signal(false);
   materialError = '';
+  materialLinkUrl = '';
+  materialLinkName = '';
   loadingEdit = false;
   duplicatingId: string | null = null;
   deletingId: string | null = null;
@@ -1859,6 +1863,8 @@ export class Courses {
     this.sectionsFA.clear();
     this.materials.set([]);
     this.materialError = '';
+    this.materialLinkUrl = '';
+    this.materialLinkName = '';
   }
 
   /* ============================
@@ -1900,6 +1906,29 @@ export class Courses {
   removeMaterial(id: string): void {
     if (!this.canManageCourses) return;
     this.materials.update((list) => list.filter((m) => m.id !== id));
+  }
+
+  /** Add a material that points at an external link instead of an uploaded file. */
+  addMaterialLink(): void {
+    if (!this.canManageCourses) return;
+    this.materialError = '';
+
+    const url = this.materialLinkUrl.trim();
+    if (!isSafeHttpUrl(url)) {
+      this.materialError = this.lang.t('Enter a valid http or https URL.');
+      return;
+    }
+
+    const name = this.materialLinkName.trim() || url;
+    const material: CourseMaterial = {
+      id: `mat-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      name,
+      url,
+      uploadedAt: Date.now(),
+    };
+    this.materials.update((list) => [...list, material]);
+    this.materialLinkUrl = '';
+    this.materialLinkName = '';
   }
 
   /** Edit a material's learner-facing settings (title, download permission…). */

@@ -227,6 +227,23 @@ select.field-input {
   line-height: 1.5;
 }
 
+.material-link-row {
+  padding-top: 2px;
+}
+
+.material-link-inputs {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+@media (max-width: 720px) {
+  .material-link-inputs {
+    grid-template-columns: 1fr;
+  }
+}
+
 .material-list {
   display: flex;
   flex-direction: column;

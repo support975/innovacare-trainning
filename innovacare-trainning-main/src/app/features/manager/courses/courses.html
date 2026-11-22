@@ -189,6 +189,28 @@
         <div class="msg msg--error" *ngIf="materialError">{{ materialError }}</div>
       </div>
 
+      <div class="row material-link-row">
+        <label class="field-label">{{ lang.t('Or add a link instead') }}</label>
+        <div class="material-link-inputs">
+          <input
+            class="field-input"
+            type="url"
+            [(ngModel)]="materialLinkUrl"
+            [ngModelOptions]="{ standalone: true }"
+            placeholder="https://…"
+          />
+          <input
+            class="field-input"
+            type="text"
+            [(ngModel)]="materialLinkName"
+            [ngModelOptions]="{ standalone: true }"
+            [placeholder]="lang.t('Display name (optional)')"
+          />
+          <button type="button" class="btn-outline" (click)="addMaterialLink()">{{ lang.t('Add link') }}</button>
+        </div>
+        <div class="field-hint">{{ lang.t('Use this for resources hosted elsewhere, e.g. a shared drive, YouTube video or external site.') }}</div>
+      </div>
+
       <div class="material-list" *ngIf="materials().length">
         <div class="material-card" *ngFor="let m of materials()">
           <div class="material-row">
