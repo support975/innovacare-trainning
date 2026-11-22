@@ -22,6 +22,7 @@ import {
   materialBadge,
   materialKind,
   materialTitle,
+  officeViewerUrl,
 } from '../player-materials';
 
 /**
@@ -54,9 +55,6 @@ import {
           <div class="cp-drawer__body">
             @if (previewUrl(); as src) {
               @switch (kind()) {
-                @case ('pdf') {
-                  <iframe class="cp-drawer__frame" [src]="src" [title]="title()"></iframe>
-                }
                 @case ('image') {
                   <img class="cp-drawer__image" [src]="m.url" [alt]="title()" />
                 }
@@ -67,7 +65,7 @@ import {
                   <audio class="cp-drawer__audio" [src]="m.url" controls preload="metadata"></audio>
                 }
                 @default {
-                  <ng-container [ngTemplateOutlet]="noPreview" />
+                  <iframe class="cp-drawer__frame" [src]="src" [title]="title()"></iframe>
                 }
               }
             } @else {
@@ -138,13 +136,21 @@ export class MaterialDrawer {
     const m = this.material();
     return m && isMaterialDownloadable(m) ? this.safeUrl() : null;
   });
-  /** Only Firebase/Cloud Storage files are embedded; anything else opens in a new tab. */
+  /** Firebase/Cloud Storage files embed directly; Office docs embed via
+   *  Microsoft's viewer; anything else opens in a new tab. */
   readonly previewUrl = computed<SafeResourceUrl | null>(() => {
-    const url = this.material()?.url;
-    if (!isPreviewableUrl(url)) return null;
+    const material = this.material();
+    const url = material?.url;
     const kind = this.kind();
+
+    if (kind === 'doc' || kind === 'sheet' || kind === 'slides') {
+      if (!isSafeHttpUrl(url)) return null;
+      return this.sanitizer.bypassSecurityTrustResourceUrl(officeViewerUrl(url!));
+    }
+
+    if (!isPreviewableUrl(url)) return null;
     if (kind !== 'pdf' && kind !== 'image' && kind !== 'video' && kind !== 'audio') return null;
-    const src = kind === 'pdf' && !isMaterialDownloadable(this.material()!) ? `${url}#toolbar=0` : url!;
+    const src = kind === 'pdf' && !isMaterialDownloadable(material!) ? `${url}#toolbar=0` : url!;
     return this.sanitizer.bypassSecurityTrustResourceUrl(src);
   });
 
