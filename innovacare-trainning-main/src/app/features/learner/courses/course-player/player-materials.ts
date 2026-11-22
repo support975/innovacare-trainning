@@ -113,6 +113,36 @@ export function isSafeHttpUrl(url: string | undefined): boolean {
 }
 
 /**
+ * Embed URL for a YouTube link (watch/shorts/youtu.be/already-embed), or
+ * null if the URL isn't a recognizable YouTube link. Lets a YouTube
+ * material play inline in the drawer instead of only opening in a new tab.
+ */
+export function youtubeEmbedUrl(url: string | undefined): string | null {
+  if (!url) return null;
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return null;
+  }
+
+  const host = parsed.hostname.toLowerCase().replace(/^www\./, '').replace(/^m\./, '');
+  let videoId: string | null = null;
+
+  if (host === 'youtu.be') {
+    videoId = parsed.pathname.slice(1).split('/')[0] || null;
+  } else if (host === 'youtube.com' || host === 'youtube-nocookie.com') {
+    if (parsed.pathname === '/watch') {
+      videoId = parsed.searchParams.get('v');
+    } else if (parsed.pathname.startsWith('/embed/') || parsed.pathname.startsWith('/shorts/')) {
+      videoId = parsed.pathname.split('/')[2] || null;
+    }
+  }
+
+  return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+}
+
+/**
  * Embed URL for Microsoft's Office Online Viewer — renders Word/Excel/
  * PowerPoint files inline in an iframe without downloading them. Works for
  * any publicly fetchable https(s) URL, not just our own storage hosts.

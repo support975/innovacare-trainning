@@ -23,6 +23,7 @@ import {
   materialKind,
   materialTitle,
   officeViewerUrl,
+  youtubeEmbedUrl,
 } from '../player-materials';
 
 /**
@@ -65,7 +66,13 @@ import {
                   <audio class="cp-drawer__audio" [src]="m.url" controls preload="metadata"></audio>
                 }
                 @default {
-                  <iframe class="cp-drawer__frame" [src]="src" [title]="title()"></iframe>
+                  <iframe
+                    class="cp-drawer__frame"
+                    [src]="src"
+                    [title]="title()"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowfullscreen
+                  ></iframe>
                 }
               }
             } @else {
@@ -136,12 +143,18 @@ export class MaterialDrawer {
     const m = this.material();
     return m && isMaterialDownloadable(m) ? this.safeUrl() : null;
   });
-  /** Firebase/Cloud Storage files embed directly; Office docs embed via
-   *  Microsoft's viewer; anything else opens in a new tab. */
+  /** Firebase/Cloud Storage files and Office docs embed directly or via
+   *  Microsoft's viewer; YouTube links embed via YouTube's player; anything
+   *  else opens in a new tab. */
   readonly previewUrl = computed<SafeResourceUrl | null>(() => {
     const material = this.material();
     const url = material?.url;
     const kind = this.kind();
+
+    const youtube = youtubeEmbedUrl(url);
+    if (youtube) {
+      return this.sanitizer.bypassSecurityTrustResourceUrl(youtube);
+    }
 
     if (kind === 'doc' || kind === 'sheet' || kind === 'slides') {
       if (!isSafeHttpUrl(url)) return null;
