@@ -28,6 +28,7 @@ import {
   normalizedAllowedEmailDomains,
 } from '../../../../shared/course-domain-access';
 import { CourseMaterial } from '../../../../data/models';
+import { sanitizeRichHtml } from '../../../../shared/utils/rich-html-sanitizer';
 import { MaterialsLibrary } from './materials/materials-library';
 import { MaterialDrawer } from './materials/material-drawer';
 import { LessonTimeTracker, formatDuration } from './lesson-time-tracker';
@@ -1161,7 +1162,7 @@ videoKind(url?: string): 'youtube' | 'vimeo' | 'file' | 'none' {
     const cached = this.trustedHtmlCache.get(html);
     if (cached) return cached;
 
-    const trusted = this.sanitizer.bypassSecurityTrustHtml(html);
+    const trusted = this.sanitizer.bypassSecurityTrustHtml(sanitizeRichHtml(html));
     this.trustedHtmlCache.set(html, trusted);
     return trusted;
   }
