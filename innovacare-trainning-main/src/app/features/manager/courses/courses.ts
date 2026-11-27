@@ -14,6 +14,7 @@ import { CoursesRepo } from '../../../data/courses.repo';
 import { Course, CourseMaterial, Section, Lesson, Block } from '../../../data/models';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ActingOrgService } from '../../../core/organization/services/acting-org.service';
+import { sanitizeRichHtml } from '../../../shared/utils/rich-html-sanitizer';
 import { Storage, ref, uploadBytes, getDownloadURL } from '@angular/fire/storage';
 
 import { DragDropModule, CdkDragDrop } from '@angular/cdk/drag-drop';
@@ -1517,26 +1518,31 @@ export class Courses {
      Preview
   ============================ */
 
+  /** Author HTML is cleaned before Angular is told to trust it. */
+  private trustAuthorHtml(html: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(sanitizeRichHtml(html));
+  }
+
   previewFor(b: BlockForm): SafeHtml {
     const t = b.value.type;
 
     if (t === 'text' || t === 'callout') {
       const html = b.value.html ?? '';
-      return this.sanitizer.bypassSecurityTrustHtml(html);
+      return this.trustAuthorHtml(html);
     }
 
     if (t === 'heading') {
       const lv = Math.min(3, Math.max(1, Number(b.value.level ?? 2)));
       const tag = `h${lv}`;
       const text = this.escapeHtml(b.value.text ?? '');
-      return this.sanitizer.bypassSecurityTrustHtml(`<${tag}>${text}</${tag}>`);
+      return this.trustAuthorHtml(`<${tag}>${text}</${tag}>`);
     }
 
     if (t === 'image') {
       const url = this.escapeAttr(b.value.url ?? '');
       const alt = this.escapeAttr(b.value.alt ?? '');
       const caption = this.escapeHtml(b.value.caption ?? '');
-      return this.sanitizer.bypassSecurityTrustHtml(
+      return this.trustAuthorHtml(
         url
           ? `<figure><img src="${url}" alt="${alt}"/><figcaption>${caption}</figcaption></figure>`
           : ''
@@ -1551,7 +1557,7 @@ export class Courses {
         rawUrl.match(/youtube\.com\/embed\/([^&?/]+)/)?.[1];
 
       if (yt) {
-        return this.sanitizer.bypassSecurityTrustHtml(`
+        return this.trustAuthorHtml(`
           <div style="position:relative;padding-top:56.25%;">
             <iframe
               src="https://www.youtube.com/embed/${this.escapeAttr(yt)}"
@@ -1565,7 +1571,7 @@ export class Courses {
 
       const vimeo = rawUrl.match(/vimeo\.com\/(\d+)/)?.[1];
       if (vimeo) {
-        return this.sanitizer.bypassSecurityTrustHtml(`
+        return this.trustAuthorHtml(`
           <div style="position:relative;padding-top:56.25%;">
             <iframe
               src="https://player.vimeo.com/video/${this.escapeAttr(vimeo)}"
@@ -1578,7 +1584,7 @@ export class Courses {
       }
 
       const src = this.escapeAttr(rawUrl);
-      return this.sanitizer.bypassSecurityTrustHtml(
+      return this.trustAuthorHtml(
         src
           ? `<video controls style="max-width:100%;border-radius:12px;">
                <source src="${src}">
@@ -1589,7 +1595,7 @@ export class Courses {
 
     if (t === 'audio') {
       const src = this.escapeAttr((b.value.url ?? '').trim());
-      return this.sanitizer.bypassSecurityTrustHtml(
+      return this.trustAuthorHtml(
         src ? `<audio controls style="width:100%;"><source src="${src}"></audio>` : ''
       );
     }
@@ -1599,7 +1605,7 @@ export class Courses {
       const imageUrl = this.escapeAttr((b.value.imageUrl ?? '').trim());
       const body = b.value.bodyHtml ? String(b.value.bodyHtml) : '';
       const buttonLabel = this.escapeHtml(b.value.buttonLabel ?? 'Continue');
-      return this.sanitizer.bypassSecurityTrustHtml(`
+      return this.trustAuthorHtml(`
         <div style="display:grid;gap:12px;border:1px solid #dbe4f0;border-radius:16px;padding:18px;background:linear-gradient(180deg,#f8fbff,#ffffff);">
           ${imageUrl ? `<img src="${imageUrl}" alt="${title}" style="width:100%;max-height:220px;object-fit:cover;border-radius:12px;">` : ''}
           <div style="font-size:24px;font-weight:800;">${title}</div>
@@ -1620,7 +1626,7 @@ export class Courses {
           </details>
         `)
         .join('');
-      return this.sanitizer.bypassSecurityTrustHtml(`
+      return this.trustAuthorHtml(`
         <div style="display:grid;gap:10px;">
           <div style="font-size:20px;font-weight:800;">${title}</div>
           ${intro}
@@ -1641,7 +1647,7 @@ export class Courses {
           </div>
         `)
         .join('');
-      return this.sanitizer.bypassSecurityTrustHtml(`
+      return this.trustAuthorHtml(`
         <div style="display:grid;gap:12px;">
           <div style="font-size:20px;font-weight:800;">${title}</div>
           ${intro}
@@ -1654,7 +1660,7 @@ export class Courses {
       const title = this.escapeHtml(b.value.title ?? 'Quiz');
       const body = b.value.bodyHtml ? String(b.value.bodyHtml) : '';
       const buttonLabel = this.escapeHtml(b.value.buttonLabel ?? 'Start quiz');
-      return this.sanitizer.bypassSecurityTrustHtml(`
+      return this.trustAuthorHtml(`
         <div style="display:grid;gap:12px;border:1px solid #dbe4f0;border-radius:16px;padding:18px;background:#fff;">
           <div style="font-size:24px;font-weight:800;">${title}</div>
           ${body}
@@ -1678,7 +1684,7 @@ export class Courses {
         .join('');
       const imageUrl = this.escapeAttr((active?.imageUrl ?? '').trim());
       const imageAlt = this.escapeAttr(active?.imageAlt ?? active?.title ?? '');
-      return this.sanitizer.bypassSecurityTrustHtml(`
+      return this.trustAuthorHtml(`
         <div style="display:grid;gap:12px;">
           <div style="font-size:20px;font-weight:800;">${title}</div>
           ${intro}
@@ -1695,7 +1701,7 @@ export class Courses {
     if (t === 'slideDeck') {
       const slide = b.controls.slides.at(0)?.value;
       if (!slide) {
-        return this.sanitizer.bypassSecurityTrustHtml('');
+        return this.trustAuthorHtml('');
       }
 
       const title = this.escapeHtml(slide.title ?? 'New slide');
@@ -1712,7 +1718,7 @@ export class Courses {
         `)
         .join('');
 
-      return this.sanitizer.bypassSecurityTrustHtml(`
+      return this.trustAuthorHtml(`
         <div style="display:grid;gap:12px;">
           <div style="font-weight:800;">${title}</div>
           ${imageUrl ? `<img src="${imageUrl}" alt="${title}" style="width:100%;border-radius:12px;object-fit:cover;max-height:220px;">` : ''}
@@ -1728,7 +1734,7 @@ export class Courses {
       const items = (b.controls.choices.controls ?? [])
         .map((c) => `<li>${this.escapeHtml(c.value.text ?? '')}</li>`)
         .join('');
-      return this.sanitizer.bypassSecurityTrustHtml(
+      return this.trustAuthorHtml(
         `<strong>${q}</strong><ul>${items}</ul>`
       );
     }
@@ -1736,7 +1742,7 @@ export class Courses {
     if (t === 'carousel') {
       const slide = b.controls.carouselSlides.at(0)?.value;
       if (!slide) {
-        return this.sanitizer.bypassSecurityTrustHtml('');
+        return this.trustAuthorHtml('');
       }
 
       const imageUrl = this.escapeAttr((slide.imageUrl ?? '').trim());
@@ -1745,7 +1751,7 @@ export class Courses {
       const buttonLabel = this.escapeHtml(slide.buttonLabel ?? '');
       const slideCount = b.controls.carouselSlides.length;
 
-      return this.sanitizer.bypassSecurityTrustHtml(`
+      return this.trustAuthorHtml(`
         <div style="display:grid;gap:10px;border:1px solid #dbe4f0;border-radius:16px;overflow:hidden;background:#fff;">
           ${imageUrl ? `<img src="${imageUrl}" alt="${heading}" style="width:100%;max-height:180px;object-fit:cover;">` : ''}
           <div style="display:grid;gap:8px;padding:14px;">
@@ -1758,7 +1764,7 @@ export class Courses {
       `);
     }
 
-    return this.sanitizer.bypassSecurityTrustHtml('');
+    return this.trustAuthorHtml('');
   }
 
   private escapeHtml(s: string) {

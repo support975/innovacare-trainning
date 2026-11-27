@@ -15,6 +15,7 @@ import {
 } from '../services/content-studio.service';
 import { LanguageService } from '../../../shared/services/language';
 import { publicAppOrigin } from '../../../shared/utils/public-app-origin';
+import { sanitizeRichHtml } from '../../../shared/utils/rich-html-sanitizer';
 
 @Component({
   selector: 'app-content-studio',
@@ -136,7 +137,7 @@ export class ContentStudioComponent {
   }
 
   sanitizedPreview(html: string): SafeHtml {
-    return this.sanitizer.bypassSecurityTrustHtml(html || '');
+    return this.sanitizer.bypassSecurityTrustHtml(sanitizeRichHtml(html));
   }
 
   private pickAndUploadImage(target: 'article' | 'newsletter'): void {

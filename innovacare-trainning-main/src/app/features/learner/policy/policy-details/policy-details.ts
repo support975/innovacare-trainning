@@ -12,6 +12,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { AuthService } from '../../../../core/auth';
 import { Policy } from '../model/policy.model';
+import { sanitizeRichHtml } from '../../../../shared/utils/rich-html-sanitizer';
 import { PolicyService } from '../../../../shared/services/policy';
 import { LanguageService } from '../../../../shared/services/language';
 import { getAuth } from 'firebase/auth';
@@ -436,8 +437,8 @@ export class PolicyDetails implements OnInit {
     this.vm$ = combineLatest([policy$, uid$, acknowledged$]).pipe(
       map(([policy, uid, acknowledged]) => {
         const processed = processHtmlForToc(policy?.contentHtml || '');
-        const safeHtml = this.sanitizer.bypassSecurityTrustHtml(processed.html);
-        const safeRefs = this.sanitizer.bypassSecurityTrustHtml(policy?.referencesHtml || '');
+        const safeHtml = this.sanitizer.bypassSecurityTrustHtml(sanitizeRichHtml(processed.html));
+        const safeRefs = this.sanitizer.bypassSecurityTrustHtml(sanitizeRichHtml(policy?.referencesHtml));
         return {
           loading: false,
           busy: this.busy,

@@ -7,6 +7,7 @@ import { map, of, switchMap } from 'rxjs';
 
 import { PublicSiteNavComponent } from '../../../shared/components/public-site-nav/public-site-nav';
 import { PublicTranslateDirective } from '../../../shared/directives/public-translate.directive';
+import { sanitizeRichHtml } from '../../../shared/utils/rich-html-sanitizer';
 import { PublicBlogService } from './blog.service';
 import { MarketingArticle } from '../../superAdmin/services/content-studio.service';
 
@@ -290,7 +291,7 @@ export class PublicBlogArticleComponent {
   readonly notFound = computed(() => !this.loading() && !this.article());
 
   readonly bodyHtml = computed<SafeHtml>(() =>
-    this.sanitizer.bypassSecurityTrustHtml(this.article()?.bodyHtml || '')
+    this.sanitizer.bypassSecurityTrustHtml(sanitizeRichHtml(this.article()?.bodyHtml))
   );
 
   readonly shareLinks = computed(() => {
